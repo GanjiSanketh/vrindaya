@@ -1,0 +1,113 @@
+<div
+  class="product-card"
+  (click)="openProduct($event)"
+  (mouseenter)="onCardHover()"
+  (mouseleave)="onCardLeave()"
+  role="button"
+  [attr.aria-label]="'Shop ' + product().name"
+>
+
+  <!-- Image -->
+  <div class="product-img-wrap">
+    <img
+      [src]="activeImage"
+      [alt]="product().name"
+      class="product-img"
+      loading="lazy"
+      (error)="handleImageError($event)"
+    />
+
+    <!-- Badges -->
+    <div class="product-badges">
+      @if (product().isTrending) {
+        <span class="badge-trending">🔥 Trending</span>
+      }
+      @if (product().isNew) {
+        <span class="badge-new">✦ New</span>
+      }
+    </div>
+
+    <!-- Discount -->
+    @if (product().discount) {
+      <div class="product-discount">{{ product().discount }}% OFF</div>
+    }
+
+    <!-- Image counter (top-right when >1 image) -->
+    @if (hasMultipleImages) {
+      <div class="img-counter">
+        {{ activeImageIndex() + 1 }} / {{ images.length }}
+      </div>
+    }
+
+    <!-- Dot nav (≤5 images) -->
+    @if (hasMultipleImages && !showProgressBar) {
+      <div class="img-dots" (click)="$event.stopPropagation()">
+        @for (img of dotImages; track $index) {
+          <button
+            class="img-dot"
+            [class.active]="activeImageIndex() === $index"
+            (click)="setImage($index)"
+            [attr.aria-label]="'View image ' + ($index + 1)"
+          ></button>
+        }
+      </div>
+    }
+
+    <!-- Progress bar (>5 images) -->
+    @if (hasMultipleImages && showProgressBar) {
+      <div class="img-progress-track" (click)="$event.stopPropagation()">
+        <div
+          class="img-progress-fill"
+          [style.width.%]="((activeImageIndex() + 1) / images.length) * 100"
+        ></div>
+      </div>
+    }
+
+    <!-- Hover overlay -->
+    <div class="product-overlay" [class.visible]="isHovered()">
+      <button class="overlay-btn" (click)="openProduct($event)">
+        <i class="bi bi-bag-plus"></i>
+        Shop on Flipkart
+      </button>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="product-info">
+    <p class="product-category">{{ product().category }}</p>
+    <h3 class="product-name" [title]="product().name">{{ product().name }}</h3>
+
+    <!-- Rating -->
+    @if (product().rating) {
+      <div class="product-rating">
+        <div class="stars-row">
+          @for (star of stars; track star) {
+            @if (star <= fullStars) {
+              <i class="bi bi-star-fill star filled"></i>
+            } @else if (star === fullStars + 1 && halfStar) {
+              <i class="bi bi-star-half star filled"></i>
+            } @else {
+              <i class="bi bi-star star"></i>
+            }
+          }
+        </div>
+        <span class="rating-value">{{ product().rating }}</span>
+      </div>
+    }
+
+    <!-- Price -->
+    <div class="product-price-row">
+      <span class="price-current">₹{{ product().price | number }}</span>
+      @if (product().originalPrice) {
+        <span class="price-original">₹{{ product().originalPrice | number }}</span>
+      }
+    </div>
+
+    <!-- CTA -->
+    <button class="product-cta" (click)="openProduct($event)">
+      <i class="bi bi-bag2"></i>
+      Shop Now
+      <i class="bi bi-box-arrow-up-right cta-arrow"></i>
+    </button>
+  </div>
+</div>

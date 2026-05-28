@@ -1,0 +1,147 @@
+<!-- Sticky Navbar -->
+<app-navbar />
+
+<main>
+  <!-- Hero Section -->
+  <app-hero-banner />
+
+  <!-- Categories -->
+  <app-categories />
+
+  <!-- Trending Products Section -->
+  <section id="trending" class="section-pad products-section">
+    <div class="container-fluid products-container">
+      <div class="section-header-row">
+        <div>
+          <p class="section-label">Hot Right Now</p>
+          <h2 class="section-title">Trending Products</h2>
+          <p class="section-subtitle">Our most-loved styles, flying off the shelves</p>
+        </div>
+        <div class="section-header-badge">
+          <i class="bi bi-fire"></i>
+          Trending
+        </div>
+      </div>
+      <app-product-grid filter="trending" />
+    </div>
+  </section>
+
+  <!-- Promo Banner -->
+  <div class="promo-banner">
+    <div class="container-fluid promo-container">
+      <div class="promo-inner">
+        <div class="promo-content">
+          <p class="promo-eyebrow">Limited Time Offer</p>
+          <h2 class="promo-title">
+            Up to <span>50% OFF</span><br />
+            on New Arrivals
+          </h2>
+          <p class="promo-text">
+            Shop the latest ethnic fashion at unbeatable prices. Redirects to Flipkart for a
+            seamless purchase experience.
+          </p>
+          <button class="btn-vrindaya btn-vrindaya-primary promo-btn">
+            Grab the Deal <i class="bi bi-arrow-right"></i>
+          </button>
+        </div>
+        <div class="promo-visuals">
+          <div class="promo-img-stack">
+            <img
+              src="https://picsum.photos/seed/promo-1/300/380"
+              alt="Promo fashion 1"
+              class="promo-img promo-img-back"
+            />
+            <img
+              src="https://picsum.photos/seed/promo-2/300/380"
+              alt="Promo fashion 2"
+              class="promo-img promo-img-front"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Arrivals Section -->
+  <section id="new-arrivals" class="section-pad products-section bg-blush">
+    <div class="container-fluid products-container">
+      <div class="section-header-row">
+        <div>
+          <p class="section-label">Just Dropped</p>
+          <h2 class="section-title">New Arrivals</h2>
+          <p class="section-subtitle">Fresh styles added to our curated collection</p>
+        </div>
+        <div class="section-header-badge new-badge">
+          <i class="bi bi-stars"></i>
+          New
+        </div>
+      </div>
+      <app-product-grid filter="new" />
+    </div>
+  </section>
+
+  <!-- Instagram-Style Promo Grid -->
+  <section class="insta-promo section-pad">
+    <div class="container-fluid promo-container">
+      <div class="text-center mb-5">
+        <p class="section-label">Our Community</p>
+        <h2 class="section-title">The Vrindaya Look</h2>
+        <p class="section-subtitle mx-auto">Real customers, real style. Follow us on Instagram &#64;vrindaya</p>
+      </div>
+      <div class="insta-grid">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="insta-item">
+            <img
+              [src]="'https://picsum.photos/seed/insta-' + i + '/400/400'"
+              [alt]="'Vrindaya style ' + i"
+              class="insta-img"
+              loading="lazy"
+            />
+            <div class="insta-overlay">
+              <i class="bi bi-instagram"></i>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- All Products Section -->
+  <section id="products" class="section-pad products-section">
+    <div class="container-fluid products-container">
+      <div class="section-header-row">
+        <div>
+          <p class="section-label">The Full Edit</p>
+          <h2 class="section-title">All Products</h2>
+          <p class="section-subtitle">Browse, filter, and discover your next favourite look</p>
+        </div>
+      </div>
+      <app-product-grid filter="all" />
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<app-footer />
+
+<!-- WhatsApp Floating Button -->
+<a
+  href="https://wa.me/919999999999"
+  class="floating-btn whatsapp-btn"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Chat on WhatsApp"
+>
+  <i class="bi bi-whatsapp"></i>
+</a>
+
+<!-- Scroll to Top Button -->
+<button
+  class="floating-btn scroll-top-btn"
+  [class.visible]="showScrollTop()"
+  (click)="scrollToTop()"
+  aria-label="Back to top"
+>
+  <i class="bi bi-arrow-up"></i>
+</button>

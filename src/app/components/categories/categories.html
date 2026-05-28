@@ -1,0 +1,53 @@
+<section id="categories" class="categories-section section-pad">
+  <div class="container-fluid categories-container">
+
+    <div class="categories-header">
+      <p class="section-label">Browse</p>
+      <h2 class="section-title">Shop by Category</h2>
+      <p class="section-subtitle">Explore our curated collections across every occasion</p>
+    </div>
+
+    <!-- Category Chips Row -->
+    <div class="categories-scroll-wrapper">
+      <div class="categories-row">
+        @for (cat of categories; track cat.id) {
+          <button
+            class="category-chip"
+            [class.active]="selectedCategory() === cat.id"
+            (click)="selectCategory(cat.id)"
+          >
+            <span class="chip-icon">{{ cat.icon }}</span>
+            <span class="chip-label">{{ cat.name }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Category Cards (Desktop) -->
+    <div class="category-cards-row">
+      @for (cat of categories.slice(1); track cat.id) {
+        <div
+          class="category-card"
+          (click)="selectCategory(cat.id)"
+          role="button"
+        >
+          <div class="category-card-img-wrap">
+            <img
+              [src]="'https://picsum.photos/seed/cat-' + cat.id + '/300/360'"
+              [alt]="cat.name"
+              class="category-card-img"
+              loading="lazy"
+            />
+            <div class="category-card-overlay"></div>
+          </div>
+          <div class="category-card-body">
+            <span class="category-card-icon">{{ cat.icon }}</span>
+            <h3 class="category-card-name">{{ cat.name }}</h3>
+            <span class="category-card-cta">Shop Now <i class="bi bi-arrow-right"></i></span>
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</section>

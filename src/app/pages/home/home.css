@@ -1,0 +1,211 @@
+.products-section {
+  background: var(--cream);
+}
+
+.products-section.bg-blush {
+  background: var(--teal-xlight);
+}
+
+.products-container {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.section-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: rgba(27, 122, 138, 0.08);
+  color: var(--accent);
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  border: 1px solid var(--teal-light);
+}
+
+.section-header-badge.new-badge {
+  background: rgba(201, 168, 76, 0.1);
+  color: #b07d10;
+  border-color: rgba(201, 168, 76, 0.3);
+}
+
+/* Promo Banner */
+.promo-banner {
+  background: linear-gradient(135deg, #0c3a44 0%, #1b7a8a 50%, #0f5563 100%);
+  overflow: hidden;
+  position: relative;
+}
+
+.promo-container {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.promo-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  padding: 5rem 0;
+}
+
+.promo-content {
+  flex: 1;
+  max-width: 500px;
+}
+
+.promo-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+.promo-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 1.25rem;
+}
+
+.promo-title span {
+  color: var(--gold);
+}
+
+.promo-text {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.promo-btn {
+  font-size: 1rem;
+}
+
+/* Promo Visuals */
+.promo-visuals {
+  flex: 0 0 380px;
+  position: relative;
+}
+
+.promo-img-stack {
+  position: relative;
+  height: 380px;
+}
+
+.promo-img {
+  width: 200px;
+  height: 280px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  position: absolute;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.promo-img-back {
+  top: 40px;
+  left: 0;
+  transform: rotate(-5deg);
+  opacity: 0.85;
+}
+
+.promo-img-front {
+  top: 0;
+  right: 0;
+  transform: rotate(3deg);
+  z-index: 2;
+}
+
+/* Instagram Grid */
+.insta-promo {
+  background: var(--white);
+}
+
+.insta-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+}
+
+.insta-item {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.insta-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+  display: block;
+}
+
+.insta-item:hover .insta-img {
+  transform: scale(1.08);
+}
+
+.insta-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(27, 122, 138, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.insta-item:hover .insta-overlay {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .promo-visuals {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-container,
+  .promo-container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .insta-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .promo-inner {
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .insta-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

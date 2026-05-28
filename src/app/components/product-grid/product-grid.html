@@ -1,0 +1,16 @@
+@if (isEmpty) {
+  <!-- Empty State -->
+  <div class="empty-state">
+    <i class="bi bi-bag-x"></i>
+    <h3>No products found</h3>
+    <p>Try a different category or clear the search.</p>
+  </div>
+} @else {
+  <div class="product-grid-wrapper">
+    @for (product of displayProducts; track product.id; let i = $index) {
+      <div class="product-item" [style.animation-delay]="(i % 8) * 60 + 'ms'">
+        <app-product-card [product]="product" />
+      </div>
+    }
+  </div>
+}
