@@ -4,14 +4,15 @@
   left: 0;
   right: 0;
   z-index: 999;
-  background: rgba(253, 248, 246, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: transparent;
   border-bottom: 1px solid transparent;
-  transition: all 0.3s ease;
+  transition: all 0.35s ease;
 }
 
 .vrindaya-nav.scrolled {
+  background: rgba(253, 248, 246, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom-color: var(--border);
   box-shadow: 0 2px 24px rgba(27, 122, 138, 0.08);
 }
@@ -55,16 +56,26 @@
   font-family: var(--font-serif);
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--accent);
+  color: #fff;
   letter-spacing: 0.1em;
+  transition: color 0.35s ease;
+}
+
+.vrindaya-nav.scrolled .brand-name {
+  color: var(--accent);
 }
 
 .brand-tagline {
   font-size: 0.6rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.55);
   letter-spacing: 0.18em;
   font-style: italic;
   margin-top: 1px;
+  transition: color 0.35s ease;
+}
+
+.vrindaya-nav.scrolled .brand-tagline {
+  color: var(--text-muted);
 }
 
 /* Nav Links */
@@ -82,7 +93,7 @@
   padding: 0.5rem 0.875rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text);
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   border-radius: var(--radius-sm);
   transition: var(--transition);
@@ -90,7 +101,16 @@
   white-space: nowrap;
 }
 
+.vrindaya-nav.scrolled .nav-link-item {
+  color: var(--text);
+}
+
 .nav-link-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.vrindaya-nav.scrolled .nav-link-item:hover {
   color: var(--accent);
   background: var(--teal-xlight);
 }
@@ -109,31 +129,47 @@
 .search-icon {
   position: absolute;
   left: 0.875rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.55);
   font-size: 0.9rem;
   pointer-events: none;
+  transition: color 0.35s ease;
+}
+
+.vrindaya-nav.scrolled .search-icon {
+  color: var(--text-muted);
 }
 
 .search-input {
   width: 100%;
   padding: 0.6rem 2.5rem 0.6rem 2.25rem;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-pill);
   font-family: var(--font-sans);
   font-size: 0.875rem;
-  background: var(--white);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
   transition: var(--transition);
   outline: none;
 }
 
+.vrindaya-nav.scrolled .search-input {
+  border-color: var(--border);
+  background: var(--white);
+  color: var(--text);
+}
+
 .search-input:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.vrindaya-nav.scrolled .search-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(27, 122, 138, 0.12);
 }
 
 .search-input::placeholder {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .search-clear {
