@@ -1,13 +1,22 @@
-<section id="categories" class="categories-section section-pad">
+<section id="categories" class="categories-section">
   <div class="container-fluid categories-container">
 
+    <!-- Editorial header -->
     <div class="categories-header">
-      <p class="section-label">Browse</p>
-      <h2 class="section-title">Shop by Category</h2>
-      <p class="section-subtitle">Explore our curated collections across every occasion</p>
+      <div class="cat-header-left">
+        <div class="cat-eyebrow">
+          <span class="cat-eyebrow-line"></span>
+          <span class="cat-eyebrow-text">Browse</span>
+        </div>
+        <h2 class="cat-title">Shop by<br>Category</h2>
+      </div>
+      <div class="cat-header-right">
+        <span class="cat-num">00</span>
+        <p class="cat-desc">Curated collections<br>for every occasion.</p>
+      </div>
     </div>
 
-    <!-- Category Chips Row -->
+    <!-- Filter Chips -->
     <div class="categories-scroll-wrapper">
       <div class="categories-row">
         @for (cat of categories; track cat.id) {
@@ -17,27 +26,18 @@
             (click)="selectCategory(cat.id)"
           >
             <span class="chip-icon">{{ cat.icon }}</span>
-            <span class="chip-label">{{ cat.name }}</span>
+            <span>{{ cat.name }}</span>
           </button>
         }
       </div>
     </div>
 
-    <!-- Category Cards (Desktop) -->
+    <!-- Category Cards -->
     <div class="category-cards-row">
       @for (cat of categories.slice(1); track cat.id) {
-        <div
-          class="category-card"
-          (click)="selectCategory(cat.id)"
-          role="button"
-        >
+        <div class="category-card" (click)="selectCategory(cat.id)" role="button">
           <div class="category-card-img-wrap">
-            <img
-              [src]="'https://picsum.photos/seed/cat-' + cat.id + '/300/360'"
-              [alt]="cat.name"
-              class="category-card-img"
-              loading="lazy"
-            />
+            <img [src]="cat.image" [alt]="cat.name" class="category-card-img" loading="lazy" />
             <div class="category-card-overlay"></div>
           </div>
           <div class="category-card-body">

@@ -1,119 +1,115 @@
-<!-- Sticky Navbar -->
 <app-navbar />
 
 <main>
-  <!-- Hero Section -->
+
+  <!-- ① Hero -->
   <app-hero-banner />
 
-  <!-- Categories -->
+  <!-- ② Categories -->
   <app-categories />
 
-  <!-- Trending Products Section -->
-  <section id="trending" class="section-pad products-section">
+  <!-- ③ Trending — section 01 -->
+  <section id="trending" class="products-section">
     <div class="container-fluid products-container">
-      <div class="section-header-row">
-        <div>
-          <p class="section-label">Hot Right Now</p>
-          <h2 class="section-title">Trending Products</h2>
-          <p class="section-subtitle">Our most-loved styles, flying off the shelves</p>
+      <div class="ed-header">
+        <div class="ed-header-left">
+          <div class="ed-eyebrow">
+            <span class="ed-line"></span>
+            <span class="ed-label-text">Hot Right Now</span>
+          </div>
+          <h2 class="ed-title">Trending<br>Products</h2>
         </div>
-        <div class="section-header-badge">
-          <i class="bi bi-fire"></i>
-          Trending
+        <div class="ed-header-right">
+          <span class="ed-num">01</span>
+          <p class="ed-desc">Our most-loved styles,<br>flying off the shelves.</p>
         </div>
       </div>
       <app-product-grid filter="trending" />
     </div>
   </section>
 
-  <!-- Promo Banner -->
+  <!-- ④ Promo Banner -->
   <div class="promo-banner">
     <div class="container-fluid promo-container">
       <div class="promo-inner">
         <div class="promo-content">
           <p class="promo-eyebrow">Limited Time Offer</p>
           <h2 class="promo-title">
-            Up to <span>50% OFF</span><br />
-            on New Arrivals
+            Up to <span>50% OFF</span><br />on New Arrivals
           </h2>
           <p class="promo-text">
-            Shop the latest ethnic fashion at unbeatable prices. Redirects to Flipkart for a
-            seamless purchase experience.
+            Shop the latest ethnic fashion at unbeatable prices.
+            Tap any product to buy directly on Flipkart.
           </p>
-          <button class="btn-vrindaya btn-vrindaya-primary promo-btn">
+          <button class="promo-cta-btn">
             Grab the Deal <i class="bi bi-arrow-right"></i>
           </button>
         </div>
         <div class="promo-visuals">
           <div class="promo-img-stack">
-            <img
-              src="https://picsum.photos/seed/promo-1/300/380"
-              alt="Promo fashion 1"
-              class="promo-img promo-img-back"
-            />
-            <img
-              src="https://picsum.photos/seed/promo-2/300/380"
-              alt="Promo fashion 2"
-              class="promo-img promo-img-front"
-            />
+            <img src="assets/products/005-fuchsia-floral-kurta-set/image-1.png" alt="Fuchsia floral set" class="promo-img promo-img-back" />
+            <img src="assets/products/003-black-gold-embroidered-kurti/image-1.png" alt="Black gold kurti" class="promo-img promo-img-front" />
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- New Arrivals Section -->
-  <section id="new-arrivals" class="section-pad products-section bg-blush">
+  <!-- ⑤ New Arrivals — section 02 -->
+  <section id="new-arrivals" class="products-section products-section-alt">
     <div class="container-fluid products-container">
-      <div class="section-header-row">
-        <div>
-          <p class="section-label">Just Dropped</p>
-          <h2 class="section-title">New Arrivals</h2>
-          <p class="section-subtitle">Fresh styles added to our curated collection</p>
+      <div class="ed-header">
+        <div class="ed-header-left">
+          <div class="ed-eyebrow">
+            <span class="ed-line"></span>
+            <span class="ed-label-text">Just Dropped</span>
+          </div>
+          <h2 class="ed-title">New<br>Arrivals</h2>
         </div>
-        <div class="section-header-badge new-badge">
-          <i class="bi bi-stars"></i>
-          New
+        <div class="ed-header-right">
+          <span class="ed-num">02</span>
+          <p class="ed-desc">Fresh styles added to<br>our curated collection.</p>
         </div>
       </div>
       <app-product-grid filter="new" />
     </div>
   </section>
 
-  <!-- Instagram-Style Promo Grid -->
-  <section class="insta-promo section-pad">
-    <div class="container-fluid promo-container">
-      <div class="text-center mb-5">
-        <p class="section-label">Our Community</p>
-        <h2 class="section-title">The Vrindaya Look</h2>
-        <p class="section-subtitle mx-auto">Real customers, real style. Follow us on Instagram &#64;vrindaya</p>
+  <!-- ⑥ Instagram-style grid (dark) -->
+  <section class="insta-section">
+    <div class="container-fluid insta-container">
+      <div class="insta-header">
+        <div>
+          <p class="insta-label">Our Community</p>
+          <h2 class="insta-title">The Vrindaya Look</h2>
+        </div>
+        <p class="insta-handle">&#64;vrindaya</p>
       </div>
       <div class="insta-grid">
-        @for (i of [1,2,3,4,5,6]; track i) {
-          <div class="insta-item">
-            <img
-              [src]="'https://picsum.photos/seed/insta-' + i + '/400/400'"
-              [alt]="'Vrindaya style ' + i"
-              class="insta-img"
-              loading="lazy"
-            />
-            <div class="insta-overlay">
-              <i class="bi bi-instagram"></i>
-            </div>
-          </div>
-        }
+        <div class="insta-item"><img src="assets/products/001-wine-mandala-kurta/image-2.png"      alt="Vrindaya look 1" class="insta-img" loading="lazy" /><div class="insta-overlay"><i class="bi bi-instagram"></i></div></div>
+        <div class="insta-item"><img src="assets/products/002-indigo-floral-kurta-set/image-2.png" alt="Vrindaya look 2" class="insta-img" loading="lazy" /><div class="insta-overlay"><i class="bi bi-instagram"></i></div></div>
+        <div class="insta-item"><img src="assets/products/004-pastel-stripe-kurta/image-1.png"     alt="Vrindaya look 3" class="insta-img" loading="lazy" /><div class="insta-overlay"><i class="bi bi-instagram"></i></div></div>
+        <div class="insta-item"><img src="assets/products/006-navy-mandala-kurta/image-2.png"      alt="Vrindaya look 4" class="insta-img" loading="lazy" /><div class="insta-overlay"><i class="bi bi-instagram"></i></div></div>
+        <div class="insta-item"><img src="assets/products/007-purple-embroidered-dress/image-1.png" alt="Vrindaya look 5" class="insta-img" loading="lazy" /><div class="insta-overlay"><i class="bi bi-instagram"></i></div></div>
+        <div class="insta-item"><img src="assets/products/008-green-floral-kurta-set/image-1.png"  alt="Vrindaya look 6" class="insta-img" loading="lazy" /><div class="insta-overlay"><i class="bi bi-instagram"></i></div></div>
       </div>
     </div>
   </section>
 
-  <!-- All Products Section -->
-  <section id="products" class="section-pad products-section">
+  <!-- ⑦ All Products — section 03 -->
+  <section id="products" class="products-section">
     <div class="container-fluid products-container">
-      <div class="section-header-row">
-        <div>
-          <p class="section-label">The Full Edit</p>
-          <h2 class="section-title">All Products</h2>
-          <p class="section-subtitle">Browse, filter, and discover your next favourite look</p>
+      <div class="ed-header">
+        <div class="ed-header-left">
+          <div class="ed-eyebrow">
+            <span class="ed-line"></span>
+            <span class="ed-label-text">The Full Edit</span>
+          </div>
+          <h2 class="ed-title">All<br>Products</h2>
+        </div>
+        <div class="ed-header-right">
+          <span class="ed-num">03</span>
+          <p class="ed-desc">Browse, filter &amp; discover<br>your next favourite look.</p>
         </div>
       </div>
       <app-product-grid filter="all" />
@@ -122,26 +118,12 @@
 
 </main>
 
-<!-- Footer -->
 <app-footer />
 
-<!-- WhatsApp Floating Button -->
-<a
-  href="https://wa.me/919999999999"
-  class="floating-btn whatsapp-btn"
-  target="_blank"
-  rel="noopener noreferrer"
-  aria-label="Chat on WhatsApp"
->
+<a href="https://wa.me/919999999999" class="floating-btn whatsapp-btn" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
   <i class="bi bi-whatsapp"></i>
 </a>
 
-<!-- Scroll to Top Button -->
-<button
-  class="floating-btn scroll-top-btn"
-  [class.visible]="showScrollTop()"
-  (click)="scrollToTop()"
-  aria-label="Back to top"
->
+<button class="floating-btn scroll-top-btn" [class.visible]="showScrollTop()" (click)="scrollToTop()" aria-label="Back to top">
   <i class="bi bi-arrow-up"></i>
 </button>
