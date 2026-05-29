@@ -2,12 +2,15 @@ import { Injectable, signal, computed } from '@angular/core';
 import { Product } from '../models/product.model';
 import { PRODUCTS } from '../data/products';
 
+export type SortOrder = 'newest' | 'trending' | 'price-asc' | 'price-desc';
+
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly allProducts = PRODUCTS;
 
   readonly searchQuery = signal('');
   readonly selectedCategory = signal('All');
+  readonly sortOrder = signal<SortOrder>('newest');
 
   readonly trendingProducts = computed(() => this.allProducts.filter((p) => p.isTrending));
 
@@ -30,12 +33,30 @@ export class ProductService {
     return products;
   });
 
+  readonly sortedProducts = computed(() => {
+    const products = [...this.filteredProducts()];
+    switch (this.sortOrder()) {
+      case 'trending':
+        return products.sort((a, b) => (b.isTrending ? 1 : 0) - (a.isTrending ? 1 : 0));
+      case 'price-asc':
+        return products.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return products.sort((a, b) => b.price - a.price);
+      default:
+        return products.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0) || b.id - a.id);
+    }
+  });
+
   setCategory(category: string): void {
     this.selectedCategory.set(category);
   }
 
   setSearch(query: string): void {
     this.searchQuery.set(query);
+  }
+
+  setSortOrder(order: SortOrder): void {
+    this.sortOrder.set(order);
   }
 
   openProduct(product: Product): void {
