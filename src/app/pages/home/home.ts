@@ -4,11 +4,12 @@ import { Navbar } from '../../components/navbar/navbar';
 import { HeroBanner } from '../../components/hero-banner/hero-banner';
 import { Categories } from '../../components/categories/categories';
 import { ProductGrid } from '../../components/product-grid/product-grid';
+import { CommunityShowcase } from '../../components/community-showcase/community-showcase';
 import { Footer } from '../../components/footer/footer';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, Navbar, HeroBanner, Categories, ProductGrid, Footer],
+  imports: [CommonModule, Navbar, HeroBanner, Categories, ProductGrid, CommunityShowcase, Footer],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
