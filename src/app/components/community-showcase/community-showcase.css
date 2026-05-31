@@ -4,10 +4,10 @@
    No new colours, fonts, or radii introduced.
    ═══════════════════════════════════════════════════ */
 
-/* ── Section shell ── */
+/* ── Section shell — warm editorial cream ── */
 .community-section {
-  background: var(--white);
-  padding: 5rem 0;
+  background: var(--surface-warm);
+  padding: 5.5rem 0;
 }
 
 .community-container {
@@ -39,18 +39,18 @@
 
 .comm-eyebrow-line {
   display: inline-block;
-  width: 28px;
-  height: 1.5px;
-  background: var(--accent);
+  width: 24px;
+  height: 1px;
+  background: var(--text-muted);
   flex-shrink: 0;
 }
 
 .comm-eyebrow-text {
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-muted);
 }
 
 .comm-title {
@@ -223,15 +223,16 @@
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.875rem 2.25rem;
+  padding: 0.85rem 2.25rem;
   background: var(--primary);
   color: #fff;
   border: 1.5px solid var(--primary);
-  border-radius: var(--radius-pill);
+  border-radius: 4px;           /* match card radius — editorial square */
   font-family: var(--font-sans);
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: var(--transition);
 }
@@ -240,7 +241,7 @@
   background: var(--accent);
   border-color: var(--accent);
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(27, 122, 138, 0.45);
+  box-shadow: 0 8px 28px rgba(27, 122, 138, 0.3);
 }
 
 /* ═══════════════════

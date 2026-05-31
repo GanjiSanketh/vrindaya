@@ -8,11 +8,10 @@
   (keydown.enter)="openProduct($event)"
   [attr.aria-label]="'Discover ' + product().name"
 >
-  <!-- ── Image area ── -->
+  <!-- ══ Image area ══ -->
   <div class="product-img-wrap">
 
     @if (imageError()) {
-      <!-- Clean "image coming soon" — no random placeholder images -->
       <div class="img-coming-soon">
         <i class="bi bi-image"></i>
         <span>Coming Soon</span>
@@ -27,24 +26,24 @@
       />
     }
 
-    <!-- Badges -->
+    <!-- Style badges — top-left -->
     <div class="product-badges">
-      @if (product().isTrending)   { <span class="badge-trending">🔥 Trending</span> }
-      @if (product().isNew)        { <span class="badge-new">✦ New</span> }
-      @if (product().isBestseller) { <span class="badge-bestseller">⭐ Bestseller</span> }
+      @if (product().isBestseller) { <span class="badge-bestseller">Bestseller</span> }
+      @if (product().isNew)        { <span class="badge-new">New</span> }
+      @if (product().isTrending)   { <span class="badge-trending">Trending</span> }
     </div>
 
-    <!-- Save / bookmark -->
+    <!-- Save icon — top-right, appears on hover -->
     <button
       class="wishlist-btn"
       [class.wishlisted]="isWishlisted()"
       (click)="toggleWishlist($event)"
-      [attr.aria-label]="isWishlisted() ? 'Remove from saved looks' : 'Save to my looks'"
+      [attr.aria-label]="isWishlisted() ? 'Remove from saved looks' : 'Save look'"
     >
       <i class="bi" [class.bi-bookmark]="!isWishlisted()" [class.bi-bookmark-fill]="isWishlisted()"></i>
     </button>
 
-    <!-- Image dot nav (≤ 5 images) -->
+    <!-- Multi-image dots (≤ 5) -->
     @if (hasMultipleImages && !showProgressBar && !imageError()) {
       <div class="img-dots" (click)="$event.stopPropagation()">
         @for (img of dotImages; track $index) {
@@ -52,13 +51,13 @@
             class="img-dot"
             [class.active]="activeImageIndex() === $index"
             (click)="setImage($index)"
-            [attr.aria-label]="'View angle ' + ($index + 1)"
+            [attr.aria-label]="'Angle ' + ($index + 1)"
           ></button>
         }
       </div>
     }
 
-    <!-- Image progress bar (> 5 images) -->
+    <!-- Progress bar (> 5 images) -->
     @if (hasMultipleImages && showProgressBar && !imageError()) {
       <div class="img-progress-track" (click)="$event.stopPropagation()">
         <div class="img-progress-fill"
@@ -67,27 +66,17 @@
       </div>
     }
 
-    <!-- Image counter -->
-    @if (hasMultipleImages && !imageError()) {
-      <span class="img-counter">{{ activeImageIndex() + 1 }}/{{ images.length }}</span>
-    }
-
-    <!-- Hover overlay with name + CTA -->
+    <!-- Slide-up CTA — no info redundancy, just the Flipkart prompt -->
     <div class="product-overlay" [class.visible]="isHovered() && !imageError()">
-      <div class="overlay-info">
-        <span class="overlay-category">{{ product().category }}</span>
-        <h3 class="overlay-name">{{ product().name }}</h3>
-        <span class="overlay-price">&#8377;{{ product().price | number }}</span>
-      </div>
       <button class="overlay-cta" (click)="openProduct($event)">
-        <i class="bi bi-arrow-up-right"></i>
         View on Flipkart
+        <i class="bi bi-arrow-up-right"></i>
       </button>
     </div>
 
   </div>
 
-  <!-- ── Card info ── -->
+  <!-- ══ Info panel ══ -->
   <div class="product-info">
     <p class="product-category">{{ product().category }}</p>
     <h3 class="product-name" [title]="product().name">{{ product().name }}</h3>
@@ -96,9 +85,9 @@
       <div class="product-rating">
         <div class="stars-row">
           @for (star of stars; track star) {
-            @if (star <= fullStars)                              { <i class="bi bi-star-fill star filled"></i> }
-            @else if (star === fullStars + 1 && halfStar)       { <i class="bi bi-star-half star filled"></i> }
-            @else                                               { <i class="bi bi-star star"></i> }
+            @if (star <= fullStars)                        { <i class="bi bi-star-fill star filled"></i> }
+            @else if (star === fullStars + 1 && halfStar)  { <i class="bi bi-star-half star filled"></i> }
+            @else                                          { <i class="bi bi-star star"></i> }
           }
         </div>
         <span class="rating-value">{{ product().rating }}</span>
