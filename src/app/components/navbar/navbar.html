@@ -2,8 +2,8 @@
 <div class="ann-bar">
   <div class="ann-inner">
     <span><i class="bi bi-stars"></i>&nbsp;New Collection SS'25 Now Live</span>
-    <span class="ann-sep">|</span>
-    <span><i class="bi bi-gem"></i>&nbsp;Premium Indian Ethnic Wear</span>
+    <span class="ann-sep d-none d-sm-inline">|</span>
+    <span class="d-none d-sm-inline"><i class="bi bi-gem"></i>&nbsp;Premium Indian Ethnic Wear</span>
     <span class="ann-sep d-none d-md-inline">|</span>
     <span class="d-none d-md-inline"><i class="bi bi-arrow-up-right-square"></i>&nbsp;Discover on Flipkart</span>
   </div>
@@ -13,62 +13,61 @@
 <header class="vrindaya-nav" [class.scrolled]="scrolled()">
   <div class="nav-inner">
 
-    <!-- Left: Category links (desktop) -->
-    <nav class="nav-cats d-none d-xl-flex" aria-label="Product categories">
+    <!-- LEFT: desktop category links -->
+    <nav class="nav-left d-none d-xl-flex" aria-label="Main categories">
       <a class="nav-cat" (click)="scrollTo('hero')" role="button">Home</a>
-      @for (cat of categories.slice(1, 5); track cat.id) {
-        <a class="nav-cat" [class.active]="selectedCategory() === cat.id"
-           (click)="selectAndScroll(cat.id)" role="button">{{ cat.label }}</a>
+      @for (cat of leftCats; track cat.id) {
+        <a class="nav-cat"
+           [class.nav-cat-active]="selectedCategory() === cat.id"
+           (click)="selectAndScroll(cat.id)"
+           role="button">{{ cat.label }}</a>
       }
     </nav>
 
-    <!-- Center: Logo -->
-    <a class="nav-logo-block" (click)="scrollTo('hero')" role="button" aria-label="Vrindaya home">
-      <img src="assets/logo.png" alt="Vrindaya" class="nav-logo-img" />
-      <div class="nav-logo-text">
-        <span class="nav-brand-name">VRINDAYA</span>
-        <span class="nav-brand-sub">WOMEN</span>
-      </div>
+    <!-- Mobile: hamburger in left slot -->
+    <button class="nav-hamburger d-xl-none" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+      <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
+      <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
+      <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
+    </button>
+
+    <!-- CENTER: logo (always) -->
+    <a class="nav-logo-wrap" (click)="scrollTo('hero')" role="button" aria-label="Vrindaya home">
+      <img src="assets/logo.svg" alt="Vrindaya" class="nav-logo-img" />
+      <span class="nav-brand-label">VRINDAYA</span>
     </a>
 
-    <!-- Right: More cats + Search + Icons -->
-    <div class="nav-right">
-      <nav class="nav-cats-right d-none d-xl-flex" aria-label="More categories">
-        @for (cat of categories.slice(5); track cat.id) {
-          <a class="nav-cat" [class.active]="selectedCategory() === cat.id"
-             (click)="selectAndScroll(cat.id)" role="button">{{ cat.label }}</a>
-        }
-      </nav>
-
-      <!-- Search toggle -->
-      <button class="nav-icon-btn" (click)="toggleSearch()" aria-label="Search">
-        <i class="bi bi-search"></i>
-      </button>
-
-      <!-- Saved -->
-      <button class="nav-icon-btn d-none d-sm-flex" aria-label="Saved looks">
-        <i class="bi bi-bookmark"></i>
-      </button>
-
-      <!-- Cart (decorative — all purchases happen on Flipkart) -->
-      <div class="nav-cart-wrap d-none d-sm-flex">
-        <button class="nav-icon-btn" aria-label="View cart on Flipkart">
+    <!-- RIGHT: desktop remaining categories + icons -->
+    <nav class="nav-right d-none d-xl-flex" aria-label="More categories">
+      @for (cat of rightCats; track cat.id) {
+        <a class="nav-cat"
+           [class.nav-cat-active]="selectedCategory() === cat.id"
+           (click)="selectAndScroll(cat.id)"
+           role="button">{{ cat.label }}</a>
+      }
+      <div class="nav-icons">
+        <button class="nav-icon-btn" (click)="toggleSearch()" aria-label="Search">
+          <i class="bi bi-search"></i>
+        </button>
+        <button class="nav-icon-btn" aria-label="Saved looks">
+          <i class="bi bi-bookmark"></i>
+        </button>
+        <button class="nav-icon-btn" aria-label="View on Flipkart">
           <i class="bi bi-bag"></i>
         </button>
-        <span class="nav-cart-dot"></span>
       </div>
+    </nav>
 
-      <!-- Mobile menu -->
-      <button class="nav-icon-btn nav-hamburger d-xl-none" (click)="toggleMobileMenu()" aria-label="Toggle menu">
-        <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
-        <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
-        <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
+    <!-- Mobile: right-side actions -->
+    <div class="nav-mobile-right d-flex d-xl-none">
+      <button class="nav-icon-btn" (click)="toggleSearch()" aria-label="Search">
+        <i class="bi bi-search"></i>
       </button>
     </div>
 
   </div>
 
-  <!-- Search Bar (drops below nav) -->
+  <!-- Collapsible Search Bar -->
   @if (searchOpen()) {
     <div class="nav-search-drop">
       <div class="search-inner">
@@ -98,16 +97,17 @@
     <div class="mobile-drawer">
       <div class="drawer-links">
         <a class="drawer-link" (click)="scrollTo('hero')" role="button">Home</a>
-        <a class="drawer-link drawer-link-highlight" (click)="scrollTo('new-arrivals')" role="button">✦ New Arrivals</a>
+        <a class="drawer-link drawer-highlight" (click)="scrollTo('new-arrivals')" role="button">✦ New Arrivals</a>
         <a class="drawer-link" (click)="scrollTo('trending')" role="button">Trending</a>
-        <a class="drawer-link" (click)="scrollTo('products')" role="button">Discover All</a>
+        <a class="drawer-link" (click)="scrollTo('products')" role="button">All Styles</a>
         <a class="drawer-link" (click)="scrollTo('footer')" role="button">Our Story</a>
       </div>
       <div class="drawer-cats">
         <p class="drawer-cats-label">Browse by Category</p>
         <div class="drawer-chips">
           @for (cat of categories; track cat.id) {
-            <button class="drawer-chip" [class.active]="selectedCategory() === cat.id"
+            <button class="drawer-chip"
+                    [class.active]="selectedCategory() === cat.id"
                     (click)="selectAndScroll(cat.id)">
               {{ cat.icon }} {{ cat.label }}
             </button>

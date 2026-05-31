@@ -60,7 +60,34 @@
   z-index: 3;
 }
 
-/* Bestseller badge is in styles.css as .badge-bestseller */
+/* ── Image coming-soon placeholder (no external images) ── */
+.img-coming-soon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-warm);
+  color: var(--text-muted);
+  gap: 0.625rem;
+}
+
+.img-coming-soon i {
+  font-size: 2.25rem;
+  opacity: 0.35;
+  color: var(--accent);
+}
+
+.img-coming-soon span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* Bestseller badge */
 .badge-bestseller {
   background: linear-gradient(135deg, var(--gold), #a07820);
   color: #fff;

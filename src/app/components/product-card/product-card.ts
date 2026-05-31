@@ -4,7 +4,6 @@ import { Product } from '../../models/product.model';
 import { ProductService } from '../../shared/product.service';
 import { WishlistService } from '../../shared/wishlist.service';
 
-const PLACEHOLDER = 'https://picsum.photos/seed/vrindaya-placeholder/600/750';
 const CYCLE_MS = 1600;
 
 @Component({
@@ -22,6 +21,8 @@ export class ProductCard implements OnDestroy {
 
   readonly activeImageIndex = signal(0);
   readonly isHovered = signal(false);
+  /** True when the currently displayed image fails to load */
+  readonly imageError = signal(false);
 
   private cycleTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -47,7 +48,7 @@ export class ProductCard implements OnDestroy {
     return this.images.length > 5;
   }
 
-  /* ── Rating helpers ── */
+  /* ── Rating ── */
   get fullStars(): number {
     return Math.floor(this.product().rating ?? 0);
   }
@@ -69,30 +70,45 @@ export class ProductCard implements OnDestroy {
   onCardHover(): void {
     this.isHovered.set(true);
     if (!this.hasMultipleImages || !isPlatformBrowser(this.platformId)) return;
-    this.activeImageIndex.set(1 % this.images.length);
+    this.goToImage(1 % this.images.length);
     this.cycleTimer = setInterval(() => {
-      this.activeImageIndex.update((i) => (i + 1) % this.images.length);
+      this.goToImage((this.activeImageIndex() + 1) % this.images.length);
     }, CYCLE_MS);
   }
 
   onCardLeave(): void {
     this.isHovered.set(false);
-    this.activeImageIndex.set(0);
+    this.goToImage(0);
     this.clearCycle();
   }
 
   setImage(index: number): void {
-    this.activeImageIndex.set(index);
+    this.goToImage(index);
     this.clearCycle();
     if (!isPlatformBrowser(this.platformId)) return;
     this.cycleTimer = setInterval(() => {
-      this.activeImageIndex.update((i) => (i + 1) % this.images.length);
+      this.goToImage((this.activeImageIndex() + 1) % this.images.length);
     }, CYCLE_MS);
   }
 
-  handleImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    if (img.src !== PLACEHOLDER) img.src = PLACEHOLDER;
+  /**
+   * Central method that changes the active image index and resets the error
+   * state so the new image gets a fresh load attempt.
+   */
+  private goToImage(index: number): void {
+    if (index !== this.activeImageIndex()) {
+      this.imageError.set(false); // reset error for the new image
+    }
+    this.activeImageIndex.set(index);
+  }
+
+  /**
+   * Called when an <img> fails to load.
+   * Instead of falling back to a random placeholder, we show a
+   * branded "Image Coming Soon" block.
+   */
+  handleImageError(): void {
+    this.imageError.set(true);
   }
 
   openProduct(event: Event): void {

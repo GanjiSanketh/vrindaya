@@ -22,6 +22,11 @@ export class Navbar {
 
   selectedCategory = this.productService.selectedCategory;
 
+  /** Left nav: Home + first 4 categories */
+  get leftCats() { return this.categories.slice(1, 5); }
+  /** Right nav: remaining categories */
+  get rightCats() { return this.categories.slice(5); }
+
   @HostListener('window:scroll')
   onScroll(): void {
     if (isPlatformBrowser(this.platformId)) {

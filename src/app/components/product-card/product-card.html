@@ -8,17 +8,33 @@
   (keydown.enter)="openProduct($event)"
   [attr.aria-label]="'Discover ' + product().name"
 >
+  <!-- ── Image area ── -->
   <div class="product-img-wrap">
-    <img [src]="activeImage" [alt]="product().name" class="product-img" loading="lazy" (error)="handleImageError($event)" />
 
-    <!-- Style badges -->
+    @if (imageError()) {
+      <!-- Clean "image coming soon" — no random placeholder images -->
+      <div class="img-coming-soon">
+        <i class="bi bi-image"></i>
+        <span>Coming Soon</span>
+      </div>
+    } @else {
+      <img
+        [src]="activeImage"
+        [alt]="product().name"
+        class="product-img"
+        loading="lazy"
+        (error)="handleImageError()"
+      />
+    }
+
+    <!-- Badges -->
     <div class="product-badges">
-      @if (product().isTrending) { <span class="badge-trending">🔥 Trending</span> }
-      @if (product().isNew) { <span class="badge-new">✦ New</span> }
+      @if (product().isTrending)   { <span class="badge-trending">🔥 Trending</span> }
+      @if (product().isNew)        { <span class="badge-new">✦ New</span> }
       @if (product().isBestseller) { <span class="badge-bestseller">⭐ Bestseller</span> }
     </div>
 
-    <!-- Save to lookbook -->
+    <!-- Save / bookmark -->
     <button
       class="wishlist-btn"
       [class.wishlisted]="isWishlisted()"
@@ -28,28 +44,39 @@
       <i class="bi" [class.bi-bookmark]="!isWishlisted()" [class.bi-bookmark-fill]="isWishlisted()"></i>
     </button>
 
-    <!-- Multi-image dots -->
-    @if (hasMultipleImages && !showProgressBar) {
+    <!-- Image dot nav (≤ 5 images) -->
+    @if (hasMultipleImages && !showProgressBar && !imageError()) {
       <div class="img-dots" (click)="$event.stopPropagation()">
         @for (img of dotImages; track $index) {
-          <button class="img-dot" [class.active]="activeImageIndex() === $index" (click)="setImage($index)" [attr.aria-label]="'View angle ' + ($index + 1)"></button>
+          <button
+            class="img-dot"
+            [class.active]="activeImageIndex() === $index"
+            (click)="setImage($index)"
+            [attr.aria-label]="'View angle ' + ($index + 1)"
+          ></button>
         }
       </div>
     }
-    @if (hasMultipleImages && showProgressBar) {
+
+    <!-- Image progress bar (> 5 images) -->
+    @if (hasMultipleImages && showProgressBar && !imageError()) {
       <div class="img-progress-track" (click)="$event.stopPropagation()">
-        <div class="img-progress-fill" [style.width.%]="((activeImageIndex() + 1) / images.length) * 100"></div>
+        <div class="img-progress-fill"
+             [style.width.%]="((activeImageIndex() + 1) / images.length) * 100">
+        </div>
       </div>
     }
-    @if (hasMultipleImages) {
+
+    <!-- Image counter -->
+    @if (hasMultipleImages && !imageError()) {
       <span class="img-counter">{{ activeImageIndex() + 1 }}/{{ images.length }}</span>
     }
 
-    <!-- Hover discovery overlay -->
-    <div class="product-overlay" [class.visible]="isHovered()">
+    <!-- Hover overlay with name + CTA -->
+    <div class="product-overlay" [class.visible]="isHovered() && !imageError()">
       <div class="overlay-info">
-        <h3 class="overlay-name">{{ product().name }}</h3>
         <span class="overlay-category">{{ product().category }}</span>
+        <h3 class="overlay-name">{{ product().name }}</h3>
         <span class="overlay-price">&#8377;{{ product().price | number }}</span>
       </div>
       <button class="overlay-cta" (click)="openProduct($event)">
@@ -57,24 +84,27 @@
         View on Flipkart
       </button>
     </div>
+
   </div>
 
-  <!-- Card info -->
+  <!-- ── Card info ── -->
   <div class="product-info">
     <p class="product-category">{{ product().category }}</p>
     <h3 class="product-name" [title]="product().name">{{ product().name }}</h3>
+
     @if (product().rating) {
       <div class="product-rating">
         <div class="stars-row">
           @for (star of stars; track star) {
-            @if (star <= fullStars) { <i class="bi bi-star-fill star filled"></i> }
-            @else if (star === fullStars + 1 && halfStar) { <i class="bi bi-star-half star filled"></i> }
-            @else { <i class="bi bi-star star"></i> }
+            @if (star <= fullStars)                              { <i class="bi bi-star-fill star filled"></i> }
+            @else if (star === fullStars + 1 && halfStar)       { <i class="bi bi-star-half star filled"></i> }
+            @else                                               { <i class="bi bi-star star"></i> }
           }
         </div>
         <span class="rating-value">{{ product().rating }}</span>
       </div>
     }
+
     <div class="product-price-row">
       <span class="price-current">&#8377;{{ product().price | number }}</span>
       @if (product().originalPrice) {

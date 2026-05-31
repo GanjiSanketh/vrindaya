@@ -257,11 +257,13 @@
   .pg-count { margin-left: 0; }
 }
 
+/* Tablet: 2 columns */
 @media (max-width: 768px) {
   .product-grid-wrapper { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .sort-pill { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
 }
 
-@media (max-width: 400px) {
-  .product-grid-wrapper { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-  .sort-pill { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
+/* Mobile: 1 column */
+@media (max-width: 576px) {
+  .product-grid-wrapper { grid-template-columns: 1fr; gap: 0.875rem; }
 }

@@ -76,7 +76,7 @@ export const PRODUCTS: Product[] = [
     category: 'Sets',
     image: p('005-fuchsia-floral-kurta-set', 7, 'png')[0],
     images: p('005-fuchsia-floral-kurta-set', 7, 'png'),
-    flipkartUrl: 'https://www.flipkart.com/search?q=fuchsia+floral+print+kurta+set+dupatta',
+    flipkartUrl: 'https://www.flipkart.com/vrindaya-women-ethnic-top-pant-dupatta-set/p/itm87a8720910488?pid=ETHHNGFSWBXWPZRN&lid=LSTETHHNGFSWBXWPZRN73FHCZ&marketplace=FLIPKART&q=vrindaya+women&store=clo%2Fcfv%2Fitg%2Ftys&srno=s_1_1&otracker=AS_QueryStore_OrganicAutoSuggest_1_9_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_9_na_na_na&fm=search-autosuggest&iid=cad068c4-3247-4394-94a4-020eca66dfe8.ETHHNGFSWBXWPZRN.SEARCH&ppt=sp&ppn=sp&ssid=4ub5i0ezcg0000001780232686473&qH=51a2a64840ab2de1&ov_redirect=true',
     isTrending: true,
     isBestseller: true,
     rating: 4.9,
