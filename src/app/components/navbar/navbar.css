@@ -115,6 +115,39 @@
   background: var(--teal-xlight);
 }
 
+/* "New Arrivals" highlight pill */
+.nav-link-highlight {
+  color: var(--gold) !important;
+  font-weight: 600 !important;
+  position: relative;
+}
+
+.nav-link-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0.875rem;
+  right: 0.875rem;
+  height: 1.5px;
+  background: var(--gold);
+  border-radius: 1px;
+  opacity: 0.6;
+}
+
+.vrindaya-nav.scrolled .nav-link-highlight {
+  color: var(--accent) !important;
+}
+
+.vrindaya-nav.scrolled .nav-link-highlight::after {
+  background: var(--accent);
+}
+
+/* Mobile highlight */
+.mobile-nav-links .highlight a {
+  color: var(--gold);
+  font-weight: 600;
+}
+
 /* Search */
 .nav-search {
   flex: 0 0 280px;
@@ -166,6 +199,10 @@
 .vrindaya-nav.scrolled .search-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(27, 122, 138, 0.12);
+}
+
+.vrindaya-nav.scrolled .search-input::placeholder {
+  color: var(--text-muted);
 }
 
 .search-input::placeholder {

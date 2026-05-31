@@ -60,6 +60,18 @@
   z-index: 3;
 }
 
+/* Bestseller badge is in styles.css as .badge-bestseller */
+.badge-bestseller {
+  background: linear-gradient(135deg, var(--gold), #a07820);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+}
+
 /* ── Wishlist button ── */
 .wishlist-btn {
   position: absolute;

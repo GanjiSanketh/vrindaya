@@ -2,7 +2,7 @@
   <div class="container-fluid nav-container">
 
     <!-- Brand -->
-    <a class="nav-brand" (click)="scrollToSection('hero')" role="button">
+    <a class="nav-brand" (click)="scrollToSection('hero')" role="button" aria-label="Vrindaya home">
       <img src="assets/logo.png" alt="Vrindaya" class="nav-logo" />
       <div class="brand-text">
         <span class="brand-name">VRINDAYA</span>
@@ -10,13 +10,14 @@
       </div>
     </a>
 
-    <!-- Desktop Nav Links -->
-    <ul class="nav-links d-none d-lg-flex">
+    <!-- Desktop Nav -->
+    <ul class="nav-links d-none d-lg-flex" role="navigation">
       <li><a class="nav-link-item" (click)="scrollToSection('hero')" role="button">Home</a></li>
-      <li><a class="nav-link-item" (click)="scrollToSection('new-arrivals')" role="button">New Arrivals</a></li>
+      <li><a class="nav-link-item" (click)="scrollToSection('categories')" role="button">Collections</a></li>
+      <li><a class="nav-link-item nav-link-highlight" (click)="scrollToSection('new-arrivals')" role="button">New Arrivals</a></li>
       <li><a class="nav-link-item" (click)="scrollToSection('trending')" role="button">Trending</a></li>
       <li><a class="nav-link-item" (click)="scrollToSection('products')" role="button">All Products</a></li>
-      <li><a class="nav-link-item" (click)="scrollToSection('footer')" role="button">About</a></li>
+      <li><a class="nav-link-item" (click)="scrollToSection('footer')" role="button">About Us</a></li>
     </ul>
 
     <!-- Desktop Search -->
@@ -26,13 +27,14 @@
         <input
           type="text"
           class="search-input"
-          placeholder="Search kurtas, sarees..."
+          placeholder="Search kurtas, sarees, sets..."
           [(ngModel)]="searchInput"
           (input)="onSearchInput()"
           (keydown.enter)="scrollToSection('products')"
+          aria-label="Search products"
         />
         @if (searchInput) {
-          <button class="search-clear" (click)="searchInput = ''; onSearchInput()">
+          <button class="search-clear" (click)="searchInput = ''; onSearchInput()" aria-label="Clear search">
             <i class="bi bi-x"></i>
           </button>
         }
@@ -50,7 +52,7 @@
       </button>
     </div>
 
-    <!-- Mobile Actions -->
+    <!-- Mobile -->
     <div class="mobile-actions d-flex d-lg-none">
       <button class="nav-icon-btn" (click)="toggleMobileSearch()" aria-label="Search">
         <i class="bi bi-search"></i>
@@ -58,7 +60,7 @@
       <button class="nav-icon-btn" aria-label="Cart">
         <i class="bi bi-bag"></i>
       </button>
-      <button class="nav-icon-btn hamburger" (click)="toggleMobileMenu()" aria-label="Menu">
+      <button class="nav-icon-btn hamburger" (click)="toggleMobileMenu()" aria-label="Toggle menu">
         <span class="hamburger-line" [class.open]="mobileMenuOpen()"></span>
         <span class="hamburger-line" [class.open]="mobileMenuOpen()"></span>
         <span class="hamburger-line" [class.open]="mobileMenuOpen()"></span>
@@ -77,39 +79,36 @@
             id="mobile-search-input"
             type="text"
             class="search-input"
-            placeholder="Search kurtas, sarees..."
+            placeholder="Search kurtas, sarees, sets..."
             [(ngModel)]="searchInput"
             (input)="onSearchInput()"
             (keydown.enter)="scrollToSection('products')"
+            aria-label="Search products"
           />
           @if (searchInput) {
-            <button class="search-clear" (click)="searchInput = ''; onSearchInput()">
-              <i class="bi bi-x"></i>
-            </button>
+            <button class="search-clear" (click)="searchInput = ''; onSearchInput()"><i class="bi bi-x"></i></button>
           }
         </div>
       </div>
     </div>
   }
 
-  <!-- Mobile Menu Drawer -->
+  <!-- Mobile Menu -->
   @if (mobileMenuOpen()) {
     <div class="mobile-menu">
       <ul class="mobile-nav-links">
         <li><a (click)="scrollToSection('hero')" role="button">Home</a></li>
-        <li><a (click)="scrollToSection('new-arrivals')" role="button">New Arrivals</a></li>
+        <li><a (click)="scrollToSection('categories')" role="button">Collections</a></li>
+        <li class="highlight"><a (click)="scrollToSection('new-arrivals')" role="button">✦ New Arrivals</a></li>
         <li><a (click)="scrollToSection('trending')" role="button">Trending</a></li>
         <li><a (click)="scrollToSection('products')" role="button">All Products</a></li>
+        <li><a (click)="scrollToSection('footer')" role="button">About Us</a></li>
       </ul>
       <div class="mobile-categories">
         <p class="mobile-cat-label">Shop by Category</p>
         <div class="mobile-cat-chips">
           @for (cat of categories; track cat.id) {
-            <button
-              class="cat-chip"
-              [class.active]="selectedCategory() === cat.id"
-              (click)="selectCategory(cat.id)"
-            >
+            <button class="cat-chip" [class.active]="selectedCategory() === cat.id" (click)="selectCategory(cat.id)">
               {{ cat.icon }} {{ cat.name }}
             </button>
           }

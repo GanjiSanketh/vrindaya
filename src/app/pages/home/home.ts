@@ -2,6 +2,7 @@ import { Component, HostListener, inject, OnInit, signal, PLATFORM_ID } from '@a
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Navbar } from '../../components/navbar/navbar';
 import { HeroBanner } from '../../components/hero-banner/hero-banner';
+import { TrustBar } from '../../components/trust-bar/trust-bar';
 import { Categories } from '../../components/categories/categories';
 import { ProductGrid } from '../../components/product-grid/product-grid';
 import { CommunityShowcase } from '../../components/community-showcase/community-showcase';
@@ -9,7 +10,7 @@ import { Footer } from '../../components/footer/footer';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, Navbar, HeroBanner, Categories, ProductGrid, CommunityShowcase, Footer],
+  imports: [CommonModule, Navbar, HeroBanner, TrustBar, Categories, ProductGrid, CommunityShowcase, Footer],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

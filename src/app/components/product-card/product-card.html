@@ -14,6 +14,7 @@
     <div class="product-badges">
       @if (product().isTrending) { <span class="badge-trending">🔥 Trending</span> }
       @if (product().isNew) { <span class="badge-new">✦ New</span> }
+      @if (product().isBestseller) { <span class="badge-bestseller">⭐ Bestseller</span> }
     </div>
 
     <button class="wishlist-btn" [class.wishlisted]="isWishlisted()" (click)="toggleWishlist($event)" [attr.aria-label]="isWishlisted() ? 'Remove from wishlist' : 'Add to wishlist'">

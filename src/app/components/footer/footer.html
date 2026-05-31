@@ -1,18 +1,21 @@
 <footer id="footer" class="vrindaya-footer">
+
+  <!-- ── Top: Brand story + links ── -->
   <div class="footer-top">
     <div class="container-fluid footer-container">
       <div class="row g-5">
 
-        <!-- Brand Column -->
-        <div class="col-12 col-md-6 col-lg-4">
+        <!-- Brand story -->
+        <div class="col-12 col-lg-4">
           <div class="footer-brand">
             <div class="footer-logo">
               <img src="assets/logo.png" alt="Vrindaya" class="footer-logo-img" />
               <span class="brand-name">VRINDAYA</span>
             </div>
-            <p class="footer-tagline">
-              Premium Indian ethnic fashion, curated with love. Discover the artistry of Indian
-              craftsmanship in every thread.
+            <p class="footer-story">
+              Born from a love of Indian craftsmanship and modern aesthetics,
+              Vrindaya curates premium ethnic wear that celebrates every woman's
+              grace — from everyday elegance to festive grandeur.
             </p>
             <div class="social-links">
               <a href="#" class="social-link" aria-label="Instagram">
@@ -24,6 +27,9 @@
               <a href="#" class="social-link" aria-label="Pinterest">
                 <i class="bi bi-pinterest"></i>
               </a>
+              <a href="#" class="social-link" aria-label="YouTube">
+                <i class="bi bi-youtube"></i>
+              </a>
               <a href="https://wa.me/919999999999" class="social-link whatsapp" target="_blank" rel="noopener" aria-label="WhatsApp">
                 <i class="bi bi-whatsapp"></i>
               </a>
@@ -31,27 +37,28 @@
           </div>
         </div>
 
-        <!-- Quick Links -->
-        <div class="col-6 col-lg-2">
-          <h4 class="footer-heading">Quick Links</h4>
+        <!-- Collections -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <h4 class="footer-heading">Collections</h4>
           <ul class="footer-links">
-            <li><a (click)="scrollToSection('hero')" role="button">Home</a></li>
-            <li><a (click)="scrollToSection('trending')" role="button">Trending</a></li>
             <li><a (click)="scrollToSection('new-arrivals')" role="button">New Arrivals</a></li>
-            <li><a (click)="scrollToSection('products')" role="button">All Products</a></li>
+            <li><a (click)="scrollToSection('trending')" role="button">Trending Now</a></li>
+            <li><a (click)="scrollToSection('categories')" role="button">Kurtas</a></li>
+            <li><a (click)="scrollToSection('categories')" role="button">Sarees</a></li>
+            <li><a (click)="scrollToSection('categories')" role="button">Lehengas</a></li>
+            <li><a (click)="scrollToSection('categories')" role="button">Sets & Co-ords</a></li>
           </ul>
         </div>
 
-        <!-- Categories -->
-        <div class="col-6 col-lg-2">
-          <h4 class="footer-heading">Categories</h4>
+        <!-- Quick Links -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <h4 class="footer-heading">Quick Links</h4>
           <ul class="footer-links">
-            <li><a href="#">Kurtas</a></li>
-            <li><a href="#">Sarees</a></li>
-            <li><a href="#">Lehengas</a></li>
-            <li><a href="#">Dresses</a></li>
-            <li><a href="#">Sets</a></li>
-            <li><a href="#">Anarkalis</a></li>
+            <li><a (click)="scrollToSection('hero')" role="button">Home</a></li>
+            <li><a (click)="scrollToSection('products')" role="button">All Products</a></li>
+            <li><a (click)="scrollToSection('community')" role="button">The Vrindaya Look</a></li>
+            <li><a href="#" role="button">About Us</a></li>
+            <li><a href="#" role="button">Contact Us</a></li>
           </ul>
         </div>
 
@@ -59,16 +66,11 @@
         <div class="col-12 col-lg-4">
           <h4 class="footer-heading">Stay in the Loop</h4>
           <p class="footer-text">
-            Get early access to new arrivals, exclusive deals, and style inspiration.
+            Get early access to new arrivals, exclusive deals, and style inspiration — straight to your inbox.
           </p>
           <div class="newsletter-form">
-            <input
-              type="email"
-              class="newsletter-input"
-              placeholder="Enter your email..."
-              aria-label="Email for newsletter"
-            />
-            <button class="newsletter-btn" type="button">
+            <input type="email" class="newsletter-input" placeholder="Enter your email..." aria-label="Newsletter email" />
+            <button class="newsletter-btn" type="button" aria-label="Subscribe">
               <i class="bi bi-send"></i>
             </button>
           </div>
@@ -76,26 +78,47 @@
             <i class="bi bi-shield-check"></i>
             No spam, ever. Unsubscribe anytime.
           </p>
+
+          <!-- Trust mini-bar -->
+          <div class="footer-trust-row">
+            <div class="footer-trust-item">
+              <i class="bi bi-gem"></i>
+              <span>Premium Quality</span>
+            </div>
+            <div class="footer-trust-item">
+              <i class="bi bi-award"></i>
+              <span>Curated Designs</span>
+            </div>
+            <div class="footer-trust-item">
+              <i class="bi bi-bag-check"></i>
+              <span>Easy Returns</span>
+            </div>
+          </div>
         </div>
 
       </div>
     </div>
   </div>
 
-  <!-- Footer Bottom -->
+  <!-- ── Bottom bar ── -->
   <div class="footer-bottom">
     <div class="container-fluid footer-container">
       <div class="footer-bottom-row">
         <p class="copyright">
-          &copy; {{ currentYear }} Vrindaya. All rights reserved. Made with
-          <i class="bi bi-heart-fill"></i> in India.
+          &copy; {{ currentYear }} Vrindaya. All rights reserved.
+          Made with <i class="bi bi-heart-fill"></i> in India.
         </p>
         <div class="footer-bottom-links">
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Service</a>
           <a href="#">Shipping Policy</a>
+          <a href="#">Returns</a>
         </div>
+        <button class="footer-back-top" (click)="scrollToTop()" aria-label="Back to top">
+          <i class="bi bi-arrow-up"></i>
+        </button>
       </div>
     </div>
   </div>
+
 </footer>

@@ -9,6 +9,7 @@ export interface Product {
   flipkartUrl: string;
   isTrending?: boolean;
   isNew?: boolean;
+  isBestseller?: boolean;
   rating?: number;
   discount?: number;
   description?: string;
