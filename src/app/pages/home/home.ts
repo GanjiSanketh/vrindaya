@@ -33,4 +33,10 @@ export class Home implements OnInit {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
+
+  scrollToSection(id: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 }

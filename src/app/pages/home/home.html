@@ -31,21 +31,22 @@
     </div>
   </section>
 
-  <!-- ④ Promo Banner -->
+  <!-- ④ Editorial Feature Banner -->
   <div class="promo-banner">
     <div class="container-fluid promo-container">
       <div class="promo-inner">
         <div class="promo-content">
-          <p class="promo-eyebrow">Limited Time Offer</p>
+          <p class="promo-eyebrow">The New Season Edit</p>
           <h2 class="promo-title">
-            Up to <span>50% OFF</span><br />on New Arrivals
+            Curated for the<br /><span>Modern Indian Woman</span>
           </h2>
           <p class="promo-text">
-            Shop the latest ethnic fashion at unbeatable prices.
-            Tap any product to buy directly on Flipkart.
+            Each piece in the Vrindaya collection is handpicked for its craft,
+            colour, and character. Discover styles that move with you — from
+            everyday grace to festive grandeur.
           </p>
-          <button class="promo-cta-btn">
-            Grab the Deal <i class="bi bi-arrow-right"></i>
+          <button class="promo-cta-btn" (click)="scrollToSection('categories')">
+            Explore the Edit <i class="bi bi-arrow-right"></i>
           </button>
         </div>
         <div class="promo-visuals">
@@ -81,7 +82,7 @@
   <!-- ⑥ Community Showcase -->
   <app-community-showcase />
 
-  <!-- ⑦ All Products — section 03 -->
+  <!-- ⑦ Discover All — section 03 -->
   <section id="products" class="products-section">
     <div class="container-fluid products-container">
       <div class="ed-header">
@@ -90,11 +91,11 @@
             <span class="ed-line"></span>
             <span class="ed-label-text">The Full Edit</span>
           </div>
-          <h2 class="ed-title">All<br>Products</h2>
+          <h2 class="ed-title">Discover<br>All Styles</h2>
         </div>
         <div class="ed-header-right">
           <span class="ed-num">03</span>
-          <p class="ed-desc">Browse, filter &amp; discover<br>your next favourite look.</p>
+          <p class="ed-desc">Explore, filter &amp; find<br>your next signature look.</p>
         </div>
       </div>
       <app-product-grid filter="all" />
