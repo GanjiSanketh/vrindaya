@@ -2,100 +2,57 @@
 
 <main>
 
-  <!-- ① Hero -->
+  <!-- Hero — full photo + glassmorphism card -->
   <app-hero-banner />
 
-  <!-- ① Trust bar — immediately below hero -->
+  <!-- Trust bar -->
   <app-trust-bar />
 
-  <!-- ② Categories -->
-  <app-categories />
-
-  <!-- ③ Trending — section 01 -->
-  <section id="trending" class="products-section">
-    <div class="container-fluid products-container">
-      <div class="ed-header">
-        <div class="ed-header-left">
-          <div class="ed-eyebrow">
-            <span class="ed-line"></span>
-            <span class="ed-label-text">Hot Right Now</span>
-          </div>
-          <h2 class="ed-title">Trending<br>Products</h2>
-        </div>
-        <div class="ed-header-right">
-          <span class="ed-num">01</span>
-          <p class="ed-desc">Our most-loved styles,<br>flying off the shelves.</p>
-        </div>
+  <!-- Shop Our Favorites (trending) -->
+  <section id="trending" class="home-section">
+    <div class="container-fluid home-container">
+      <div class="home-section-header">
+        <h2 class="home-section-title">Shop Our Favorites</h2>
+        <button class="home-view-all" (click)="scrollToSection('products')">
+          VIEW ALL <i class="bi bi-arrow-right"></i>
+        </button>
       </div>
       <app-product-grid filter="trending" />
     </div>
   </section>
 
-  <!-- ④ Editorial Feature Banner -->
-  <div class="promo-banner">
-    <div class="container-fluid promo-container">
-      <div class="promo-inner">
-        <div class="promo-content">
-          <p class="promo-eyebrow">The New Season Edit</p>
-          <h2 class="promo-title">
-            Curated for the<br /><span>Modern Indian Woman</span>
-          </h2>
-          <p class="promo-text">
-            Each piece in the Vrindaya collection is handpicked for its craft,
-            colour, and character. Discover styles that move with you — from
-            everyday grace to festive grandeur.
-          </p>
-          <button class="promo-cta-btn" (click)="scrollToSection('categories')">
-            Explore the Edit <i class="bi bi-arrow-right"></i>
-          </button>
-        </div>
-        <div class="promo-visuals">
-          <div class="promo-img-stack">
-            <img src="assets/products/005-fuchsia-floral-kurta-set/image-1.png" alt="Fuchsia floral set" class="promo-img promo-img-back" />
-            <img src="assets/products/003-black-gold-embroidered-kurti/image-1.png" alt="Black gold kurti" class="promo-img promo-img-front" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Category Color Grid -->
+  <app-categories />
 
-  <!-- ⑤ New Arrivals — section 02 -->
-  <section id="new-arrivals" class="products-section products-section-alt">
-    <div class="container-fluid products-container">
-      <div class="ed-header">
-        <div class="ed-header-left">
-          <div class="ed-eyebrow">
-            <span class="ed-line"></span>
-            <span class="ed-label-text">Just Dropped</span>
-          </div>
-          <h2 class="ed-title">New<br>Arrivals</h2>
+  <!-- New Arrivals -->
+  <section id="new-arrivals" class="home-section home-section-warm">
+    <div class="container-fluid home-container">
+      <div class="home-section-header">
+        <div>
+          <p class="home-eyebrow">Just Dropped</p>
+          <h2 class="home-section-title">New Arrivals</h2>
         </div>
-        <div class="ed-header-right">
-          <span class="ed-num">02</span>
-          <p class="ed-desc">Fresh styles added to<br>our curated collection.</p>
-        </div>
+        <button class="home-view-all" (click)="scrollToSection('products')">
+          VIEW ALL <i class="bi bi-arrow-right"></i>
+        </button>
       </div>
       <app-product-grid filter="new" />
     </div>
   </section>
 
-  <!-- ⑥ Community Showcase -->
+  <!-- Brand Story -->
+  <app-brand-story />
+
+  <!-- Community Showcase — The Vrindaya Look -->
   <app-community-showcase />
 
-  <!-- ⑦ Discover All — section 03 -->
-  <section id="products" class="products-section">
-    <div class="container-fluid products-container">
-      <div class="ed-header">
-        <div class="ed-header-left">
-          <div class="ed-eyebrow">
-            <span class="ed-line"></span>
-            <span class="ed-label-text">The Full Edit</span>
-          </div>
-          <h2 class="ed-title">Discover<br>All Styles</h2>
-        </div>
-        <div class="ed-header-right">
-          <span class="ed-num">03</span>
-          <p class="ed-desc">Explore, filter &amp; find<br>your next signature look.</p>
+  <!-- Discover All Styles -->
+  <section id="products" class="home-section">
+    <div class="container-fluid home-container">
+      <div class="home-section-header">
+        <div>
+          <p class="home-eyebrow">The Full Edit</p>
+          <h2 class="home-section-title">Discover All Styles</h2>
         </div>
       </div>
       <app-product-grid filter="all" />
@@ -106,10 +63,16 @@
 
 <app-footer />
 
-<a href="https://wa.me/919999999999" class="floating-btn whatsapp-btn" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+<!-- WhatsApp -->
+<a href="https://wa.me/919999999999" class="floating-btn whatsapp-btn"
+   target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
   <i class="bi bi-whatsapp"></i>
 </a>
 
-<button class="floating-btn scroll-top-btn" [class.visible]="showScrollTop()" (click)="scrollToTop()" aria-label="Back to top">
+<!-- Scroll to top -->
+<button class="floating-btn scroll-top-btn"
+        [class.visible]="showScrollTop()"
+        (click)="scrollToTop()"
+        aria-label="Back to top">
   <i class="bi bi-arrow-up"></i>
 </button>

@@ -1,49 +1,47 @@
-<section id="categories" class="categories-section">
-  <div class="container-fluid categories-container">
+<section id="categories" class="cat-section">
+  <div class="container-fluid cat-container">
 
-    <!-- Editorial header -->
-    <div class="categories-header">
-      <div class="cat-header-left">
-        <div class="cat-eyebrow">
-          <span class="cat-eyebrow-line"></span>
-          <span class="cat-eyebrow-text">Browse</span>
-        </div>
-        <h2 class="cat-title">Shop by<br>Category</h2>
+    <!-- Header -->
+    <div class="cat-header">
+      <div>
+        <p class="cat-eyebrow">Browse Our Range</p>
+        <h2 class="cat-title">Shop by Category</h2>
       </div>
-      <div class="cat-header-right">
-        <span class="cat-num">00</span>
-        <p class="cat-desc">Curated collections<br>for every occasion.</p>
-      </div>
+      <button class="cat-view-all" (click)="selectCategory('All')">
+        View All <i class="bi bi-arrow-right"></i>
+      </button>
     </div>
 
-    <!-- Filter Chips -->
-    <div class="categories-scroll-wrapper">
-      <div class="categories-row">
-        @for (cat of categories; track cat.id) {
-          <button
-            class="category-chip"
-            [class.active]="selectedCategory() === cat.id"
-            (click)="selectCategory(cat.id)"
-          >
-            <span class="chip-icon">{{ cat.icon }}</span>
-            <span>{{ cat.name }}</span>
-          </button>
-        }
-      </div>
+    <!-- Filter chips (compact, for quick filtering) -->
+    <div class="cat-chips-row">
+      @for (cat of categories; track cat.id) {
+        <button
+          class="cat-chip"
+          [class.active]="selectedCategory() === cat.id"
+          (click)="selectCategory(cat.id)"
+        >{{ cat.icon }} {{ cat.label }}</button>
+      }
     </div>
 
-    <!-- Category Cards -->
-    <div class="category-cards-row">
-      @for (cat of categories.slice(1); track cat.id) {
-        <div class="category-card" (click)="selectCategory(cat.id)" role="button">
-          <div class="category-card-img-wrap">
-            <img [src]="cat.image" [alt]="cat.name" class="category-card-img" loading="lazy" />
-            <div class="category-card-overlay"></div>
+    <!-- Color card grid -->
+    <div class="cat-color-grid">
+      @for (cat of categories.slice(1); track cat.id; let i = $index) {
+        <div
+          class="cat-color-card"
+          [style.background]="cat.bgColor"
+          (click)="selectCategory(cat.id)"
+          role="button"
+          [attr.aria-label]="'Browse ' + cat.label"
+        >
+          <div class="cat-card-inner">
+            <div class="cat-icon-circle" [style.background]="cat.iconBg">
+              <i class="bi" [class]="'bi-' + cat.biIcon"></i>
+            </div>
+            <h3 class="cat-card-name">{{ cat.label }}</h3>
+            <span class="cat-card-cta">Explore Now <i class="bi bi-arrow-right"></i></span>
           </div>
-          <div class="category-card-body">
-            <span class="category-card-icon">{{ cat.icon }}</span>
-            <h3 class="category-card-name">{{ cat.name }}</h3>
-            <span class="category-card-cta">Shop Now <i class="bi bi-arrow-right"></i></span>
+          <div class="cat-card-img-wrap">
+            <img [src]="cat.image" [alt]="cat.label" class="cat-card-img" loading="lazy" />
           </div>
         </div>
       }

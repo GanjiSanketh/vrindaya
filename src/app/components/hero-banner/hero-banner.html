@@ -1,93 +1,50 @@
 <section class="hero" id="hero">
 
-  <!-- ── Left dark editorial panel ── -->
-  <div class="hero-left">
+  <!-- Full-bleed background photo -->
+  <div class="hero-bg">
+    <img
+      src="assets/products/004-pastel-stripe-kurta/image-1.png"
+      alt="Vrindaya — Where Tradition Meets Modern Grace"
+      class="hero-bg-img"
+      priority
+    />
+    <div class="hero-bg-overlay"></div>
+  </div>
 
-    <div class="hero-eyebrow ha ha-1">
-      <span class="hero-season-tag">SS '25</span>
-      <span class="hero-rule"></span>
-      <span class="hero-season-text">New Collection</span>
-    </div>
+  <!-- Glassmorphism card -->
+  <div class="hero-card-side">
+    <div class="hero-glass-card">
 
-    <div class="hero-headline">
-      <!--
-        Premium headline alternatives:
-        1. "Where Tradition Meets Modern Grace"   ← current
-        2. "Timeless Elegance for Every Occasion"
-        3. "Crafted for the Woman Who Inspires"
-        4. "Wear the Art of India, Every Day"
-        5. "Designed to Make Every Day Beautiful"
-      -->
-      <h1 class="hero-display">
-        <span class="hero-line ha ha-2">Where Tradition</span>
-        <em class="hero-line ha ha-3">Meets Modern Grace</em>
+      <p class="hero-glass-label ha ha-1">TRADITIONAL INDIAN WOMEN'S WEAR</p>
+
+      <h1 class="hero-glass-title">
+        <span class="hgt-line ha ha-2">Where Tradition</span>
+        <em class="hgt-em ha ha-3">Meets Modern Grace</em>
       </h1>
-    </div>
 
-    <div class="hero-lower">
-      <div class="hero-desc-row ha ha-4">
-        <span class="hero-star">✦</span>
-        <p class="hero-desc">
-          Luxury ethnic wear crafted for those who appreciate high-end
-          fashion and desire to look and feel their best — in every occasion.
-        </p>
-      </div>
+      <div class="hero-glass-rule ha ha-4"></div>
 
-      <div class="hero-ctas ha ha-5">
-        <button class="hero-btn-primary" (click)="scrollToProducts()">
-          Explore Collection <i class="bi bi-arrow-right"></i>
+      <p class="hero-glass-desc ha ha-4">
+        Graceful designs for the modern Indian woman — curated with love, crafted with tradition.
+      </p>
+
+      <div class="hero-glass-actions ha ha-5">
+        <button class="hero-cta-dark" (click)="scrollToProducts()">
+          EXPLORE COLLECTION
         </button>
-        <button class="hero-btn-ghost" (click)="scrollToNew()">
-          New Arrivals
+        <button class="hero-cta-text" (click)="scrollToNew()">
+          New Arrivals <i class="bi bi-arrow-right"></i>
         </button>
       </div>
 
-      <div class="hero-social-row ha ha-6">
-        <a class="hero-social-link" href="#" target="_blank" rel="noopener">
-          <i class="bi bi-instagram"></i><span>instagram</span>
-        </a>
-        <a class="hero-social-link" href="#" target="_blank" rel="noopener">
-          <i class="bi bi-facebook"></i><span>facebook</span>
-        </a>
-        <a class="hero-social-link" href="#" target="_blank" rel="noopener">
-          <i class="bi bi-pinterest"></i><span>pinterest</span>
-        </a>
+      <!-- Pagination dots (decorative) -->
+      <div class="hero-dots ha ha-6">
+        <span class="hero-dot active"></span>
+        <span class="hero-dot"></span>
+        <span class="hero-dot"></span>
       </div>
-    </div>
 
-  </div>
-
-  <!-- ── Centre product photo ── -->
-  <div class="hero-img-primary">
-    <img
-      src="assets/products/001-wine-mandala-kurta/image-1.png"
-      alt="Wine Mandala Kurta — Vrindaya"
-      class="hero-photo"
-    />
-    <div class="hero-img-caption">
-      <span class="caption-cat">Kurtas</span>
-      <span class="caption-name">Wine Mandala Circle Print</span>
     </div>
   </div>
-
-  <!-- ── Right accent photo ── -->
-  <div class="hero-img-accent">
-    <img
-      src="assets/products/009-teal-floral-kurta-set/image-1.png"
-      alt="Teal Floral Set — Vrindaya"
-      class="hero-photo"
-    />
-  </div>
-
-  <!-- ── Rotating "Shop Now" badge ── -->
-  <button class="shop-badge" (click)="scrollToProducts()" aria-label="Shop now">
-    <svg class="badge-ring" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <path id="tc" d="M65,65 m-50,0 a50,50 0 1,1 100,0 a50,50 0 1,1 -100,0"/>
-      </defs>
-      <text><textPath href="#tc" startOffset="0%">EXPLORE • DISCOVER • VRINDAYA •</textPath></text>
-    </svg>
-    <i class="bi bi-arrow-up-right badge-arrow"></i>
-  </button>
 
 </section>

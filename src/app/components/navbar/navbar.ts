@@ -1,5 +1,5 @@
-import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, HostListener, inject, signal, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../shared/product.service';
 import { CATEGORIES } from '../../data/categories';
@@ -10,52 +10,53 @@ import { CATEGORIES } from '../../data/categories';
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
-export class Navbar implements OnInit {
+export class Navbar {
   private productService = inject(ProductService);
+  private platformId = inject(PLATFORM_ID);
 
   readonly categories = CATEGORIES;
   searchInput = '';
   mobileMenuOpen = signal(false);
-  mobileSearchOpen = signal(false);
+  searchOpen = signal(false);
   scrolled = signal(false);
 
   selectedCategory = this.productService.selectedCategory;
 
-  ngOnInit(): void {}
-
   @HostListener('window:scroll')
   onScroll(): void {
-    this.scrolled.set(window.scrollY > 60);
+    if (isPlatformBrowser(this.platformId)) {
+      this.scrolled.set(window.scrollY > 12);
+    }
   }
 
   onSearchInput(): void {
     this.productService.setSearch(this.searchInput);
   }
 
-  selectCategory(categoryId: string): void {
+  /** Select a product category and scroll to the products grid */
+  selectAndScroll(categoryId: string): void {
     this.productService.setCategory(categoryId);
     this.mobileMenuOpen.set(false);
-    const el = document.getElementById('products');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    this.scrollTo('products');
+  }
+
+  scrollTo(id: string): void {
+    this.mobileMenuOpen.set(false);
+    if (isPlatformBrowser(this.platformId)) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  toggleSearch(): void {
+    this.searchOpen.update((v) => !v);
   }
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen.update((v) => !v);
   }
 
-  toggleMobileSearch(): void {
-    this.mobileSearchOpen.update((v) => !v);
-    if (this.mobileSearchOpen()) {
-      setTimeout(() => {
-        const el = document.getElementById('mobile-search-input');
-        if (el) (el as HTMLInputElement).focus();
-      }, 100);
-    }
-  }
-
-  scrollToSection(id: string): void {
-    this.mobileMenuOpen.set(false);
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  clearSearch(): void {
+    this.searchInput = '';
+    this.productService.setSearch('');
   }
 }

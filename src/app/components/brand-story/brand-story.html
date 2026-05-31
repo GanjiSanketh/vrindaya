@@ -1,0 +1,37 @@
+<section class="brand-story-section">
+  <div class="container-fluid bs-container">
+    <div class="bs-inner">
+
+      <!-- Content -->
+      <div class="bs-content" appScrollReveal>
+        <p class="bs-eyebrow">OUR STORY <span class="bs-dash">——</span></p>
+        <h2 class="bs-title">Timeless Styles,<br>Thoughtfully Crafted</h2>
+        <p class="bs-desc">
+          At Vrindaya, we celebrate the beauty of tradition with designs that are
+          light, elegant and made for today's woman. Every piece is a conversation
+          between heritage and modernity — crafted to make you feel beautiful, always.
+        </p>
+        <button class="bs-cta" (click)="scrollToProducts()">DISCOVER MORE</button>
+      </div>
+
+      <!-- Visual -->
+      <div class="bs-visual" appScrollReveal [srDelay]="150">
+        <div class="bs-img-grid">
+          <img
+            src="assets/products/008-green-floral-kurta-set/image-2.png"
+            alt="Vrindaya craftsmanship"
+            class="bs-img bs-img-1"
+            loading="lazy"
+          />
+          <img
+            src="assets/products/002-indigo-floral-kurta-set/image-2.png"
+            alt="Vrindaya collection"
+            class="bs-img bs-img-2"
+            loading="lazy"
+          />
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

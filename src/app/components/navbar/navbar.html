@@ -1,112 +1,119 @@
-<nav class="vrindaya-nav" [class.scrolled]="scrolled()">
-  <div class="container-fluid nav-container">
+<!-- ── Announcement Bar ── -->
+<div class="ann-bar">
+  <div class="ann-inner">
+    <span><i class="bi bi-stars"></i>&nbsp;New Collection SS'25 Now Live</span>
+    <span class="ann-sep">|</span>
+    <span><i class="bi bi-gem"></i>&nbsp;Premium Indian Ethnic Wear</span>
+    <span class="ann-sep d-none d-md-inline">|</span>
+    <span class="d-none d-md-inline"><i class="bi bi-arrow-up-right-square"></i>&nbsp;Discover on Flipkart</span>
+  </div>
+</div>
 
-    <!-- Brand -->
-    <a class="nav-brand" (click)="scrollToSection('hero')" role="button" aria-label="Vrindaya home">
-      <img src="assets/logo.png" alt="Vrindaya" class="nav-logo" />
-      <div class="brand-text">
-        <span class="brand-name">VRINDAYA</span>
-        <span class="brand-tagline">by design</span>
+<!-- ── Main Nav ── -->
+<header class="vrindaya-nav" [class.scrolled]="scrolled()">
+  <div class="nav-inner">
+
+    <!-- Left: Category links (desktop) -->
+    <nav class="nav-cats d-none d-xl-flex" aria-label="Product categories">
+      <a class="nav-cat" (click)="scrollTo('hero')" role="button">Home</a>
+      @for (cat of categories.slice(1, 5); track cat.id) {
+        <a class="nav-cat" [class.active]="selectedCategory() === cat.id"
+           (click)="selectAndScroll(cat.id)" role="button">{{ cat.label }}</a>
+      }
+    </nav>
+
+    <!-- Center: Logo -->
+    <a class="nav-logo-block" (click)="scrollTo('hero')" role="button" aria-label="Vrindaya home">
+      <img src="assets/logo.png" alt="Vrindaya" class="nav-logo-img" />
+      <div class="nav-logo-text">
+        <span class="nav-brand-name">VRINDAYA</span>
+        <span class="nav-brand-sub">WOMEN</span>
       </div>
     </a>
 
-    <!-- Desktop Nav Links -->
-    <ul class="nav-links d-none d-lg-flex" role="navigation" aria-label="Main navigation">
-      <li><a class="nav-link-item" (click)="scrollToSection('hero')" role="button">Home</a></li>
-      <li><a class="nav-link-item" (click)="scrollToSection('categories')" role="button">Collections</a></li>
-      <li><a class="nav-link-item nav-link-highlight" (click)="scrollToSection('new-arrivals')" role="button">New Arrivals</a></li>
-      <li><a class="nav-link-item" (click)="scrollToSection('trending')" role="button">Trending</a></li>
-      <li><a class="nav-link-item" (click)="scrollToSection('products')" role="button">Discover All</a></li>
-      <li><a class="nav-link-item" (click)="scrollToSection('footer')" role="button">Our Story</a></li>
-    </ul>
-
-    <!-- Desktop Search -->
-    <div class="nav-search d-none d-lg-flex">
-      <div class="search-wrapper">
-        <i class="bi bi-search search-icon"></i>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search styles, fabrics, occasions..."
-          [(ngModel)]="searchInput"
-          (input)="onSearchInput()"
-          (keydown.enter)="scrollToSection('products')"
-          aria-label="Search fashion styles"
-        />
-        @if (searchInput) {
-          <button class="search-clear" (click)="searchInput = ''; onSearchInput()" aria-label="Clear search">
-            <i class="bi bi-x"></i>
-          </button>
+    <!-- Right: More cats + Search + Icons -->
+    <div class="nav-right">
+      <nav class="nav-cats-right d-none d-xl-flex" aria-label="More categories">
+        @for (cat of categories.slice(5); track cat.id) {
+          <a class="nav-cat" [class.active]="selectedCategory() === cat.id"
+             (click)="selectAndScroll(cat.id)" role="button">{{ cat.label }}</a>
         }
-      </div>
-    </div>
+      </nav>
 
-    <!-- Desktop — saved looks icon only (no cart) -->
-    <div class="nav-actions d-none d-lg-flex">
-      <button class="nav-icon-btn" aria-label="Saved looks">
-        <i class="bi bi-bookmark"></i>
-      </button>
-    </div>
-
-    <!-- Mobile -->
-    <div class="mobile-actions d-flex d-lg-none">
-      <button class="nav-icon-btn" (click)="toggleMobileSearch()" aria-label="Search">
+      <!-- Search toggle -->
+      <button class="nav-icon-btn" (click)="toggleSearch()" aria-label="Search">
         <i class="bi bi-search"></i>
       </button>
-      <button class="nav-icon-btn hamburger" (click)="toggleMobileMenu()" aria-label="Toggle menu">
-        <span class="hamburger-line" [class.open]="mobileMenuOpen()"></span>
-        <span class="hamburger-line" [class.open]="mobileMenuOpen()"></span>
-        <span class="hamburger-line" [class.open]="mobileMenuOpen()"></span>
+
+      <!-- Saved -->
+      <button class="nav-icon-btn d-none d-sm-flex" aria-label="Saved looks">
+        <i class="bi bi-bookmark"></i>
+      </button>
+
+      <!-- Cart (decorative — all purchases happen on Flipkart) -->
+      <div class="nav-cart-wrap d-none d-sm-flex">
+        <button class="nav-icon-btn" aria-label="View cart on Flipkart">
+          <i class="bi bi-bag"></i>
+        </button>
+        <span class="nav-cart-dot"></span>
+      </div>
+
+      <!-- Mobile menu -->
+      <button class="nav-icon-btn nav-hamburger d-xl-none" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+        <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
+        <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
+        <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
       </button>
     </div>
 
   </div>
 
-  <!-- Mobile Search Bar -->
-  @if (mobileSearchOpen()) {
-    <div class="mobile-search-bar">
-      <div class="container-fluid">
-        <div class="search-wrapper">
-          <i class="bi bi-search search-icon"></i>
-          <input
-            id="mobile-search-input"
-            type="text"
-            class="search-input"
-            placeholder="Search styles, fabrics, occasions..."
-            [(ngModel)]="searchInput"
-            (input)="onSearchInput()"
-            (keydown.enter)="scrollToSection('products')"
-            aria-label="Search fashion styles"
-          />
-          @if (searchInput) {
-            <button class="search-clear" (click)="searchInput = ''; onSearchInput()"><i class="bi bi-x"></i></button>
-          }
-        </div>
+  <!-- Search Bar (drops below nav) -->
+  @if (searchOpen()) {
+    <div class="nav-search-drop">
+      <div class="search-inner">
+        <i class="bi bi-search search-ico"></i>
+        <input
+          type="text"
+          class="search-field"
+          placeholder="Search styles, fabrics, occasions..."
+          [(ngModel)]="searchInput"
+          (input)="onSearchInput()"
+          (keydown.enter)="selectAndScroll('All')"
+          autofocus
+          aria-label="Search products"
+        />
+        @if (searchInput) {
+          <button class="search-x" (click)="clearSearch()" aria-label="Clear"><i class="bi bi-x-lg"></i></button>
+        }
+        <button class="search-close" (click)="toggleSearch()" aria-label="Close search">
+          <i class="bi bi-x-circle"></i>
+        </button>
       </div>
     </div>
   }
 
-  <!-- Mobile Menu Drawer -->
+  <!-- Mobile Drawer -->
   @if (mobileMenuOpen()) {
-    <div class="mobile-menu">
-      <ul class="mobile-nav-links">
-        <li><a (click)="scrollToSection('hero')" role="button">Home</a></li>
-        <li><a (click)="scrollToSection('categories')" role="button">Collections</a></li>
-        <li class="highlight"><a (click)="scrollToSection('new-arrivals')" role="button">✦ New Arrivals</a></li>
-        <li><a (click)="scrollToSection('trending')" role="button">Trending</a></li>
-        <li><a (click)="scrollToSection('products')" role="button">Discover All</a></li>
-        <li><a (click)="scrollToSection('footer')" role="button">Our Story</a></li>
-      </ul>
-      <div class="mobile-categories">
-        <p class="mobile-cat-label">Browse by Category</p>
-        <div class="mobile-cat-chips">
+    <div class="mobile-drawer">
+      <div class="drawer-links">
+        <a class="drawer-link" (click)="scrollTo('hero')" role="button">Home</a>
+        <a class="drawer-link drawer-link-highlight" (click)="scrollTo('new-arrivals')" role="button">✦ New Arrivals</a>
+        <a class="drawer-link" (click)="scrollTo('trending')" role="button">Trending</a>
+        <a class="drawer-link" (click)="scrollTo('products')" role="button">Discover All</a>
+        <a class="drawer-link" (click)="scrollTo('footer')" role="button">Our Story</a>
+      </div>
+      <div class="drawer-cats">
+        <p class="drawer-cats-label">Browse by Category</p>
+        <div class="drawer-chips">
           @for (cat of categories; track cat.id) {
-            <button class="cat-chip" [class.active]="selectedCategory() === cat.id" (click)="selectCategory(cat.id)">
-              {{ cat.icon }} {{ cat.name }}
+            <button class="drawer-chip" [class.active]="selectedCategory() === cat.id"
+                    (click)="selectAndScroll(cat.id)">
+              {{ cat.icon }} {{ cat.label }}
             </button>
           }
         </div>
       </div>
     </div>
   }
-</nav>
+</header>

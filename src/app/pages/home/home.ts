@@ -6,11 +6,12 @@ import { TrustBar } from '../../components/trust-bar/trust-bar';
 import { Categories } from '../../components/categories/categories';
 import { ProductGrid } from '../../components/product-grid/product-grid';
 import { CommunityShowcase } from '../../components/community-showcase/community-showcase';
+import { BrandStory } from '../../components/brand-story/brand-story';
 import { Footer } from '../../components/footer/footer';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, Navbar, HeroBanner, TrustBar, Categories, ProductGrid, CommunityShowcase, Footer],
+  imports: [CommonModule, Navbar, HeroBanner, TrustBar, Categories, ProductGrid, CommunityShowcase, BrandStory, Footer],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

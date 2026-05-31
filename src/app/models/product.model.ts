@@ -18,6 +18,10 @@ export interface Product {
 export interface Category {
   id: string;
   name: string;
-  icon: string;
-  image: string;
+  label: string;   /* display name (e.g. "Kurta Sets") */
+  icon: string;    /* emoji chip */
+  image: string;   /* product photo */
+  bgColor: string; /* color-grid card background */
+  iconBg: string;  /* icon circle background */
+  biIcon: string;  /* Bootstrap Icon name without "bi-" */
 }
