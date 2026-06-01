@@ -1,4 +1,4 @@
-<section class="cat-section section-pad" id="categories">
+<section class="trending-section section-pad" id="trending">
   <div class="container-vr">
 
     <!-- Header -->
@@ -7,12 +7,9 @@
         <path d="M20 4C20 4 11 11 11 20C11 25 14.8 29 20 29C25.2 29 29 25 29 20C29 11 20 4 20 4Z" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
         <path d="M20 10C13 8 7 12 6 18" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
         <path d="M20 10C27 8 33 12 34 18" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
-        <path d="M20 14C9 12 3 19 2 25" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
-        <path d="M20 14C31 12 37 19 38 25" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
         <circle cx="20" cy="25" r="3" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
       </svg>
-      <p class="section-label">SHOP BY STYLE</p>
-      <h2 class="section-title">Curated Collections</h2>
+      <h2 class="section-title">TRENDING COLLECTION</h2>
       <div class="section-rule">
         <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="18" height="14">
           <circle cx="10" cy="10" r="3" fill="none" stroke="var(--gold)" stroke-width="1"/>
@@ -20,24 +17,21 @@
           <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
         </svg>
       </div>
-      <p class="section-desc">Curated collections for every mood and every occasion</p>
+      <p class="section-desc">Curated ethnic styles designed to make every day elegant.</p>
     </div>
 
-    <!-- Category grid -->
-    <div class="cat-grid">
-      @for (cat of categories; track cat.id) {
-        <div class="cat-card" (click)="selectAndScroll(cat.id)" role="button" [attr.aria-label]="cat.name">
-          <div class="cat-img-wrap">
-            <img [src]="cat.image" [alt]="cat.name" class="cat-img" loading="lazy" />
-            <div class="cat-overlay"></div>
-          </div>
-          <div class="cat-info">
-            <h3 class="cat-name">{{ cat.name }}</h3>
-            <p class="cat-sub">{{ cat.subtitle }}</p>
-            <span class="cat-cta">Explore Collection <i class="bi bi-arrow-right"></i></span>
-          </div>
-        </div>
+    <!-- 4-column product grid -->
+    <div class="trending-grid">
+      @for (p of products(); track p.id) {
+        <app-product-card [product]="p" />
       }
+    </div>
+
+    <!-- CTA -->
+    <div class="trending-cta">
+      <button class="btn-outline" (click)="scrollToAll()">
+        View All Products <i class="bi bi-arrow-right"></i>
+      </button>
     </div>
 
   </div>

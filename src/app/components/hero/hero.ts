@@ -2,24 +2,17 @@ import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({
-  selector: 'app-footer',
+  selector: 'app-hero',
   standalone: true,
-  templateUrl: './footer.html',
-  styleUrl: './footer.css',
+  templateUrl: './hero.html',
+  styleUrl: './hero.css',
 })
-export class Footer {
+export class Hero {
   private platformId = inject(PLATFORM_ID);
-  readonly currentYear = new Date().getFullYear();
 
   scrollTo(id: string): void {
     if (isPlatformBrowser(this.platformId)) {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }
-
-  scrollToTop(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 }

@@ -1,104 +1,47 @@
-<article
-  class="product-card"
-  (click)="openProduct($event)"
-  (mouseenter)="onCardHover()"
-  (mouseleave)="onCardLeave()"
-  role="button"
-  tabindex="0"
-  (keydown.enter)="openProduct($event)"
-  [attr.aria-label]="'Discover ' + product().name"
->
-  <!-- ══ Image area ══ -->
-  <div class="product-img-wrap">
+<div class="pc-card" (click)="openFlipart($event)" role="button" tabindex="0"
+     (keydown.enter)="openFlipart($event)" [attr.aria-label]="product().name">
 
-    @if (imageError()) {
-      <div class="img-coming-soon">
-        <i class="bi bi-image"></i>
-        <span>Coming Soon</span>
-      </div>
+  <!-- Image -->
+  <div class="pc-img-wrap">
+    @if (!imgError()) {
+      <img [src]="product().image" [alt]="product().name" class="pc-img" loading="lazy"
+           (error)="onImgError()" />
     } @else {
-      <img
-        [src]="activeImage"
-        [alt]="product().name"
-        class="product-img"
-        loading="lazy"
-        (error)="handleImageError()"
-      />
+      <div class="pc-img-placeholder">
+        <i class="bi bi-image"></i><span>Coming Soon</span>
+      </div>
     }
 
-    <!-- Style badges — top-left -->
-    <div class="product-badges">
-      @if (product().isBestseller) { <span class="badge-bestseller">Bestseller</span> }
-      @if (product().isNew)        { <span class="badge-new">New</span> }
-      @if (product().isTrending)   { <span class="badge-trending">Trending</span> }
+    <!-- Badge -->
+    <div class="pc-badges">
+      @if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
+      @else if (product().isTrending) { <span class="pc-badge">TRENDING</span> }
+      @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
-    <!-- Save icon — top-right, appears on hover -->
-    <button
-      class="wishlist-btn"
-      [class.wishlisted]="isWishlisted()"
-      (click)="toggleWishlist($event)"
-      [attr.aria-label]="isWishlisted() ? 'Remove from saved looks' : 'Save look'"
-    >
-      <i class="bi" [class.bi-bookmark]="!isWishlisted()" [class.bi-bookmark-fill]="isWishlisted()"></i>
+    <!-- Wishlist -->
+    <button class="pc-wishlist" (click)="toggleWishlist($event)"
+            [attr.aria-label]="wishlisted() ? 'Remove wishlist' : 'Add to wishlist'">
+      <i class="bi" [class.bi-heart]="!wishlisted()" [class.bi-heart-fill]="wishlisted()"></i>
     </button>
 
-    <!-- Multi-image dots (≤ 5) -->
-    @if (hasMultipleImages && !showProgressBar && !imageError()) {
-      <div class="img-dots" (click)="$event.stopPropagation()">
-        @for (img of dotImages; track $index) {
-          <button
-            class="img-dot"
-            [class.active]="activeImageIndex() === $index"
-            (click)="setImage($index)"
-            [attr.aria-label]="'Angle ' + ($index + 1)"
-          ></button>
-        }
-      </div>
-    }
-
-    <!-- Progress bar (> 5 images) -->
-    @if (hasMultipleImages && showProgressBar && !imageError()) {
-      <div class="img-progress-track" (click)="$event.stopPropagation()">
-        <div class="img-progress-fill"
-             [style.width.%]="((activeImageIndex() + 1) / images.length) * 100">
-        </div>
-      </div>
-    }
-
-    <!-- Slide-up CTA — no info redundancy, just the Flipkart prompt -->
-    <div class="product-overlay" [class.visible]="isHovered() && !imageError()">
-      <button class="overlay-cta" (click)="openProduct($event)">
-        View on Flipkart
-        <i class="bi bi-arrow-up-right"></i>
-      </button>
-    </div>
-
-  </div>
-
-  <!-- ══ Info panel ══ -->
-  <div class="product-info">
-    <p class="product-category">{{ product().category }}</p>
-    <h3 class="product-name" [title]="product().name">{{ product().name }}</h3>
-
-    @if (product().rating) {
-      <div class="product-rating">
-        <div class="stars-row">
-          @for (star of stars; track star) {
-            @if (star <= fullStars)                        { <i class="bi bi-star-fill star filled"></i> }
-            @else if (star === fullStars + 1 && halfStar)  { <i class="bi bi-star-half star filled"></i> }
-            @else                                          { <i class="bi bi-star star"></i> }
-          }
-        </div>
-        <span class="rating-value">{{ product().rating }}</span>
-      </div>
-    }
-
-    <div class="product-price-row">
-      <span class="price-current">&#8377;{{ product().price | number }}</span>
-      @if (product().originalPrice) {
-        <span class="price-original">&#8377;{{ product().originalPrice | number }}</span>
-      }
+    <!-- Hover overlay -->
+    <div class="pc-overlay">
+      <span class="pc-overlay-cta">View on Flipkart <i class="bi bi-arrow-right"></i></span>
     </div>
   </div>
-</article>
+
+  <!-- Info -->
+  <div class="pc-info">
+    <h3 class="pc-name">{{ product().name }}</h3>
+    <div class="pc-price-row">
+      <span class="pc-price">₹{{ product().price | number }}</span>
+      <span class="pc-original">₹{{ product().originalPrice | number }}</span>
+      <span class="pc-off">{{ product().discount }}% OFF</span>
+    </div>
+    <div class="pc-rule"></div>
+    <button class="pc-link" (click)="openFlipart($event)">
+      View on Flipkart <i class="bi bi-arrow-right"></i>
+    </button>
+  </div>
+</div>

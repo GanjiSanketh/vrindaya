@@ -1,22 +1,22 @@
 import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProductService } from '../../services/product.service';
+import { ProductCard } from '../product-card/product-card';
 
 @Component({
-  selector: 'app-categories',
+  selector: 'app-trending-products',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './categories.html',
-  styleUrl: './categories.css',
+  imports: [CommonModule, ProductCard],
+  templateUrl: './trending-products.html',
+  styleUrl: './trending-products.css',
 })
-export class Categories {
+export class TrendingProducts {
   private platformId = inject(PLATFORM_ID);
   protected svc = inject(ProductService);
 
-  readonly categories = this.svc.categories;
+  readonly products = this.svc.trending;
 
-  selectAndScroll(id: string): void {
-    this.svc.setCategory(id);
+  scrollToAll(): void {
     if (isPlatformBrowser(this.platformId)) {
       document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
     }

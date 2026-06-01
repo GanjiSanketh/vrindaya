@@ -1,119 +1,79 @@
-<!-- ── Announcement Bar ── -->
-<div class="ann-bar">
-  <div class="ann-inner">
-    <span><i class="bi bi-stars"></i>&nbsp;New Collection SS'25 Now Live</span>
-    <span class="ann-sep d-none d-sm-inline">|</span>
-    <span class="d-none d-sm-inline"><i class="bi bi-gem"></i>&nbsp;Premium Indian Ethnic Wear</span>
-    <span class="ann-sep d-none d-md-inline">|</span>
-    <span class="d-none d-md-inline"><i class="bi bi-arrow-up-right-square"></i>&nbsp;Discover on Flipkart</span>
-  </div>
-</div>
-
-<!-- ── Main Nav ── -->
-<header class="vrindaya-nav" [class.scrolled]="scrolled()">
+<!-- Sticky Navbar -->
+<header class="vr-nav" [class.scrolled]="scrolled()">
   <div class="nav-inner">
 
-    <!-- LEFT: desktop category links -->
-    <nav class="nav-left d-none d-xl-flex" aria-label="Main categories">
-      <a class="nav-cat" (click)="scrollTo('hero')" role="button">Home</a>
-      @for (cat of leftCats; track cat.id) {
-        <a class="nav-cat"
-           [class.nav-cat-active]="selectedCategory() === cat.id"
-           (click)="selectAndScroll(cat.id)"
-           role="button">{{ cat.label }}</a>
-      }
+    <!-- LEFT nav links (desktop) -->
+    <nav class="nav-left d-none d-xl-flex">
+      <a class="nav-link" (click)="scrollTo('hero')" role="button">Home</a>
+      <a class="nav-link" (click)="selectCategory('long-kurtas')" role="button">Long Kurtas</a>
+      <a class="nav-link" (click)="selectCategory('short-kurtas')" role="button">Short Kurtas</a>
+      <a class="nav-link" (click)="selectCategory('2-piece-sets')" role="button">2-Piece Sets</a>
+      <a class="nav-link" (click)="selectCategory('3-piece-sets')" role="button">3-Piece Sets</a>
     </nav>
 
-    <!-- Mobile: hamburger in left slot -->
-    <button class="nav-hamburger d-xl-none" (click)="toggleMobileMenu()" aria-label="Toggle menu">
-      <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
-      <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
-      <span class="hb-line" [class.open]="mobileMenuOpen()"></span>
+    <!-- Mobile: hamburger -->
+    <button class="hamburger d-xl-none" (click)="toggleMenu()" aria-label="Menu">
+      <span [class.open]="mobileMenuOpen()"></span>
+      <span [class.open]="mobileMenuOpen()"></span>
+      <span [class.open]="mobileMenuOpen()"></span>
     </button>
 
-    <!-- CENTER: logo (always) -->
-    <a class="nav-logo-wrap" (click)="scrollTo('hero')" role="button" aria-label="Vrindaya home">
-      <img src="assets/logo.svg" alt="Vrindaya" class="nav-logo-img" />
-      <span class="nav-brand-label">VRINDAYA</span>
+    <!-- CENTER: logo -->
+    <a class="nav-logo" (click)="scrollTo('hero')" role="button" aria-label="Vrindaya Home">
+      <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="logo-img" />
+      <span class="logo-sub">— WOMEN —</span>
     </a>
 
-    <!-- RIGHT: desktop remaining categories + icons -->
-    <nav class="nav-right d-none d-xl-flex" aria-label="More categories">
-      @for (cat of rightCats; track cat.id) {
-        <a class="nav-cat"
-           [class.nav-cat-active]="selectedCategory() === cat.id"
-           (click)="selectAndScroll(cat.id)"
-           role="button">{{ cat.label }}</a>
-      }
-      <div class="nav-icons">
-        <button class="nav-icon-btn" (click)="toggleSearch()" aria-label="Search">
-          <i class="bi bi-search"></i>
-        </button>
-        <button class="nav-icon-btn" aria-label="Saved looks">
-          <i class="bi bi-bookmark"></i>
-        </button>
-        <button class="nav-icon-btn" aria-label="View on Flipkart">
-          <i class="bi bi-bag"></i>
-        </button>
-      </div>
-    </nav>
+    <!-- RIGHT nav (desktop) -->
+    <div class="nav-right d-none d-xl-flex">
+      <button class="nav-icon" (click)="toggleSearch()" aria-label="Search">
+        <i class="bi bi-search"></i>
+      </button>
+      <button class="nav-icon" aria-label="Wishlist">
+        <i class="bi bi-heart"></i>
+      </button>
+      <a class="nav-icon" href="https://instagram.com/vrindaya" target="_blank" rel="noopener" aria-label="Instagram">
+        <i class="bi bi-instagram"></i>
+      </a>
+    </div>
 
-    <!-- Mobile: right-side actions -->
-    <div class="nav-mobile-right d-flex d-xl-none">
-      <button class="nav-icon-btn" (click)="toggleSearch()" aria-label="Search">
+    <!-- Mobile right icons -->
+    <div class="nav-right d-flex d-xl-none">
+      <button class="nav-icon" (click)="toggleSearch()" aria-label="Search">
         <i class="bi bi-search"></i>
       </button>
     </div>
 
   </div>
 
-  <!-- Collapsible Search Bar -->
+  <!-- Search bar -->
   @if (searchOpen()) {
-    <div class="nav-search-drop">
+    <div class="search-bar">
       <div class="search-inner">
-        <i class="bi bi-search search-ico"></i>
-        <input
-          type="text"
-          class="search-field"
-          placeholder="Search styles, fabrics, occasions..."
-          [(ngModel)]="searchInput"
-          (input)="onSearchInput()"
-          (keydown.enter)="selectAndScroll('All')"
-          autofocus
-          aria-label="Search products"
-        />
-        @if (searchInput) {
-          <button class="search-x" (click)="clearSearch()" aria-label="Clear"><i class="bi bi-x-lg"></i></button>
+        <i class="bi bi-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" (keydown.enter)="onSearch()"
+               placeholder="Search kurtas, sets, styles..." class="search-input" autofocus />
+        @if (searchQuery) {
+          <button (click)="searchQuery = ''; productService.setSearch('')" class="search-clear">
+            <i class="bi bi-x"></i>
+          </button>
         }
-        <button class="search-close" (click)="toggleSearch()" aria-label="Close search">
-          <i class="bi bi-x-circle"></i>
-        </button>
       </div>
     </div>
   }
 
-  <!-- Mobile Drawer -->
+  <!-- Mobile drawer -->
   @if (mobileMenuOpen()) {
-    <div class="mobile-drawer">
-      <div class="drawer-links">
-        <a class="drawer-link" (click)="scrollTo('hero')" role="button">Home</a>
-        <a class="drawer-link drawer-highlight" (click)="scrollTo('new-arrivals')" role="button">✦ New Arrivals</a>
-        <a class="drawer-link" (click)="scrollTo('trending')" role="button">Trending</a>
-        <a class="drawer-link" (click)="scrollTo('products')" role="button">All Styles</a>
-        <a class="drawer-link" (click)="scrollTo('footer')" role="button">Our Story</a>
-      </div>
-      <div class="drawer-cats">
-        <p class="drawer-cats-label">Browse by Category</p>
-        <div class="drawer-chips">
-          @for (cat of categories; track cat.id) {
-            <button class="drawer-chip"
-                    [class.active]="selectedCategory() === cat.id"
-                    (click)="selectAndScroll(cat.id)">
-              {{ cat.icon }} {{ cat.label }}
-            </button>
-          }
-        </div>
-      </div>
-    </div>
+    <nav class="mobile-drawer">
+      <a class="drawer-link" (click)="scrollTo('hero')" role="button">Home</a>
+      <a class="drawer-link" (click)="scrollTo('trending')" role="button">Trending</a>
+      <a class="drawer-link" (click)="scrollTo('new-arrivals')" role="button">New Arrivals</a>
+      <div class="drawer-divider"></div>
+      <p class="drawer-cat-label">Shop by Style</p>
+      <a class="drawer-link" (click)="selectCategory('long-kurtas')" role="button">Long Kurtas</a>
+      <a class="drawer-link" (click)="selectCategory('short-kurtas')" role="button">Short Kurtas</a>
+      <a class="drawer-link" (click)="selectCategory('2-piece-sets')" role="button">2-Piece Sets</a>
+      <a class="drawer-link" (click)="selectCategory('3-piece-sets')" role="button">3-Piece Sets</a>
+    </nav>
   }
 </header>

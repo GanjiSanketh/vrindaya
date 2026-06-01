@@ -3,20 +3,20 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProductService } from '../../services/product.service';
 
 @Component({
-  selector: 'app-categories',
+  selector: 'app-vrindaya-look',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './categories.html',
-  styleUrl: './categories.css',
+  templateUrl: './vrindaya-look.html',
+  styleUrl: './vrindaya-look.css',
 })
-export class Categories {
+export class VrindayaLook {
   private platformId = inject(PLATFORM_ID);
   protected svc = inject(ProductService);
 
-  readonly categories = this.svc.categories;
+  readonly items = this.svc.lookItems;
 
-  selectAndScroll(id: string): void {
-    this.svc.setCategory(id);
+  explore(categoryId: string): void {
+    this.svc.setCategory(categoryId);
     if (isPlatformBrowser(this.platformId)) {
       document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
     }

@@ -1,253 +1,96 @@
-/* ═══════════════════════════════════
-   CATEGORIES — Color Card Grid
-   ═══════════════════════════════════ */
+.cat-section { background: var(--cream-light); }
 
-.cat-section {
-  background: var(--white);
-  padding: 4rem 0;
+/* Grid — 4 equal portrait cards */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
 }
 
-.cat-container {
-  padding-left: 2rem;
-  padding-right: 2rem;
+.cat-card {
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 3/4;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
-/* ── Header ── */
-.cat-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 1.75rem;
-  gap: 1rem;
+.cat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
 }
 
-.cat-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 0.75rem;
+.cat-img-wrap {
+  position: absolute;
+  inset: 0;
 }
 
-.cat-eyebrow::before {
-  content: '';
-  display: inline-block;
-  width: 24px;
-  height: 1px;
-  background: var(--text-muted);
-  flex-shrink: 0;
+.cat-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.6s ease;
 }
 
-.cat-title {
+.cat-card:hover .cat-img { transform: scale(1.07); }
+
+.cat-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top,
+    rgba(45, 15, 15, 0.82) 0%,
+    rgba(45, 15, 15, 0.3) 45%,
+    transparent 70%
+  );
+  transition: opacity 0.35s;
+}
+
+.cat-card:hover .cat-overlay { opacity: 0.92; }
+
+/* Text at bottom */
+.cat-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 1.5rem 1.25rem;
+  z-index: 2;
+}
+
+.cat-name {
   font-family: var(--font-serif);
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  color: var(--primary);
-  margin: 0;
-  letter-spacing: -0.02em;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+  line-height: 1.1;
 }
 
-.cat-view-all {
+.cat-sub {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 0.875rem;
+}
+
+.cat-cta {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.6rem 1.25rem;
-  border: 1.5px solid var(--border);
-  border-radius: 4px;
-  background: transparent;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text);
-  cursor: pointer;
-  transition: var(--transition);
-  white-space: nowrap;
-  flex-shrink: 0;
-  align-self: center;
-}
-
-.cat-view-all:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* ── Filter chips ── */
-.cat-chips-row {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-}
-
-.cat-chip {
-  padding: 0.45rem 1rem;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: var(--white);
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text);
-  cursor: pointer;
-  transition: var(--transition);
-  white-space: nowrap;
-}
-
-.cat-chip:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.cat-chip.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-}
-
-/* ═══════════════════════════════════════════
-   COLOR CARD GRID — Luxury Editorial
-   Clean pastel cards with full-bleed product
-   photo and frosted text panel at bottom.
-   ═══════════════════════════════════════════ */
-.cat-color-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.875rem;           /* tighter gap — more editorial */
-}
-
-.cat-color-card {
-  border-radius: 6px;      /* very subtle radius — fashion editorial */
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  aspect-ratio: 3 / 4;    /* portrait, like product cards — consistency */
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow  0.35s ease;
-}
-
-.cat-color-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.13);
-}
-
-/* Full-bleed product image */
-.cat-card-img-wrap {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.cat-card-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.cat-color-card:hover .cat-card-img {
-  transform: scale(1.06);
-}
-
-/* Dark gradient overlay — content readable on any photo */
-.cat-color-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(20, 20, 20, 0.78) 0%,
-    rgba(20, 20, 20, 0.22) 45%,
-    transparent 70%
-  );
-  z-index: 1;
-  transition: opacity 0.35s ease;
-}
-
-.cat-color-card:hover::before {
-  opacity: 0.9;
-}
-
-/* Text content — sits above overlay */
-.cat-card-inner {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  padding: 1.25rem 1.25rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.cat-icon-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  margin-bottom: 0.375rem;
-  transition: transform 0.3s ease;
-  /* semi-transparent background */
-  background: rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(8px);
-}
-
-.cat-color-card:hover .cat-icon-circle {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.22) !important;
-}
-
-.cat-card-name {
-  font-family: var(--font-serif);
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.cat-card-cta {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  transition: color 0.2s, gap 0.2s;
-  margin-top: 0.125rem;
+  color: var(--gold-light);
+  border-bottom: 1px solid rgba(201,168,76,0.5);
+  padding-bottom: 2px;
+  transition: gap 0.2s;
 }
 
-.cat-color-card:hover .cat-card-cta {
-  color: rgba(255, 255, 255, 0.9);
-  gap: 0.5rem;
-}
+.cat-card:hover .cat-cta { gap: 0.65rem; }
 
-/* ── Responsive ── */
-@media (max-width: 1200px) {
-  .cat-color-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-@media (max-width: 768px) {
-  .cat-section { padding: 3rem 0; }
-  .cat-container { padding-left: 1.25rem; padding-right: 1.25rem; }
-  .cat-color-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-  .cat-header { flex-direction: column; align-items: flex-start; }
-  .cat-chips-row { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.5rem; }
-}
-
-@media (max-width: 480px) {
-  .cat-color-grid { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
-  .cat-color-card { min-height: 140px; padding: 1.125rem; }
-}
+/* Responsive */
+@media (max-width: 1024px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 576px)  { .cat-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; } }

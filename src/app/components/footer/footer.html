@@ -1,98 +1,96 @@
-<footer id="footer" class="vrindaya-footer">
+<footer id="footer">
 
-  <!-- ── Top: Brand story + links ── -->
-  <div class="footer-top">
-    <div class="container-fluid footer-container">
-      <div class="row g-5">
+  <!-- ══ TOP SECTION (cream) ══ -->
+  <div class="ft-top">
+    <div class="container-vr">
 
-        <!-- Brand story -->
-        <div class="col-12 col-lg-4">
-          <div class="footer-brand">
-            <div class="footer-logo">
-              <img src="assets/logo.svg" alt="Vrindaya" class="footer-logo-img" />
-              <span class="brand-name">VRINDAYA</span>
-            </div>
-            <p class="footer-story">
-              Born from a love of Indian craftsmanship and modern aesthetics,
-              Vrindaya curates premium ethnic wear that celebrates every woman's
-              grace — from everyday elegance to festive grandeur.
-            </p>
-            <div class="social-links">
-              <a href="#" class="social-link" aria-label="Instagram">
-                <i class="bi bi-instagram"></i>
-              </a>
-              <a href="#" class="social-link" aria-label="Facebook">
-                <i class="bi bi-facebook"></i>
-              </a>
-              <a href="#" class="social-link" aria-label="Pinterest">
-                <i class="bi bi-pinterest"></i>
-              </a>
-              <a href="#" class="social-link" aria-label="YouTube">
-                <i class="bi bi-youtube"></i>
-              </a>
-              <a href="https://wa.me/919999999999" class="social-link whatsapp" target="_blank" rel="noopener" aria-label="WhatsApp">
-                <i class="bi bi-whatsapp"></i>
-              </a>
-            </div>
-          </div>
+      <!-- Brand block -->
+      <div class="ft-brand">
+        <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="ft-logo" />
+        <h2 class="ft-brand-name">VRINDAYA</h2>
+        <div class="ft-brand-rule">
+          <span class="ft-rule-line"></span>
+          <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="18" height="14">
+            <circle cx="10" cy="10" r="3" fill="none" stroke="var(--gold)" stroke-width="1"/>
+            <path d="M10 2C8 5 8 8 9 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
+            <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
+          </svg>
+          <span class="ft-rule-line"></span>
         </div>
+        <em class="ft-tagline">Wear the Grace</em>
+        <p class="ft-desc">
+          Vrindaya celebrates timeless elegance through thoughtfully curated ethnic wear
+          designed for every occasion.
+        </p>
+      </div>
 
-        <!-- Collections -->
-        <div class="col-6 col-md-3 col-lg-2">
-          <h4 class="footer-heading">Collections</h4>
-          <ul class="footer-links">
-            <li><a (click)="scrollToSection('new-arrivals')" role="button">New Arrivals</a></li>
-            <li><a (click)="scrollToSection('trending')" role="button">Trending Now</a></li>
-            <li><a (click)="scrollToSection('categories')" role="button">Kurtas</a></li>
-            <li><a (click)="scrollToSection('categories')" role="button">Sarees</a></li>
-            <li><a (click)="scrollToSection('categories')" role="button">Lehengas</a></li>
-            <li><a (click)="scrollToSection('categories')" role="button">Sets & Co-ords</a></li>
+      <!-- Links section -->
+      <div class="ft-divider-h"></div>
+
+      <div class="ft-cols">
+
+        <!-- Shop -->
+        <div class="ft-col">
+          <h4 class="ft-col-title">SHOP</h4>
+          <div class="ft-col-rule"></div>
+          <ul class="ft-links">
+            <li><a (click)="scrollTo('categories')" role="button">Long Kurtas</a></li>
+            <li><a (click)="scrollTo('categories')" role="button">Short Kurtas</a></li>
+            <li><a (click)="scrollTo('categories')" role="button">2-Piece Sets</a></li>
+            <li><a (click)="scrollTo('categories')" role="button">3-Piece Sets</a></li>
           </ul>
         </div>
 
         <!-- Quick Links -->
-        <div class="col-6 col-md-3 col-lg-2">
-          <h4 class="footer-heading">Quick Links</h4>
-          <ul class="footer-links">
-            <li><a (click)="scrollToSection('hero')" role="button">Home</a></li>
-            <li><a (click)="scrollToSection('products')" role="button">All Products</a></li>
-            <li><a (click)="scrollToSection('community')" role="button">The Vrindaya Look</a></li>
-            <li><a href="#" role="button">About Us</a></li>
-            <li><a href="#" role="button">Contact Us</a></li>
+        <div class="ft-col">
+          <h4 class="ft-col-title">QUICK LINKS</h4>
+          <div class="ft-col-rule"></div>
+          <ul class="ft-links">
+            <li><a (click)="scrollTo('hero')" role="button">About Us</a></li>
+            <li><a (click)="scrollTo('new-arrivals')" role="button">New Arrivals</a></li>
+            <li><a (click)="scrollTo('trending')" role="button">Trending Collection</a></li>
+            <li><a (click)="scrollTo('customer-love')" role="button">Customer Love</a></li>
+          </ul>
+        </div>
+
+        <!-- Follow Us -->
+        <div class="ft-col">
+          <h4 class="ft-col-title">FOLLOW US</h4>
+          <div class="ft-col-rule"></div>
+          <ul class="ft-social">
+            <li>
+              <a href="https://instagram.com/vrindaya" target="_blank" rel="noopener">
+                <i class="bi bi-instagram"></i> Instagram
+              </a>
+            </li>
+            <li>
+              <a href="#" target="_blank" rel="noopener">
+                <i class="bi bi-facebook"></i> Facebook
+              </a>
+            </li>
+            <li>
+              <a href="#" target="_blank" rel="noopener">
+                <i class="bi bi-pinterest"></i> Pinterest
+              </a>
+            </li>
+            <li>
+              <a href="https://wa.me/919989988991" target="_blank" rel="noopener">
+                <i class="bi bi-whatsapp"></i> WhatsApp
+              </a>
+            </li>
           </ul>
         </div>
 
         <!-- Newsletter -->
-        <div class="col-12 col-lg-4">
-          <h4 class="footer-heading">Stay in the Loop</h4>
-          <p class="footer-text">
-            Get first access to new editorials, style lookbooks, and curated collections — straight to your inbox.
+        <div class="ft-col">
+          <h4 class="ft-col-title">STAY CONNECTED</h4>
+          <div class="ft-col-rule"></div>
+          <p class="ft-newsletter-desc">
+            Get updates on new arrivals, exclusive collections and offers.
           </p>
-          <div class="newsletter-form">
-            <input type="email" class="newsletter-input" placeholder="Enter your email..." aria-label="Newsletter email" />
-            <button class="newsletter-btn" type="button" aria-label="Subscribe">
-              <i class="bi bi-send"></i>
-            </button>
-          </div>
-          <p class="newsletter-note">
-            <i class="bi bi-shield-check"></i>
-            No spam, ever. Unsubscribe anytime.
-          </p>
-
-          <!-- Editorial promise strip -->
-          <div class="footer-trust-row">
-            <div class="footer-trust-item">
-              <i class="bi bi-gem"></i>
-              <span>Premium Fabrics</span>
-            </div>
-            <div class="footer-trust-item">
-              <i class="bi bi-award"></i>
-              <span>Curated Edits</span>
-            </div>
-            <div class="footer-trust-item">
-              <i class="bi bi-heart"></i>
-              <span>Made with Love</span>
-            </div>
+          <div class="ft-newsletter-form">
+            <input type="email" class="ft-email-input" placeholder="Enter your email address" aria-label="Email" />
+            <button class="ft-subscribe-btn">SUBSCRIBE</button>
           </div>
         </div>
 
@@ -100,23 +98,62 @@
     </div>
   </div>
 
-  <!-- ── Bottom bar ── -->
-  <div class="footer-bottom">
-    <div class="container-fluid footer-container">
-      <div class="footer-bottom-row">
-        <p class="copyright">
-          &copy; {{ currentYear }} Vrindaya. All rights reserved.
-          Made with <i class="bi bi-heart-fill"></i> in India.
-        </p>
-        <div class="footer-bottom-links">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Style Guide</a>
-          <a href="#">Brand Story</a>
+  <!-- ══ BOTTOM SECTION (dark maroon) ══ -->
+  <div class="ft-bottom">
+    <div class="container-vr">
+      <div class="ft-bottom-inner">
+
+        <!-- Features -->
+        <div class="ft-features">
+          <div class="ft-feature">
+            <div class="ft-feat-icon"><i class="bi bi-flower1"></i></div>
+            <div>
+              <strong>PREMIUM QUALITY</strong>
+              <span>Carefully selected fabrics for comfort and elegance.</span>
+            </div>
+          </div>
+          <div class="ft-feat-sep"></div>
+          <div class="ft-feature">
+            <div class="ft-feat-icon"><i class="bi bi-person-dress"></i></div>
+            <div>
+              <strong>THOUGHTFUL DESIGN</strong>
+              <span>Elegant styles crafted to celebrate every woman.</span>
+            </div>
+          </div>
+          <div class="ft-feat-sep"></div>
+          <div class="ft-feature">
+            <div class="ft-feat-icon"><i class="bi bi-truck"></i></div>
+            <div>
+              <strong>PAN INDIA DELIVERY</strong>
+              <span>Fast, reliable and secure delivery across India.</span>
+            </div>
+          </div>
         </div>
-        <button class="footer-back-top" (click)="scrollToTop()" aria-label="Back to top">
-          <i class="bi bi-arrow-up"></i>
-        </button>
+
+        <!-- Contact + copyright -->
+        <div class="ft-contact">
+          <p class="ft-contact-title">NEED HELP?</p>
+          <a href="mailto:support&#64;vrindaya.com" class="ft-contact-link">
+            <i class="bi bi-envelope"></i> support&#64;vrindaya.com
+          </a>
+          <a href="tel:+919989988991" class="ft-contact-link">
+            <i class="bi bi-telephone"></i> +91 99899 88991
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Copyright strip -->
+      <div class="ft-copy">
+        <div class="ft-copy-line"></div>
+        <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="16" height="12">
+          <circle cx="10" cy="10" r="3" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
+          <path d="M10 2C8 5 8 8 9 10" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
+          <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
+        </svg>
+        <div class="ft-copy-line"></div>
+        <p class="ft-copy-text">© {{ currentYear }} Vrindaya. All Rights Reserved.</p>
+        <em class="ft-copy-tag">Wear the Grace ✦</em>
       </div>
     </div>
   </div>

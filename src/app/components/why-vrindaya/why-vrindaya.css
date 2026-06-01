@@ -1,0 +1,122 @@
+.wv-section { background: var(--cream); }
+
+.wv-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.wv-card {
+  background: var(--white);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.wv-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Image with floating icon */
+.wv-img-wrap {
+  position: relative;
+  aspect-ratio: 4/3;
+}
+
+.wv-img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+}
+
+.wv-icon-circle {
+  position: absolute;
+  top: -18px; left: 50%;
+  transform: translateX(-50%);
+  width: 44px; height: 44px;
+  background: var(--white);
+  border: 2px solid var(--gold-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  font-size: 1.1rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+
+.wv-body {
+  padding: 1.5rem 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.625rem;
+}
+
+.wv-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--maroon-dark);
+  margin: 0.25rem 0 0;
+}
+
+.wv-rule {
+  width: 32px; height: 1.5px;
+  background: var(--gold);
+  opacity: 0.6;
+}
+
+.wv-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.wv-ornament { opacity: 0.7; margin-top: 0.25rem; }
+
+/* Bottom promises */
+.wv-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.wv-promise {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--cream-light);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+}
+
+.wv-promise > i {
+  font-size: 1.5rem;
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.wv-promise div {
+  display: flex; flex-direction: column; gap: 0.25rem;
+}
+
+.wv-promise strong {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--maroon-dark);
+}
+
+.wv-promise span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px)  { .wv-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 576px)  { .wv-grid { grid-template-columns: 1fr 1fr; gap: 1rem; } .wv-bottom { grid-template-columns: 1fr; } }

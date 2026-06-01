@@ -1,0 +1,190 @@
+/* ═══════════════════════════════════
+   HERO — split left/right layout
+   ═══════════════════════════════════ */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 90vh;
+  background: var(--cream);
+  overflow: hidden;
+}
+
+/* ── LEFT content ── */
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5rem 2.5rem 4rem 4rem;
+}
+
+/* Eyebrow */
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  animation: haFade 0.6s 0.1s ease both;
+}
+
+.hero-brand-label {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.hero-lotus { color: var(--gold); }
+
+/* Main title */
+.hero-title {
+  font-family: var(--font-serif);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  margin-bottom: 0;
+  animation: haFade 0.7s 0.2s ease both;
+}
+
+.hero-line1 {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 700;
+  color: var(--maroon-dark);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.hero-script {
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(2.8rem, 5.5vw, 5rem);
+  color: var(--maroon);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.hero-leaf {
+  width: 40px;
+  height: auto;
+  opacity: 0.75;
+  margin-top: 0.25em;
+}
+
+/* Gold rule */
+.hero-rule-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin: 1.5rem 0;
+  animation: haFade 0.6s 0.35s ease both;
+}
+
+.rule-line {
+  height: 1px;
+  width: 44px;
+  background: var(--gold);
+  opacity: 0.45;
+  display: block;
+}
+
+/* Description */
+.hero-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+  max-width: 400px;
+  margin-bottom: 2rem;
+  animation: haFade 0.6s 0.5s ease both;
+}
+
+/* CTAs */
+.hero-ctas {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+  animation: haFade 0.6s 0.65s ease both;
+}
+
+/* Trust pills */
+.hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--border);
+  animation: haFade 0.6s 0.8s ease both;
+}
+
+.trust-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.375rem 0.875rem;
+  background: var(--cream-light);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.trust-pill i {
+  font-size: 0.85rem;
+  color: var(--gold);
+}
+
+/* ── RIGHT image ── */
+.hero-visual {
+  overflow: hidden;
+  animation: haFadeIn 0.9s 0.2s ease both;
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+/* Animations */
+@keyframes haFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes haFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  .hero-visual {
+    height: 55vw;
+    min-height: 260px;
+    order: -1;
+  }
+
+  .hero-content {
+    padding: 2.5rem 1.5rem 3rem;
+  }
+
+  .hero-line1  { font-size: clamp(2rem, 7vw, 3rem); }
+  .hero-script { font-size: clamp(2.2rem, 7.5vw, 3.2rem); }
+}
+
+@media (max-width: 480px) {
+  .hero-ctas { flex-direction: column; }
+  .hero-ctas .btn-primary,
+  .hero-ctas .btn-outline { width: 100%; justify-content: center; }
+}

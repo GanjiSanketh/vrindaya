@@ -1,0 +1,193 @@
+[
+  {
+    "id": 1,
+    "name": "Maroon Mandala Kurta",
+    "category": "Long Kurtas",
+    "categoryId": "long-kurtas",
+    "price": 1299,
+    "originalPrice": 2199,
+    "discount": 41,
+    "rating": 4.7,
+    "image": "assets/products/001-wine-mandala-kurta/cover.png",
+    "gallery": [
+      "assets/products/001-wine-mandala-kurta/gallery-1.png",
+      "assets/products/001-wine-mandala-kurta/gallery-2.png",
+      "assets/products/001-wine-mandala-kurta/gallery-3.png",
+      "assets/products/001-wine-mandala-kurta/gallery-4.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/search?q=maroon+mandala+circle+print+kurta+women",
+    "isTrending": true,
+    "isNew": false,
+    "isBestSeller": true,
+    "description": "Rich maroon kurta with elegant mandala circle prints — timeless ethnic charm."
+  },
+  {
+    "id": 2,
+    "name": "Indigo Floral 3-Piece Set",
+    "category": "3-Piece Sets",
+    "categoryId": "3-piece-sets",
+    "price": 1799,
+    "originalPrice": 2999,
+    "discount": 40,
+    "rating": 4.6,
+    "image": "assets/products/002-indigo-floral-kurta-set/cover.png",
+    "gallery": [
+      "assets/products/002-indigo-floral-kurta-set/gallery-1.png",
+      "assets/products/002-indigo-floral-kurta-set/gallery-2.png",
+      "assets/products/002-indigo-floral-kurta-set/gallery-3.png",
+      "assets/products/002-indigo-floral-kurta-set/gallery-4.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/search?q=indigo+floral+kurta+pant+set+women",
+    "isTrending": true,
+    "isNew": false,
+    "isBestSeller": false,
+    "description": "Breezy indigo floral 3-piece set with matching dupatta — effortless elegance."
+  },
+  {
+    "id": 3,
+    "name": "Black Gold Embroidered Kurti",
+    "category": "Short Kurtas",
+    "categoryId": "short-kurtas",
+    "price": 1599,
+    "originalPrice": 2799,
+    "discount": 43,
+    "rating": 4.8,
+    "image": "assets/products/003-black-gold-embroidered-kurti/cover.png",
+    "gallery": [
+      "assets/products/003-black-gold-embroidered-kurti/gallery-1.png",
+      "assets/products/003-black-gold-embroidered-kurti/gallery-2.png",
+      "assets/products/003-black-gold-embroidered-kurti/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/search?q=black+gold+zari+embroidered+kurti+women",
+    "isTrending": false,
+    "isNew": true,
+    "isBestSeller": false,
+    "description": "Luxurious black kurti with intricate gold zari embroidery — perfect for evenings."
+  },
+  {
+    "id": 4,
+    "name": "Pastel Stripe Straight Kurta",
+    "category": "Long Kurtas",
+    "categoryId": "long-kurtas",
+    "price": 999,
+    "originalPrice": 1699,
+    "discount": 41,
+    "rating": 4.4,
+    "image": "assets/products/004-pastel-stripe-kurta/cover.png",
+    "gallery": [
+      "assets/products/004-pastel-stripe-kurta/gallery-1.png",
+      "assets/products/004-pastel-stripe-kurta/gallery-2.png",
+      "assets/products/004-pastel-stripe-kurta/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/search?q=pastel+stripe+straight+kurta+women",
+    "isTrending": false,
+    "isNew": true,
+    "isBestSeller": false,
+    "description": "Soft pastel multi-stripe kurta in premium linen blend — casual yet chic."
+  },
+  {
+    "id": 5,
+    "name": "Fuchsia Floral 3-Piece Set",
+    "category": "3-Piece Sets",
+    "categoryId": "3-piece-sets",
+    "price": 2099,
+    "originalPrice": 3499,
+    "discount": 40,
+    "rating": 4.9,
+    "image": "assets/products/005-fuchsia-floral-kurta-set/cover.png",
+    "gallery": [
+      "assets/products/005-fuchsia-floral-kurta-set/gallery-1.png",
+      "assets/products/005-fuchsia-floral-kurta-set/gallery-2.png",
+      "assets/products/005-fuchsia-floral-kurta-set/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/vrindaya-women-ethnic-top-pant-dupatta-set/p/itm87a8720910488",
+    "isTrending": true,
+    "isNew": false,
+    "isBestSeller": true,
+    "description": "Vibrant fuchsia floral 3-piece set — a head-turning statement for every celebration."
+  },
+  {
+    "id": 6,
+    "name": "Navy Mandala Elephant Kurta",
+    "category": "Long Kurtas",
+    "categoryId": "long-kurtas",
+    "price": 1299,
+    "originalPrice": 2199,
+    "discount": 41,
+    "rating": 4.5,
+    "image": "assets/products/006-navy-mandala-kurta/cover.png",
+    "gallery": [
+      "assets/products/006-navy-mandala-kurta/gallery-1.png",
+      "assets/products/006-navy-mandala-kurta/gallery-2.png",
+      "assets/products/006-navy-mandala-kurta/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/search?q=navy+mandala+elephant+print+kurta+women",
+    "isTrending": true,
+    "isNew": false,
+    "isBestSeller": false,
+    "description": "Classic navy kurta with intricate elephant mandala motifs in crisp white."
+  },
+  {
+    "id": 7,
+    "name": "Purple Embroidered Dress",
+    "category": "Short Kurtas",
+    "categoryId": "short-kurtas",
+    "price": 1499,
+    "originalPrice": 2499,
+    "discount": 40,
+    "rating": 4.6,
+    "image": "assets/products/007-purple-embroidered-dress/cover.png",
+    "gallery": [
+      "assets/products/007-purple-embroidered-dress/gallery-1.png",
+      "assets/products/007-purple-embroidered-dress/gallery-2.png",
+      "assets/products/007-purple-embroidered-dress/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/search?q=purple+embroidered+fit+flare+dress+women",
+    "isTrending": false,
+    "isNew": true,
+    "isBestSeller": false,
+    "description": "Bold purple fit-and-flare with delicate block print embroidery — effortlessly feminine."
+  },
+  {
+    "id": 8,
+    "name": "Forest Green Floral 3-Piece Set",
+    "category": "3-Piece Sets",
+    "categoryId": "3-piece-sets",
+    "price": 1899,
+    "originalPrice": 3199,
+    "discount": 41,
+    "rating": 4.7,
+    "image": "assets/products/008-green-floral-kurta-set/cover.png",
+    "gallery": [
+      "assets/products/008-green-floral-kurta-set/gallery-1.png",
+      "assets/products/008-green-floral-kurta-set/gallery-2.png",
+      "assets/products/008-green-floral-kurta-set/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/search?q=forest+green+floral+kurta+set+dupatta",
+    "isTrending": false,
+    "isNew": true,
+    "isBestSeller": false,
+    "description": "Lush forest green floral 3-piece set with zig-zag dupatta — earthy and elegant."
+  },
+  {
+    "id": 9,
+    "name": "Teal Floral 2-Piece Set",
+    "category": "2-Piece Sets",
+    "categoryId": "2-piece-sets",
+    "price": 2199,
+    "originalPrice": 3699,
+    "discount": 41,
+    "rating": 4.9,
+    "image": "assets/products/009-teal-floral-kurta-set/cover.png",
+    "gallery": [
+      "assets/products/009-teal-floral-kurta-set/gallery-1.png",
+      "assets/products/009-teal-floral-kurta-set/gallery-2.png",
+      "assets/products/009-teal-floral-kurta-set/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/search?q=teal+floral+kurta+pant+set+dupatta",
+    "isTrending": true,
+    "isNew": true,
+    "isBestSeller": true,
+    "description": "Stunning teal kurta with bold floral print and striped pants — a signature look."
+  }
+]
