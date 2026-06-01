@@ -18,7 +18,7 @@
   position: relative;
   height: 100vh;
   height: 100svh;
-  background: var(--cream);
+  background: #ffffff;
   overflow: hidden;
 }
 
@@ -29,7 +29,7 @@
   top: 0;
   width: 60%;
   height: 100%;
-  background: linear-gradient(155deg, #ecddc8 0%, #e5cfa8 55%, #d9c090 100%);
+  background: linear-gradient(155deg, #f5f0ea 0%, #ede5d8 55%, #e4d9c8 100%);
   border-radius: 64px 0 0 64px;
   z-index: 0;
   box-shadow: -20px 0 80px rgba(107, 26, 44, 0.06);
@@ -198,7 +198,7 @@
     width: 100%;
     height: 50%;
     border-radius: 60% 60% 0 0;
-    background: linear-gradient(180deg, transparent 0%, #ecddc8 100%);
+    background: linear-gradient(180deg, transparent 0%, #f5f0ea 100%);
     box-shadow: none;
   }
 

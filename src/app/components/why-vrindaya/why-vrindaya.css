@@ -1,4 +1,4 @@
-.wv-section { background: var(--cream); }
+.wv-section { background: #ffffff; }
 
 .wv-grid {
   display: grid;
@@ -89,7 +89,7 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
-  background: var(--cream-light);
+  background: #f9f9f9;
   border-radius: var(--r-md);
   border: 1px solid var(--border);
 }

@@ -1,4 +1,4 @@
-.cl-section { background: var(--cream); }
+.cl-section { background: #ffffff; }
 
 .cl-title { font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: 0.05em; }
 
@@ -101,7 +101,7 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  background: var(--cream-light);
+  background: #f9f9f9;
   border-radius: var(--r-md);
   border: 1px solid var(--border);
   padding: 1.5rem 2rem;

@@ -1,35 +1,35 @@
 /* ═══════════════════════════════════════════════════════
    VRINDAYA — Global Design System
-   Palette: Cream · Maroon · Gold
+   Palette: White · Deep Wine Maroon · Soft Gold
    Fonts:   Cormorant Garamond (serif) · DM Sans (sans)
    ═══════════════════════════════════════════════════════ */
 
 :root {
   /* ── Core palette ── */
-  --cream:         #f9f0e3;
-  --cream-light:   #fdf6ee;
-  --cream-mid:     #f2e4cc;
-  --maroon:        #6b1a2c;
-  --maroon-dark:   #4a0e1e;
+  --cream:         #ffffff;
+  --cream-light:   #f9f9f9;
+  --cream-mid:     #f0f0f0;
+  --maroon:        #6d1028;
+  --maroon-dark:   #4a0c1e;
   --maroon-mid:    #8a2238;
-  --maroon-light:  #f5e8ec;
-  --gold:          #c9a84c;
+  --maroon-light:  #fdf0f3;
+  --gold:          #c9a24d;
   --gold-light:    #e8d5a3;
-  --gold-pale:     #f7f0dc;
+  --gold-pale:     #faf5e8;
   --white:         #ffffff;
-  --text:          #2d1a1a;
-  --text-muted:    #7a6050;
-  --text-light:    #a08070;
-  --border:        #e8d5c0;
+  --text:          #333333;
+  --text-muted:    #666666;
+  --text-light:    #999999;
+  --border:        #eaeaea;
 
   /* ── Typography ── */
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans:  'DM Sans', system-ui, sans-serif;
 
-  /* ── Shadows ── */
-  --shadow-sm:   0 2px 12px rgba(107, 26, 44, 0.06);
-  --shadow-md:   0 6px 28px rgba(107, 26, 44, 0.1);
-  --shadow-lg:   0 16px 48px rgba(107, 26, 44, 0.16);
+  /* ── Shadows (neutral, not maroon-tinted) ── */
+  --shadow-sm:   0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-md:   0 8px 30px rgba(0, 0, 0, 0.10);
+  --shadow-lg:   0 16px 48px rgba(0, 0, 0, 0.14);
 
   /* ── Radii ── */
   --r-sm:   6px;
@@ -46,7 +46,7 @@ html { scroll-behavior: smooth; font-size: 16px; }
 
 body {
   font-family: var(--font-sans);
-  background: var(--cream);
+  background: #ffffff;
   color: var(--text);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
@@ -66,8 +66,8 @@ button { font-family: var(--font-sans); cursor: pointer; }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--cream); }
-::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 3px; }
+::-webkit-scrollbar-track { background: #f9f9f9; }
+::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 3px; }
 
 /* ══════════════════════════════════════
    SECTION UTILITIES
@@ -171,7 +171,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
 .btn-primary:hover {
   background: var(--maroon-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(107, 26, 44, 0.3);
+  box-shadow: 0 6px 20px rgba(109, 16, 40, 0.28);
 }
 
 .btn-outline {
@@ -179,7 +179,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
   align-items: center;
   gap: 0.625rem;
   padding: 0.8rem 1.75rem;
-  background: transparent;
+  background: #fff;
   color: var(--maroon);
   border: 1.5px solid var(--maroon);
   border-radius: var(--r-sm);
@@ -217,7 +217,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
 .btn-gold:hover {
   background: var(--gold-light);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
+  box-shadow: 0 6px 20px rgba(201, 162, 77, 0.4);
 }
 
 /* ══════════════════════════════════════
@@ -236,7 +236,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
   font-size: 1.2rem;
   z-index: 999;
   transition: var(--transition);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
   text-decoration: none;
 }
 
