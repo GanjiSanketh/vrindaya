@@ -22,9 +22,9 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  height: 68px;
+  height: 96px;
   padding: 0 2rem;
-  overflow: hidden;           /* prevent logo blowout */
+  overflow: hidden;
 }
 
 /* ── Left nav (desktop) ── */
@@ -79,38 +79,51 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
   cursor: pointer;
   text-decoration: none;
-  padding: 0 1.25rem;
+  padding: 0 1.5rem;
   justify-self: center;
-  /* Hard-clamp so even a 2000px PNG can't escape */
-  height: 68px;
+  height: 96px;
   overflow: hidden;
+  transition: opacity 0.2s;
 }
 
-.nav-logo:hover { opacity: 0.8; }
+.nav-logo:hover { opacity: 0.82; }
 
-/* ── Logo image — STRICTLY constrained ── */
-.logo-img {
-  height: 40px;             /* never taller than this */
+/* ── Logo icon — 70px tall on desktop ── */
+.logo-icon {
+  height: 70px;
   width: auto;
-  max-width: 90px;          /* never wider than this */
-  max-height: 40px;         /* belt-and-suspenders */
+  max-width: 180px;
+  max-height: 70px;
   object-fit: contain;
   display: block;
   flex-shrink: 0;
 }
 
-/* "— WOMEN —" sub-label */
-.logo-sub {
+/* ── Brand name ── */
+.logo-brand {
   font-family: var(--font-sans);
-  font-size: 0.5rem;
-  letter-spacing: 0.3em;
-  color: #8a7060;
-  font-weight: 500;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.36em;
+  color: #1b7a8a;
   white-space: nowrap;
   line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ── Tagline ── */
+.logo-tagline {
+  font-family: var(--font-sans);
+  font-size: 0.44rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: #5aa8b5;
+  white-space: nowrap;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 /* ── Right nav (desktop) ── */
@@ -255,12 +268,30 @@
 @media (max-width: 1279px) {
   .nav-inner {
     grid-template-columns: 44px 1fr 44px;
+    height: 78px;
     padding: 0 1.25rem;
   }
 
   .nav-logo {
     padding: 0;
     justify-self: center;
+    height: 78px;
+  }
+
+  /* 50px logo icon on mobile */
+  .logo-icon {
+    height: 50px;
+    max-height: 50px;
+    max-width: 140px;
+  }
+
+  .logo-brand {
+    font-size: 0.56rem;
+    letter-spacing: 0.28em;
+  }
+
+  .logo-tagline {
+    font-size: 0.40rem;
   }
 }
 

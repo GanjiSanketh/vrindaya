@@ -1,50 +1,44 @@
 <section class="hero" id="hero">
 
-  <!-- Full-bleed background photo -->
-  <div class="hero-bg">
-    <img
-      src="assets/products/004-pastel-stripe-kurta/image-1.png"
-      alt="Vrindaya — Where Tradition Meets Modern Grace"
-      class="hero-bg-img"
-      priority
-    />
-    <div class="hero-bg-overlay"></div>
-  </div>
+  <!-- Warm editorial background panel (right side) -->
+  <div class="hero-arch" aria-hidden="true"></div>
 
-  <!-- Glassmorphism card -->
-  <div class="hero-card-side">
-    <div class="hero-glass-card">
+  <div class="hero-inner">
 
-      <p class="hero-glass-label ha ha-1">TRADITIONAL INDIAN WOMEN'S WEAR</p>
+    <!-- ── LEFT: Editorial content ── -->
+    <div class="hero-content">
 
-      <h1 class="hero-glass-title">
-        <span class="hgt-line ha ha-2">Where Tradition</span>
-        <em class="hgt-em ha ha-3">Meets Modern Grace</em>
+      <h1 class="hero-title ha ha-1">
+        Wear the
+        <em class="hero-title-em">Grace</em>
       </h1>
 
-      <div class="hero-glass-rule ha ha-4"></div>
-
-      <p class="hero-glass-desc ha ha-4">
-        Graceful designs for the modern Indian woman — curated with love, crafted with tradition.
+      <p class="hero-desc ha ha-2">
+        Timeless ethnic wear crafted for women who embrace elegance every day.
       </p>
 
-      <div class="hero-glass-actions ha ha-5">
-        <button class="hero-cta-dark" (click)="scrollToProducts()">
-          EXPLORE COLLECTION
+      <div class="hero-actions ha ha-3">
+        <button class="hbtn-primary" (click)="scrollToProducts()">
+          Explore Collection
         </button>
-        <button class="hero-cta-text" (click)="scrollToNew()">
+        <button class="hbtn-ghost" (click)="scrollToNew()">
           New Arrivals <i class="bi bi-arrow-right"></i>
         </button>
       </div>
 
-      <!-- Pagination dots (decorative) -->
-      <div class="hero-dots ha ha-6">
-        <span class="hero-dot active"></span>
-        <span class="hero-dot"></span>
-        <span class="hero-dot"></span>
-      </div>
-
     </div>
+
+    <!-- ── RIGHT: Hero image ── -->
+    <div class="hero-img-col">
+      <div class="hero-img-wrap ha ha-1">
+        <img
+          src="assets/hero/hero-banner.png"
+          alt="Vrindaya — Wear the Grace"
+          class="hero-product-img"
+        />
+      </div>
+    </div>
+
   </div>
 
 </section>

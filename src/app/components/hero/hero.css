@@ -1,113 +1,89 @@
-/* ═══════════════════════════════════
-   HERO — split left/right layout
-   ═══════════════════════════════════ */
-.hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 90vh;
-  background: var(--cream);
-  overflow: hidden;
+/* ═══════════════════════════════════════════
+   HERO — Premium editorial split layout
+   42 / 58 two-column, luxury fashion
+   ═══════════════════════════════════════════ */
+
+/* ── Fade-in animations ── */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes heroFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-/* ── LEFT content ── */
+/* ── Hero shell ── */
+.hero {
+  display: grid;
+  grid-template-columns: 42fr 58fr;
+  min-height: 90vh;
+  background: var(--cream);
+  overflow: visible; /* allow image to bleed below for editorial look */
+  position: relative;
+  align-items: stretch;
+}
+
+/* ══════════════════════════
+   LEFT — Content column
+══════════════════════════ */
 .hero-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 5rem 2.5rem 4rem 4rem;
+  gap: 1.75rem;
+  padding: 5rem 3rem 4rem 6%;
+  animation: heroFadeUp 0.7s 0.05s ease both;
 }
 
-/* Eyebrow */
-.hero-eyebrow {
-  display: flex;
+/* Season badge */
+.hero-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  animation: haFade 0.6s 0.1s ease both;
-}
-
-.hero-brand-label {
+  align-self: flex-start;
+  padding: 0.35rem 0.95rem;
+  border: 1px solid var(--gold);
+  border-radius: var(--r-pill);
   font-family: var(--font-sans);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--gold);
+  background: transparent;
+  animation: heroFadeUp 0.6s 0.1s ease both;
 }
 
-.hero-lotus { color: var(--gold); }
-
-/* Main title */
+/* Main heading */
 .hero-title {
   font-family: var(--font-serif);
-  display: flex;
-  flex-direction: column;
-  gap: 0.1em;
-  margin-bottom: 0;
-  animation: haFade 0.7s 0.2s ease both;
-}
-
-.hero-line1 {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 700;
-  color: var(--maroon-dark);
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.hero-script {
-  font-style: italic;
+  font-size: clamp(3rem, 5vw, 5rem);
   font-weight: 600;
-  font-size: clamp(2.8rem, 5.5vw, 5rem);
-  color: var(--maroon);
+  color: var(--maroon-dark);
   line-height: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  margin: 0;
   letter-spacing: -0.02em;
-}
-
-.hero-leaf {
-  width: 40px;
-  height: auto;
-  opacity: 0.75;
-  margin-top: 0.25em;
-}
-
-/* Gold rule */
-.hero-rule-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  margin: 1.5rem 0;
-  animation: haFade 0.6s 0.35s ease both;
-}
-
-.rule-line {
-  height: 1px;
-  width: 44px;
-  background: var(--gold);
-  opacity: 0.45;
-  display: block;
+  animation: heroFadeUp 0.7s 0.22s ease both;
 }
 
 /* Description */
 .hero-desc {
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   color: var(--text-muted);
-  line-height: 1.8;
-  max-width: 400px;
-  margin-bottom: 2rem;
-  animation: haFade 0.6s 0.5s ease both;
+  line-height: 1.85;
+  max-width: 380px;
+  margin: 0;
+  animation: heroFadeUp 0.6s 0.38s ease both;
 }
 
-/* CTAs */
+/* CTA row */
 .hero-ctas {
   display: flex;
+  align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 2.5rem;
-  animation: haFade 0.6s 0.65s ease both;
+  animation: heroFadeUp 0.6s 0.52s ease both;
 }
 
 /* Trust pills */
@@ -115,33 +91,40 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  padding-top: 1.75rem;
+  padding-top: 1.5rem;
   border-top: 1px solid var(--border);
-  animation: haFade 0.6s 0.8s ease both;
+  animation: heroFadeUp 0.6s 0.68s ease both;
 }
 
 .trust-pill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.375rem 0.875rem;
+  padding: 0.35rem 0.85rem;
   background: var(--cream-light);
   border: 1px solid var(--border);
   border-radius: var(--r-pill);
-  font-size: 0.72rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
   font-weight: 500;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .trust-pill i {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--gold);
+  flex-shrink: 0;
 }
 
-/* ── RIGHT image ── */
+/* ══════════════════════════
+   RIGHT — Model image column
+══════════════════════════ */
 .hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   overflow: hidden;
-  animation: haFadeIn 0.9s 0.2s ease both;
 }
 
 .hero-img {
@@ -149,42 +132,66 @@
   height: 100%;
   object-fit: cover;
   object-position: center top;
-  display: block;
 }
 
-/* Animations */
-@keyframes haFade {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes haFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+/* ── Tablet (≤ 1024px) ── */
+@media (max-width: 1024px) {
+  .hero {
+    grid-template-columns: 46fr 54fr;
+  }
+
+  .hero-content {
+    padding: 4rem 2rem 3.5rem 4%;
+    gap: 1.5rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.6rem, 4.5vw, 4rem);
+  }
 }
 
-/* ── Responsive ── */
+/* ── Mobile (≤ 900px) — stack vertically ── */
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
     min-height: unset;
+    overflow: hidden;
   }
 
   .hero-visual {
-    height: 55vw;
-    min-height: 260px;
+    height: 60vw;
+    min-height: 280px;
     order: -1;
+    overflow: hidden;
+  }
+
+  .hero-img {
+    height: 100%;
   }
 
   .hero-content {
     padding: 2.5rem 1.5rem 3rem;
+    gap: 1.25rem;
   }
 
-  .hero-line1  { font-size: clamp(2rem, 7vw, 3rem); }
-  .hero-script { font-size: clamp(2.2rem, 7.5vw, 3.2rem); }
+  .hero-title {
+    font-size: clamp(2rem, 7vw, 3rem);
+  }
+
+  .hero-desc {
+    max-width: 100%;
+  }
 }
 
+/* ── Small mobile (≤ 480px) ── */
 @media (max-width: 480px) {
-  .hero-ctas { flex-direction: column; }
+  .hero-ctas {
+    flex-direction: column;
+  }
+
   .hero-ctas .btn-primary,
-  .hero-ctas .btn-outline { width: 100%; justify-content: center; }
+  .hero-ctas .btn-outline {
+    width: 100%;
+    justify-content: center;
+  }
 }
