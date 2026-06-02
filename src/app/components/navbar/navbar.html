@@ -2,30 +2,44 @@
 <header class="vr-nav" [class.scrolled]="scrolled()">
   <div class="nav-inner">
 
-    <!-- LEFT nav links (desktop) -->
-    <nav class="nav-left d-none d-xl-flex">
-      <a class="nav-link" (click)="scrollTo('hero')" role="button">Home</a>
-      <a class="nav-link" (click)="selectCategory('long-kurtas')" role="button">Long Kurtas</a>
-      <a class="nav-link" (click)="selectCategory('short-kurtas')" role="button">Short Kurtas</a>
-      <a class="nav-link" (click)="selectCategory('2-piece-sets')" role="button">2-Piece Sets</a>
-      <a class="nav-link" (click)="selectCategory('3-piece-sets')" role="button">3-Piece Sets</a>
+    <!-- LEFT: desktop nav links -->
+    <nav class="nav-left d-none d-xl-flex" aria-label="Main navigation">
+
+      <a class="nav-link"
+         routerLink="/"
+         routerLinkActive="nav-link-active"
+         [routerLinkActiveOptions]="{ exact: true }">
+        Home
+      </a>
+
+      @for (cat of categories; track cat.id) {
+        <a class="nav-link"
+           [routerLink]="['/category', cat.id]"
+           routerLinkActive="nav-link-active">
+          {{ cat.name }}
+        </a>
+      }
+
     </nav>
 
     <!-- Mobile: hamburger -->
-    <button class="hamburger d-xl-none" (click)="toggleMenu()" aria-label="Menu">
+    <button class="hamburger d-xl-none"
+            (click)="toggleMenu()"
+            [attr.aria-expanded]="mobileMenuOpen()"
+            aria-label="Toggle menu">
       <span [class.open]="mobileMenuOpen()"></span>
       <span [class.open]="mobileMenuOpen()"></span>
       <span [class.open]="mobileMenuOpen()"></span>
     </button>
 
     <!-- CENTER: logo -->
-    <a class="nav-logo" (click)="scrollTo('hero')" role="button" aria-label="Vrindaya Home">
+    <a class="nav-logo" routerLink="/" aria-label="Vrindaya — go to home">
       <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="logo-icon" />
       <span class="logo-brand">VRINDAYA</span>
       <span class="logo-tagline">WEAR THE GRACE</span>
     </a>
 
-    <!-- RIGHT nav (desktop) -->
+    <!-- RIGHT: desktop icons -->
     <div class="nav-right d-none d-xl-flex">
       <button class="nav-icon" (click)="toggleSearch()" aria-label="Search">
         <i class="bi bi-search"></i>
@@ -33,12 +47,16 @@
       <button class="nav-icon" aria-label="Wishlist">
         <i class="bi bi-heart"></i>
       </button>
-      <a class="nav-icon" href="https://instagram.com/vrindaya" target="_blank" rel="noopener" aria-label="Instagram">
+      <a class="nav-icon"
+         href="https://www.instagram.com/vrindaya.co"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Follow us on Instagram">
         <i class="bi bi-instagram"></i>
       </a>
     </div>
 
-    <!-- Mobile right icons -->
+    <!-- Mobile: right icons -->
     <div class="nav-right d-flex d-xl-none">
       <button class="nav-icon" (click)="toggleSearch()" aria-label="Search">
         <i class="bi bi-search"></i>
@@ -51,11 +69,18 @@
   @if (searchOpen()) {
     <div class="search-bar">
       <div class="search-inner">
-        <i class="bi bi-search"></i>
-        <input type="text" [(ngModel)]="searchQuery" (keydown.enter)="onSearch()"
-               placeholder="Search kurtas, sets, styles..." class="search-input" autofocus />
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (keydown.enter)="onSearch()"
+          placeholder="Search kurtas, sets, styles..."
+          class="search-input"
+          autofocus
+          aria-label="Search products"
+        />
         @if (searchQuery) {
-          <button (click)="searchQuery = ''; productService.setSearch('')" class="search-clear">
+          <button class="search-clear" (click)="clearSearch()" aria-label="Clear search">
             <i class="bi bi-x"></i>
           </button>
         }
@@ -65,16 +90,29 @@
 
   <!-- Mobile drawer -->
   @if (mobileMenuOpen()) {
-    <nav class="mobile-drawer">
-      <a class="drawer-link" (click)="scrollTo('hero')" role="button">Home</a>
-      <a class="drawer-link" (click)="scrollTo('trending')" role="button">Trending</a>
-      <a class="drawer-link" (click)="scrollTo('new-arrivals')" role="button">New Arrivals</a>
+    <nav class="mobile-drawer" aria-label="Mobile menu">
+
+      <a class="drawer-link"
+         routerLink="/"
+         routerLinkActive="drawer-link-active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         (click)="closeMenu()">
+        Home
+      </a>
+
       <div class="drawer-divider"></div>
       <p class="drawer-cat-label">Shop by Style</p>
-      <a class="drawer-link" (click)="selectCategory('long-kurtas')" role="button">Long Kurtas</a>
-      <a class="drawer-link" (click)="selectCategory('short-kurtas')" role="button">Short Kurtas</a>
-      <a class="drawer-link" (click)="selectCategory('2-piece-sets')" role="button">2-Piece Sets</a>
-      <a class="drawer-link" (click)="selectCategory('3-piece-sets')" role="button">3-Piece Sets</a>
+
+      @for (cat of categories; track cat.id) {
+        <a class="drawer-link"
+           [routerLink]="['/category', cat.id]"
+           routerLinkActive="drawer-link-active"
+           (click)="closeMenu()">
+          {{ cat.name }}
+        </a>
+      }
+
     </nav>
   }
+
 </header>

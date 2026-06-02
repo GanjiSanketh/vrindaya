@@ -241,7 +241,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
 }
 
 .floating-btn:hover { transform: scale(1.1); }
-.whatsapp-btn  { right: 1.5rem; bottom: 5.5rem; background: #25d366; color: #fff; }
+.instagram-btn { right: 1.5rem; bottom: 5.5rem; background: #e1306c; color: #fff; }
 .scroll-top-btn {
   right: 1.5rem; bottom: 1.25rem;
   background: var(--maroon); color: #fff;

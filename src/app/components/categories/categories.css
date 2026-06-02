@@ -9,6 +9,9 @@
 
 .cat-card {
   position: relative;
+  display: block;        /* <a> is inline by default */
+  text-decoration: none; /* remove browser underline */
+  color: inherit;        /* don't apply default link colour */
   border-radius: var(--r-md);
   overflow: hidden;
   cursor: pointer;

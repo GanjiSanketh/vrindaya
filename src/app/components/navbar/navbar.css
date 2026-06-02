@@ -69,8 +69,17 @@
   transition: left 0.25s ease, right 0.25s ease;
 }
 
-.nav-link:hover           { color: var(--maroon); }
-.nav-link:hover::after    { left: 0.75rem; right: 0.75rem; }
+.nav-link:hover        { color: var(--maroon); }
+.nav-link:hover::after { left: 0.75rem; right: 0.75rem; }
+
+/* Active route — maroon text + gold underline */
+.nav-link.nav-link-active        { color: var(--maroon); }
+.nav-link.nav-link-active::after {
+  left: 0.75rem;
+  right: 0.75rem;
+  background: var(--gold);
+  transition: none; /* already expanded, no animation needed */
+}
 
 /* ── CENTER: Logo ── */
 .nav-logo {
@@ -261,6 +270,15 @@
 .drawer-link:last-child       { border-bottom: none; }
 .drawer-link:hover            { color: var(--maroon); }
 .drawer-link.drawer-highlight { color: var(--gold); font-weight: 600; }
+
+/* Active route in mobile drawer */
+.drawer-link.drawer-link-active {
+  color: var(--maroon);
+  font-weight: 600;
+  border-left: 2.5px solid var(--gold);
+  padding-left: 0.625rem;
+  transition: none;
+}
 .drawer-divider               { height: 1px; background: #eaeaea; margin: 0.75rem 0; }
 .drawer-cat-label             { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin: 0.5rem 0 0.25rem; }
 

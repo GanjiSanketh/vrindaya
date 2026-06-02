@@ -1,0 +1,83 @@
+/* ══════════════════════════════════
+   PRODUCT LISTING PAGE
+══════════════════════════════════ */
+.pl-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+/* Breadcrumb */
+.pl-breadcrumb {
+  background: #f9f9f9;
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0;
+}
+
+.pl-breadcrumb .container-vr {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.pl-bc-home {
+  color: var(--maroon);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.pl-bc-home:hover { color: var(--maroon-dark); text-decoration: underline; }
+
+.pl-bc-sep    { color: var(--text-light); font-size: 0.65rem; }
+.pl-bc-current { color: var(--text-muted); font-weight: 500; }
+
+/* Page header */
+.pl-header {
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.pl-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--maroon-dark);
+  letter-spacing: -0.01em;
+  margin: 0.5rem 0 0;
+}
+
+/* Count label */
+.pl-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+/* Product grid: 4 → 3 → 2 columns */
+.pl-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+/* Empty state */
+.pl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 6rem 2rem;
+  text-align: center;
+}
+
+.pl-empty i          { font-size: 3.5rem; color: var(--gold); opacity: 0.45; }
+.pl-empty-title      { font-family: var(--font-serif); font-size: 1.2rem; color: var(--maroon-dark); margin: 0; }
+.pl-empty-sub        { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+
+/* Responsive */
+@media (max-width: 1024px) { .pl-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 768px)  { .pl-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } }
+@media (max-width: 480px)  { .pl-grid { gap: 0.75rem; } }

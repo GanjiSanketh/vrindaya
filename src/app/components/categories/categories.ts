@@ -1,24 +1,15 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-categories',
   standalone: true,
-  imports: [CommonModule],
+  imports: [RouterLink],
   templateUrl: './categories.html',
   styleUrl: './categories.css',
 })
 export class Categories {
-  private platformId = inject(PLATFORM_ID);
-  protected svc = inject(ProductService);
-
-  readonly categories = this.svc.categories;
-
-  selectAndScroll(id: string): void {
-    this.svc.setCategory(id);
-    if (isPlatformBrowser(this.platformId)) {
-      document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }
+  /** Same array used by the navbar — single source of truth */
+  readonly categories = inject(ProductService).categories;
 }

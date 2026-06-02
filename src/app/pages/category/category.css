@@ -1,0 +1,126 @@
+/* ══════════════════════════════════════════
+   CATEGORY PAGE — premium luxury listing
+   ══════════════════════════════════════════ */
+
+.cp-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+/* ── Breadcrumb ── */
+.cp-breadcrumb {
+  background: #f9f9f9;
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0;
+}
+
+.cp-breadcrumb .container-vr {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.bc-link {
+  color: var(--maroon);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.bc-link:hover {
+  color: var(--maroon-dark);
+  text-decoration: underline;
+}
+
+.bc-sep {
+  color: var(--text-light);
+  font-size: 0.65rem;
+}
+
+.bc-current {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── Category header ── */
+.cp-header {
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.cp-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 700;
+  color: var(--maroon-dark);
+  letter-spacing: -0.01em;
+  margin: 0.5rem 0 0;
+}
+
+/* ── Product count ── */
+.cp-count {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+/* ── Product grid ── */
+.cp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+/* ── Empty state ── */
+.cp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 6rem 2rem;
+  text-align: center;
+}
+
+.cp-empty i {
+  font-size: 3.5rem;
+  color: var(--gold);
+  opacity: 0.45;
+}
+
+.cp-empty p {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--maroon-dark);
+  margin: 0;
+}
+
+.cp-empty-sub {
+  font-family: var(--font-sans) !important;
+  font-size: 0.9rem !important;
+  color: var(--text-muted) !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .cp-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .cp-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cp-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}

@@ -44,6 +44,10 @@ export class ProductService {
     return this._products.find(p => p.id === id);
   }
 
+  getByCategory(categoryId: string): Product[] {
+    return this._products.filter(p => p.categoryId === categoryId);
+  }
+
   setCategory(id: string): void { this.selectedCategory.set(id); }
   setSearch(q: string):   void { this.searchQuery.set(q); }
   setSort(o: SortOrder):  void { this.sortOrder.set(o); }
