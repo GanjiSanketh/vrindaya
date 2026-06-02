@@ -30,6 +30,9 @@ export class CategoryPage implements OnInit {
   );
 
   ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
     const id = this.route.snapshot.paramMap.get('id') ?? '';
     const valid = this.svc.categories.find(c => c.id === id);
     if (!valid) {
