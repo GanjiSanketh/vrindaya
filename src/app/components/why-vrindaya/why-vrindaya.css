@@ -58,7 +58,7 @@
   font-family: var(--font-serif);
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--maroon-dark);
+  color: var(--text);
   margin: 0.25rem 0 0;
 }
 
@@ -109,7 +109,7 @@
   font-family: var(--font-serif);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--maroon-dark);
+  color: var(--text);
 }
 
 .wv-promise span {

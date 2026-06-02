@@ -44,7 +44,7 @@
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 500;
-  color: #3a3a3a;
+  color: #222222;
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
@@ -72,13 +72,13 @@
 .nav-link:hover        { color: var(--maroon); }
 .nav-link:hover::after { left: 0.75rem; right: 0.75rem; }
 
-/* Active route — maroon text + gold underline */
+/* Active route — teal text + teal underline */
 .nav-link.nav-link-active        { color: var(--maroon); }
 .nav-link.nav-link-active::after {
   left: 0.75rem;
   right: 0.75rem;
-  background: var(--gold);
-  transition: none; /* already expanded, no animation needed */
+  background: var(--maroon);
+  transition: none;
 }
 
 /* ── CENTER: Logo ── */
@@ -117,7 +117,7 @@
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.36em;
-  color: #1b7a8a;
+  color: #0f6f84;
   white-space: nowrap;
   line-height: 1;
   text-transform: uppercase;
@@ -129,7 +129,7 @@
   font-size: 0.44rem;
   font-weight: 500;
   letter-spacing: 0.22em;
-  color: #5aa8b5;
+  color: #4d95a5;
   white-space: nowrap;
   line-height: 1;
   text-transform: uppercase;
@@ -155,7 +155,7 @@
   background: none;
   border: none;
   font-size: 1rem;
-  color: #3a3a3a;
+  color: #222222;
   cursor: pointer;
   border-radius: 6px;
   transition: color 0.2s, background 0.2s;
@@ -185,7 +185,7 @@
   display: block;
   width: 20px;
   height: 1.5px;
-  background: #2d1a1a;
+  background: #222222;
   border-radius: 1px;
   transition: all 0.28s ease;
 }
@@ -227,7 +227,7 @@
   outline: none;
   font-family: var(--font-sans);
   font-size: 0.875rem;
-  color: #2d1a1a;
+  color: #222222;
   background: transparent;
 }
 
@@ -260,7 +260,7 @@
   padding: 0.75rem 0;
   font-size: 0.92rem;
   font-weight: 500;
-  color: #2d1a1a;
+  color: #222222;
   border-bottom: 1px solid #eaeaea;
   cursor: pointer;
   transition: color 0.2s;
@@ -275,7 +275,7 @@
 .drawer-link.drawer-link-active {
   color: var(--maroon);
   font-weight: 600;
-  border-left: 2.5px solid var(--gold);
+  border-left: 2.5px solid var(--maroon);
   padding-left: 0.625rem;
   transition: none;
 }

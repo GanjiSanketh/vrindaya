@@ -37,7 +37,7 @@
   font-family: var(--font-serif);
   font-size: clamp(1.8rem, 3.5vw, 2.75rem);
   font-weight: 700;
-  color: var(--maroon-dark);
+  color: var(--text);
   line-height: 1.15;
   margin-bottom: 1.25rem;
   letter-spacing: -0.02em;
@@ -71,7 +71,7 @@
 .bs-cta:hover {
   background: var(--maroon-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(109, 16, 40, 0.28);
+  box-shadow: 0 6px 20px rgba(15, 111, 132, 0.28);
 }
 
 /* Visual — two stacked/overlapping photos */

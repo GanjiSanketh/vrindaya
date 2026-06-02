@@ -86,7 +86,7 @@
   font-family: var(--font-serif);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--maroon);
+  color: var(--text);
 }
 
 .cl-location {
@@ -129,7 +129,7 @@
   font-family: var(--font-serif);
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--maroon-dark);
+  color: var(--text);
 }
 
 .cl-stat span {

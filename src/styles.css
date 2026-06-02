@@ -7,17 +7,17 @@
 :root {
   /* ── Core palette ── */
   --cream:         #ffffff;
-  --cream-light:   #f9f9f9;
+  --cream-light:   #fafafa;
   --cream-mid:     #f0f0f0;
-  --maroon:        #6d1028;
-  --maroon-dark:   #4a0c1e;
-  --maroon-mid:    #8a2238;
-  --maroon-light:  #fdf0f3;
-  --gold:          #c9a24d;
+  --maroon:        #0f6f84;   /* Vrindaya brand teal */
+  --maroon-dark:   #0b5868;   /* deep teal */
+  --maroon-mid:    #4d95a5;   /* mid teal */
+  --maroon-light:  #e6f4f7;   /* very light teal tint */
+  --gold:          #c9a54c;
   --gold-light:    #e8d5a3;
   --gold-pale:     #faf5e8;
   --white:         #ffffff;
-  --text:          #333333;
+  --text:          #222222;
   --text-muted:    #666666;
   --text-light:    #999999;
   --border:        #eaeaea;
@@ -55,7 +55,7 @@ body {
 
 h1, h2, h3, h4, h5 {
   font-family: var(--font-serif);
-  color: var(--maroon-dark);
+  color: var(--text);
   line-height: 1.15;
   font-weight: 600;
 }
@@ -98,7 +98,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
   font-family: var(--font-serif);
   font-size: clamp(2rem, 4.5vw, 3.5rem);
   font-weight: 700;
-  color: var(--maroon-dark);
+  color: var(--text);
   margin-bottom: 0.5rem;
   letter-spacing: -0.01em;
 }
@@ -171,7 +171,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
 .btn-primary:hover {
   background: var(--maroon-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(109, 16, 40, 0.28);
+  box-shadow: 0 6px 20px rgba(15, 111, 132, 0.28);
 }
 
 .btn-outline {
@@ -202,7 +202,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
   gap: 0.625rem;
   padding: 0.875rem 2rem;
   background: var(--gold);
-  color: var(--maroon-dark);
+  color: var(--text);
   border: none;
   border-radius: var(--r-sm);
   font-family: var(--font-sans);

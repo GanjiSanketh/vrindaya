@@ -65,7 +65,7 @@
   border-radius: 3px;
 }
 
-.pc-badge-new { background: var(--gold); color: var(--maroon-dark); }
+.pc-badge-new { background: var(--gold); color: var(--text); }
 
 /* ── Wishlist ── */
 .pc-wishlist {
@@ -93,7 +93,7 @@
 .pc-overlay {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  background: rgba(107, 26, 44, 0.9);
+  background: rgba(15, 111, 132, 0.9);
   padding: 0.875rem 1rem;
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -126,7 +126,7 @@
   font-family: var(--font-serif);
   font-size: 1rem;
   font-weight: 600;
-  color: var(--maroon-dark);
+  color: var(--text);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;

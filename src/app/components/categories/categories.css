@@ -1,30 +1,42 @@
+/* ══════════════════════════════════════
+   SHOP BY CATEGORY — teal brand palette
+══════════════════════════════════════ */
 .cat-section { background: #ffffff; }
 
-/* Grid — 4 equal portrait cards */
+/* 4-column grid */
 .cat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
 }
 
+/* Card shell */
 .cat-card {
   position: relative;
-  display: block;        /* <a> is inline by default */
-  text-decoration: none; /* remove browser underline */
-  color: inherit;        /* don't apply default link colour */
+  display: block;
+  text-decoration: none;
+  color: inherit;
   border-radius: var(--r-md);
   overflow: hidden;
   cursor: pointer;
   aspect-ratio: 3/4;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  /* Reserve border space upfront — no layout shift on hover */
+  border: 1.5px solid transparent;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.35s ease,
+              box-shadow 0.35s ease,
+              border-color 0.30s ease;
 }
 
+/* Hover — teal lift */
 .cat-card:hover {
   transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
+  border-color: #0f6f84;
+  box-shadow: 0 16px 40px rgba(15, 111, 132, 0.2),
+              0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
+/* Image */
 .cat-img-wrap {
   position: absolute;
   inset: 0;
@@ -39,20 +51,23 @@
 
 .cat-card:hover .cat-img { transform: scale(1.07); }
 
+/* Dark luxury gradient — teal reserved for interactions only */
 .cat-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top,
-    rgba(45, 15, 15, 0.82) 0%,
-    rgba(45, 15, 15, 0.3) 45%,
-    transparent 70%
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.45),
+    rgba(0, 0, 0, 0.12),
+    transparent
   );
-  transition: opacity 0.35s;
+  opacity: 0.92;
+  transition: opacity 0.35s ease;
 }
 
-.cat-card:hover .cat-overlay { opacity: 0.92; }
+.cat-card:hover .cat-overlay { opacity: 1; }
 
-/* Text at bottom */
+/* Text container at bottom */
 .cat-info {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -60,23 +75,26 @@
   z-index: 2;
 }
 
+/* Category name — white, high contrast */
 .cat-name {
   font-family: var(--font-serif);
   font-size: 1.5rem;
   font-weight: 700;
-  color: #fff;
+  color: #ffffff;
   margin-bottom: 0.25rem;
   line-height: 1.1;
 }
 
+/* Subtitle — near-white, slightly softer */
 .cat-sub {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 0.9rem;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 0.875rem;
 }
 
+/* CTA — white on photography, teal only for hover interactions */
 .cat-cta {
   display: inline-flex;
   align-items: center;
@@ -86,13 +104,16 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--gold-light);
-  border-bottom: 1px solid rgba(201,168,76,0.5);
+  color: #ffffff;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.4);
   padding-bottom: 2px;
-  transition: gap 0.2s;
+  transition: gap 0.22s ease, border-color 0.22s ease;
 }
 
-.cat-card:hover .cat-cta { gap: 0.65rem; }
+.cat-card:hover .cat-cta {
+  gap: 0.65rem;
+  border-bottom-color: rgba(255, 255, 255, 0.75);
+}
 
 /* Responsive */
 @media (max-width: 1024px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }

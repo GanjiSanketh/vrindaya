@@ -4,35 +4,45 @@
 
   <!-- Breadcrumb -->
   <nav class="pl-breadcrumb" aria-label="Breadcrumb">
-    <div class="container-vr">
-      <a routerLink="/" class="pl-bc-home">Home</a>
+    <div class="container-vr pl-bc-inner">
+      <a routerLink="/" class="pl-bc-link">Home</a>
       <i class="bi bi-chevron-right pl-bc-sep" aria-hidden="true"></i>
       <span class="pl-bc-current">{{ category()?.name }}</span>
     </div>
   </nav>
 
-  <!-- Page header -->
-  <header class="pl-header section-pad-sm">
-    <div class="container-vr">
-      <p class="section-label">VRINDAYA</p>
-      <h1 class="pl-title">{{ category()?.name }}</h1>
-      <div class="section-rule">
-        <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="18" height="14" aria-hidden="true">
-          <circle cx="10" cy="10" r="3" fill="none" stroke="var(--gold)" stroke-width="1"/>
-          <path d="M10 2C8 5 8 8 9 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
-          <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
-        </svg>
+  <!-- Toolbar: category name + count + sort -->
+  <div class="pl-toolbar-bar">
+    <div class="container-vr pl-toolbar">
+
+      <div class="pl-toolbar-left">
+        <h1 class="pl-cat-title">{{ category()?.name }}</h1>
+        @if (products().length > 0) {
+          <span class="pl-count">{{ products().length }} Styles</span>
+        }
       </div>
-      <p class="section-desc">{{ category()?.subtitle }}</p>
+
+      <div class="pl-toolbar-right">
+        <select
+          class="pl-sort-select"
+          (change)="setSort($event)"
+          aria-label="Sort products"
+        >
+          <option value="default">Sort: Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="rating">Top Rated</option>
+        </select>
+      </div>
+
     </div>
-  </header>
+  </div>
 
   <!-- Products -->
-  <section class="pl-products section-pad">
+  <section class="pl-products">
     <div class="container-vr">
 
       @if (products().length > 0) {
-        <p class="pl-count">{{ products().length }} styles found</p>
         <div class="pl-grid">
           @for (product of products(); track product.id) {
             <app-product-card [product]="product" />
@@ -42,7 +52,7 @@
         <div class="pl-empty">
           <i class="bi bi-bag-x" aria-hidden="true"></i>
           <p class="pl-empty-title">No products yet in this category</p>
-          <p class="pl-empty-sub">Check back soon — new styles are on their way.</p>
+          <p class="pl-empty-sub">New styles are on their way — check back soon.</p>
           <a routerLink="/" class="btn-primary">Back to Home</a>
         </div>
       }
