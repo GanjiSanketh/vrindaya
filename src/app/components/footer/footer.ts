@@ -1,25 +1,13 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './footer.html',
   styleUrl: './footer.css',
 })
 export class Footer {
-  private platformId = inject(PLATFORM_ID);
   readonly currentYear = new Date().getFullYear();
-
-  scrollTo(id: string): void {
-    if (isPlatformBrowser(this.platformId)) {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }
-
-  scrollToTop(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
 }

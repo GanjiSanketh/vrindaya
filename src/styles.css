@@ -72,15 +72,15 @@ button { font-family: var(--font-sans); cursor: pointer; }
 /* ══════════════════════════════════════
    SECTION UTILITIES
    ══════════════════════════════════════ */
-.section-pad      { padding: 5rem 0; }
-.section-pad-lg   { padding: 7rem 0; }
-.section-pad-sm   { padding: 3rem 0; }
+.section-pad      { padding: 3rem 0; }
+.section-pad-lg   { padding: 4rem 0; }
+.section-pad-sm   { padding: 2rem 0; }
 .container-vr     { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
 
 /* ── Section Header Pattern (used across all sections) ── */
 .section-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .section-label {
@@ -282,7 +282,7 @@ button { font-family: var(--font-sans); cursor: pointer; }
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  .section-pad    { padding: 3.5rem 0; }
-  .section-pad-lg { padding: 4rem 0; }
+  .section-pad    { padding: 2rem 0; }
+  .section-pad-lg { padding: 2.5rem 0; }
   .container-vr   { padding: 0 1.25rem; }
 }

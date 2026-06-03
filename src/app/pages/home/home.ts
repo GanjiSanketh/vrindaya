@@ -7,7 +7,8 @@ import { TrendingProducts }     from '../../components/trending-products/trendin
 import { VrindayaLook }         from '../../components/vrindaya-look/vrindaya-look';
 import { WhyVrindaya }          from '../../components/why-vrindaya/why-vrindaya';
 import { CustomerLove }         from '../../components/customer-love/customer-love';
-import { InstagramCommunity }   from '../../components/instagram-community/instagram-community';
+// import { InstagramCommunity }   from '../../components/instagram-community/instagram-community';
+import { NewArrivals }          from '../../components/new-arrivals/new-arrivals';
 import { Footer }               from '../../components/footer/footer';
 
 @Component({
@@ -16,8 +17,8 @@ import { Footer }               from '../../components/footer/footer';
   imports: [
     CommonModule,
     Navbar, Hero, Categories, TrendingProducts,
-    VrindayaLook, WhyVrindaya, CustomerLove, InstagramCommunity,
-    Footer,
+    VrindayaLook, WhyVrindaya, CustomerLove, /* InstagramCommunity, */
+    NewArrivals, Footer,
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',

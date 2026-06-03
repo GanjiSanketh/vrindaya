@@ -9,7 +9,7 @@
       <div class="pl-bc-path">
         <a routerLink="/" class="pl-bc-link">Home</a>
         <i class="bi bi-chevron-right pl-bc-sep" aria-hidden="true"></i>
-        <span class="pl-bc-current">{{ category()?.name }}</span>
+        <span class="pl-bc-current">New Arrivals</span>
       </div>
 
       <select
@@ -17,10 +17,9 @@
         (change)="setSort($event)"
         aria-label="Sort products"
       >
-        <option value="default">Sort: Featured</option>
+        <option value="newest">Sort: Newest First</option>
         <option value="price-asc">Price: Low to High</option>
         <option value="price-desc">Price: High to Low</option>
-        <option value="rating">Top Rated</option>
       </select>
 
     </div>
@@ -39,8 +38,8 @@
       } @else {
         <div class="pl-empty">
           <i class="bi bi-bag-x" aria-hidden="true"></i>
-          <p class="pl-empty-title">No products yet in this category</p>
-          <p class="pl-empty-sub">New styles are on their way — check back soon.</p>
+          <p class="pl-empty-title">No new arrivals yet</p>
+          <p class="pl-empty-sub">Fresh styles are on their way — check back soon.</p>
           <a routerLink="/" class="btn-primary">Back to Home</a>
         </div>
       }

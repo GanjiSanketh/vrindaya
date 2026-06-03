@@ -39,14 +39,8 @@
       <span class="logo-tagline">WEAR THE GRACE</span>
     </a>
 
-    <!-- RIGHT: desktop icons -->
+    <!-- RIGHT: Instagram link -->
     <div class="nav-right d-none d-xl-flex">
-      <button class="nav-icon" (click)="toggleSearch()" aria-label="Search">
-        <i class="bi bi-search"></i>
-      </button>
-      <button class="nav-icon" aria-label="Wishlist">
-        <i class="bi bi-heart"></i>
-      </button>
       <a class="nav-icon"
          href="https://www.instagram.com/vrindaya.co"
          target="_blank"
@@ -56,37 +50,7 @@
       </a>
     </div>
 
-    <!-- Mobile: right icons -->
-    <div class="nav-right d-flex d-xl-none">
-      <button class="nav-icon" (click)="toggleSearch()" aria-label="Search">
-        <i class="bi bi-search"></i>
-      </button>
-    </div>
-
   </div>
-
-  <!-- Search bar -->
-  @if (searchOpen()) {
-    <div class="search-bar">
-      <div class="search-inner">
-        <i class="bi bi-search" aria-hidden="true"></i>
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          (keydown.enter)="onSearch()"
-          placeholder="Search kurtas, sets, styles..."
-          class="search-input"
-          autofocus
-          aria-label="Search products"
-        />
-        @if (searchQuery) {
-          <button class="search-clear" (click)="clearSearch()" aria-label="Clear search">
-            <i class="bi bi-x"></i>
-          </button>
-        }
-      </div>
-    </div>
-  }
 
   <!-- Mobile drawer -->
   @if (mobileMenuOpen()) {

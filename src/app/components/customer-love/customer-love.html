@@ -26,12 +26,14 @@
     <div class="cl-grid">
       @for (t of testimonials; track t.id) {
         <div class="cl-card">
-          <div class="cl-card-top">
-            <span class="cl-quote"><i class="bi bi-quote"></i></span>
-            <button class="cl-heart" aria-label="Like"><i class="bi bi-heart"></i></button>
-          </div>
+          <span class="cl-quote"><i class="bi bi-quote"></i></span>
           <div class="cl-avatar-wrap">
-            <img [src]="t.image" [alt]="t.name" class="cl-avatar" loading="lazy" />
+            @if (!imgErrors.has(t.id)) {
+              <img [src]="t.image" [alt]="t.name" class="cl-avatar" loading="lazy"
+                   (error)="onImgError(t.id)" />
+            } @else {
+              <span class="cl-avatar-fallback" [attr.aria-label]="t.name">{{ initials(t.name) }}</span>
+            }
           </div>
           <div class="cl-stars">
             @for (s of stars(t.rating); track $index) {

@@ -19,12 +19,6 @@
       @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
-    <!-- Wishlist -->
-    <button class="pc-wishlist" (click)="toggleWishlist($event)"
-            [attr.aria-label]="wishlisted() ? 'Remove wishlist' : 'Add to wishlist'">
-      <i class="bi" [class.bi-heart]="!wishlisted()" [class.bi-heart-fill]="wishlisted()"></i>
-    </button>
-
     <!-- Hover overlay -->
     <div class="pc-overlay">
       <span class="pc-overlay-cta">View on Flipkart <i class="bi bi-arrow-right"></i></span>

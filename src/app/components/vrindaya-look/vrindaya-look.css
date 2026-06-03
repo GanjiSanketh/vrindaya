@@ -1,7 +1,10 @@
 /* ══════════════════════════════════════
    THE VRINDAYA LOOK — teal brand palette
 ══════════════════════════════════════ */
-.vl-section { background: #ffffff; }
+.vl-section {
+  background: #ffffff;
+  padding-top: 2.5rem;    /* override section-pad-lg; meets the trimmed trending bottom */
+}
 
 .vl-header { margin-bottom: 3rem; }
 

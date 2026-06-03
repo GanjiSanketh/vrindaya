@@ -24,9 +24,9 @@
         </p>
       </div>
 
-      <!-- Links section -->
       <div class="ft-divider-h"></div>
 
+      <!-- 2 columns: Shop · Quick Links -->
       <div class="ft-cols">
 
         <!-- Shop -->
@@ -34,113 +34,76 @@
           <h4 class="ft-col-title">SHOP</h4>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
-            <li><a (click)="scrollTo('categories')" role="button">Long Kurtas</a></li>
-            <li><a (click)="scrollTo('categories')" role="button">Short Kurtas</a></li>
-            <li><a (click)="scrollTo('categories')" role="button">2-Piece Sets</a></li>
-            <li><a (click)="scrollTo('categories')" role="button">3-Piece Sets</a></li>
+            <li>
+              <a routerLink="/category/long-kurtas"
+                 routerLinkActive="ft-link-active">Long Kurtas</a>
+            </li>
+            <li>
+              <a routerLink="/category/short-kurtas"
+                 routerLinkActive="ft-link-active">Short Kurtas</a>
+            </li>
+            <li>
+              <a routerLink="/category/2-piece-sets"
+                 routerLinkActive="ft-link-active">2-Piece Sets</a>
+            </li>
+            <li>
+              <a routerLink="/category/3-piece-sets"
+                 routerLinkActive="ft-link-active">3-Piece Sets</a>
+            </li>
           </ul>
         </div>
 
-        <!-- Quick Links -->
+        <!-- Quick Links — fragment navigation to home page sections -->
         <div class="ft-col">
           <h4 class="ft-col-title">QUICK LINKS</h4>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
-            <li><a (click)="scrollTo('hero')" role="button">About Us</a></li>
-            <li><a (click)="scrollTo('new-arrivals')" role="button">New Arrivals</a></li>
-            <li><a (click)="scrollTo('trending')" role="button">Trending Collection</a></li>
-            <li><a (click)="scrollTo('customer-love')" role="button">Customer Love</a></li>
-          </ul>
-        </div>
-
-        <!-- Follow Us -->
-        <div class="ft-col">
-          <h4 class="ft-col-title">FOLLOW US</h4>
-          <div class="ft-col-rule"></div>
-          <ul class="ft-social">
             <li>
-              <a href="https://instagram.com/vrindaya" target="_blank" rel="noopener">
-                <i class="bi bi-instagram"></i> Instagram
-              </a>
+              <a [routerLink]="['/']" fragment="hero">About Us</a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener">
-                <i class="bi bi-facebook"></i> Facebook
-              </a>
+              <a routerLink="/new-arrivals" routerLinkActive="ft-link-active">New Arrivals</a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener">
-                <i class="bi bi-pinterest"></i> Pinterest
-              </a>
+              <a routerLink="/trending" routerLinkActive="ft-link-active">Trending Collection</a>
             </li>
             <li>
-              <a href="https://wa.me/919989988991" target="_blank" rel="noopener">
-                <i class="bi bi-whatsapp"></i> WhatsApp
-              </a>
+              <a [routerLink]="['/']" fragment="customer-love">Customer Love</a>
             </li>
           </ul>
-        </div>
-
-        <!-- Newsletter -->
-        <div class="ft-col">
-          <h4 class="ft-col-title">STAY CONNECTED</h4>
-          <div class="ft-col-rule"></div>
-          <p class="ft-newsletter-desc">
-            Get updates on new arrivals, exclusive collections and offers.
-          </p>
-          <div class="ft-newsletter-form">
-            <input type="email" class="ft-email-input" placeholder="Enter your email address" aria-label="Email" />
-            <button class="ft-subscribe-btn">SUBSCRIBE</button>
-          </div>
         </div>
 
       </div>
     </div>
   </div>
 
-  <!-- ══ BOTTOM SECTION (dark maroon) ══ -->
+  <!-- ══ BOTTOM SECTION ══ -->
   <div class="ft-bottom">
     <div class="container-vr">
-      <div class="ft-bottom-inner">
 
-        <!-- Features -->
-        <div class="ft-features">
-          <div class="ft-feature">
-            <div class="ft-feat-icon"><i class="bi bi-flower1"></i></div>
-            <div>
-              <strong>PREMIUM QUALITY</strong>
-              <span>Carefully selected fabrics for comfort and elegance.</span>
-            </div>
-          </div>
-          <div class="ft-feat-sep"></div>
-          <div class="ft-feature">
-            <div class="ft-feat-icon"><i class="bi bi-person-dress"></i></div>
-            <div>
-              <strong>THOUGHTFUL DESIGN</strong>
-              <span>Elegant styles crafted to celebrate every woman.</span>
-            </div>
-          </div>
-          <div class="ft-feat-sep"></div>
-          <div class="ft-feature">
-            <div class="ft-feat-icon"><i class="bi bi-truck"></i></div>
-            <div>
-              <strong>PAN INDIA DELIVERY</strong>
-              <span>Fast, reliable and secure delivery across India.</span>
-            </div>
+      <!-- 3 feature blocks centered -->
+      <div class="ft-features">
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-flower1"></i></div>
+          <div>
+            <strong>PREMIUM QUALITY</strong>
+            <span>Carefully selected fabrics for comfort and elegance.</span>
           </div>
         </div>
-
-        <!-- Contact + copyright -->
-        <div class="ft-contact">
-          <p class="ft-contact-title">NEED HELP?</p>
-          <a href="mailto:support&#64;vrindaya.com" class="ft-contact-link">
-            <i class="bi bi-envelope"></i> support&#64;vrindaya.com
-          </a>
-          <a href="tel:+919989988991" class="ft-contact-link">
-            <i class="bi bi-telephone"></i> +91 99899 88991
-          </a>
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-gem"></i></div>
+          <div>
+            <strong>THOUGHTFUL DESIGN</strong>
+            <span>Elegant styles crafted to celebrate every woman.</span>
+          </div>
         </div>
-
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-truck"></i></div>
+          <div>
+            <strong>PAN INDIA DELIVERY</strong>
+            <span>Fast, reliable and secure delivery across India.</span>
+          </div>
+        </div>
       </div>
 
       <!-- Copyright strip -->
@@ -155,6 +118,7 @@
         <p class="ft-copy-text">© {{ currentYear }} Vrindaya. All Rights Reserved.</p>
         <em class="ft-copy-tag">Wear the Grace ✦</em>
       </div>
+
     </div>
   </div>
 

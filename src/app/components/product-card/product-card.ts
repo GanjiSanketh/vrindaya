@@ -15,13 +15,7 @@ export class ProductCard {
 
   product = input.required<Product>();
 
-  readonly wishlisted = signal(false);
-  readonly imgError   = signal(false);
-
-  toggleWishlist(e: Event): void {
-    e.stopPropagation();
-    this.wishlisted.update(v => !v);
-  }
+  readonly imgError = signal(false);
 
   openFlipart(e: Event): void {
     e.stopPropagation();

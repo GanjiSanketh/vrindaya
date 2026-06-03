@@ -13,6 +13,18 @@ export const routes: Routes = [
         .then(m => m.ProductListingComponent),
   },
   {
+    path: 'new-arrivals',
+    loadComponent: () =>
+      import('./pages/new-arrivals-page/new-arrivals-page.component')
+        .then(m => m.NewArrivalsPageComponent),
+  },
+  {
+    path: 'trending',
+    loadComponent: () =>
+      import('./pages/trending-page/trending-page.component')
+        .then(m => m.TrendingPageComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

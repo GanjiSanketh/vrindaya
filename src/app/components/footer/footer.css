@@ -64,11 +64,17 @@
   margin: 2.5rem 0;
 }
 
-/* 4 columns */
+/* 2 columns centered */
 .ft-cols {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10rem;
+}
+
+.ft-col {
+  width: 160px;
+  flex-shrink: 0;
 }
 
 .ft-col-title {
@@ -102,69 +108,8 @@
   display: inline-block;
 }
 
-.ft-links li a:hover { color: var(--maroon); }
-
-/* Social links */
-.ft-social {
-  list-style: none; padding: 0; margin: 0;
-  display: flex; flex-direction: column; gap: 0.7rem;
-}
-
-.ft-social li a {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.ft-social li a:hover { color: var(--maroon); }
-.ft-social li a i { font-size: 1rem; color: var(--gold); }
-
-/* Newsletter */
-.ft-newsletter-desc {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.ft-newsletter-form {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  overflow: hidden;
-}
-
-.ft-email-input {
-  flex: 1;
-  padding: 0.7rem 0.875rem;
-  border: none;
-  outline: none;
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  color: var(--text);
-  background: #ffffff;
-}
-
-.ft-email-input::placeholder { color: var(--text-light); }
-
-.ft-subscribe-btn {
-  padding: 0.7rem 1.125rem;
-  background: var(--maroon);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  transition: background 0.2s;
-}
-
-.ft-subscribe-btn:hover { background: var(--maroon-dark); }
+.ft-links li a:hover,
+.ft-links li a.ft-link-active { color: var(--maroon); font-weight: 500; }
 
 /* ══ BOTTOM: slightly deeper strip ══ */
 .ft-bottom {
@@ -173,22 +118,14 @@
   padding: 2.5rem 0 0;
 }
 
-.ft-bottom-inner {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 2rem;
-  padding-bottom: 2.5rem;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-
-/* Features row */
+/* Features row — centered */
 .ft-features {
   display: flex;
-  align-items: flex-start;
-  gap: 0;
-  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 6.25rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
@@ -196,10 +133,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.875rem;
-  padding: 0 2rem;
 }
-
-.ft-feature:first-child { padding-left: 0; }
 
 .ft-feat-icon {
   width: 44px; height: 44px;
@@ -231,41 +165,6 @@
   max-width: 160px;
 }
 
-.ft-feat-sep {
-  width: 1px; align-self: stretch;
-  background: var(--border);
-  flex-shrink: 0;
-}
-
-/* Contact */
-.ft-contact {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  flex-shrink: 0;
-}
-
-.ft-contact-title {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  color: var(--text-light);
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.ft-contact-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.ft-contact-link:hover { color: var(--maroon); }
-
 /* Copyright */
 .ft-copy {
   display: flex;
@@ -296,17 +195,17 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .ft-cols { grid-template-columns: repeat(2, 1fr); }
+  .ft-cols { gap: 6rem; }
+  .ft-features { gap: 4rem; }
 }
 
 @media (max-width: 768px) {
-  .ft-cols { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-  .ft-features { flex-direction: column; gap: 1.25rem; }
-  .ft-feat-sep { display: none; }
-  .ft-feature { padding: 0; }
-  .ft-bottom-inner { flex-direction: column; }
+  .ft-cols { gap: 3.5rem; }
+  .ft-col { width: auto; }
+  .ft-features { flex-direction: column; align-items: flex-start; gap: 1.5rem; padding-bottom: 2rem; }
 }
 
 @media (max-width: 480px) {
-  .ft-cols { grid-template-columns: 1fr; }
+  .ft-cols { flex-direction: column; align-items: center; gap: 2rem; }
+  .ft-col { width: 160px; }
 }

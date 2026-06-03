@@ -12,6 +12,14 @@ export const serverRoutes: ServerRoute[] = [
     ],
   },
   {
+    path: 'new-arrivals',
+    renderMode: RenderMode.Prerender,
+  },
+  {
+    path: 'trending',
+    renderMode: RenderMode.Prerender,
+  },
+  {
     path: '**',
     renderMode: RenderMode.Prerender,
   },

@@ -74,7 +74,7 @@ export class ProductService {
       location: 'Hyderabad',
       rating: 5,
       review: 'The fabric is so soft and comfortable. Perfect fit and exactly as shown in the pictures. Totally in love!',
-      image: 'assets/products/001-wine-mandala-kurta/gallery-2.png',
+      image: 'assets/images/testimonials/priya-sharma.jpg',
     },
     {
       id: 2,
@@ -82,7 +82,7 @@ export class ProductService {
       location: 'Bangalore',
       rating: 5,
       review: 'Beautiful design and amazing quality. I received so many compliments when I wore it!',
-      image: 'assets/products/002-indigo-floral-kurta-set/gallery-2.png',
+      image: 'assets/images/testimonials/sneha-iyer.jpg',
     },
     {
       id: 3,
@@ -90,7 +90,7 @@ export class ProductService {
       location: 'Pune',
       rating: 5,
       review: 'Loved the color, fit and quality. Vrindaya has become my go-to brand for ethnic wear now!',
-      image: 'assets/products/005-fuchsia-floral-kurta-set/gallery-2.png',
+      image: 'assets/images/testimonials/kavya-reddy.jpg',
     },
     {
       id: 4,
@@ -98,7 +98,7 @@ export class ProductService {
       location: 'Delhi',
       rating: 5,
       review: 'Super elegant and perfect for everyday wear. The material is breathable and feels so premium.',
-      image: 'assets/products/009-teal-floral-kurta-set/gallery-2.png',
+      image: 'assets/images/testimonials/aditi-verma.jpg',
     },
   ];
 
