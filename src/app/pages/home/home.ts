@@ -3,12 +3,13 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Navbar }               from '../../components/navbar/navbar';
 import { Hero }                 from '../../components/hero/hero';
 import { Categories }           from '../../components/categories/categories';
-import { TrendingProducts }     from '../../components/trending-products/trending-products';
-import { VrindayaLook }         from '../../components/vrindaya-look/vrindaya-look';
-import { WhyVrindaya }          from '../../components/why-vrindaya/why-vrindaya';
+// import { TrendingProducts }     from '../../components/trending-products/trending-products';
+// import { VrindayaLook }         from '../../components/vrindaya-look/vrindaya-look';
+// import { WhyVrindaya }          from '../../components/why-vrindaya/why-vrindaya';
 import { CustomerLove }         from '../../components/customer-love/customer-love';
 // import { InstagramCommunity }   from '../../components/instagram-community/instagram-community';
 import { NewArrivals }          from '../../components/new-arrivals/new-arrivals';
+import { NewArrivalsBanner }    from '../../components/new-arrivals-banner/new-arrivals-banner.component';
 import { Footer }               from '../../components/footer/footer';
 
 @Component({
@@ -16,9 +17,8 @@ import { Footer }               from '../../components/footer/footer';
   standalone: true,
   imports: [
     CommonModule,
-    Navbar, Hero, Categories, TrendingProducts,
-    VrindayaLook, WhyVrindaya, CustomerLove, /* InstagramCommunity, */
-    NewArrivals, Footer,
+    Navbar, Hero, NewArrivalsBanner, Categories,
+    CustomerLove, NewArrivals, Footer,
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',

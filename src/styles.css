@@ -72,9 +72,9 @@ button { font-family: var(--font-sans); cursor: pointer; }
 /* ══════════════════════════════════════
    SECTION UTILITIES
    ══════════════════════════════════════ */
-.section-pad      { padding: 3rem 0; }
-.section-pad-lg   { padding: 4rem 0; }
-.section-pad-sm   { padding: 2rem 0; }
+.section-pad      { padding: 2.5rem 0; }   /* 40px × 2 = 80px between sections — desktop target */
+.section-pad-lg   { padding: 3rem 0; }
+.section-pad-sm   { padding: 1.5rem 0; }
 .container-vr     { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
 
 /* ── Section Header Pattern (used across all sections) ── */
@@ -280,9 +280,15 @@ button { font-family: var(--font-sans); cursor: pointer; }
    ══════════════════════════════════════ */
 .container, .container-fluid { --bs-gutter-x: 1.5rem; }
 
+/* ── Tablet ── */
+@media (max-width: 1024px) {
+  .section-pad    { padding: 2rem 0; }     /* 32px × 2 = 64px between sections — tablet target */
+  .section-pad-lg { padding: 2.5rem 0; }
+}
+
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  .section-pad    { padding: 2rem 0; }
-  .section-pad-lg { padding: 2.5rem 0; }
+  .section-pad    { padding: 1.25rem 0; }  /* 20px × 2 = 40px between sections — mobile target */
+  .section-pad-lg { padding: 1.75rem 0; }
   .container-vr   { padding: 0 1.25rem; }
 }
