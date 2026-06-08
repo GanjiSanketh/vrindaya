@@ -115,6 +115,66 @@
   border-bottom-color: rgba(255, 255, 255, 0.75);
 }
 
-/* Responsive */
+/* ── Responsive: grid columns ── */
 @media (max-width: 1024px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 576px)  { .cat-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; } }
+
+/* ── Mobile (≤768px): text pinned to bottom, strong protective gradient ──
+   Goal: model's face (object-position top) is never obscured.
+   Gradient fades to transparent at 70% of card height, so only the
+   bottom 30% has dark overlay — exactly where title + subtitle + CTA sit. */
+@media (max-width: 768px) {
+  .cat-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.82) 0%,
+      rgba(0, 0, 0, 0.60) 25%,
+      rgba(0, 0, 0, 0.22) 50%,
+      transparent 70%
+    );
+    opacity: 1;
+  }
+
+  .cat-info {
+    padding: 0.875rem 0.875rem 1rem;
+  }
+
+  .cat-name {
+    font-size: 1rem;
+    line-height: 1.2;
+    margin-bottom: 0.2rem;
+  }
+
+  .cat-sub {
+    font-size: 0.72rem;
+    line-height: 1.3;
+    margin-bottom: 0.55rem;
+  }
+
+  .cat-cta {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ── Very small screens (≤480px): further compress text footprint ── */
+@media (max-width: 480px) {
+  .cat-grid { gap: 0.625rem; }
+
+  .cat-info {
+    padding: 0.75rem 0.75rem 0.875rem;
+  }
+
+  .cat-name {
+    font-size: 0.875rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .cat-sub {
+    font-size: 0.65rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .cat-cta {
+    font-size: 0.58rem;
+  }
+}

@@ -143,6 +143,29 @@
   .vl-card { aspect-ratio: 3/4; }
 }
 
+/* Mobile: strengthen gradient so text never reaches model faces.
+   Same protective technique as category cards — fades to transparent
+   at 70% card height, keeping the top 30% (face zone) fully clear. */
+@media (max-width: 768px) {
+  .vl-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.82) 0%,
+      rgba(0, 0, 0, 0.60) 25%,
+      rgba(0, 0, 0, 0.22) 50%,
+      transparent 70%
+    );
+    opacity: 1;
+    padding: 0.875rem;
+  }
+
+  .vl-title    { font-size: 1.05rem; }
+  .vl-title-sm { font-size: 0.875rem; }
+  .vl-sub      { font-size: 0.8rem; }
+  .vl-sub-sm   { font-size: 0.72rem; }
+  .vl-header   { margin-bottom: 1.5rem; }
+}
+
 @media (max-width: 576px) {
   .vl-grid {
     grid-template-columns: 1fr 1fr;
@@ -153,4 +176,13 @@
     grid-column: span 2;
     aspect-ratio: 4/3;
   }
+}
+
+@media (max-width: 480px) {
+  .vl-overlay  { padding: 0.75rem; }
+  .vl-title    { font-size: 0.9rem; }
+  .vl-title-sm { font-size: 0.8rem; }
+  .vl-sub      { font-size: 0.72rem; }
+  .vl-sub-sm   { font-size: 0.65rem; }
+  .vl-cta      { font-size: 0.6rem; margin-top: 0.3rem; }
 }

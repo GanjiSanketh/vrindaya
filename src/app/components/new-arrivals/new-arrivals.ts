@@ -17,4 +17,7 @@ export class NewArrivals {
   readonly products = computed(() =>
     [...this.svc.newArrivals()].sort((a, b) => b.id - a.id)
   );
+
+  // Homepage preview: first 4 only
+  readonly preview = computed(() => this.products().slice(0, 4));
 }

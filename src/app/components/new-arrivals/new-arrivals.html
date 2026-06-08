@@ -20,9 +20,9 @@
       <p class="section-desc">Fresh styles just in — discover the latest additions to our collection.</p>
     </div>
 
-    <!-- Product grid -->
+    <!-- Product grid (homepage: top 4 only) -->
     <div class="na-grid">
-      @for (p of products(); track p.id) {
+      @for (p of preview(); track p.id) {
         <app-product-card [product]="p" />
       }
     </div>

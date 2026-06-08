@@ -163,6 +163,13 @@
 
 /* Responsive */
 @media (max-width: 1024px) { .cl-grid { grid-template-columns: repeat(2, 1fr); } }
+
+@media (max-width: 768px) {
+  /* .cl-title has its own letter-spacing (0.05em) that makes it wider
+     than .section-title — needs its own mobile clamp override */
+  .cl-title { font-size: clamp(1.5rem, 5vw, 2.5rem); letter-spacing: 0.02em; }
+}
+
 @media (max-width: 576px)  {
   .cl-grid  { grid-template-columns: 1fr; gap: 1rem; }
   .cl-stats { gap: 1rem; flex-direction: column; }

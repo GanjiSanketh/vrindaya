@@ -62,7 +62,7 @@ export class ProductService {
   readonly categories: Category[] = [
     { id: 'long-kurtas',   name: 'Long Kurtas',     subtitle: 'Elegant Everyday Styles',    image: 'assets/products/001-wine-mandala-kurta/cover.png' },
     { id: 'short-kurtas',  name: 'Short Kurtas',    subtitle: 'Comfort Meets Style',         image: 'assets/products/003-black-gold-embroidered-kurti/cover.png' },
-    { id: '2-piece-sets',  name: '2-Piece Kurta Sets', subtitle: 'Perfectly Coordinated Looks', image: 'assets/products/009-teal-floral-kurta-set/cover.png' },
+    { id: '2-piece-sets',  name: '2-Piece Kurta Sets', subtitle: 'Perfectly Coordinated Looks', image: 'assets/products/010-peach-flower-print-2-piece-kurti/cover.png' },
     { id: '3-piece-sets',  name: '3-Piece Kurta Sets', subtitle: 'Complete Ethnic Elegance',  image: 'assets/products/002-indigo-floral-kurta-set/cover.png' },
   ];
 

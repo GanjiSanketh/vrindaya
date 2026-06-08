@@ -162,7 +162,27 @@
 
 .pc-link:hover { color: var(--maroon-dark); gap: 0.6rem; }
 
-/* Touch */
+/* Touch — always show CTA overlay since there's no hover */
 @media (hover: none) {
   .pc-overlay { transform: translateY(0); }
+}
+
+/* Very small screens (≤480px): compact info panel.
+   At 320px viewport / 2-column grid, each card is ~135px wide.
+   Reduce padding and font sizes so the price row stays on one line. */
+@media (max-width: 480px) {
+  .pc-card { min-width: 0; }  /* prevent grid blowout */
+
+  .pc-info {
+    padding: 0.625rem 0.625rem 0.75rem;
+    gap: 0.15rem;
+  }
+
+  .pc-name     { font-size: 0.8rem; }
+  .pc-price    { font-size: 0.82rem; }
+  .pc-original { font-size: 0.65rem; }
+  .pc-off      { font-size: 0.6rem; }
+  .pc-link     { font-size: 0.68rem; }
+  .pc-badges   { top: 0.5rem; left: 0.5rem; }
+  .pc-badge    { font-size: 0.52rem; padding: 2px 6px; }
 }

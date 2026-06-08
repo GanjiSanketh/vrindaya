@@ -291,4 +291,14 @@ button { font-family: var(--font-sans); cursor: pointer; }
   .section-pad    { padding: 1.25rem 0; }  /* 20px × 2 = 40px between sections — mobile target */
   .section-pad-lg { padding: 1.75rem 0; }
   .container-vr   { padding: 0 1.25rem; }
+
+  /* Section header — prevent long titles from overflowing narrow screens.
+     clamp floor drops from 2rem to 1.5rem so titles like "Explore Collections"
+     (19 chars) stay within a 280px content area at 320px viewport. */
+  .section-title {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    overflow-wrap: break-word;
+  }
+  .section-header { margin-bottom: 1.5rem; }
+  .section-desc   { font-size: 0.875rem; }
 }

@@ -210,5 +210,47 @@
     "isNew": true,
     "isBestSeller": true,
     "description": "Elegantly crafted in a soft rose pink hue, this embroidered kurta set blends timeless charm with everyday comfort."
+  },
+  {
+    "id": 11,
+    "name": "Midnight Bloom Embroidered Straight Kurta for Women",
+    "category": "Short Kurtas",
+    "categoryId": "short-kurtas",
+    "price": 403,
+    "originalPrice": 899,
+    "discount": 55,
+    "rating": 4.9,
+    "image": "assets/products/011-grey-botanical-print-short-kurta/cover.png",
+    "gallery": [
+      "assets/products/011-grey-botanical-print-short-kurta/gallery-1.png",
+      "assets/products/011-grey-botanical-print-short-kurta/gallery-2.png",
+      "assets/products/011-grey-botanical-print-short-kurta/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/product/p/itme?pid=KTAHNRFNHQC3HEGN",
+    "isTrending": true,
+    "isNew": true,
+    "isBestSeller": false,
+    "description": "Crafted in a rich black hue with elegant embroidery and subtle leaf-inspired prints, this straight-fit kurta blends timeless ethnic charm with everyday comfort."
+  },
+  {
+    "id": 12,
+    "name": "Ruby Grace Embroidered Straight Kurta for Women",
+    "category": "Short Kurtas",
+    "categoryId": "short-kurtas",
+    "price": 403,
+    "originalPrice": 899,
+    "discount": 55,
+    "rating": 4.9,
+    "image": "assets/products/012-maroon-botanical-print-short-kurta/cover.png",
+    "gallery": [
+      "assets/products/0012-maroon-botanical-print-short-kurta/gallery-1.png",
+      "assets/products/0012-maroon-botanical-print-short-kurta/gallery-2.png",
+      "assets/products/0012-maroon-botanical-print-short-kurta/gallery-3.png"
+    ],
+    "flipkartUrl": "https://www.flipkart.com/product/p/itme?pid=KTAHNRFNHQC3HEGN",
+    "isTrending": true,
+    "isNew": true,
+    "isBestSeller": false,
+    "description": "Designed in a rich ruby-maroon shade with intricate embroidery and elegant leaf-inspired prints, this straight-fit kurta adds timeless sophistication to your everyday ethnic style."
   }
 ]
