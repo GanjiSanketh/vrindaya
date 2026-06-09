@@ -12,14 +12,14 @@
       </div>
     }
 
-    <!-- Badge -->
-    <div class="pc-badges">
+    <!-- Badge: desktop position — top-left corner over image -->
+    <div class="pc-badges pc-badges--img">
       @if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
       @else if (product().isTrending) { <span class="pc-badge">TRENDING</span> }
       @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
-    <!-- Hover overlay -->
+    <!-- Hover overlay: desktop only -->
     <div class="pc-overlay">
       <span class="pc-overlay-cta">View on Flipkart <i class="bi bi-arrow-right"></i></span>
     </div>
@@ -27,6 +27,13 @@
 
   <!-- Info -->
   <div class="pc-info">
+    <!-- Badge: mobile position — first item below image, above name -->
+    <div class="pc-badges pc-badges--info">
+      @if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
+      @else if (product().isTrending) { <span class="pc-badge">TRENDING</span> }
+      @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
+    </div>
+
     <h3 class="pc-name">{{ product().name }}</h3>
     <div class="pc-price-row">
       <span class="pc-price">₹{{ product().price | number }}</span>
