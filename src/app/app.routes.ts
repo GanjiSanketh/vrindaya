@@ -25,6 +25,12 @@ export const routes: Routes = [
         .then(m => m.TrendingPageComponent),
   },
   {
+    path: 'admin/popup-config',
+    loadComponent: () =>
+      import('./pages/admin/popup-config/popup-config.component')
+        .then(m => m.PopupConfigComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

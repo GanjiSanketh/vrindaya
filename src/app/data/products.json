@@ -90,9 +90,9 @@
     "name": "Fuchsia Floral 3-Piece Set",
     "category": "3-Piece Sets",
     "categoryId": "3-piece-sets",
-    "price": 898,
+    "price": 1132,
     "originalPrice": 1599,
-    "discount": 44,
+    "discount": 29,
     "rating": 4.9,
     "image": "assets/products/005-fuchsia-floral-kurta-set/cover.png",
     "gallery": [
@@ -195,9 +195,9 @@
     "name": "Bloomline Rose Pink 2-Piece Set",
     "category": "2-Piece Sets",
     "categoryId": "2-piece-sets",
-    "price": 898,
-    "originalPrice": 1399,
-    "discount": 36,
+    "price": 679,
+    "originalPrice": 1299,
+    "discount": 48,
     "rating": 4.9,
     "image": "assets/products/010-peach-flower-print-2-piece-kurti/cover.png",
     "gallery": [
@@ -205,10 +205,10 @@
       "assets/products/010-peach-flower-print-2-piece-kurti/gallery-2.png",
       "assets/products/010-peach-flower-print-2-piece-kurti/gallery-3.png"
     ],
-    "flipkartUrl": "https://www.flipkart.com/vrindaya-women-floral-print-striped-embellished-embroidered-straight-kurta/p/itm2d71bb26c390f?pid=KTAHNGGPQVTHYUNM",
+    "flipkartUrl": "https://www.flipkart.com/vrindaya-women-embroidered-embellished-straight-kurta/p/itm4e06e98e60e0e?pid=KTAHZY3T3KYUNVRN",
     "isTrending": true,
-    "isNew": true,
-    "isBestSeller": true,
+    "isNew": false,
+    "isBestSeller": false,
     "description": "Elegantly crafted in a soft rose pink hue, this embroidered kurta set blends timeless charm with everyday comfort."
   },
   {

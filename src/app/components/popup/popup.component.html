@@ -1,0 +1,51 @@
+@if (visible && product && config) {
+  <div class="pu-backdrop" (click)="onBackdropClick($event)" role="presentation">
+
+    <div class="pu-panel" role="dialog" aria-modal="true"
+         [attr.aria-label]="config.title + ': ' + product.name">
+
+      <!-- Close -->
+      <button class="pu-close" (click)="close()" aria-label="Close popup">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <!-- ── Left: Product image ── -->
+      <div class="pu-img-side">
+        <img [src]="product.image" [alt]="product.name" class="pu-img" loading="eager" />
+        <span class="pu-img-badge">{{ product.discount }}% OFF</span>
+      </div>
+
+      <!-- ── Right: Content ── -->
+      <div class="pu-content">
+
+        <span class="pu-eyebrow">{{ config.title }}</span>
+        <p   class="pu-subtitle">{{ config.subtitle }}</p>
+
+        <h2 class="pu-name">{{ product.name }}</h2>
+
+        @if (product.description) {
+          <p class="pu-desc">{{ product.description }}</p>
+        }
+
+        <div class="pu-pricing">
+          <span class="pu-price">₹{{ product.price | number }}</span>
+          <span class="pu-original">₹{{ product.originalPrice | number }}</span>
+          <span class="pu-off">{{ product.discount }}% OFF</span>
+        </div>
+
+        <div class="pu-divider"></div>
+
+        <div class="pu-actions">
+          <button class="pu-btn-primary" (click)="shopNow()">
+            Shop Now&nbsp;<i class="bi bi-arrow-right"></i>
+          </button>
+          <button class="pu-btn-secondary" (click)="viewCollection()">
+            View Collection
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+}

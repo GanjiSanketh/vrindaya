@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "productId": 10,
+  "showDelay": 1,
+  "showOncePerSession": true,
+  "title": "Trending",
+  "subtitle": "Limited Time Offer"
+}
