@@ -1,12 +1,12 @@
-import { HttpClient }        from '@angular/common/http';
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser }  from '@angular/common';
-import { BehaviorSubject }    from 'rxjs';
-import { catchError, of }     from 'rxjs';
+import { HttpClient }                          from '@angular/common/http';
+import { Injectable, inject, PLATFORM_ID }    from '@angular/core';
+import { isPlatformBrowser }                  from '@angular/common';
+import { BehaviorSubject }                    from 'rxjs';
+import { catchError, of }                     from 'rxjs';
 
-import { PopupConfig }  from '../models/popup.model';
-import { Product }      from '../models/product.model';
-import productsData     from '../data/products.json';
+import { PopupConfig, CampaignType }  from '../models/popup.model';
+import { Product }                    from '../models/product.model';
+import productsData                   from '../data/products.json';
 
 const SESSION_KEY = 'vrindaya_popup_shown';
 const STORAGE_KEY = 'vrindaya_popup_config';
@@ -16,61 +16,76 @@ export class PopupService {
   private readonly http       = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
 
-  /* Emits true when the popup should be visible */
-  private readonly _visible = new BehaviorSubject<boolean>(false);
-  readonly visible$ = this._visible.asObservable();
+  /* Two separate UI states ───────────────────────────────────────── */
+  private readonly _floatingCard = new BehaviorSubject<boolean>(false);
+  private readonly _fullPopup    = new BehaviorSubject<boolean>(false);
 
-  private config: PopupConfig | null = null;
-  private timer: ReturnType<typeof setTimeout> | null = null;
+  readonly floatingCard$ = this._floatingCard.asObservable();
+  readonly fullPopup$    = this._fullPopup.asObservable();
+  readonly visible$      = this._fullPopup.asObservable();
 
-  /* All products for the admin dropdown */
   readonly allProducts = productsData as Product[];
 
-  /* ── Public API ────────────────────────────────── */
+  private config:         PopupConfig | null = null;
+  private product:        Product | undefined;
+  private triggered       = false;
+  private timer:          ReturnType<typeof setTimeout> | null = null;
+  private scrollListener: (() => void) | null = null;
 
-  /** Call once from the root component after first render. */
+  /* ── Public API ─────────────────────────────────────────────────── */
+
+  /** Called once from the root component after the first browser render. */
   loadAndSchedule(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // localStorage override wins (set by admin panel)
     const local = this.getLocalConfig();
     if (local) {
       this.config = local;
-      this.schedule();
+      this.setupTriggers();
       return;
     }
 
-    // Fall back to the static JSON asset
     this.http
       .get<PopupConfig>('assets/config/popup-config.json')
       .pipe(catchError(() => of(null)))
       .subscribe(cfg => {
         if (cfg) {
           this.config = cfg;
-          this.schedule();
+          this.setupTriggers();
         }
       });
   }
 
-  close(): void {
-    this._visible.next(false);
+  /** Floating card "Shop Now" — hides card, opens full modal, locks scroll. */
+  openFullPopup(): void {
+    this._floatingCard.next(false);
+    this._fullPopup.next(true);
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'hidden';
+    }
+    this.markShown();
+  }
+
+  /** Floating card close "×" — hides card and marks session done. */
+  dismissFloatingCard(): void {
+    this._floatingCard.next(false);
+    this.markShown();
+  }
+
+  /** Full popup close — hides modal, restores scroll. */
+  closeFullPopup(): void {
+    this._fullPopup.next(false);
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';
-      sessionStorage.setItem(SESSION_KEY, '1');
     }
-    if (this.timer !== null) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
+    this.markShown();
   }
 
-  getConfig(): PopupConfig | null { return this.config; }
+  close(): void { this.closeFullPopup(); }
 
-  getProduct(): Product | undefined {
-    return this.allProducts.find(p => p.id === this.config?.productId);
-  }
+  getConfig():  PopupConfig | null  { return this.config;  }
+  getProduct(): Product | undefined { return this.product; }
 
-  /** Persist config override in localStorage (admin panel). */
   saveConfig(config: PopupConfig): void {
     this.config = config;
     if (isPlatformBrowser(this.platformId)) {
@@ -78,7 +93,6 @@ export class PopupService {
     }
   }
 
-  /** Read the admin-saved override, if any. */
   getLocalConfig(): PopupConfig | null {
     if (!isPlatformBrowser(this.platformId)) return null;
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -87,23 +101,83 @@ export class PopupService {
     catch { return null; }
   }
 
-  /** Remove localStorage override so the JSON asset takes effect again. */
   resetToFile(): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem(STORAGE_KEY);
     }
   }
 
-  /* ── Private ───────────────────────────────────── */
+  /* ── Private ────────────────────────────────────────────────────── */
 
-  private schedule(): void {
+  private setupTriggers(): void {
     if (!this.config?.enabled) return;
-    if (this.config.showOncePerSession &&
-        sessionStorage.getItem(SESSION_KEY)) return;
+    if (this.config.showOncePerSession && sessionStorage.getItem(SESSION_KEY)) return;
 
-    this.timer = setTimeout(() => {
-      this._visible.next(true);
-      document.body.style.overflow = 'hidden';
-    }, this.config.showDelay);
+    this.product = this.resolveProduct();
+
+    const triggerType = this.config.triggerType    ?? 'SCROLL_OR_TIME';
+    const scrollPct   = this.config.scrollPercentage ?? 30;
+    // Support legacy showDelay (ms) from old localStorage entries
+    const delaySecs   = this.config.timeDelaySeconds ??
+                        (this.config.showDelay != null ? this.config.showDelay / 1000 : 8);
+
+    if (triggerType === 'TIME_ONLY' || triggerType === 'SCROLL_OR_TIME') {
+      this.timer = setTimeout(() => this.triggerCard(), delaySecs * 1_000);
+    }
+
+    if (triggerType === 'SCROLL_ONLY' || triggerType === 'SCROLL_OR_TIME') {
+      const onScroll = () => {
+        const scrolled = window.scrollY;
+        const total    = document.documentElement.scrollHeight - window.innerHeight;
+        if (total > 0 && (scrolled / total) * 100 >= scrollPct) {
+          this.triggerCard();
+        }
+      };
+      this.scrollListener = onScroll;
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
+  }
+
+  private triggerCard(): void {
+    if (this.triggered) return;
+    this.triggered = true;
+    this.clearTriggers();
+    this._floatingCard.next(true);
+  }
+
+  private clearTriggers(): void {
+    if (this.timer !== null) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener);
+      this.scrollListener = null;
+    }
+  }
+
+  private resolveProduct(): Product | undefined {
+    if (!this.config) return undefined;
+
+    const campaign: CampaignType = this.config.campaignType ?? 'MANUAL_PRODUCT';
+
+    switch (campaign) {
+      case 'TRENDING':
+        return this.allProducts.find(p => p.isTrending);
+      case 'NEW_ARRIVAL':
+        return this.allProducts.find(p => p.isNew);
+      case 'BEST_SELLER':
+        return this.allProducts.find(p => p.isBestSeller || p.isBestseller);
+      case 'FESTIVE_SALE':
+        return [...this.allProducts].sort((a, b) => b.discount - a.discount)[0];
+      default:
+        return this.allProducts.find(p => p.id === this.config!.productId);
+    }
+  }
+
+  private markShown(): void {
+    if (isPlatformBrowser(this.platformId) && this.config?.showOncePerSession) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+    }
   }
 }

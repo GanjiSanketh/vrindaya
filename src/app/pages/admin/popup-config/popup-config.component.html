@@ -11,7 +11,7 @@
           <i class="bi bi-chevron-right pca-bc-sep"></i>
           <span>Popup Config</span>
         </span>
-        <h1 class="pca-heading">Popup Configuration</h1>
+        <h1 class="pca-heading">Promotion System</h1>
       </div>
       <a routerLink="/" class="pca-preview-link">
         <i class="bi bi-eye"></i> Preview Site
@@ -26,33 +26,51 @@
       <section class="pca-card" [formGroup]="form">
         <h2 class="pca-card-title">Settings</h2>
 
-        <!-- Enable toggle -->
+        <!-- ── Enable toggle ── -->
         <div class="pca-field pca-toggle-row">
           <div>
-            <label class="pca-label">Enable Popup</label>
-            <p class="pca-hint">Show the promotional popup to new visitors.</p>
+            <label class="pca-label">Enable Promotion</label>
+            <p class="pca-hint">Show the floating card + popup to visitors.</p>
           </div>
-          <label class="pca-switch" aria-label="Enable popup">
+          <label class="pca-switch" aria-label="Enable promotion">
             <input type="checkbox" formControlName="enabled" />
             <span class="pca-slider"></span>
           </label>
         </div>
 
-        <!-- Product dropdown -->
+        <!-- ── Campaign type ── -->
         <div class="pca-field">
-          <label class="pca-label" for="productId">Featured Product</label>
-          <select class="pca-select" id="productId" formControlName="productId">
-            @for (p of products; track p.id) {
-              <option [value]="p.id">
-                #{{ p.id }} — {{ p.name }} (₹{{ p.price | number }})
-              </option>
+          <label class="pca-label" for="campaignType">Campaign Type</label>
+          <select class="pca-select" id="campaignType" formControlName="campaignType">
+            @for (opt of campaignOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
             }
           </select>
+          @if (form.value.campaignType !== 'MANUAL_PRODUCT') {
+            <p class="pca-hint" style="margin-top:0.35rem">
+              <i class="bi bi-info-circle"></i>
+              {{ getCampaignHint() }} — product is auto-selected at runtime.
+            </p>
+          }
         </div>
 
-        <!-- Title -->
+        <!-- ── Manual product dropdown (only for MANUAL_PRODUCT) ── -->
+        @if (isManualProduct()) {
+          <div class="pca-field">
+            <label class="pca-label" for="productId">Featured Product</label>
+            <select class="pca-select" id="productId" formControlName="productId">
+              @for (p of products; track p.id) {
+                <option [value]="p.id">
+                  #{{ p.id }} — {{ p.name }} (₹{{ p.price | number }})
+                </option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- ── Title ── -->
         <div class="pca-field">
-          <label class="pca-label" for="title">Popup Title</label>
+          <label class="pca-label" for="title">Card Title</label>
           <input class="pca-input" id="title" type="text"
                  formControlName="title" placeholder="e.g. New Arrival" maxlength="60" />
           @if (form.controls.title.invalid && form.controls.title.touched) {
@@ -60,9 +78,9 @@
           }
         </div>
 
-        <!-- Subtitle -->
+        <!-- ── Subtitle ── -->
         <div class="pca-field">
-          <label class="pca-label" for="subtitle">Subtitle</label>
+          <label class="pca-label" for="subtitle">Popup Subtitle</label>
           <input class="pca-input" id="subtitle" type="text"
                  formControlName="subtitle" placeholder="e.g. Limited Time Offer" maxlength="80" />
           @if (form.controls.subtitle.invalid && form.controls.subtitle.touched) {
@@ -70,26 +88,62 @@
           }
         </div>
 
-        <!-- Delay -->
+        <div class="pca-divider"></div>
+        <h3 class="pca-section-label">Trigger Settings</h3>
+
+        <!-- ── Trigger type ── -->
         <div class="pca-field">
-          <label class="pca-label" for="showDelay">
-            Delay (ms)
-            <span class="pca-hint-inline">
-              {{ (form.value.showDelay ?? 0) / 1000 | number:'1.1-1' }}s
-            </span>
-          </label>
-          <input class="pca-input" id="showDelay" type="number"
-                 formControlName="showDelay" min="0" max="30000" step="500" />
-          @if (form.controls.showDelay.invalid && form.controls.showDelay.touched) {
-            <span class="pca-error">Enter a value between 0 and 30 000 ms.</span>
-          }
+          <label class="pca-label" for="triggerType">Trigger Type</label>
+          <select class="pca-select" id="triggerType" formControlName="triggerType">
+            @for (opt of triggerOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+          <p class="pca-hint" style="margin-top:0.35rem">
+            <i class="bi bi-info-circle"></i>
+            <strong>SCROLL_OR_TIME</strong> fires whichever condition is met first — recommended for best engagement.
+          </p>
         </div>
 
-        <!-- Once per session -->
+        <!-- ── Scroll percentage (only when scroll is active) ── -->
+        @if (showScrollField()) {
+          <div class="pca-field">
+            <label class="pca-label" for="scrollPercentage">
+              Scroll Depth
+              <span class="pca-hint-inline">{{ form.value.scrollPercentage }}% of page</span>
+            </label>
+            <input class="pca-input" id="scrollPercentage" type="range"
+                   formControlName="scrollPercentage" min="5" max="90" step="5"
+                   style="padding:0.35rem 0; cursor:pointer" />
+            <div class="pca-range-labels">
+              <span>5%</span><span>Trigger at {{ form.value.scrollPercentage }}% scroll</span><span>90%</span>
+            </div>
+            @if (form.controls.scrollPercentage.invalid && form.controls.scrollPercentage.touched) {
+              <span class="pca-error">Enter a value between 5 and 90.</span>
+            }
+          </div>
+        }
+
+        <!-- ── Time delay (only when time is active) ── -->
+        @if (showTimeField()) {
+          <div class="pca-field">
+            <label class="pca-label" for="timeDelaySeconds">
+              Time Delay
+              <span class="pca-hint-inline">{{ form.value.timeDelaySeconds }}s</span>
+            </label>
+            <input class="pca-input" id="timeDelaySeconds" type="number"
+                   formControlName="timeDelaySeconds" min="0" max="60" step="1" />
+            @if (form.controls.timeDelaySeconds.invalid && form.controls.timeDelaySeconds.touched) {
+              <span class="pca-error">Enter a value between 0 and 60 seconds.</span>
+            }
+          </div>
+        }
+
+        <!-- ── Once per session ── -->
         <div class="pca-field pca-toggle-row">
           <div>
             <label class="pca-label">Show Once Per Session</label>
-            <p class="pca-hint">Hide after the visitor closes it once.</p>
+            <p class="pca-hint">Hide after visitor closes or clicks Shop Now.</p>
           </div>
           <label class="pca-switch" aria-label="Show once per session">
             <input type="checkbox" formControlName="showOncePerSession" />
@@ -111,7 +165,7 @@
         @if (saveSuccess) {
           <div class="pca-banner pca-banner-success">
             <i class="bi bi-check-circle-fill"></i>
-            Config saved to browser storage. Copy the JSON below into
+            Config saved. Copy the JSON below into
             <code>src/assets/config/popup-config.json</code> to persist across devices.
           </div>
         }
@@ -127,9 +181,12 @@
       <aside class="pca-aside">
 
         <!-- Live preview card -->
-        @if (getSelectedProduct(); as p) {
+        @if (getCampaignProduct(); as p) {
           <section class="pca-card pca-preview-card">
-            <h2 class="pca-card-title">Preview</h2>
+            <h2 class="pca-card-title">Live Preview</h2>
+            <p class="pca-hint" style="margin-bottom:0.75rem">
+              This is the product that will appear in the floating card and modal.
+            </p>
             <div class="pca-preview">
               <img [src]="p.image" [alt]="p.name" class="pca-preview-img" />
               <div class="pca-preview-body">
@@ -146,16 +203,34 @@
           </section>
         }
 
+        <!-- Trigger summary chip -->
+        <section class="pca-card pca-trigger-summary">
+          <h2 class="pca-card-title"><i class="bi bi-lightning-charge-fill"></i> Trigger Summary</h2>
+          <ul class="pca-trigger-list">
+            <li>
+              <span class="pca-chip pca-chip-type">{{ form.value.triggerType }}</span>
+            </li>
+            @if (showScrollField()) {
+              <li>Fires when user scrolls <strong>{{ form.value.scrollPercentage }}%</strong> of the page</li>
+            }
+            @if (showTimeField()) {
+              <li>Fires after <strong>{{ form.value.timeDelaySeconds }}s</strong> on page</li>
+            }
+            <li>
+              Campaign: <span class="pca-chip pca-chip-campaign">{{ form.value.campaignType }}</span>
+            </li>
+          </ul>
+        </section>
+
         <!-- JSON output (shown after save) -->
         @if (configPreview) {
           <section class="pca-card">
             <h2 class="pca-card-title">
               Copy to <code>popup-config.json</code>
             </h2>
-            <p class="pca-hint" style="margin-bottom: 0.75rem">
-              Paste this into
-              <code>src/assets/config/popup-config.json</code>
-              to make the config permanent across all browsers and sessions.
+            <p class="pca-hint" style="margin-bottom:0.75rem">
+              Paste this into <code>src/assets/config/popup-config.json</code>
+              to make the config permanent across all browsers.
             </p>
             <pre class="pca-json">{{ configPreview }}</pre>
           </section>
@@ -165,10 +240,11 @@
         <section class="pca-card pca-info-box">
           <h2 class="pca-card-title"><i class="bi bi-info-circle"></i> How It Works</h2>
           <ul class="pca-info-list">
-            <li>Changes saved here are stored in <strong>localStorage</strong> and take effect immediately in this browser.</li>
-            <li>Copy the JSON output into <code>popup-config.json</code> to persist across all devices and deployments.</li>
-            <li><strong>Reset to File</strong> clears the local override and uses the JSON file again.</li>
-            <li>The popup respects the <em>Show Once Per Session</em> setting using <code>sessionStorage</code>.</li>
+            <li>The floating card appears <strong>after</strong> the page fully loads — never on first paint.</li>
+            <li>Triggers fire once; whichever condition (scroll / time) is met first wins.</li>
+            <li>Clicking "Shop Now" on the card opens the full premium popup.</li>
+            <li>Session storage prevents re-showing after close or purchase click.</li>
+            <li>Changes saved here go to <strong>localStorage</strong> (this browser only). Copy JSON → file to persist.</li>
           </ul>
         </section>
 

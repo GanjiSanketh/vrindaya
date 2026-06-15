@@ -1,17 +1,64 @@
-@if (visible && product && config) {
+<!-- ══════════════════════════════════════════════════════════════
+     FLOATING PROMOTIONAL CARD
+     Appears after scroll/time trigger — never blocks first load.
+     Desktop: bottom-right · Mobile: bottom-center
+     ══════════════════════════════════════════════════════════════ -->
+@if (cardVisible && product && config) {
+  <div class="fc-wrapper" role="complementary"
+       [attr.aria-label]="'New promotion: ' + product.name">
+
+    <div class="fc-card">
+
+      <!-- Dismiss -->
+      <button class="fc-close" (click)="dismissCard()" aria-label="Dismiss promotion">
+        <i class="bi bi-x"></i>
+      </button>
+
+      <!-- Eyebrow -->
+      <span class="fc-eyebrow">✨ {{ config.title }}</span>
+
+      <!-- Product image -->
+      <div class="fc-img-wrap">
+        <img [src]="product.image" [alt]="product.name"
+             class="fc-img" loading="lazy" />
+        <span class="fc-badge">{{ product.discount }}% OFF</span>
+      </div>
+
+      <!-- Info -->
+      <div class="fc-body">
+        <p class="fc-name">{{ product.name }}</p>
+        <div class="fc-price-row">
+          <span class="fc-price">₹{{ product.price | number }}</span>
+          <span class="fc-orig">₹{{ product.originalPrice | number }}</span>
+        </div>
+        <button class="fc-btn" (click)="openModal()">
+          Shop Now&nbsp;<i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════
+     FULL PREMIUM POPUP MODAL
+     Opened only when user clicks "Shop Now" on the floating card.
+     ══════════════════════════════════════════════════════════════ -->
+@if (modalVisible && product && config) {
   <div class="pu-backdrop" (click)="onBackdropClick($event)" role="presentation">
 
     <div class="pu-panel" role="dialog" aria-modal="true"
          [attr.aria-label]="config.title + ': ' + product.name">
 
       <!-- Close -->
-      <button class="pu-close" (click)="close()" aria-label="Close popup">
+      <button class="pu-close" (click)="closeModal()" aria-label="Close popup">
         <i class="bi bi-x-lg"></i>
       </button>
 
       <!-- ── Left: Product image ── -->
       <div class="pu-img-side">
-        <img [src]="product.image" [alt]="product.name" class="pu-img" loading="eager" />
+        <img [src]="product.image" [alt]="product.name"
+             class="pu-img" loading="lazy" />
         <span class="pu-img-badge">{{ product.discount }}% OFF</span>
       </div>
 

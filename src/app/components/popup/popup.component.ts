@@ -17,38 +17,48 @@ export class PopupComponent implements OnInit, OnDestroy {
   private readonly svc        = inject(PopupService);
   private readonly platformId = inject(PLATFORM_ID);
 
-  visible = false;
+  cardVisible  = false;
+  modalVisible = false;
   product: Product | undefined;
   config:  PopupConfig | null = null;
 
-  private sub?: Subscription;
+  private subs: Subscription[] = [];
 
   ngOnInit(): void {
-    this.sub = this.svc.visible$.subscribe(v => {
-      this.visible = v;
-      if (v) {
-        this.product = this.svc.getProduct();
-        this.config  = this.svc.getConfig();
-      }
-    });
+    this.subs.push(
+      this.svc.floatingCard$.subscribe(v => {
+        if (v) {
+          this.product = this.svc.getProduct();
+          this.config  = this.svc.getConfig();
+        }
+        this.cardVisible = v;
+      }),
+      this.svc.fullPopup$.subscribe(v => {
+        if (v) {
+          this.product = this.svc.getProduct();
+          this.config  = this.svc.getConfig();
+        }
+        this.modalVisible = v;
+      }),
+    );
   }
 
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
+  ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
 
-  close(): void { this.svc.close(); }
+  openModal():   void { this.svc.openFullPopup(); }
+  dismissCard(): void { this.svc.dismissFloatingCard(); }
+  closeModal():  void { this.svc.closeFullPopup(); }
 
   shopNow(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.svc.close();
-    // Opens the product's Flipkart listing — consistent with product card behaviour
+    this.svc.closeFullPopup();
     if (this.product?.flipkartUrl) {
       window.open(this.product.flipkartUrl, '_blank', 'noopener,noreferrer');
     }
   }
 
   viewCollection(): void {
-    this.svc.close();
-    // Full-page navigation — avoids importing Router in a shared component
+    this.svc.closeFullPopup();
     if (isPlatformBrowser(this.platformId)) {
       window.location.href = '/new-arrivals';
     }
@@ -56,7 +66,7 @@ export class PopupComponent implements OnInit, OnDestroy {
 
   onBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('pu-backdrop')) {
-      this.close();
+      this.closeModal();
     }
   }
 }

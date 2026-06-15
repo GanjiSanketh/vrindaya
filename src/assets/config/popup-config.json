@@ -1,8 +1,11 @@
 {
   "enabled": true,
   "productId": 10,
-  "showDelay": 1,
+  "triggerType": "SCROLL_OR_TIME",
+  "scrollPercentage": 30,
+  "timeDelaySeconds": 8,
   "showOncePerSession": true,
-  "title": "Trending",
-  "subtitle": "Limited Time Offer"
+  "title": "New Arrival",
+  "subtitle": "Limited Time Offer",
+  "campaignType": "MANUAL_PRODUCT"
 }
