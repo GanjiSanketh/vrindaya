@@ -1,4 +1,4 @@
-import { Product } from '../models/product.model';
+import { Product } from '../core/models/product.model';
 
 // Image naming convention inside each product folder:
 //   image-1.jpg  →  primary / front view

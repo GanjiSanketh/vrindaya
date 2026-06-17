@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
+import { SOCIAL_LINKS } from '../../core/constants/app.constants';
 
 @Component({
   selector: 'app-instagram-community',
@@ -11,4 +12,5 @@ import { ProductService } from '../../services/product.service';
 })
 export class InstagramCommunity {
   readonly images = inject(ProductService).instaImages;
+  readonly instagramUrl = SOCIAL_LINKS.INSTAGRAM;
 }

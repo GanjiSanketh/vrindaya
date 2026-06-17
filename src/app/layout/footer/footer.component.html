@@ -1,0 +1,125 @@
+<footer id="footer">
+
+  <!-- ══ TOP SECTION (cream) ══ -->
+  <div class="ft-top">
+    <div class="container-vr">
+
+      <!-- Brand block -->
+      <div class="ft-brand">
+        <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="ft-logo" draggable="false" />
+        <h2 class="ft-brand-name">VRINDAYA</h2>
+        <div class="ft-brand-rule">
+          <span class="ft-rule-line"></span>
+          <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="18" height="14">
+            <circle cx="10" cy="10" r="3" fill="none" stroke="var(--gold)" stroke-width="1"/>
+            <path d="M10 2C8 5 8 8 9 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
+            <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
+          </svg>
+          <span class="ft-rule-line"></span>
+        </div>
+        <em class="ft-tagline">Wear the Grace</em>
+        <p class="ft-desc">
+          Vrindaya celebrates timeless elegance through thoughtfully curated ethnic wear
+          designed for every occasion.
+        </p>
+      </div>
+
+      <div class="ft-divider-h"></div>
+
+      <!-- 2 columns: Shop · Quick Links -->
+      <div class="ft-cols">
+
+        <!-- Shop -->
+        <div class="ft-col">
+          <h4 class="ft-col-title">SHOP</h4>
+          <div class="ft-col-rule"></div>
+          <ul class="ft-links">
+            <li>
+              <a routerLink="/category/long-kurtas"
+                 routerLinkActive="ft-link-active">Long Kurtas</a>
+            </li>
+            <li>
+              <a routerLink="/category/short-kurtas"
+                 routerLinkActive="ft-link-active">Short Kurtas</a>
+            </li>
+            <li>
+              <a routerLink="/category/2-piece-sets"
+                 routerLinkActive="ft-link-active">2-Piece Sets</a>
+            </li>
+            <li>
+              <a routerLink="/category/3-piece-sets"
+                 routerLinkActive="ft-link-active">3-Piece Sets</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Quick Links — fragment navigation to home page sections -->
+        <div class="ft-col">
+          <h4 class="ft-col-title">QUICK LINKS</h4>
+          <div class="ft-col-rule"></div>
+          <ul class="ft-links">
+            <li>
+              <a [routerLink]="['/']" fragment="hero">About Us</a>
+            </li>
+            <li>
+              <a routerLink="/new-arrivals" routerLinkActive="ft-link-active">New Arrivals</a>
+            </li>
+            <li>
+              <a routerLink="/trending" routerLinkActive="ft-link-active">Trending Collection</a>
+            </li>
+            <li>
+              <a [routerLink]="['/']" fragment="customer-love">Customer Love</a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BOTTOM SECTION ══ -->
+  <div class="ft-bottom">
+    <div class="container-vr">
+
+      <!-- 3 feature blocks centered -->
+      <div class="ft-features">
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-flower1"></i></div>
+          <div>
+            <strong>PREMIUM QUALITY</strong>
+            <span>Carefully selected fabrics for comfort and elegance.</span>
+          </div>
+        </div>
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-gem"></i></div>
+          <div>
+            <strong>THOUGHTFUL DESIGN</strong>
+            <span>Elegant styles crafted to celebrate every woman.</span>
+          </div>
+        </div>
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-truck"></i></div>
+          <div>
+            <strong>PAN INDIA DELIVERY</strong>
+            <span>Fast, reliable and secure delivery across India.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copyright strip -->
+      <div class="ft-copy">
+        <div class="ft-copy-line"></div>
+        <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="16" height="12">
+          <circle cx="10" cy="10" r="3" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
+          <path d="M10 2C8 5 8 8 9 10" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
+          <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
+        </svg>
+        <div class="ft-copy-line"></div>
+        <p class="ft-copy-text">© {{ currentYear }} Vrindaya. All Rights Reserved.</p>
+        <em class="ft-copy-tag">Wear the Grace ✦</em>
+      </div>
+
+    </div>
+  </div>
+
+</footer>

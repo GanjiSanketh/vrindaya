@@ -1,9 +1,9 @@
 import { Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProductService, SortOrder } from '../../shared/product.service';
-import { Product } from '../../models/product.model';
-import { ProductCard } from '../product-card/product-card';
+import { ProductService, SortOrder } from '../../core/services/product.service';
+import { Product } from '../../core/models/product.model';
+import { ProductCard } from '../../shared/components/product-card/product-card';
 import { CATEGORIES } from '../../data/categories';
 
 interface SortOption { value: SortOrder; label: string; }
@@ -22,19 +22,18 @@ export class ProductGrid {
   readonly categories = CATEGORIES;
 
   readonly sortOptions: SortOption[] = [
-    { value: 'newest',     label: 'Newest'          },
-    { value: 'trending',   label: 'Trending'         },
+    { value: 'default',    label: 'Default'           },
     { value: 'price-asc',  label: 'Price: Low → High' },
     { value: 'price-desc', label: 'Price: High → Low' },
+    { value: 'rating',     label: 'Top Rated'         },
   ];
 
-  /* Live search value bound to the ProductService signal */
   get searchValue(): string { return this.productService.searchQuery(); }
   set searchValue(v: string) { this.productService.setSearch(v); }
 
   get currentSort(): SortOrder { return this.productService.sortOrder(); }
 
-  setSort(order: SortOrder): void { this.productService.setSortOrder(order); }
+  setSort(order: SortOrder): void { this.productService.setSort(order); }
 
   selectCategory(id: string): void {
     this.productService.setCategory(id);
@@ -45,14 +44,13 @@ export class ProductGrid {
 
   get displayProducts(): Product[] {
     switch (this.filter()) {
-      case 'trending': return this.productService.trendingProducts();
+      case 'trending': return this.productService.trending();
       case 'new':      return this.productService.newArrivals();
-      default:         return this.productService.sortedProducts();
+      default:         return this.productService.filteredProducts();
     }
   }
 
   get isEmpty(): boolean { return this.displayProducts.length === 0; }
 
-  /* Used only in 'all' mode */
   get selectedCategory(): string { return this.productService.selectedCategory(); }
 }

@@ -2,9 +2,9 @@ import { Component, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser, DecimalPipe }                   from '@angular/common';
 import { Subscription }                                      from 'rxjs';
 
-import { PopupService } from '../../services/popup.service';
-import { PopupConfig }  from '../../models/popup.model';
-import { Product }      from '../../models/product.model';
+import { PopupService } from '../../core/services/popup.service';
+import { PopupConfig }  from '../../core/models/popup.model';
+import { Product }      from '../../core/models/product.model';
 
 @Component({
   selector:    'app-popup',

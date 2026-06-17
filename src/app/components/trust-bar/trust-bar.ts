@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ScrollRevealDirective } from '../../shared/scroll-reveal.directive';
+import { ScrollRevealDirective } from '../../shared/directives/scroll-reveal.directive';
 
 @Component({
   selector: 'app-trust-bar',

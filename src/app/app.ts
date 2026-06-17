@@ -2,7 +2,7 @@ import { Component, inject, afterNextRender } from '@angular/core';
 import { RouterOutlet }                        from '@angular/router';
 
 import { PopupComponent } from './components/popup/popup.component';
-import { PopupService }   from './services/popup.service';
+import { PopupService }   from './core/services/popup.service';
 
 @Component({
   selector:   'app-root',

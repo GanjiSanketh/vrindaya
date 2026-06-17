@@ -27,8 +27,8 @@
     <!-- Instagram grid 2 rows x 6 cols -->
     <div class="ic-grid">
       @for (img of images; track img; let i = $index) {
-        <a class="ic-item" href="https://instagram.com/vrindaya" target="_blank" rel="noopener" aria-label="View on Instagram">
-          <img [src]="img" [alt]="'Vrindaya community look ' + (i + 1)" class="ic-img" loading="lazy" />
+        <a class="ic-item" [href]="instagramUrl" target="_blank" rel="noopener noreferrer" aria-label="View on Instagram">
+          <img [src]="img" [alt]="'Vrindaya community look ' + (i + 1)" class="ic-img" loading="lazy" draggable="false" />
           <div class="ic-overlay">
             <i class="bi bi-instagram"></i>
             <span class="ic-type">
@@ -71,7 +71,7 @@
         </div>
       </div>
 
-      <a href="https://instagram.com/vrindaya" target="_blank" rel="noopener" class="ic-follow-btn">
+      <a [href]="instagramUrl" target="_blank" rel="noopener noreferrer" class="ic-follow-btn">
         FOLLOW US <i class="bi bi-arrow-right"></i>
       </a>
     </div>

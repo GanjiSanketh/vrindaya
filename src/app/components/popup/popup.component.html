@@ -20,7 +20,7 @@
       <!-- Product image -->
       <div class="fc-img-wrap">
         <img [src]="product.image" [alt]="product.name"
-             class="fc-img" loading="lazy" />
+             class="fc-img" loading="lazy" draggable="false" />
         <span class="fc-badge">{{ product.discount }}% OFF</span>
       </div>
 
@@ -58,7 +58,7 @@
       <!-- ── Left: Product image ── -->
       <div class="pu-img-side">
         <img [src]="product.image" [alt]="product.name"
-             class="pu-img" loading="lazy" />
+             class="pu-img" loading="lazy" draggable="false" />
         <span class="pu-img-badge">{{ product.discount }}% OFF</span>
       </div>
 

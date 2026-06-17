@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 
 @Component({
   selector: 'app-vrindaya-look',

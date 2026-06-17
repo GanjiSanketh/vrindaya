@@ -1,37 +1,48 @@
 import { Routes } from '@angular/router';
+import { APP_ROUTES } from './core/constants/routes.constants';
 
 export const routes: Routes = [
+  /* ── Main site shell (Header + Footer via LayoutComponent) ── */
   {
     path: '',
     loadComponent: () =>
-      import('./pages/home/home').then(m => m.Home),
+      import('./layout/layout.component').then(m => m.LayoutComponent),
+    children: [
+      {
+        path: APP_ROUTES.HOME,
+        loadChildren: () =>
+          import('./features/home/home.routes').then(m => m.HOME_ROUTES),
+      },
+      {
+        path: APP_ROUTES.CATEGORY,
+        loadChildren: () =>
+          import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES),
+      },
+      {
+        path: APP_ROUTES.NEW_ARRIVALS,
+        loadChildren: () =>
+          import('./features/new-arrivals/new-arrivals.routes').then(m => m.NEW_ARRIVALS_ROUTES),
+      },
+      {
+        path: APP_ROUTES.TRENDING,
+        loadChildren: () =>
+          import('./features/trending/trending.routes').then(m => m.TRENDING_ROUTES),
+      },
+      {
+        path: APP_ROUTES.NOT_FOUND,
+        loadComponent: () =>
+          import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
+      },
+    ],
   },
+
+  /* ── Admin shell (no header/footer) ── */
   {
-    path: 'category/:id',
-    loadComponent: () =>
-      import('./pages/product-listing/product-listing.component')
-        .then(m => m.ProductListingComponent),
+    path: APP_ROUTES.ADMIN,
+    loadChildren: () =>
+      import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES),
   },
-  {
-    path: 'new-arrivals',
-    loadComponent: () =>
-      import('./pages/new-arrivals-page/new-arrivals-page.component')
-        .then(m => m.NewArrivalsPageComponent),
-  },
-  {
-    path: 'trending',
-    loadComponent: () =>
-      import('./pages/trending-page/trending-page.component')
-        .then(m => m.TrendingPageComponent),
-  },
-  {
-    path: 'admin/popup-config',
-    loadComponent: () =>
-      import('./pages/admin/popup-config/popup-config.component')
-        .then(m => m.PopupConfigComponent),
-  },
-  {
-    path: '**',
-    redirectTo: '',
-  },
+
+  /* ── Fallback ── */
+  { path: '**', redirectTo: '/not-found' },
 ];

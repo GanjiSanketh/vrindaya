@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "lint": "eslint src/",
     "serve:ssr:vrindaya": "node dist/vrindaya/server/server.mjs"
   },
   "prettier": {
@@ -41,10 +42,15 @@
     "@angular/build": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
+    "@angular-eslint/eslint-plugin": "^18.0.0",
+    "@angular-eslint/eslint-plugin-template": "^18.0.0",
+    "@angular-eslint/template-parser": "^18.0.0",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
+    "eslint": "^9.0.0",
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
+    "typescript-eslint": "^8.0.0",
     "vitest": "^4.0.8"
   }
 }
