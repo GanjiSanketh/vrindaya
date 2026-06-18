@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AdminAuthService }   from '../services/admin-auth.service';
-import { APP_ROUTES }         from '../../../core/constants/routes.constants';
+import { AdminAuthService } from '../services/admin-auth.service';
+import { APP_ROUTES }       from '../../../core/constants/routes.constants';
 
 @Component({
   selector:    'app-admin-layout',
@@ -18,7 +18,5 @@ export class AdminLayoutComponent {
   toggleSide(): void { this.sideOpen.update(v => !v); }
   closeSide():  void { this.sideOpen.set(false); }
 
-  async signOut(): Promise<void> {
-    await this.auth.signOut();
-  }
+  async signOut(): Promise<void> { await this.auth.signOut(); }
 }

@@ -114,9 +114,11 @@
                     <button class="action-btn action-btn--dup" (click)="duplicate(p.id)" title="Duplicate">
                       <i class="bi bi-copy"></i>
                     </button>
-                    <button class="action-btn action-btn--del" (click)="confirmDelete(p.id)" title="Delete">
-                      <i class="bi bi-trash3"></i>
-                    </button>
+                    @if (canDelete()) {
+                      <button class="action-btn action-btn--del" (click)="confirmDelete(p.id)" title="Delete">
+                        <i class="bi bi-trash3"></i>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -129,8 +131,8 @@
 
 </div>
 
-<!-- Delete confirmation modal -->
-@if (deleteId() !== null) {
+<!-- Delete confirmation modal (super_admin + admin only) -->
+@if (canDelete() && deleteId() !== null) {
   <div class="modal-backdrop" (click)="cancelDelete()">
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-icon"><i class="bi bi-trash3-fill"></i></div>

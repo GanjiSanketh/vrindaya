@@ -2,6 +2,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink }                          from '@angular/router';
 import { CommonModule }                        from '@angular/common';
 import { AdminProductService }                 from '../../services/admin-product.service';
+import { AdminAuthService }                    from '../../services/admin-auth.service';
 import { APP_ROUTES }                          from '../../../../core/constants/routes.constants';
 import { Product }                             from '../../../../core/models/product.model';
 
@@ -16,7 +17,11 @@ export class AdminProductListComponent {
   private readonly _sortField = signal<'id' | 'name' | 'price' | 'category'>('id');
 
   readonly svc  = inject(AdminProductService);
+  readonly auth = inject(AdminAuthService);
   readonly BASE = `/${APP_ROUTES.ADMIN}`;
+
+  /** Editors cannot delete products. */
+  readonly canDelete = computed(() => this.auth.hasRole(['super_admin', 'admin']));
 
   readonly searchQuery    = signal('');
   readonly categoryFilter = signal('all');

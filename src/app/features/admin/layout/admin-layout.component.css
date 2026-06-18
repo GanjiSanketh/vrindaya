@@ -120,8 +120,32 @@
   min-width: 0;
 }
 
-.al-user-name  { font-size: 0.78rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.al-user-email { font-size: 0.62rem; color: rgba(255,255,255,0.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.al-user-name { font-size: 0.78rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.al-user-role {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.45rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.al-user-role--super_admin { background: rgba(201,169,89,0.25); color: #f5d57a; }
+.al-user-role--admin        { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+.al-user-role--editor       { background: rgba(99,102,241,0.25); color: #a5b4fc; }
+
+.al-nav-item--management {
+  color: rgba(201,169,89,0.85);
+}
+
+.al-nav-item--management:hover,
+.al-nav-item--management.al-nav-item--active {
+  background: rgba(201,169,89,0.12) !important;
+  color: #f5d57a !important;
+}
 
 .al-signout {
   width: 28px; height: 28px;

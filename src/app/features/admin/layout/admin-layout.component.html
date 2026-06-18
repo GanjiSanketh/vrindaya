@@ -14,6 +14,8 @@
 
     <!-- Navigation -->
     <nav class="al-nav" (click)="closeSide()">
+
+      <!-- Visible to all authenticated roles -->
       <a [routerLink]="BASE + '/dashboard'" routerLinkActive="al-nav-item--active" class="al-nav-item">
         <i class="bi bi-grid-1x2"></i>
         <span>Dashboard</span>
@@ -22,19 +24,38 @@
         <i class="bi bi-bag-heart"></i>
         <span>Products</span>
       </a>
-      <a [routerLink]="BASE + '/popup-config'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-megaphone"></i>
-        <span>Popup Campaign</span>
-      </a>
-      <a [routerLink]="BASE + '/exit-intent'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-door-open"></i>
-        <span>Exit Intent</span>
-      </a>
+
+      <!-- super_admin + admin only -->
+      @if (auth.hasRole(['super_admin', 'admin'])) {
+        <a [routerLink]="BASE + '/popup-config'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+          <i class="bi bi-megaphone"></i>
+          <span>Popup Campaign</span>
+        </a>
+        <a [routerLink]="BASE + '/exit-intent'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+          <i class="bi bi-door-open"></i>
+          <span>Exit Intent</span>
+        </a>
+        <a [routerLink]="BASE + '/analytics'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+          <i class="bi bi-bar-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+      }
+
+      <!-- super_admin only -->
+      @if (auth.isSuperAdmin()) {
+        <hr class="al-divider" />
+        <a [routerLink]="BASE + '/admin-management'" routerLinkActive="al-nav-item--active" class="al-nav-item al-nav-item--management">
+          <i class="bi bi-shield-check"></i>
+          <span>Admin Management</span>
+        </a>
+      }
+
       <hr class="al-divider" />
       <a href="/" target="_blank" rel="noopener noreferrer" class="al-nav-item al-nav-item--ghost">
         <i class="bi bi-eye"></i>
         <span>View Site</span>
       </a>
+
     </nav>
 
     <!-- User footer -->
@@ -47,7 +68,9 @@
         }
         <div class="al-user-info">
           <span class="al-user-name">{{ user.displayName || 'Admin' }}</span>
-          <span class="al-user-email">{{ user.email }}</span>
+          <span class="al-user-role al-user-role--{{ user.role }}">
+            {{ user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'Editor' }}
+          </span>
         </div>
         <button class="al-signout" (click)="signOut()" title="Sign out">
           <i class="bi bi-box-arrow-right"></i>
