@@ -23,8 +23,18 @@ export class ExitIntentService {
   readonly shouldShow = signal(false);
   readonly config     = signal<ExitIntentConfig>(this.loadConfig());
 
+  private _onHome      = false;
+  private _initialized = false;
+
+  /**
+   * Attach DOM event listeners once. Safe to call multiple times — guards
+   * against duplicate listener registration with _initialized flag.
+   */
   init(): void {
     if (!isPlatformBrowser(this.pid)) return;
+    if (this._initialized) return;
+    this._initialized = true;
+
     if (sessionStorage.getItem(SHOWN_KEY) === '1') return;
     if (!this.config().enabled) return;
 
@@ -38,7 +48,7 @@ export class ExitIntentService {
       if (document.visibilityState === 'hidden') this.trigger();
     });
 
-    // Mobile: 30-second inactivity timer
+    // Mobile: 30-second inactivity timer — resets on any user activity
     let timer: ReturnType<typeof setTimeout>;
     const reset = () => {
       clearTimeout(timer);
@@ -52,7 +62,19 @@ export class ExitIntentService {
     reset();
   }
 
+  /**
+   * Called by LayoutComponent on every NavigationEnd.
+   * Enables the popup when on home ('/') and closes + disables it elsewhere.
+   */
+  setOnHome(on: boolean): void {
+    this._onHome = on;
+    if (!on && this.shouldShow()) {
+      this.shouldShow.set(false);
+    }
+  }
+
   trigger(): void {
+    if (!this._onHome) return;
     if (sessionStorage.getItem(SHOWN_KEY) === '1') return;
     if (!this.config().enabled) return;
     this.shouldShow.set(true);

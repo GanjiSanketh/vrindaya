@@ -34,6 +34,12 @@ export class PopupService {
   loadAndSchedule(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
+    // Config already in memory (subsequent home visits after deactivate)
+    if (this.config) {
+      this.setupTriggers();
+      return;
+    }
+
     const local = this.getLocalConfig();
     if (local) {
       this.config = local;
@@ -75,6 +81,22 @@ export class PopupService {
   }
 
   close(): void { this.closeFullPopup(); }
+
+  /**
+   * Called when navigating away from home ('/').
+   * Clears pending triggers, hides any visible popup, and resets the
+   * triggered flag so the popup can re-arm when the user returns home.
+   * Session-storage frequency controls are intentionally left intact.
+   */
+  deactivate(): void {
+    this.clearTriggers();
+    this.triggered = false;
+    this._floatingCard.next(false);
+    this._fullPopup.next(false);
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
+    }
+  }
 
   getConfig():  PopupConfig | null  { return this.config;  }
   getProduct(): Product | undefined { return this.product; }
