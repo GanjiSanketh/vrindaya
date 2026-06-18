@@ -25,6 +25,11 @@
       @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
+    <!-- Quick View button -->
+    <button class="pc-qv-btn" (click)="openQuickView($event)" aria-label="Quick view">
+      <i class="bi bi-eye"></i>
+    </button>
+
     <!-- Hover overlay: desktop only -->
     <div class="pc-overlay">
       <span class="pc-overlay-cta">View on Flipkart <i class="bi bi-arrow-right"></i></span>

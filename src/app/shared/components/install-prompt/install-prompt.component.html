@@ -1,0 +1,17 @@
+@if (showBanner()) {
+  <div class="ip-banner" role="banner" aria-label="Install Vrindaya app">
+    <div class="ip-content">
+      <img src="assets/logo/vrindaya-logo.png" alt="" class="ip-icon" aria-hidden="true" />
+      <div class="ip-text">
+        <span class="ip-title">Install Vrindaya</span>
+        <span class="ip-sub">Shop ethnic wear — fast &amp; offline</span>
+      </div>
+    </div>
+    <div class="ip-actions">
+      <button class="ip-btn ip-btn--install" (click)="install()">Install</button>
+      <button class="ip-btn ip-btn--dismiss" (click)="dismiss()" aria-label="Dismiss install prompt">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+}

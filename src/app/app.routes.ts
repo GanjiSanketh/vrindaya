@@ -33,6 +33,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
       },
+      {
+        path: 'offline',
+        loadComponent: () =>
+          import('./features/offline/offline.component').then(m => m.OfflineComponent),
+      },
     ],
   },
 

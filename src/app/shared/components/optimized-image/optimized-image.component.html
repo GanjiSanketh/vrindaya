@@ -1,0 +1,15 @@
+<div class="oi-wrapper" [style.aspect-ratio]="aspectRatio()">
+  @if (!loaded()) {
+    <div class="oi-skeleton"></div>
+  }
+  <img
+    [src]="errored() ? fallback() : src()"
+    [alt]="alt()"
+    [loading]="eager() ? 'eager' : 'lazy'"
+    [class.oi-img--visible]="loaded()"
+    (load)="onLoad()"
+    (error)="onError()"
+    class="oi-img"
+    draggable="false"
+  />
+</div>

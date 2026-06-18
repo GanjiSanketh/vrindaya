@@ -1,0 +1,16 @@
+@if (showUpdate()) {
+  <div class="un-banner" role="alert" aria-live="polite">
+    <span class="un-msg">
+      <i class="bi bi-arrow-repeat"></i>
+      A new version of Vrindaya is ready.
+    </span>
+    <div class="un-actions">
+      <button class="un-btn un-btn--refresh" (click)="reload()" [disabled]="isActivating()">
+        {{ isActivating() ? 'Updating…' : 'Refresh' }}
+      </button>
+      <button class="un-btn un-btn--dismiss" (click)="showUpdate.set(false)" aria-label="Dismiss update notification">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+  </div>
+}

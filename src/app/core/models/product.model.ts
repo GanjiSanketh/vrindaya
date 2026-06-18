@@ -17,6 +17,7 @@ export interface Product {
   isBestSeller?:  boolean;
   isBestseller?:  boolean; /* legacy alias */
   description?:   string;
+  fabric?:        string;
 }
 
 export interface Category {

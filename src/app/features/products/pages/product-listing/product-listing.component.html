@@ -29,19 +29,23 @@
   <section class="pl-products">
     <div class="container-vr">
 
-      @if (products().length > 0) {
-        <div class="pl-grid">
-          @for (product of products(); track product.id) {
-            <app-product-card [product]="product" />
-          }
-        </div>
-      } @else {
-        <div class="pl-empty">
-          <i class="bi bi-bag-x" aria-hidden="true"></i>
-          <p class="pl-empty-title">No products yet in this category</p>
-          <p class="pl-empty-sub">New styles are on their way — check back soon.</p>
-          <a routerLink="/" class="btn-primary">Back to Home</a>
-        </div>
+      @defer (on timer(100); prefetch on immediate) {
+        @if (products().length > 0) {
+          <div class="pl-grid">
+            @for (product of products(); track product.id) {
+              <app-product-card [product]="product" />
+            }
+          </div>
+        } @else {
+          <div class="pl-empty">
+            <i class="bi bi-bag-x" aria-hidden="true"></i>
+            <p class="pl-empty-title">No products yet in this category</p>
+            <p class="pl-empty-sub">New styles are on their way — check back soon.</p>
+            <a routerLink="/" class="btn-primary">Back to Home</a>
+          </div>
+        }
+      } @placeholder (minimum 400ms) {
+        <app-skeleton-grid [count]="8" />
       }
 
     </div>

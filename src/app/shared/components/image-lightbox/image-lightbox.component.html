@@ -1,0 +1,48 @@
+@if (svc.isOpen()) {
+  <div class="lb-backdrop" (click)="onBackdropClick($event)"
+       role="dialog" aria-modal="true" aria-label="Image lightbox">
+
+    <!-- Close -->
+    <button class="lb-close" (click)="svc.close()" aria-label="Close">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <!-- Counter -->
+    @if (svc.hasMultiple()) {
+      <div class="lb-counter">{{ svc.index() + 1 }} / {{ svc.images().length }}</div>
+    }
+
+    <!-- Prev / Main image / Next -->
+    <div class="lb-stage">
+
+      @if (svc.hasMultiple()) {
+        <button class="lb-nav lb-nav--prev" (click)="svc.prev()" aria-label="Previous image">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+      }
+
+      <img [src]="svc.current()" alt="Product image"
+           class="lb-img" draggable="false" loading="eager" />
+
+      @if (svc.hasMultiple()) {
+        <button class="lb-nav lb-nav--next" (click)="svc.next()" aria-label="Next image">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      }
+
+    </div>
+
+    <!-- Thumbnail strip -->
+    @if (svc.hasMultiple()) {
+      <div class="lb-thumbs">
+        @for (img of svc.images(); track img; let i = $index) {
+          <button class="lb-thumb" [class.active]="svc.index() === i"
+                  (click)="svc.goTo(i)" [attr.aria-label]="'View image ' + (i + 1)">
+            <img [src]="img" alt="" loading="lazy" draggable="false" />
+          </button>
+        }
+      </div>
+    }
+
+  </div>
+}

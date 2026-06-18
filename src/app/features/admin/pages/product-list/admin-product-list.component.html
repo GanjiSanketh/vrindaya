@@ -1,0 +1,145 @@
+<div class="pl-page">
+
+  <!-- Header -->
+  <div class="pl-header">
+    <div>
+      <h1 class="pl-title">Products</h1>
+      <p class="pl-count">{{ filteredProducts().length }} of {{ svc.totalCount() }} products</p>
+    </div>
+    <div class="pl-header-actions">
+      <input type="file" #importInput accept=".json" style="display:none" (change)="onImportFile($event)" />
+      <button class="btn-outline" (click)="importInput.click()">
+        <i class="bi bi-upload"></i><span class="d-none d-sm-inline"> Import JSON</span>
+      </button>
+      <button class="btn-outline" (click)="export()">
+        <i class="bi bi-download"></i><span class="d-none d-sm-inline"> Export JSON</span>
+      </button>
+      <a [routerLink]="BASE + '/products/new'" class="btn-primary-sm">
+        <i class="bi bi-plus-lg"></i><span> Add Product</span>
+      </a>
+    </div>
+  </div>
+
+  @if (importError()) {
+    <div class="pl-alert-err">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      {{ importError() }}
+      <button (click)="importError.set(null)">×</button>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="pl-filters">
+    <div class="pl-search-wrap">
+      <i class="bi bi-search pl-search-icon"></i>
+      <input class="pl-search" type="search" placeholder="Search products…"
+             [value]="searchQuery()"
+             (input)="searchQuery.set($any($event.target).value)" />
+    </div>
+    <select class="pl-select" [value]="categoryFilter()" (change)="categoryFilter.set($any($event.target).value)">
+      <option value="all">All Categories</option>
+      <option value="long-kurtas">Long Kurtas</option>
+      <option value="short-kurtas">Short Kurtas</option>
+      <option value="2-piece-sets">2-Piece Sets</option>
+      <option value="3-piece-sets">3-Piece Sets</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="pl-card">
+    @if (!svc.isLoaded()) {
+      <div class="pl-loading"><span class="pl-spinner"></span> Loading products…</div>
+    } @else if (filteredProducts().length === 0) {
+      <div class="pl-empty">
+        <i class="bi bi-bag-x"></i>
+        <p>No products match your search.</p>
+        @if (searchQuery() || categoryFilter() !== 'all') {
+          <button class="btn-link" (click)="searchQuery.set(''); categoryFilter.set('all')">Clear filters</button>
+        }
+      </div>
+    } @else {
+      <div class="pl-table-wrap">
+        <table class="pl-table">
+          <thead>
+            <tr>
+              <th class="pl-th-img"></th>
+              <th class="pl-th-sort" (click)="setSort('name')">
+                Name <i class="bi" [class.bi-chevron-up]="sortField() === 'name' && sortAsc()"
+                             [class.bi-chevron-down]="sortField() === 'name' && !sortAsc()"
+                             [class.bi-chevron-expand]="sortField() !== 'name'"></i>
+              </th>
+              <th class="pl-th-sort d-none d-md-table-cell" (click)="setSort('category')">
+                Category <i class="bi" [class.bi-chevron-up]="sortField() === 'category' && sortAsc()"
+                                  [class.bi-chevron-down]="sortField() === 'category' && !sortAsc()"
+                                  [class.bi-chevron-expand]="sortField() !== 'category'"></i>
+              </th>
+              <th class="pl-th-sort" (click)="setSort('price')">
+                Price <i class="bi" [class.bi-chevron-up]="sortField() === 'price' && sortAsc()"
+                              [class.bi-chevron-down]="sortField() === 'price' && !sortAsc()"
+                              [class.bi-chevron-expand]="sortField() !== 'price'"></i>
+              </th>
+              <th class="d-none d-lg-table-cell">Status</th>
+              <th class="pl-th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of filteredProducts(); track p.id; let i = $index) {
+              <tr>
+                <td>
+                  <img [src]="p.image" [alt]="p.name" class="pl-thumb" loading="lazy" draggable="false" />
+                </td>
+                <td>
+                  <div class="pl-product-name">{{ p.name }}</div>
+                  <div class="pl-product-id">#{{ p.id }}</div>
+                </td>
+                <td class="d-none d-md-table-cell">
+                  <span class="pl-cat">{{ p.category }}</span>
+                </td>
+                <td>
+                  <div class="pl-price">₹{{ p.price | number }}</div>
+                  <div class="pl-original">₹{{ p.originalPrice | number }}</div>
+                </td>
+                <td class="d-none d-lg-table-cell">
+                  <div class="pl-badges">
+                    @if (p.isNew)        { <span class="pl-badge pl-badge--new">New</span> }
+                    @if (p.isTrending)   { <span class="pl-badge pl-badge--trend">Trending</span> }
+                    @if (p.isBestSeller) { <span class="pl-badge pl-badge--best">Best</span> }
+                  </div>
+                </td>
+                <td>
+                  <div class="pl-row-actions">
+                    <a [routerLink]="BASE + '/products/' + p.id + '/edit'" class="action-btn action-btn--edit" title="Edit">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <button class="action-btn action-btn--dup" (click)="duplicate(p.id)" title="Duplicate">
+                      <i class="bi bi-copy"></i>
+                    </button>
+                    <button class="action-btn action-btn--del" (click)="confirmDelete(p.id)" title="Delete">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Delete confirmation modal -->
+@if (deleteId() !== null) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon"><i class="bi bi-trash3-fill"></i></div>
+      <h3 class="modal-title">Delete Product?</h3>
+      <p class="modal-body">This action cannot be undone. The product will be removed from localStorage immediately.</p>
+      <div class="modal-actions">
+        <button class="modal-cancel" (click)="cancelDelete()">Cancel</button>
+        <button class="modal-confirm" (click)="doDelete()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+}

@@ -2,15 +2,17 @@
   <app-hero />
   <app-new-arrivals-banner />
   <app-categories />
-  <app-new-arrivals />
-  <app-customer-love />
+  @defer (on viewport; prefetch on immediate) {
+    <app-new-arrivals />
+  } @placeholder {
+    <div style="min-height: 400px;"></div>
+  }
+  @defer (on viewport; prefetch on immediate) {
+    <app-customer-love />
+  } @placeholder {
+    <div style="min-height: 300px;"></div>
+  }
 </main>
-
-<!-- Instagram floating button -->
-<a [href]="instagramUrl" class="floating-btn instagram-btn"
-   target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
-  <i class="bi bi-instagram"></i>
-</a>
 
 <!-- Scroll to top -->
 <button class="floating-btn scroll-top-btn" [class.visible]="showScrollTop()"

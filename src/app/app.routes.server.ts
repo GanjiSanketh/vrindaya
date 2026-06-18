@@ -1,6 +1,13 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
+  /* ── Admin portal: browser-only (auth + localStorage) ── */
+  {
+    path:       'admin/**',
+    renderMode: RenderMode.Client,
+  },
+
+  /* ── Public routes: prerendered at build time ── */
   {
     path: 'category/:id',
     renderMode: RenderMode.Prerender,
@@ -12,15 +19,15 @@ export const serverRoutes: ServerRoute[] = [
     ],
   },
   {
-    path: 'new-arrivals',
+    path:       'new-arrivals',
     renderMode: RenderMode.Prerender,
   },
   {
-    path: 'trending',
+    path:       'trending',
     renderMode: RenderMode.Prerender,
   },
   {
-    path: '**',
+    path:       '**',
     renderMode: RenderMode.Prerender,
   },
 ];

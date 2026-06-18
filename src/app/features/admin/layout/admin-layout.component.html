@@ -1,0 +1,88 @@
+<div class="al-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="al-sidebar" [class.al-sidebar--open]="sideOpen()">
+
+    <!-- Logo -->
+    <div class="al-logo">
+      <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="al-logo-img" draggable="false" />
+      <div class="al-logo-text">
+        <span class="al-brand">VRINDAYA</span>
+        <span class="al-subtitle">Admin Portal</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="al-nav" (click)="closeSide()">
+      <a [routerLink]="BASE + '/dashboard'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+        <i class="bi bi-grid-1x2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a [routerLink]="BASE + '/products'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+        <i class="bi bi-bag-heart"></i>
+        <span>Products</span>
+      </a>
+      <a [routerLink]="BASE + '/popup-config'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+        <i class="bi bi-megaphone"></i>
+        <span>Popup Campaign</span>
+      </a>
+      <a [routerLink]="BASE + '/exit-intent'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+        <i class="bi bi-door-open"></i>
+        <span>Exit Intent</span>
+      </a>
+      <hr class="al-divider" />
+      <a href="/" target="_blank" rel="noopener noreferrer" class="al-nav-item al-nav-item--ghost">
+        <i class="bi bi-eye"></i>
+        <span>View Site</span>
+      </a>
+    </nav>
+
+    <!-- User footer -->
+    @if (auth.currentUser(); as user) {
+      <div class="al-user">
+        @if (user.photoURL) {
+          <img [src]="user.photoURL" [alt]="user.displayName ?? 'Admin'" class="al-avatar" referrerpolicy="no-referrer" />
+        } @else {
+          <div class="al-avatar al-avatar--placeholder"><i class="bi bi-person-fill"></i></div>
+        }
+        <div class="al-user-info">
+          <span class="al-user-name">{{ user.displayName || 'Admin' }}</span>
+          <span class="al-user-email">{{ user.email }}</span>
+        </div>
+        <button class="al-signout" (click)="signOut()" title="Sign out">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </div>
+    }
+
+  </aside>
+
+  <!-- ── Overlay (mobile) ── -->
+  @if (sideOpen()) {
+    <div class="al-overlay" (click)="closeSide()"></div>
+  }
+
+  <!-- ── Main ── -->
+  <main class="al-main">
+
+    <!-- Mobile top bar -->
+    <header class="al-topbar">
+      <button class="al-menu-btn" (click)="toggleSide()" aria-label="Toggle menu">
+        <i class="bi bi-list"></i>
+      </button>
+      <span class="al-topbar-title">Vrindaya Admin</span>
+      @if (auth.currentUser(); as user) {
+        <button class="al-topbar-signout" (click)="signOut()" title="Sign out">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      }
+    </header>
+
+    <!-- Page content -->
+    <div class="al-content">
+      <router-outlet />
+    </div>
+
+  </main>
+
+</div>

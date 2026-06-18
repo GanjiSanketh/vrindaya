@@ -2,6 +2,7 @@ import { Component, HostListener, inject, signal, PLATFORM_ID } from '@angular/c
 import { CommonModule, isPlatformBrowser }                       from '@angular/common';
 import { RouterLink, RouterLinkActive }                          from '@angular/router';
 import { ProductService }                                        from '../../core/services/product.service';
+import { SearchService }                                         from '../../core/services/search.service';
 import { SCROLL_THRESHOLDS }                                     from '../../core/constants/app.constants';
 
 @Component({
@@ -13,9 +14,10 @@ import { SCROLL_THRESHOLDS }                                     from '../../cor
 })
 export class HeaderComponent {
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly svc        = inject(ProductService);
+  private readonly prodSvc    = inject(ProductService);
+  private readonly searchSvc  = inject(SearchService);
 
-  readonly categories     = this.svc.categories;
+  readonly categories     = this.prodSvc.categories;
   readonly mobileMenuOpen = signal(false);
   readonly scrolled       = signal(false);
 
@@ -26,6 +28,7 @@ export class HeaderComponent {
     }
   }
 
-  toggleMenu(): void { this.mobileMenuOpen.update(v => !v); }
-  closeMenu():  void { this.mobileMenuOpen.set(false); }
+  toggleMenu():  void { this.mobileMenuOpen.update(v => !v); }
+  closeMenu():   void { this.mobileMenuOpen.set(false); }
+  openSearch():  void { this.searchSvc.open(); }
 }

@@ -46,6 +46,7 @@
           "configurations": {
             "production": {
               "sourceMap": false,
+              "serviceWorker": "ngsw-config.json",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

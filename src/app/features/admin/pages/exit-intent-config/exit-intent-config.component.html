@@ -1,0 +1,72 @@
+<div class="eic-page">
+
+  <div class="eic-header">
+    <h1 class="eic-title">Exit Intent Popup</h1>
+    <p class="eic-sub">Configure the popup shown when visitors are about to leave.</p>
+  </div>
+
+  <div class="eic-card">
+
+    <!-- Enable toggle -->
+    <div class="eic-field">
+      <label class="eic-label">Status</label>
+      <div class="eic-toggle-row">
+        <label class="eic-toggle">
+          <input type="checkbox" [(ngModel)]="form.enabled" />
+          <span class="eic-toggle-track"></span>
+        </label>
+        <span class="eic-toggle-text" [class.eic-toggle-text--on]="form.enabled">
+          {{ form.enabled ? 'Enabled' : 'Disabled' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="eic-field">
+      <label class="eic-label" for="eic-title">Popup Title</label>
+      <input
+        id="eic-title"
+        type="text"
+        class="eic-input"
+        [(ngModel)]="form.title"
+        placeholder="Before You Go..."
+        maxlength="60"
+      />
+    </div>
+
+    <!-- Message -->
+    <div class="eic-field">
+      <label class="eic-label" for="eic-message">Message</label>
+      <textarea
+        id="eic-message"
+        class="eic-input eic-textarea"
+        [(ngModel)]="form.message"
+        rows="3"
+        placeholder="Explore our latest arrivals..."
+        maxlength="200"
+      ></textarea>
+    </div>
+
+    <div class="eic-footer">
+      <button class="eic-save-btn" (click)="save()">
+        @if (saved()) {
+          <i class="bi bi-check-circle-fill"></i> Saved!
+        } @else {
+          <i class="bi bi-floppy"></i> Save Changes
+        }
+      </button>
+    </div>
+
+  </div>
+
+  <div class="eic-info">
+    <h3 class="eic-info-title"><i class="bi bi-info-circle"></i> How it works</h3>
+    <ul class="eic-info-list">
+      <li>Desktop: triggers when cursor moves toward the top of the browser window.</li>
+      <li>Mobile: triggers after 30 seconds of inactivity or when switching apps.</li>
+      <li>Shown only once per session — won't interrupt the same visitor twice.</li>
+      <li>The <strong>View New Arrivals</strong> button navigates to <code>/new-arrivals</code>.</li>
+    </ul>
+  </div>
+
+</div>

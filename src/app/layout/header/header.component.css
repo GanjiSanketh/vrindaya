@@ -195,7 +195,8 @@
 .hamburger span.open:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
 
 /* ── Mobile right actions ── */
-.nav-right.d-flex { grid-column: 3; justify-self: end; }
+.nav-right.d-flex  { grid-column: 3; justify-self: end; }
+.nav-mobile-right  { grid-column: 3; justify-self: end; display: flex; align-items: center; }
 
 /* ── Mobile drawer ── */
 .mobile-drawer {

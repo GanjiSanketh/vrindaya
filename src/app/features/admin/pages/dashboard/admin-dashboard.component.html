@@ -1,0 +1,130 @@
+<div class="dash-page">
+
+  <!-- Page header -->
+  <div class="dash-header">
+    <div>
+      <h1 class="dash-title">Dashboard</h1>
+      @if (authSvc.currentUser(); as user) {
+        <p class="dash-welcome">Welcome back, {{ user.displayName || 'Admin' }}</p>
+      }
+    </div>
+    <div class="dash-actions">
+      <button class="btn-export" (click)="export()">
+        <i class="bi bi-download"></i> Export products.json
+      </button>
+      <a [routerLink]="BASE + '/products/new'" class="btn-add">
+        <i class="bi bi-plus-lg"></i> Add Product
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="dash-stats">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--total"><i class="bi bi-bag-heart-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ productSvc.totalCount() }}</span>
+        <span class="stat-label">Total Products</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--new"><i class="bi bi-stars"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ productSvc.newArrivalsCount() }}</span>
+        <span class="stat-label">New Arrivals</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--trend"><i class="bi bi-graph-up-arrow"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ productSvc.trendingCount() }}</span>
+        <span class="stat-label">Trending</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--best"><i class="bi bi-award-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ productSvc.bestSellersCount() }}</span>
+        <span class="stat-label">Bestsellers</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick nav -->
+  <div class="dash-nav-cards">
+    <a [routerLink]="BASE + '/products'" class="nav-card">
+      <i class="bi bi-bag-heart nav-card-icon"></i>
+      <div>
+        <span class="nav-card-title">Manage Products</span>
+        <span class="nav-card-sub">Add, edit or delete products</span>
+      </div>
+      <i class="bi bi-chevron-right nav-card-arrow"></i>
+    </a>
+    <a [routerLink]="BASE + '/popup-config'" class="nav-card">
+      <i class="bi bi-megaphone nav-card-icon"></i>
+      <div>
+        <span class="nav-card-title">Popup Campaign</span>
+        <span class="nav-card-sub">Configure promotional popups</span>
+      </div>
+      <i class="bi bi-chevron-right nav-card-arrow"></i>
+    </a>
+  </div>
+
+  <!-- Recent products -->
+  @if (recentProducts().length > 0) {
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <h2 class="dash-section-title">Recent Products</h2>
+        <a [routerLink]="BASE + '/products'" class="dash-view-all">View all <i class="bi bi-arrow-right"></i></a>
+      </div>
+
+      <div class="recent-table-wrap">
+        <table class="recent-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th class="d-none d-sm-table-cell">Category</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of recentProducts(); track p.id) {
+              <tr>
+                <td>
+                  <div class="rt-product">
+                    <img [src]="p.image" [alt]="p.name" class="rt-thumb" loading="lazy" draggable="false" />
+                    <span class="rt-name">{{ p.name }}</span>
+                  </div>
+                </td>
+                <td class="d-none d-sm-table-cell">
+                  <span class="rt-cat">{{ p.category }}</span>
+                </td>
+                <td>
+                  <span class="rt-price">₹{{ p.price | number }}</span>
+                </td>
+                <td>
+                  <div class="rt-badges">
+                    @if (p.isNew)        { <span class="rt-badge rt-badge--new">New</span> }
+                    @if (p.isTrending)   { <span class="rt-badge rt-badge--trend">Trending</span> }
+                    @if (p.isBestSeller) { <span class="rt-badge rt-badge--best">Best</span> }
+                  </div>
+                </td>
+                <td>
+                  <a [routerLink]="BASE + '/products/' + p.id + '/edit'" class="rt-edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+</div>

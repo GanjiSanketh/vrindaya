@@ -1,0 +1,61 @@
+@if (svc.isOpen()) {
+  <div class="so-backdrop" (click)="onBackdropClick($event)" role="dialog"
+       aria-modal="true" aria-label="Search products">
+
+    <div class="so-panel">
+
+      <!-- Input row -->
+      <div class="so-input-row">
+        <i class="bi bi-search so-search-icon"></i>
+        <input
+          class="so-input"
+          type="search"
+          placeholder="Search products, categories, styles…"
+          autocomplete="off"
+          [value]="query()"
+          (input)="onInput($any($event.target).value)"
+        />
+        <button class="so-close" (click)="close()" aria-label="Close search">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Results -->
+      @if (results().length > 0) {
+        <ul class="so-results" role="listbox" aria-label="Search results">
+          @for (p of results(); track p.id) {
+            <li class="so-result" role="option" (click)="navigate(p)"
+                [attr.aria-label]="p.name + ', ' + p.category">
+              <img [src]="p.image" [alt]="p.name" class="so-thumb" loading="lazy" draggable="false" />
+              <div class="so-result-info">
+                <span class="so-result-name">{{ p.name }}</span>
+                <span class="so-result-cat">{{ p.category }}</span>
+              </div>
+              <div class="so-result-price">
+                <span class="so-price">₹{{ p.price | number }}</span>
+                <span class="so-off">{{ p.discount }}% off</span>
+              </div>
+              <i class="bi bi-arrow-right so-result-arrow"></i>
+            </li>
+          }
+        </ul>
+      } @else if (query().trim().length > 0) {
+        <div class="so-empty">
+          <i class="bi bi-search"></i>
+          <p>No products found for <strong>"{{ query() }}"</strong></p>
+          <p class="so-empty-hint">Try "floral", "indigo", "3-piece" or a colour</p>
+        </div>
+      } @else {
+        <div class="so-hints">
+          <p class="so-hints-label">Try searching for</p>
+          <div class="so-hints-chips">
+            @for (hint of hints; track hint) {
+              <button class="so-chip" (click)="onInput(hint)">{{ hint }}</button>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+}

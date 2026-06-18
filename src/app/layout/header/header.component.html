@@ -39,8 +39,11 @@
       <span class="logo-tagline">WEAR THE GRACE</span>
     </a>
 
-    <!-- RIGHT: Instagram link -->
+    <!-- RIGHT: search + Instagram -->
     <div class="nav-right d-none d-xl-flex">
+      <button class="nav-icon nav-search-btn" (click)="openSearch()" aria-label="Search products">
+        <i class="bi bi-search"></i>
+      </button>
       <a class="nav-icon"
          href="https://www.instagram.com/vrindaya.co"
          target="_blank"
@@ -48,6 +51,13 @@
          aria-label="Follow us on Instagram">
         <i class="bi bi-instagram"></i>
       </a>
+    </div>
+
+    <!-- Mobile: search icon in right slot -->
+    <div class="nav-mobile-right d-xl-none">
+      <button class="nav-icon" (click)="openSearch()" aria-label="Search products">
+        <i class="bi bi-search"></i>
+      </button>
     </div>
 
   </div>
