@@ -11,11 +11,14 @@
     <h1 class="login-title">Admin Portal</h1>
     <p class="login-sub">Sign in with your authorised Google account to manage products.</p>
 
-    <!-- Error -->
+    <!-- Error + retry -->
     @if (auth.authError()) {
       <div class="login-error">
         <i class="bi bi-exclamation-triangle-fill"></i>
-        {{ auth.authError() }}
+        <span>
+          {{ auth.authError() }}
+          <button class="login-retry-link" type="button" (click)="retry()">Refresh page</button>
+        </span>
       </div>
     }
 
