@@ -17,10 +17,10 @@ export class AdminLoginComponent {
   readonly BASE           = `/${APP_ROUTES.ADMIN}`;
 
   constructor() {
-    // Redirect to dashboard as soon as a valid authenticated session is confirmed.
+    // Redirect to dashboard as soon as Firebase confirms an authorised session.
     effect(() => {
       if (!this.auth.isLoading() && this.auth.isAuthenticated()) {
-        console.log('[LOGIN] Session confirmed — navigating to dashboard');
+        console.log('[AUTH] Navigation to Dashboard');
         this.router.navigate([`${this.BASE}/dashboard`]);
       }
     });
@@ -30,10 +30,7 @@ export class AdminLoginComponent {
     await this.auth.signIn();
   }
 
-  /**
-   * Hard page reload — clears all in-memory state and restarts the auth flow
-   * from scratch. Offered to the user when auth fails with an error.
-   */
+  /** Hard page reload — resets all in-memory state when auth enters an error state. */
   retry(): void {
     if (isPlatformBrowser(this.pid)) {
       window.location.reload();

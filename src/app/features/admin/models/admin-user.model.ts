@@ -12,9 +12,9 @@ export const ROLE_OPTIONS: { value: AdminRole; label: string }[] = [
   { value: 'editor',      label: 'Editor'      },
 ];
 
-/** Stored in Firestore collection `admin-users`. */
+/** Stored in Firestore collection `admin-users/{lowerCaseEmail}`. */
 export interface AdminUser {
-  /** Firestore document ID (auto-generated; not stored as a field). */
+  /** Firestore document ID — equals the user's lowercase email address. */
   docId:       string;
   /** Firebase Auth UID — empty string until the user first signs in. */
   uid:         string;

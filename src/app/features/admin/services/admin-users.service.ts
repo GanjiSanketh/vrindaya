@@ -3,6 +3,13 @@ import { isPlatformBrowser }                        from '@angular/common';
 import { environment }                              from '../../../../environments/environment';
 import { AdminUser, AdminRole }                     from '../models/admin-user.model';
 
+/**
+ * Document schema: admin-users/{lowerCaseEmail}
+ *
+ * The document ID is always the user's lowercase email address.
+ * This allows O(1) direct reads (getDoc) instead of collection queries (getDocs),
+ * which is important because Firestore security rules may grant 'get' but not 'list'.
+ */
 const COLLECTION = 'admin-users';
 
 @Injectable({ providedIn: 'root' })
@@ -32,7 +39,7 @@ export class AdminUsersService {
 
   private async setupSnapshot(): Promise<void> {
     try {
-      const { getApps, getApp, initializeApp }          = await import('firebase/app');
+      const { getApps, getApp, initializeApp }                    = await import('firebase/app');
       const { getFirestore, collection, query, orderBy, onSnapshot } = await import('firebase/firestore');
 
       const app = getApps().length ? getApp() : initializeApp(environment.firebase);
@@ -44,11 +51,11 @@ export class AdminUsersService {
         snap => {
           this.users.set(
             snap.docs.map(d => ({
-              docId:       d.id,
+              docId:       d.id,   // = lowercase email
               uid:         (d.data()['uid']         as string) || '',
               email:       (d.data()['email']        as string) || '',
               displayName: (d.data()['displayName']  as string) || '',
-              role:        (d.data()['role']         as AdminRole),
+              role:        this.normalizeRole(d.data()['role'] as string) ?? 'editor',
               active:      (d.data()['active']       as boolean) ?? true,
               createdAt:   (d.data()['createdAt']    as { seconds: number; nanoseconds: number } | null) ?? null,
               createdBy:   (d.data()['createdBy']    as string) || '',
@@ -70,21 +77,34 @@ export class AdminUsersService {
 
   // ── CRUD operations ───────────────────────────────────────────────────────
 
+  /**
+   * Adds a new admin user.
+   * Uses setDoc with email as the document ID so the auth service can look up
+   * users via getDoc(doc(db, 'admin-users', email)) without needing a query.
+   */
   async addUser(
     email:        string,
     role:         AdminRole,
     active:       boolean,
     createdByUid: string,
   ): Promise<void> {
-    const { getApps, getApp, initializeApp }              = await import('firebase/app');
-    const { getFirestore, collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+    const { getApps, getApp, initializeApp }                     = await import('firebase/app');
+    const { getFirestore, doc, setDoc, serverTimestamp, getDoc } = await import('firebase/firestore');
 
-    const app = getApps().length ? getApp() : initializeApp(environment.firebase);
-    const db  = getFirestore(app);
+    const app        = getApps().length ? getApp() : initializeApp(environment.firebase);
+    const db         = getFirestore(app);
+    const lowerEmail = email.trim().toLowerCase();
+    const adminRef   = doc(db, COLLECTION, lowerEmail);
 
-    await addDoc(collection(db, COLLECTION), {
-      uid:         '',                     // Populated when the user first signs in
-      email:       email.trim().toLowerCase(),
+    // Prevent overwriting an existing document
+    const existing = await getDoc(adminRef);
+    if (existing.exists()) {
+      throw new Error(`An admin user with email ${lowerEmail} already exists.`);
+    }
+
+    await setDoc(adminRef, {
+      uid:         '',   // Populated when the user first signs in
+      email:       lowerEmail,
       displayName: '',
       role,
       active,
@@ -94,58 +114,71 @@ export class AdminUsersService {
   }
 
   async updateUserRole(docId: string, role: AdminRole): Promise<void> {
-    const { getApps, getApp, initializeApp }   = await import('firebase/app');
-    const { getFirestore, doc, updateDoc } = await import('firebase/firestore');
+    const { getApps, getApp, initializeApp }  = await import('firebase/app');
+    const { getFirestore, doc, updateDoc }    = await import('firebase/firestore');
 
     const app = getApps().length ? getApp() : initializeApp(environment.firebase);
     await updateDoc(doc(getFirestore(app), COLLECTION, docId), { role });
   }
 
   async activateUser(docId: string): Promise<void> {
-    const { getApps, getApp, initializeApp }   = await import('firebase/app');
-    const { getFirestore, doc, updateDoc } = await import('firebase/firestore');
+    const { getApps, getApp, initializeApp }  = await import('firebase/app');
+    const { getFirestore, doc, updateDoc }    = await import('firebase/firestore');
 
     const app = getApps().length ? getApp() : initializeApp(environment.firebase);
     await updateDoc(doc(getFirestore(app), COLLECTION, docId), { active: true });
   }
 
   async deactivateUser(docId: string): Promise<void> {
-    const { getApps, getApp, initializeApp }   = await import('firebase/app');
-    const { getFirestore, doc, updateDoc } = await import('firebase/firestore');
+    const { getApps, getApp, initializeApp }  = await import('firebase/app');
+    const { getFirestore, doc, updateDoc }    = await import('firebase/firestore');
 
     const app = getApps().length ? getApp() : initializeApp(environment.firebase);
     await updateDoc(doc(getFirestore(app), COLLECTION, docId), { active: false });
   }
 
   async deleteUser(docId: string): Promise<void> {
-    const { getApps, getApp, initializeApp }     = await import('firebase/app');
-    const { getFirestore, doc, deleteDoc } = await import('firebase/firestore');
+    const { getApps, getApp, initializeApp }  = await import('firebase/app');
+    const { getFirestore, doc, deleteDoc }    = await import('firebase/firestore');
 
     const app = getApps().length ? getApp() : initializeApp(environment.firebase);
     await deleteDoc(doc(getFirestore(app), COLLECTION, docId));
   }
 
+  /**
+   * Looks up a single admin user by email.
+   * Uses getDoc (direct read by email-as-ID) instead of a collection query.
+   */
   async getUserByEmail(email: string): Promise<AdminUser | null> {
-    const { getApps, getApp, initializeApp }              = await import('firebase/app');
-    const { getFirestore, collection, query, where, getDocs } = await import('firebase/firestore');
+    const { getApps, getApp, initializeApp } = await import('firebase/app');
+    const { getFirestore, doc, getDoc }      = await import('firebase/firestore');
 
-    const app   = getApps().length ? getApp() : initializeApp(environment.firebase);
-    const db    = getFirestore(app);
-    const snap  = await getDocs(
-      query(collection(db, COLLECTION), where('email', '==', email.toLowerCase())),
-    );
+    const app        = getApps().length ? getApp() : initializeApp(environment.firebase);
+    const lowerEmail = email.trim().toLowerCase();
+    const d          = await getDoc(doc(getFirestore(app), COLLECTION, lowerEmail));
 
-    if (snap.empty) return null;
-    const d = snap.docs[0];
+    if (!d.exists()) return null;
+
     return {
       docId:       d.id,
       uid:         (d.data()['uid']         as string) || '',
       email:       (d.data()['email']        as string) || '',
       displayName: (d.data()['displayName']  as string) || '',
-      role:        (d.data()['role']         as AdminRole),
+      role:        this.normalizeRole(d.data()['role'] as string) ?? 'editor',
       active:      (d.data()['active']       as boolean) ?? true,
       createdAt:   (d.data()['createdAt']    as { seconds: number; nanoseconds: number } | null) ?? null,
       createdBy:   (d.data()['createdBy']    as string) || '',
     };
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  /** Normalises 'super-admin' → 'super_admin' etc. */
+  private normalizeRole(raw: string): AdminRole | null {
+    const n = (raw ?? '').toLowerCase().replace(/-/g, '_').trim();
+    if (n === 'super_admin') return 'super_admin';
+    if (n === 'admin')       return 'admin';
+    if (n === 'editor')      return 'editor';
+    return null;
   }
 }
