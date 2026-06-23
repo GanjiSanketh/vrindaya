@@ -29,6 +29,11 @@ export const routes: Routes = [
           import('./features/trending/trending.routes').then(m => m.TRENDING_ROUTES),
       },
       {
+        path: 'wishlist',
+        loadComponent: () =>
+          import('./features/wishlist/wishlist-page.component').then(m => m.WishlistPageComponent),
+      },
+      {
         path: APP_ROUTES.NOT_FOUND,
         loadComponent: () =>
           import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),

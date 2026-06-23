@@ -89,21 +89,6 @@ export class ProductService {
     { title: 'Bold & Beautiful',      subtitle: 'For women who love to make an entrance.',            image: 'assets/products/007-purple-embroidered-dress/gallery-1.png',    categoryId: 'short-kurtas' },
   ];
 
-  readonly instaImages: string[] = [
-    'assets/products/001-wine-mandala-kurta/gallery-2.png',
-    'assets/products/002-indigo-floral-kurta-set/gallery-3.png',
-    'assets/products/003-black-gold-embroidered-kurti/gallery-2.png',
-    'assets/products/005-fuchsia-floral-kurta-set/gallery-3.png',
-    'assets/products/009-teal-floral-kurta-set/gallery-2.png',
-    'assets/products/004-pastel-stripe-kurta/gallery-2.png',
-    'assets/products/006-navy-mandala-kurta/gallery-2.png',
-    'assets/products/007-purple-embroidered-dress/gallery-2.png',
-    'assets/products/008-green-floral-kurta-set/gallery-2.png',
-    'assets/products/001-wine-mandala-kurta/gallery-3.png',
-    'assets/products/002-indigo-floral-kurta-set/gallery-4.png',
-    'assets/products/005-fuchsia-floral-kurta-set/gallery-4.png',
-  ];
-
   readonly features: FeatureItem[] = [
     { icon: 'bi-flower1',      title: 'Premium Fabrics',      desc: 'Carefully selected fabrics that feel luxurious, look elegant and last long.',  image: 'assets/products/004-pastel-stripe-kurta/gallery-1.png'      },
     { icon: 'bi-person-dress', title: 'Elegant Designs',      desc: 'Timeless prints and patterns crafted to make every moment special.',          image: 'assets/products/001-wine-mandala-kurta/gallery-1.png'       },

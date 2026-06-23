@@ -81,7 +81,7 @@
   transition: transform 0.4s ease;
 }
 
-.qv-main-wrap:hover .qv-main-img { transform: scale(1.04); }
+.qv-main-img.zoomed { transform: scale(1.65); cursor: zoom-in; }
 
 .qv-zoom-hint {
   position: absolute;
@@ -216,6 +216,13 @@
 .qv-meta-value { color: var(--text-muted, #666); }
 .qv-star       { color: var(--gold, #c9a54c); font-size: 0.75rem; }
 
+/* ── Actions row ── */
+.qv-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* CTA */
 .qv-cta {
   display: inline-flex;
@@ -240,6 +247,26 @@
   transform: translateY(-1px);
   color: #fff;
 }
+
+/* Wishlist button in modal */
+.qv-wish-btn {
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid var(--border, #eaeaea);
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--text-muted, #666);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.qv-wish-btn:hover      { color: #e53935; border-color: #e53935; transform: scale(1.08); }
+.qv-wish-btn.wishlisted { color: #e53935; border-color: #e53935; }
 
 .qv-zoom-tip {
   font-size: 0.72rem;

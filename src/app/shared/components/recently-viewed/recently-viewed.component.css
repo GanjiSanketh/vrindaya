@@ -1,0 +1,73 @@
+/* ═══════════════════════════════════
+   RECENTLY VIEWED — horizontal carousel
+   ═══════════════════════════════════ */
+.rv-section {
+  padding: 2.5rem 0 3rem;
+  background: var(--cream-light, #fafafa);
+  border-top: 1px solid var(--border, #eaeaea);
+}
+
+.rv-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.rv-title {
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+}
+
+/* ── Scrollable track ── */
+.rv-track-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fade edges */
+.rv-track-wrap::before,
+.rv-track-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.rv-track-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, var(--cream-light, #fafafa), transparent);
+}
+
+.rv-track-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, var(--cream-light, #fafafa), transparent);
+}
+
+.rv-track {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 0.5rem 0.25rem 1rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rv-track::-webkit-scrollbar { display: none; }
+
+.rv-item {
+  flex: 0 0 220px;
+  scroll-snap-align: start;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .rv-item { flex: 0 0 160px; }
+  .rv-section { padding: 1.75rem 0 2rem; }
+}
+
+@media (max-width: 480px) {
+  .rv-item { flex: 0 0 148px; }
+}

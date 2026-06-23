@@ -39,22 +39,27 @@
       <span class="logo-tagline">WEAR THE GRACE</span>
     </a>
 
-    <!-- RIGHT: search + Instagram -->
+    <!-- RIGHT: search + wishlist -->
     <div class="nav-right d-none d-xl-flex">
       <button class="nav-icon nav-search-btn" (click)="openSearch()" aria-label="Search products">
         <i class="bi bi-search"></i>
       </button>
-      <a class="nav-icon"
-         href="https://www.instagram.com/vrindaya.co"
-         target="_blank"
-         rel="noopener noreferrer"
-         aria-label="Follow us on Instagram">
-        <i class="bi bi-instagram"></i>
+      <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist">
+        <i class="bi bi-heart"></i>
+        @if (wishlist.count() > 0) {
+          <span class="nav-wish-badge">{{ wishlist.count() > 9 ? '9+' : wishlist.count() }}</span>
+        }
       </a>
     </div>
 
-    <!-- Mobile: search icon in right slot -->
+    <!-- Mobile: search + wishlist in right slot -->
     <div class="nav-mobile-right d-xl-none">
+      <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist">
+        <i class="bi bi-heart"></i>
+        @if (wishlist.count() > 0) {
+          <span class="nav-wish-badge">{{ wishlist.count() > 9 ? '9+' : wishlist.count() }}</span>
+        }
+      </a>
       <button class="nav-icon" (click)="openSearch()" aria-label="Search products">
         <i class="bi bi-search"></i>
       </button>

@@ -1,6 +1,5 @@
 export const environment = {
   production:   true,
-  instagramUrl: 'https://www.instagram.com/vrindaya.co',
   adminEmail:   'gsanketh7121@gmail.com',
   firebase: {
     apiKey:            'AIzaSyAGIZzyi-1o4kR86IYbWLRaCExH343sJUY',

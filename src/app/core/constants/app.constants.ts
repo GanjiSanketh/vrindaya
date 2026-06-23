@@ -1,5 +1,3 @@
-import { environment } from '../../../environments/environment';
-
 export const APP_NAME    = 'Vrindaya';
 export const APP_TAGLINE = 'Wear the Grace';
 
@@ -8,10 +6,6 @@ export const STORAGE_KEYS = {
   POPUP_CONFIG: 'vrindaya_popup_config',
   POPUP_SHOWN:  'vrindaya_popup_shown',
 } as const;
-
-export const SOCIAL_LINKS = {
-  INSTAGRAM: environment.instagramUrl,
-};
 
 export const FLIPKART_CONFIG = {
   TARGET:   '_blank',

@@ -1,0 +1,22 @@
+@if (svc.count() > 0) {
+  <section class="rv-section">
+    <div class="container-vr">
+
+      <div class="rv-header" appScrollReveal>
+        <span class="section-label">Your Journey</span>
+        <h2 class="section-title rv-title">Recently Viewed</h2>
+      </div>
+
+      <div class="rv-track-wrap" appScrollReveal [srDelay]="120">
+        <div class="rv-track">
+          @for (product of svc.items(); track product.id) {
+            <div class="rv-item">
+              <app-product-card [product]="product" />
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </section>
+}

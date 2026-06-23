@@ -1,11 +1,12 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class WishlistService {
   private readonly KEY  = 'vrindaya_wishlist';
   private readonly _ids = signal<number[]>(this.load());
 
-  readonly ids = this._ids.asReadonly();
+  readonly ids   = this._ids.asReadonly();
+  readonly count = computed(() => this._ids().length);
 
   toggle(productId: number, event?: Event): void {
     event?.stopPropagation();

@@ -1,37 +1,93 @@
-<section class="brand-story-section">
+<section class="bs-section">
+
+  <!-- Editorial header -->
+  <div class="bs-intro" appScrollReveal>
+    <span class="section-label">Our Heritage</span>
+    <h2 class="bs-headline">
+      Crafted with<br><em>Grace</em>
+    </h2>
+  </div>
+
   <div class="container-fluid bs-container">
     <div class="bs-inner">
 
-      <!-- Content -->
-      <div class="bs-content" appScrollReveal>
-        <p class="bs-eyebrow">OUR STORY <span class="bs-dash">——</span></p>
-        <h2 class="bs-title">Timeless Styles,<br>Thoughtfully Crafted</h2>
-        <p class="bs-desc">
-          At Vrindaya, we celebrate the beauty of tradition with designs that are
-          light, elegant and made for today's woman. Every piece is a conversation
-          between heritage and modernity — crafted to make you feel beautiful, always.
-        </p>
-        <button class="bs-cta" (click)="scrollToProducts()">DISCOVER MORE</button>
+      <!-- ── Visual grid ── -->
+      <div class="bs-visual" appScrollReveal [srDelay]="80">
+        <div class="bs-img-grid">
+          <div class="bs-img-frame bs-img-frame--large">
+            <img
+              src="assets/products/008-green-floral-kurta-set/image-2.png"
+              alt="Vrindaya handcrafted kurta"
+              class="bs-img"
+              loading="lazy"
+            />
+            <div class="bs-img-caption">Handwoven Traditions</div>
+          </div>
+          <div class="bs-img-stack">
+            <div class="bs-img-frame bs-img-frame--small">
+              <img
+                src="assets/products/002-indigo-floral-kurta-set/image-2.png"
+                alt="Vrindaya collection"
+                class="bs-img"
+                loading="lazy"
+              />
+            </div>
+            <div class="bs-stat-card">
+              <span class="bs-stat-number">100%</span>
+              <span class="bs-stat-label">Handpicked Fabrics</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Visual -->
-      <div class="bs-visual" appScrollReveal [srDelay]="150">
-        <div class="bs-img-grid">
-          <img
-            src="assets/products/008-green-floral-kurta-set/image-2.png"
-            alt="Vrindaya craftsmanship"
-            class="bs-img bs-img-1"
-            loading="lazy"
-          />
-          <img
-            src="assets/products/002-indigo-floral-kurta-set/image-2.png"
-            alt="Vrindaya collection"
-            class="bs-img bs-img-2"
-            loading="lazy"
-          />
+      <!-- ── Content ── -->
+      <div class="bs-content">
+
+        <div class="bs-block" appScrollReveal [srDelay]="120">
+          <p class="bs-eyebrow">— Rooted in India</p>
+          <p class="bs-body">
+            Every Vrindaya piece carries the memory of a master craftsman's hands —
+            the delicate press of a block print, the careful draw of a thread through
+            embroidered flowers, the warmth of sun-dried natural dyes. We travel
+            across India's textile heartlands to bring these traditions to you.
+          </p>
         </div>
+
+        <div class="bs-pillars" appScrollReveal [srDelay]="200">
+          <div class="bs-pillar">
+            <i class="bi bi-gem bs-pillar-icon"></i>
+            <div>
+              <h4 class="bs-pillar-title">Premium Fabrics</h4>
+              <p class="bs-pillar-desc">Mul cotton, chanderi, georgette — chosen for how they feel against skin.</p>
+            </div>
+          </div>
+          <div class="bs-pillar">
+            <i class="bi bi-flower1 bs-pillar-icon"></i>
+            <div>
+              <h4 class="bs-pillar-title">Feminine Silhouettes</h4>
+              <p class="bs-pillar-desc">Cuts that celebrate the modern Indian woman — graceful, confident, free.</p>
+            </div>
+          </div>
+          <div class="bs-pillar">
+            <i class="bi bi-palette bs-pillar-icon"></i>
+            <div>
+              <h4 class="bs-pillar-title">Artisan Heritage</h4>
+              <p class="bs-pillar-desc">Block prints, hand embroidery and chikankari crafted by artisan families.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bs-cta-row" appScrollReveal [srDelay]="260">
+          <button class="bs-cta" (click)="scrollToProducts()">
+            Discover the Collection
+            <i class="bi bi-arrow-right"></i>
+          </button>
+          <span class="bs-cta-sub">Free delivery across India</span>
+        </div>
+
       </div>
 
     </div>
   </div>
+
 </section>

@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser }                       from '@angular/
 import { RouterLink, RouterLinkActive }                          from '@angular/router';
 import { ProductService }                                        from '../../core/services/product.service';
 import { SearchService }                                         from '../../core/services/search.service';
+import { WishlistService }                                       from '../../core/services/wishlist.service';
 import { SCROLL_THRESHOLDS }                                     from '../../core/constants/app.constants';
 
 @Component({
@@ -16,6 +17,7 @@ export class HeaderComponent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly prodSvc    = inject(ProductService);
   private readonly searchSvc  = inject(SearchService);
+  readonly wishlist           = inject(WishlistService);
 
   readonly categories     = this.prodSvc.categories;
   readonly mobileMenuOpen = signal(false);

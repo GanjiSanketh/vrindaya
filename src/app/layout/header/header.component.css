@@ -164,6 +164,28 @@
 
 .nav-icon:hover { color: var(--maroon); background: var(--maroon-light); }
 
+/* Wishlist badge */
+.nav-wish-icon { position: relative; }
+
+.nav-wish-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  background: var(--gold, #c9a54c);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
 /* ── Mobile hamburger ── */
 .hamburger {
   grid-column: 1;

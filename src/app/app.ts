@@ -1,25 +1,32 @@
-import { Component, inject, OnDestroy }        from '@angular/core';
-import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
-import { filter }                              from 'rxjs/operators';
-import { Subscription }                        from 'rxjs';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { Router, RouterOutlet, NavigationEnd }  from '@angular/router';
+import { filter }                               from 'rxjs/operators';
+import { Subscription }                         from 'rxjs';
 
-import { PopupComponent } from './components/popup/popup.component';
-import { PopupService }   from './core/services/popup.service';
+import { PopupComponent }          from './components/popup/popup.component';
+import { PopupService }            from './core/services/popup.service';
+import { LoadingScreenComponent }  from './shared/components/loading-screen/loading-screen.component';
 
 @Component({
   selector:   'app-root',
   standalone: true,
-  imports:    [RouterOutlet, PopupComponent],
-  template:   `<router-outlet /><app-popup />`,
+  imports:    [RouterOutlet, PopupComponent, LoadingScreenComponent],
+  template: `
+    <app-loading-screen (done)="appReady.set(true)" />
+    @if (appReady()) {
+      <router-outlet />
+      <app-popup />
+    }
+  `,
 })
 export class App implements OnDestroy {
   private readonly popupService = inject(PopupService);
   private readonly router       = inject(Router);
   private readonly routeSub:    Subscription;
 
+  readonly appReady = signal(false);
+
   constructor() {
-    // Load and arm the promotional popup only when on the home page.
-    // Deactivate (clear timers, close UI) immediately on any other route.
     this.routeSub = this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
     ).subscribe(e => {

@@ -1,17 +1,26 @@
 <main>
   <app-hero />
-  <app-new-arrivals-banner />
+
   <app-categories />
+
   @defer (on viewport; prefetch on immediate) {
     <app-new-arrivals />
   } @placeholder {
     <div style="min-height: 400px;"></div>
   }
+
+  @defer (on viewport; prefetch on immediate) {
+    <app-trending-products />
+  } @placeholder {
+    <div style="min-height: 400px;"></div>
+  }
+
   @defer (on viewport; prefetch on immediate) {
     <app-customer-love />
   } @placeholder {
     <div style="min-height: 300px;"></div>
   }
+
 </main>
 
 <!-- Scroll to top -->

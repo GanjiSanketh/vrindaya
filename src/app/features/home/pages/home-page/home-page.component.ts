@@ -3,16 +3,22 @@ import { CommonModule, isPlatformBrowser }                               from '@
 import { SCROLL_THRESHOLDS }                                             from '../../../../core/constants/app.constants';
 import { SeoService }                                                    from '../../../../core/services/seo.service';
 
-import { Hero }              from '../../../../components/hero/hero';
-import { NewArrivalsBanner } from '../../../../components/new-arrivals-banner/new-arrivals-banner.component';
-import { Categories }        from '../../../../components/categories/categories';
-import { NewArrivals }       from '../../../../components/new-arrivals/new-arrivals';
-import { CustomerLove }      from '../../../../components/customer-love/customer-love';
-
+import { Hero }               from '../../../../components/hero/hero';
+import { Categories }         from '../../../../components/categories/categories';
+import { NewArrivals }        from '../../../../components/new-arrivals/new-arrivals';
+import { TrendingProducts }   from '../../../../components/trending-products/trending-products';
+import { CustomerLove }       from '../../../../components/customer-love/customer-love';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, Hero, NewArrivalsBanner, Categories, NewArrivals, CustomerLove],
+  imports: [
+    CommonModule,
+    Hero,
+    Categories,
+    NewArrivals,
+    TrendingProducts,
+    CustomerLove,
+  ],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.css',
 })
