@@ -3,9 +3,6 @@ export interface Product {
   name:           string;
   category:       string;
   categoryId?:    string;
-  price:          number;
-  originalPrice:  number;
-  discount:       number;
   rating:         number;
   image:          string;
   hoverImage?:    string;

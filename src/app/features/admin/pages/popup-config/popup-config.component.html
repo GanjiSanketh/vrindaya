@@ -61,7 +61,7 @@
             <select class="pca-select" id="productId" formControlName="productId">
               @for (p of products; track p.id) {
                 <option [value]="p.id">
-                  #{{ p.id }} — {{ p.name }} (₹{{ p.price | number }})
+                  #{{ p.id }} — {{ p.name }}
                 </option>
               }
             </select>
@@ -193,10 +193,8 @@
                 <span class="pca-preview-eyebrow">{{ form.value.title }}</span>
                 <p   class="pca-preview-subtitle">{{ form.value.subtitle }}</p>
                 <h3 class="pca-preview-name">{{ p.name }}</h3>
-                <div class="pca-preview-price">
-                  <span class="pca-preview-cur">₹{{ p.price | number }}</span>
-                  <span class="pca-preview-orig">₹{{ p.originalPrice | number }}</span>
-                  <span class="pca-preview-off">{{ p.discount }}% OFF</span>
+                <div class="pca-preview-tag">
+                  <i class="bi bi-gem"></i> Premium Collection
                 </div>
               </div>
             </div>

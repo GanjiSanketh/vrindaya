@@ -73,11 +73,6 @@
                                   [class.bi-chevron-down]="sortField() === 'category' && !sortAsc()"
                                   [class.bi-chevron-expand]="sortField() !== 'category'"></i>
               </th>
-              <th class="pl-th-sort" (click)="setSort('price')">
-                Price <i class="bi" [class.bi-chevron-up]="sortField() === 'price' && sortAsc()"
-                              [class.bi-chevron-down]="sortField() === 'price' && !sortAsc()"
-                              [class.bi-chevron-expand]="sortField() !== 'price'"></i>
-              </th>
               <th class="d-none d-lg-table-cell">Status</th>
               <th class="pl-th-actions">Actions</th>
             </tr>
@@ -94,10 +89,6 @@
                 </td>
                 <td class="d-none d-md-table-cell">
                   <span class="pl-cat">{{ p.category }}</span>
-                </td>
-                <td>
-                  <div class="pl-price">₹{{ p.price | number }}</div>
-                  <div class="pl-original">₹{{ p.originalPrice | number }}</div>
                 </td>
                 <td class="d-none d-lg-table-cell">
                   <div class="pl-badges">

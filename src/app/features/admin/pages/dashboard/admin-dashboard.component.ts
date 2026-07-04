@@ -1,6 +1,5 @@
 import { Component, inject, computed } from '@angular/core';
 import { RouterLink }                  from '@angular/router';
-import { DecimalPipe }                 from '@angular/common';
 import { AdminProductService }         from '../../services/admin-product.service';
 import { AdminAuthService }            from '../../services/admin-auth.service';
 import { APP_ROUTES }                  from '../../../../core/constants/routes.constants';
@@ -8,7 +7,7 @@ import { APP_ROUTES }                  from '../../../../core/constants/routes.c
 @Component({
   selector:    'app-admin-dashboard',
   standalone:  true,
-  imports:     [RouterLink, DecimalPipe],
+  imports:     [RouterLink],
   templateUrl: './admin-dashboard.component.html',
   styleUrl:    './admin-dashboard.component.css',
 })

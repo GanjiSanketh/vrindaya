@@ -58,14 +58,12 @@
     </div>
 
     <h3 class="pc-name">{{ product().name }}</h3>
-    <div class="pc-price-row">
-      <span class="pc-price">₹{{ product().price | number }}</span>
-      <span class="pc-original">₹{{ product().originalPrice | number }}</span>
-      <span class="pc-off">{{ product().discount }}% OFF</span>
+    <div class="pc-cta-row">
+      <span class="pc-cta-label"><i class="bi bi-gem"></i> Exclusive Collection</span>
     </div>
     <div class="pc-rule"></div>
     <button class="pc-link" (click)="openFlipart($event)">
-      View on Flipkart <i class="bi bi-arrow-right"></i>
+      Shop on Flipkart <i class="bi bi-arrow-right"></i>
     </button>
   </div>
 </div>

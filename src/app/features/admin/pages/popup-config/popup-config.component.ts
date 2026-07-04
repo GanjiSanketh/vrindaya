@@ -2,7 +2,6 @@ import { Component, inject, OnInit }                from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient }                                  from '@angular/common/http';
 import { RouterLink }                                  from '@angular/router';
-import { DecimalPipe }                                 from '@angular/common';
 import { catchError, of }                              from 'rxjs';
 
 import { PopupService }                                from '../../../../core/services/popup.service';
@@ -12,7 +11,7 @@ import { Product }                                     from '../../../../core/mo
 @Component({
   selector:    'app-popup-config',
   standalone:  true,
-  imports:     [ReactiveFormsModule, RouterLink, DecimalPipe],
+  imports:     [ReactiveFormsModule, RouterLink],
   templateUrl: './popup-config.component.html',
   styleUrl:    './popup-config.component.css',
 })
@@ -36,7 +35,6 @@ export class PopupConfigComponent implements OnInit {
     { value: 'NEW_ARRIVAL',    label: 'New Arrival',    hint: 'First product marked isNew' },
     { value: 'TRENDING',       label: 'Trending',       hint: 'First product marked isTrending' },
     { value: 'BEST_SELLER',    label: 'Best Seller',    hint: 'First product marked isBestSeller' },
-    { value: 'FESTIVE_SALE',   label: 'Festive Sale',   hint: 'Highest-discount product' },
     { value: 'MANUAL_PRODUCT', label: 'Manual Product', hint: 'Pick a specific product below' },
   ];
 
@@ -79,7 +77,6 @@ export class PopupConfigComponent implements OnInit {
       case 'TRENDING':     return this.products.find(p => p.isTrending);
       case 'NEW_ARRIVAL':  return this.products.find(p => p.isNew);
       case 'BEST_SELLER':  return this.products.find(p => p.isBestSeller || p.isBestseller);
-      case 'FESTIVE_SALE': return [...this.products].sort((a, b) => b.discount - a.discount)[0];
       default:             return this.products.find(p => p.id === Number(this.form.value.productId));
     }
   }

@@ -9,9 +9,9 @@ import { Component } from '@angular/core';
       <div class="skel-body">
         <div class="skel-line skel-line--name shimmer"></div>
         <div class="skel-line skel-line--sub shimmer"></div>
-        <div class="skel-price-row">
-          <div class="skel-line skel-line--price shimmer"></div>
-          <div class="skel-line skel-line--badge shimmer"></div>
+        <div class="skel-cta-row">
+          <div class="skel-line skel-line--label shimmer"></div>
+          <div class="skel-line skel-line--btn shimmer"></div>
         </div>
       </div>
     </div>

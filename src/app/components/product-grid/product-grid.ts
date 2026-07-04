@@ -22,10 +22,8 @@ export class ProductGrid {
   readonly categories = CATEGORIES;
 
   readonly sortOptions: SortOption[] = [
-    { value: 'default',    label: 'Default'           },
-    { value: 'price-asc',  label: 'Price: Low → High' },
-    { value: 'price-desc', label: 'Price: High → Low' },
-    { value: 'rating',     label: 'Top Rated'         },
+    { value: 'default', label: 'Default'   },
+    { value: 'rating',  label: 'Top Rated' },
   ];
 
   get searchValue(): string { return this.productService.searchQuery(); }

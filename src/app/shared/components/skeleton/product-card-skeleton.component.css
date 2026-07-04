@@ -24,15 +24,15 @@
 .skel-line--name  { width: 80%; }
 .skel-line--sub   { width: 55%; height: 0.65rem; }
 
-.skel-price-row {
+.skel-cta-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.15rem;
 }
 
-.skel-line--price { width: 45%; height: 0.9rem; }
-.skel-line--badge { width: 30%; height: 0.65rem; }
+.skel-line--label { width: 45%; height: 0.65rem; }
+.skel-line--btn   { width: 40%; height: 0.9rem; }
 
 /* ── Shimmer animation ── */
 .shimmer {

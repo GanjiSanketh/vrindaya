@@ -14,7 +14,7 @@ import { Product }                             from '../../../../core/models/pro
   styleUrl:    './admin-product-list.component.css',
 })
 export class AdminProductListComponent {
-  private readonly _sortField = signal<'id' | 'name' | 'price' | 'category'>('id');
+  private readonly _sortField = signal<'id' | 'name' | 'category'>('id');
 
   readonly svc  = inject(AdminProductService);
   readonly auth = inject(AdminAuthService);
@@ -46,7 +46,6 @@ export class AdminProductListComponent {
     list = [...list].sort((a, b) => {
       let cmp = 0;
       if (sf === 'name')          cmp = a.name.localeCompare(b.name);
-      else if (sf === 'price')    cmp = a.price - b.price;
       else if (sf === 'category') cmp = a.category.localeCompare(b.category);
       else                        cmp = a.id - b.id;
       return this.sortAsc() ? cmp : -cmp;
@@ -55,7 +54,7 @@ export class AdminProductListComponent {
     return list;
   });
 
-  setSort(field: 'id' | 'name' | 'price' | 'category'): void {
+  setSort(field: 'id' | 'name' | 'category'): void {
     if (this._sortField() === field) { this.sortAsc.update(v => !v); }
     else { this._sortField.set(field); this.sortAsc.set(true); }
   }

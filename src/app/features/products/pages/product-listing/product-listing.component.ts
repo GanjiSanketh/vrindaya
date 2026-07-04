@@ -30,10 +30,8 @@ export class ProductListingComponent implements OnInit, OnDestroy {
   readonly products = computed(() => {
     const raw = this.svc.getByCategory(this.categoryId());
     switch (this.sortOrder()) {
-      case 'price-asc':  return [...raw].sort((a, b) => a.price - b.price);
-      case 'price-desc': return [...raw].sort((a, b) => b.price - a.price);
-      case 'rating':     return [...raw].sort((a, b) => b.rating - a.rating);
-      default:           return raw;
+      case 'rating': return [...raw].sort((a, b) => b.rating - a.rating);
+      default:       return raw;
     }
   });
 

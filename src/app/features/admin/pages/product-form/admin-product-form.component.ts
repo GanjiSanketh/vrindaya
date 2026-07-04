@@ -1,12 +1,10 @@
 import {
-  Component, inject, OnInit, OnDestroy, signal
+  Component, inject, OnInit, signal
 } from '@angular/core';
 import {
   FormBuilder, ReactiveFormsModule, Validators, AbstractControl
 } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { merge, Subject }                     from 'rxjs';
-import { debounceTime, takeUntil }            from 'rxjs/operators';
 
 import { AdminProductService } from '../../services/admin-product.service';
 import { APP_ROUTES }          from '../../../../core/constants/routes.constants';
@@ -21,7 +19,7 @@ interface CategoryOption { id: string; label: string; }
   templateUrl: './admin-product-form.component.html',
   styleUrl:    './admin-product-form.component.css',
 })
-export class AdminProductFormComponent implements OnInit, OnDestroy {
+export class AdminProductFormComponent implements OnInit {
   private readonly fb      = inject(FormBuilder);
   private readonly router  = inject(Router);
   private readonly route   = inject(ActivatedRoute);
@@ -32,7 +30,6 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
   readonly saved   = signal(false);
   readonly saving  = signal(false);
   private editId   = 0;
-  private destroy$ = new Subject<void>();
 
   readonly galleryFields = ['gallery0', 'gallery1', 'gallery2', 'gallery3'] as const;
 
@@ -46,9 +43,6 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
   readonly form = this.fb.group({
     name:          ['', [Validators.required, Validators.minLength(3)]],
     categoryId:    ['long-kurtas', Validators.required],
-    price:         [null as number | null, [Validators.required, Validators.min(1)]],
-    originalPrice: [null as number | null, [Validators.required, Validators.min(1)]],
-    discount:      [{ value: 0, disabled: false }],
     rating:        [4.5, [Validators.required, Validators.min(0), Validators.max(5)]],
     description:   [''],
     fabric:        [''],
@@ -76,31 +70,12 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
         this.populateForm(p);
       }
     }
-
-    // Auto-calculate discount when price / originalPrice changes
-    merge(
-      this.form.controls['price'].valueChanges,
-      this.form.controls['originalPrice'].valueChanges,
-    ).pipe(debounceTime(120), takeUntil(this.destroy$))
-     .subscribe(() => {
-       const price = this.form.value.price ?? 0;
-       const orig  = this.form.value.originalPrice ?? 0;
-       if (price > 0 && orig >= price) {
-         const disc = Math.max(0, Math.round((1 - price / orig) * 100));
-         this.form.controls['discount'].setValue(disc, { emitEvent: false });
-       }
-     });
   }
-
-  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 
   private populateForm(p: Product): void {
     this.form.patchValue({
       name:          p.name,
       categoryId:    p.categoryId ?? 'long-kurtas',
-      price:         p.price,
-      originalPrice: p.originalPrice,
-      discount:      p.discount,
       rating:        p.rating,
       description:   p.description ?? '',
       fabric:        p.fabric ?? '',
@@ -133,9 +108,6 @@ export class AdminProductFormComponent implements OnInit, OnDestroy {
       name:          v.name!.trim(),
       category:      this.categoryLabel(v.categoryId!),
       categoryId:    v.categoryId!,
-      price:         v.price!,
-      originalPrice: v.originalPrice!,
-      discount:      v.discount ?? 0,
       rating:        v.rating ?? 4.5,
       description:   v.description?.trim() || undefined,
       fabric:        v.fabric?.trim() || undefined,

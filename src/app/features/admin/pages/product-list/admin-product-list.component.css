@@ -146,8 +146,6 @@
 .pl-product-id   { font-size: 0.7rem; color: #9ca3af; }
 
 .pl-cat      { color: #6b7280; font-size: 0.82rem; }
-.pl-price    { font-weight: 700; color: #0f6f84; }
-.pl-original { font-size: 0.72rem; color: #9ca3af; text-decoration: line-through; }
 
 .pl-badges { display: flex; gap: 0.25rem; flex-wrap: wrap; }
 .pl-badge  { padding: 2px 7px; border-radius: 3px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.05em; }

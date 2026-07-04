@@ -172,7 +172,6 @@ export class PopupService {
       case 'TRENDING':     return this.allProducts.find(p => p.isTrending);
       case 'NEW_ARRIVAL':  return this.allProducts.find(p => p.isNew);
       case 'BEST_SELLER':  return this.allProducts.find(p => p.isBestSeller || p.isBestseller);
-      case 'FESTIVE_SALE': return [...this.allProducts].sort((a, b) => b.discount - a.discount)[0];
       default:             return this.allProducts.find(p => p.id === this.config!.productId);
     }
   }

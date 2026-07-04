@@ -172,16 +172,16 @@
   margin: 0;
 }
 
-.qv-price-row {
+.qv-collection-tag {
   display: flex;
-  align-items: baseline;
-  gap: 0.625rem;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--gold, #c9a54c);
 }
-
-.qv-price    { font-size: 1.3rem; font-weight: 700; color: var(--maroon, #0f6f84); }
-.qv-original { font-size: 0.92rem; color: var(--text-muted, #666); text-decoration: line-through; }
-.qv-off      { font-size: 0.8rem; font-weight: 600; color: var(--gold, #c9a54c); }
 
 .qv-rule { height: 1px; background: var(--border, #eaeaea); margin: 0.25rem 0; flex-shrink: 0; }
 

@@ -224,31 +224,26 @@
   margin: 0;
 }
 
-.pc-price-row {
+.pc-cta-row {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.pc-price {
+.pc-cta-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: var(--font-sans);
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--maroon);
-}
-
-.pc-original {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  text-decoration: line-through;
-}
-
-.pc-off {
   font-size: 0.72rem;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--gold);
 }
+
+.pc-cta-label i { font-size: 0.7rem; }
 
 .pc-rule {
   height: 1px;
@@ -293,10 +288,8 @@
   .pc-link  { margin-top: 0.125rem; }
   .pc-rule  { display: none; }
 
-  .pc-name     { font-size: 0.875rem; }
-  .pc-price    { font-size: 0.875rem; }
-  .pc-original { font-size: 0.72rem; }
-  .pc-off      { font-size: 0.65rem; }
+  .pc-name      { font-size: 0.875rem; }
+  .pc-cta-label { font-size: 0.65rem; }
 }
 
 /* ── Very small screens (≤480px) ── */
@@ -308,10 +301,8 @@
     gap: 0.4rem;
   }
 
-  .pc-name     { font-size: 0.8rem; }
-  .pc-price    { font-size: 0.82rem; }
-  .pc-original { font-size: 0.65rem; }
-  .pc-off      { font-size: 0.6rem; }
-  .pc-link     { font-size: 0.68rem; }
-  .pc-badge    { font-size: 0.52rem; padding: 2px 6px; }
+  .pc-name      { font-size: 0.8rem; }
+  .pc-cta-label { font-size: 0.6rem; }
+  .pc-link      { font-size: 0.68rem; }
+  .pc-badge     { font-size: 0.52rem; padding: 2px 6px; }
 }

@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Product, Category, Testimonial, LookItem, FeatureItem } from '../models/product.model';
 import { ProductStoreService }                                     from './product-store.service';
 
-export type SortOrder = 'default' | 'price-asc' | 'price-desc' | 'rating';
+export type SortOrder = 'default' | 'rating';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -35,8 +35,6 @@ export class ProductService {
     }
 
     switch (this.sortOrder()) {
-      case 'price-asc':  return list.sort((a, b) => a.price - b.price);
-      case 'price-desc': return list.sort((a, b) => b.price - a.price);
       case 'rating':     return list.sort((a, b) => b.rating - a.rating);
       default:           return list;
     }

@@ -2,7 +2,7 @@ import {
   Component, effect, HostListener, inject,
   OnDestroy, OnInit, PLATFORM_ID, signal,
 } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser }               from '@angular/common';
 import { FormsModule }                     from '@angular/forms';
 import { Router }                          from '@angular/router';
 import { Subject, Subscription }           from 'rxjs';
@@ -15,7 +15,7 @@ import { Product }        from '../../core/models/product.model';
 @Component({
   selector: 'app-search-overlay',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './search-overlay.component.html',
   styleUrl:    './search-overlay.component.css',
 })

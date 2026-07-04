@@ -4,9 +4,6 @@
     "name": "Maroon Mandala Kurta",
     "category": "Long Kurtas",
     "categoryId": "long-kurtas",
-    "price": 448,
-    "originalPrice": 899,
-    "discount": 50,
     "rating": 4.7,
     "image": "assets/products/001-wine-mandala-kurta/cover.png",
     "gallery": [
@@ -26,9 +23,6 @@
     "name": "Indigo Floral 3-Piece Set",
     "category": "3-Piece Sets",
     "categoryId": "3-piece-sets",
-    "price": 898,
-    "originalPrice": 1399,
-    "discount": 36,
     "rating": 4.6,
     "image": "assets/products/002-indigo-floral-kurta-set/cover.png",
     "gallery": [
@@ -37,7 +31,7 @@
       "assets/products/002-indigo-floral-kurta-set/gallery-3.png",
       "assets/products/002-indigo-floral-kurta-set/gallery-4.png"
     ],
-    "flipkartUrl": "https://www.flipkart.com/vrindaya-women-floral-print-striped-embellished-embroidered-straight-kurta/p/itm2d71bb26c390f?pid=KTAHNGGPDZXFMUG5",
+    "flipkartUrl": "https://www.flipkart.com/vrindaya-women-printed-straight-kurta/p/itm1d49df50f6d5e?pid=KTAHNHZZYYPQHJFG&marketplace=FLIPKART&lid=LSTKTAHNHZZYYPQHJFGMCOCJG&pageUID=1783138534854",
     "isTrending": false,
     "isNew": false,
     "isBestSeller": false,
@@ -48,9 +42,6 @@
     "name": "Black Gold Embroidered Kurti",
     "category": "Short Kurtas",
     "categoryId": "short-kurtas",
-    "price": 315,
-    "originalPrice": 699,
-    "discount": 55,
     "rating": 4.8,
     "image": "assets/products/003-black-gold-embroidered-kurti/cover.png",
     "gallery": [
@@ -69,9 +60,6 @@
     "name": "Pastel Stripe Straight Kurta",
     "category": "Long Kurtas",
     "categoryId": "long-kurtas",
-    "price": 450,
-    "originalPrice": 899,
-    "discount": 50,
     "rating": 4.4,
     "image": "assets/products/004-pastel-stripe-kurta/cover.png",
     "gallery": [
@@ -90,9 +78,6 @@
     "name": "Fuchsia Floral 3-Piece Set",
     "category": "3-Piece Sets",
     "categoryId": "3-piece-sets",
-    "price": 1132,
-    "originalPrice": 1599,
-    "discount": 29,
     "rating": 4.9,
     "image": "assets/products/005-fuchsia-floral-kurta-set/cover.png",
     "gallery": [
@@ -111,9 +96,6 @@
     "name": "Navy Mandala Elephant Kurta",
     "category": "Long Kurtas",
     "categoryId": "long-kurtas",
-    "price": 448,
-    "originalPrice": 899,
-    "discount": 50,
     "rating": 4.5,
     "image": "assets/products/006-navy-mandala-kurta/cover.png",
     "gallery": [
@@ -132,9 +114,6 @@
     "name": "Purple Embroidered Dress",
     "category": "Short Kurtas",
     "categoryId": "short-kurtas",
-    "price": 403,
-    "originalPrice": 797,
-    "discount": 49,
     "rating": 4.6,
     "image": "assets/products/007-purple-embroidered-dress/cover.png",
     "gallery": [
@@ -153,9 +132,6 @@
     "name": "Forest Green Floral 3-Piece Set",
     "category": "3-Piece Sets",
     "categoryId": "3-piece-sets",
-    "price": 808,
-    "originalPrice": 1299,
-    "discount": 38,
     "rating": 4.7,
     "image": "assets/products/008-green-floral-kurta-set/cover.png",
     "gallery": [
@@ -174,9 +150,6 @@
     "name": "Teal Floral 3-Piece Set",
     "category": "3-Piece Sets",
     "categoryId": "3-piece-sets",
-    "price": 898,
-    "originalPrice": 1399,
-    "discount": 36,
     "rating": 4.9,
     "image": "assets/products/009-teal-floral-kurta-set/cover.png",
     "gallery": [
@@ -195,9 +168,6 @@
     "name": "Bloomline Rose Pink 2-Piece Set",
     "category": "2-Piece Sets",
     "categoryId": "2-piece-sets",
-    "price": 679,
-    "originalPrice": 1299,
-    "discount": 48,
     "rating": 4.9,
     "image": "assets/products/010-peach-flower-print-2-piece-kurti/cover.png",
     "gallery": [
@@ -216,9 +186,6 @@
     "name": "Midnight Bloom Embroidered Straight Kurta for Women",
     "category": "Short Kurtas",
     "categoryId": "short-kurtas",
-    "price": 403,
-    "originalPrice": 899,
-    "discount": 55,
     "rating": 4.9,
     "image": "assets/products/011-grey-botanical-print-short-kurta/cover.png",
     "gallery": [
@@ -237,9 +204,6 @@
     "name": "Ruby Grace Embroidered Straight Kurta for Women",
     "category": "Short Kurtas",
     "categoryId": "short-kurtas",
-    "price": 403,
-    "originalPrice": 899,
-    "discount": 55,
     "rating": 4.9,
     "image": "assets/products/012-maroon-botanical-print-short-kurta/cover.png",
     "gallery": [

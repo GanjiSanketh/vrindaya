@@ -21,18 +21,15 @@
       <div class="fc-img-wrap">
         <img [src]="product.image" [alt]="product.name"
              class="fc-img" loading="lazy" draggable="false" />
-        <span class="fc-badge">{{ product.discount }}% OFF</span>
+        <span class="fc-badge">Flipkart Exclusive</span>
       </div>
 
       <!-- Info -->
       <div class="fc-body">
         <p class="fc-name">{{ product.name }}</p>
-        <div class="fc-price-row">
-          <span class="fc-price">₹{{ product.price | number }}</span>
-          <span class="fc-orig">₹{{ product.originalPrice | number }}</span>
-        </div>
+        <p class="fc-tagline">Premium Collection</p>
         <button class="fc-btn" (click)="openModal()">
-          Shop Now&nbsp;<i class="bi bi-arrow-right"></i>
+          View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
         </button>
       </div>
 
@@ -59,7 +56,7 @@
       <div class="pu-img-side">
         <img [src]="product.image" [alt]="product.name"
              class="pu-img" loading="lazy" draggable="false" />
-        <span class="pu-img-badge">{{ product.discount }}% OFF</span>
+        <span class="pu-img-badge">Flipkart Exclusive</span>
       </div>
 
       <!-- ── Right: Content ── -->
@@ -74,17 +71,15 @@
           <p class="pu-desc">{{ product.description }}</p>
         }
 
-        <div class="pu-pricing">
-          <span class="pu-price">₹{{ product.price | number }}</span>
-          <span class="pu-original">₹{{ product.originalPrice | number }}</span>
-          <span class="pu-off">{{ product.discount }}% OFF</span>
-        </div>
+        <p class="pu-tagline">
+          <i class="bi bi-gem"></i> Premium Collection — Available Exclusively on Flipkart
+        </p>
 
         <div class="pu-divider"></div>
 
         <div class="pu-actions">
           <button class="pu-btn-primary" (click)="shopNow()">
-            Shop Now&nbsp;<i class="bi bi-arrow-right"></i>
+            View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
           </button>
           <button class="pu-btn-secondary" (click)="viewCollection()">
             View Collection

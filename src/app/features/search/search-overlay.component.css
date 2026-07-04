@@ -129,16 +129,14 @@
   letter-spacing: 0.04em;
 }
 
-.so-result-price {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.15rem;
+.so-result-cta {
   flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold, #c9a54c);
 }
-
-.so-price { font-size: 0.9rem; font-weight: 700; color: var(--maroon, #0f6f84); }
-.so-off   { font-size: 0.65rem; font-weight: 600; color: var(--gold, #c9a54c); }
 
 .so-result-arrow {
   font-size: 0.75rem;
@@ -207,7 +205,7 @@
 @media (max-width: 640px) {
   .so-backdrop { padding-top: 0; align-items: flex-start; }
   .so-panel { width: 100%; max-width: 100%; border-radius: 0 0 var(--r-lg, 20px) var(--r-lg, 20px); max-height: 70vh; }
-  .so-result-price { display: none; }
+  .so-result-cta { display: none; }
 }
 
 /* ── Animations ── */
