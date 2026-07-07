@@ -1,0 +1,73 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ══════════════════════════════════════════════════════════════
+       Helpers
+       ══════════════════════════════════════════════════════════════ */
+
+    /**
+     * Vrindaya currently authorizes a single hardcoded admin email
+     * (see AdminAuthService.ADMIN_EMAIL in the app). Keep this literal
+     * in sync with that constant until the app migrates to the
+     * Firestore-backed `admin-users` role directory.
+     */
+    function isAdminUser() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() == 'gsanketh7121@gmail.com';
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       marketingSubscribers/{mobileNumber}
+       Public VIP Club sign-up — doc ID is the 10-digit mobile number.
+
+       NOTE on `allow get: if true`: the app's duplicate-check flow does
+       a direct getDoc() on this path (no query/list) before writing, so
+       a single-document `get` must be public. Firestore Rules cannot
+       redact individual fields, so this means anyone who already knows
+       (or guesses) a specific mobile number can read that one
+       subscriber's full record. Bulk `list` — i.e. enumerating/browsing
+       every subscriber — stays admin-only, so the customer list as a
+       whole is not exposed.
+       ══════════════════════════════════════════════════════════════ */
+    match /marketingSubscribers/{mobileNumber} {
+
+      // Anyone can create their own subscriber document, but only with a
+      // validated, whitelisted shape. There is no public `update` rule,
+      // so a resubmission against an existing doc is rejected by
+      // Firestore itself — defense-in-depth alongside the app's own
+      // getDoc() duplicate check in MarketingService.subscribe().
+      allow create: if
+        mobileNumber.matches('^[6-9][0-9]{9}$')
+        && request.resource.data.mobileNumber == mobileNumber
+        && request.resource.data.consent == true
+        && request.resource.data.status == 'ACTIVE'
+        && request.resource.data.source is string
+        && (!('firstName' in request.resource.data)
+            || (request.resource.data.firstName is string && request.resource.data.firstName.size() <= 50))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.keys().hasOnly(
+             ['mobileNumber', 'firstName', 'source', 'status', 'consent', 'createdAt', 'updatedAt']
+           );
+
+      // Single-document existence check — required by the app's public
+      // duplicate-check flow. See note above on the resulting trade-off.
+      allow get: if true;
+
+      // Bulk listing (the admin dashboard's subscriber table) and all
+      // mutations beyond the public `create` stay admin-only.
+      allow list, update, delete: if isAdminUser();
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       Everything else is untouched by this change and stays locked
+       down, matching the project's existing "deny by default" policy.
+       ══════════════════════════════════════════════════════════════ */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

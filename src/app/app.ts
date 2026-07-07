@@ -6,16 +6,18 @@ import { Subscription }                         from 'rxjs';
 import { PopupComponent }          from './components/popup/popup.component';
 import { PopupService }            from './core/services/popup.service';
 import { LoadingScreenComponent }  from './shared/components/loading-screen/loading-screen.component';
+import { ToastComponent }          from './shared/components/toast/toast.component';
 
 @Component({
   selector:   'app-root',
   standalone: true,
-  imports:    [RouterOutlet, PopupComponent, LoadingScreenComponent],
+  imports:    [RouterOutlet, PopupComponent, LoadingScreenComponent, ToastComponent],
   template: `
     <app-loading-screen (done)="appReady.set(true)" />
     @if (appReady()) {
       <router-outlet />
       <app-popup />
+      <app-toast />
     }
   `,
 })

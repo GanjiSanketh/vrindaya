@@ -34,6 +34,10 @@ export const ADMIN_ROUTES: Routes = [
         path:          'products/:id/edit',
         loadComponent: () => import('./pages/product-form/admin-product-form.component').then(m => m.AdminProductFormComponent),
       },
+      {
+        path:          'marketing',
+        loadComponent: () => import('../marketing/components/marketing-dashboard/marketing-dashboard.component').then(m => m.MarketingDashboardComponent),
+      },
 
       /* super_admin + admin only */
       {

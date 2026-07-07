@@ -24,6 +24,10 @@
         <i class="bi bi-bag-heart"></i>
         <span>Products</span>
       </a>
+      <a [routerLink]="BASE + '/marketing'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+        <i class="bi bi-envelope-heart"></i>
+        <span>Marketing</span>
+      </a>
 
       <!-- super_admin + admin only -->
       @if (auth.hasRole(['super_admin', 'admin'])) {

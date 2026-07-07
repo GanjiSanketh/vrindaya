@@ -1,0 +1,122 @@
+:host {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Above every existing overlay in the app (highest prior value: 9999,
+     the boot-time loading screen) so the CTA always stays clickable. */
+  z-index: 10000;
+  display: block;
+}
+
+.insider-ribbon {
+  pointer-events: none;
+  background: linear-gradient(135deg, #ffffff 0%, var(--cream-light) 100%);
+  border-top: 1px solid var(--gold-light);
+  box-shadow: var(--shadow-lg);
+}
+
+.insider-ribbon--interactive {
+  pointer-events: auto;
+}
+
+.insider-ribbon__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0.9rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.insider-ribbon__copy {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.insider-ribbon__eyebrow {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.insider-ribbon__eyebrow-compact { display: none; }
+
+.insider-ribbon__desc {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 480px;
+}
+
+.insider-ribbon__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.insider-ribbon__cta {
+  position: relative;
+  overflow: hidden;
+  padding: 0.7rem 1.6rem;
+  background: var(--maroon);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-pill);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.insider-ribbon__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 22px rgba(201, 165, 76, 0.45);
+}
+
+.insider-ribbon__cta-compact { display: none; }
+
+.insider-ribbon__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.insider-ribbon__close:hover {
+  background: var(--cream-mid);
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .insider-ribbon__inner { padding: 0.75rem 1rem; gap: 0.75rem; }
+  .insider-ribbon__desc { display: none; }
+  .insider-ribbon__eyebrow-full { display: none; }
+  .insider-ribbon__eyebrow-compact { display: inline; }
+  .insider-ribbon__eyebrow { font-size: 0.95rem; }
+  .insider-ribbon__cta-full { display: none; }
+  .insider-ribbon__cta-compact { display: inline; }
+  .insider-ribbon__cta { padding: 0.65rem 1.3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .insider-ribbon { transition: none; }
+}

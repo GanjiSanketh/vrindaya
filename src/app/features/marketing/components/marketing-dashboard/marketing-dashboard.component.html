@@ -1,0 +1,99 @@
+<div class="mkt-page">
+
+  <!-- Header -->
+  <div class="mkt-header">
+    <div>
+      <h1 class="mkt-title">Marketing</h1>
+      <p class="mkt-welcome">VIP Club subscribers collected from the homepage.</p>
+    </div>
+    <div class="mkt-actions">
+      <button class="btn-export" (click)="export()">
+        <i class="bi bi-download"></i> Export CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="mkt-stats">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--total"><i class="bi bi-people-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ marketing.totalCount() }}</span>
+        <span class="stat-label">Total Subscribers</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--today"><i class="bi bi-calendar-day-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ marketing.todayCount() }}</span>
+        <span class="stat-label">Today</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--week"><i class="bi bi-calendar-week-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ marketing.weekCount() }}</span>
+        <span class="stat-label">This Week</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--month"><i class="bi bi-calendar-month-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ marketing.monthCount() }}</span>
+        <span class="stat-label">This Month</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscriber table -->
+  <div class="mkt-section">
+    <div class="mkt-section-header">
+      <h2 class="mkt-section-title">Subscribers</h2>
+    </div>
+
+    @if (marketing.loading()) {
+      <p class="mkt-state">Loading subscribers...</p>
+    } @else if (marketing.error()) {
+      <p class="mkt-state mkt-state--error">{{ marketing.error() }}</p>
+    } @else if (marketing.subscribers().length === 0) {
+      <p class="mkt-state">No subscribers yet. Once shoppers join the VIP Club, they'll show up here.</p>
+    } @else {
+      <div class="mkt-table-wrap">
+        <table class="mkt-table">
+          <thead>
+            <tr>
+              <th>First Name</th>
+              <th>Mobile Number</th>
+              <th>Joined Date</th>
+              <th class="d-none d-sm-table-cell">Source</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of marketing.subscribers(); track s.mobileNumber) {
+              <tr>
+                <td>{{ s.firstName || '—' }}</td>
+                <td>{{ s.mobileNumber }}</td>
+                <td>{{ marketing.formatDate(s.createdAt) }}</td>
+                <td class="d-none d-sm-table-cell">{{ s.source }}</td>
+                <td>
+                  <span class="mkt-badge" [class.mkt-badge--active]="s.status === 'ACTIVE'">{{ s.status }}</span>
+                </td>
+                <td>
+                  <button class="mkt-delete" (click)="delete(s.mobileNumber)" title="Delete subscriber">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>
