@@ -39,6 +39,13 @@ service cloud.firestore {
       // so a resubmission against an existing doc is rejected by
       // Firestore itself — defense-in-depth alongside the app's own
       // getDoc() duplicate check in MarketingService.subscribe().
+      //
+      // Admins get a second, wider-whitelisted branch for the Bulk Import
+      // feature (adds importedBy/importedAt). Note that `create` alone does
+      // NOT protect bulk import from overwriting an existing subscriber —
+      // admins already hold `update` below, so a write to an existing doc
+      // would succeed as an update, not be rejected here. BulkImportService
+      // is responsible for checking existence itself before writing.
       allow create: if
         mobileNumber.matches('^[6-9][0-9]{9}$')
         && request.resource.data.mobileNumber == mobileNumber
@@ -49,8 +56,18 @@ service cloud.firestore {
             || (request.resource.data.firstName is string && request.resource.data.firstName.size() <= 50))
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
-        && request.resource.data.keys().hasOnly(
-             ['mobileNumber', 'firstName', 'source', 'status', 'consent', 'createdAt', 'updatedAt']
+        && (
+             request.resource.data.keys().hasOnly(
+               ['mobileNumber', 'firstName', 'source', 'status', 'consent', 'createdAt', 'updatedAt']
+             )
+             || (
+                  isAdminUser()
+                  && request.resource.data.importedBy is string
+                  && request.resource.data.importedAt == request.time
+                  && request.resource.data.keys().hasOnly(
+                       ['mobileNumber', 'firstName', 'source', 'status', 'consent', 'createdAt', 'updatedAt', 'importedBy', 'importedAt']
+                     )
+                )
            );
 
       // Single-document existence check — required by the app's public

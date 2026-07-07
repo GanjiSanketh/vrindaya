@@ -38,6 +38,10 @@ export const ADMIN_ROUTES: Routes = [
         path:          'marketing',
         loadComponent: () => import('../marketing/components/marketing-dashboard/marketing-dashboard.component').then(m => m.MarketingDashboardComponent),
       },
+      {
+        path:          'marketing-contacts',
+        loadComponent: () => import('../marketing/components/marketing-contacts/marketing-contacts.component').then(m => m.MarketingContactsComponent),
+      },
 
       /* super_admin + admin only */
       {

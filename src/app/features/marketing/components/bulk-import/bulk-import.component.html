@@ -1,0 +1,158 @@
+<div class="bi-page">
+
+  <p class="bi-intro">
+    Import hundreds or thousands of customer mobile numbers before launching a WhatsApp campaign.
+    Numbers are matched against existing subscribers by mobile number — nothing is ever overwritten.
+  </p>
+
+  <!-- Source -->
+  <div class="bi-field">
+    <label for="bi-source" class="bi-label">Import Source <span class="bi-required">*</span></label>
+    <select
+      id="bi-source"
+      class="form-select bi-select"
+      [ngModel]="source()"
+      (ngModelChange)="source.set($event)"
+      [disabled]="svc.importing()"
+    >
+      <option [ngValue]="null" disabled>Choose a source…</option>
+      @for (s of sources; track s) {
+        <option [ngValue]="s">{{ s }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- Input methods -->
+  <div class="bi-methods">
+    <div class="bi-method">
+      <label for="bi-textarea" class="bi-label">Paste Numbers</label>
+      <textarea
+        id="bi-textarea"
+        class="form-control bi-textarea"
+        rows="8"
+        placeholder="9876543210&#10;9123456780,Priya&#10;9988776655"
+        [ngModel]="rawText()"
+        (ngModelChange)="onTextChange($event)"
+        [disabled]="svc.importing()"
+      ></textarea>
+      <span class="bi-hint">One subscriber per line — mobile number, or mobile number,First Name</span>
+    </div>
+
+    <div class="bi-method-divider">or</div>
+
+    <div class="bi-method">
+      <label for="bi-file" class="bi-label">Upload a File</label>
+      <input
+        id="bi-file"
+        type="file"
+        class="form-control bi-file"
+        accept=".csv,.xlsx,.xls"
+        (change)="onFileSelected($event)"
+        [disabled]="svc.importing()"
+      />
+      <span class="bi-hint">
+        @if (selectedFile()) {
+          Selected: {{ selectedFile()!.name }}
+        } @else {
+          Accepts .csv, .xlsx or .xls
+        }
+      </span>
+    </div>
+  </div>
+
+  <div class="bi-actions">
+    <button type="button" class="btn-primary" (click)="runPreview()" [disabled]="svc.importing() || previewLoading()">
+      @if (previewLoading()) {
+        <span class="bi-spinner" aria-hidden="true"></span> Checking…
+      } @else {
+        Preview Import
+      }
+    </button>
+    @if (preview() || rows().length > 0) {
+      <button type="button" class="btn-outline" (click)="startOver()" [disabled]="svc.importing()">
+        Start Over
+      </button>
+    }
+  </div>
+
+  <!-- Preview -->
+  @if (preview(); as p) {
+    <div class="bi-section">
+      <h3 class="bi-section-title">Import Preview</h3>
+
+      <div class="bi-stats">
+        <div class="bi-stat">
+          <span class="bi-stat-value">{{ p.totalRows }}</span>
+          <span class="bi-stat-label">Total Rows</span>
+        </div>
+        <div class="bi-stat bi-stat--valid">
+          <span class="bi-stat-value">{{ p.valid }}</span>
+          <span class="bi-stat-label">Valid</span>
+        </div>
+        <div class="bi-stat bi-stat--dup">
+          <span class="bi-stat-value">{{ p.duplicates }}</span>
+          <span class="bi-stat-label">Duplicates</span>
+        </div>
+        <div class="bi-stat bi-stat--invalid">
+          <span class="bi-stat-value">{{ p.invalid }}</span>
+          <span class="bi-stat-label">Invalid</span>
+        </div>
+      </div>
+
+      @if (p.duplicates > 0 || p.invalid > 0) {
+        <details class="bi-issues">
+          <summary>View skipped rows ({{ p.duplicates + p.invalid }})</summary>
+          <ul class="bi-issues-list">
+            @for (row of rows(); track row.lineNumber) {
+              @if (row.status !== 'valid') {
+                <li>
+                  <span class="bi-issue-badge bi-issue-badge--{{ row.status }}">{{ row.status }}</span>
+                  Line {{ row.lineNumber }}: "{{ row.raw }}" — {{ row.reason }}
+                </li>
+              }
+            }
+          </ul>
+        </details>
+      }
+
+      @if (svc.importing()) {
+        <div class="bi-progress-wrap">
+          <div class="progress bi-progress">
+            <div class="progress-bar" role="progressbar" [style.width.%]="progressPercent()">
+              {{ progressPercent() }}%
+            </div>
+          </div>
+          <span class="bi-progress-label">{{ svc.progress().done }} / {{ svc.progress().total }} imported</span>
+        </div>
+      }
+
+      @if (!summary()) {
+        <button type="button" class="btn-primary bi-import-btn" (click)="startImport()" [disabled]="!canImport()">
+          Import {{ p.valid }} Subscriber{{ p.valid === 1 ? '' : 's' }}
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Summary -->
+  @if (summary(); as s) {
+    <div class="bi-summary">
+      <h3 class="bi-section-title">Import Complete</h3>
+      <div class="bi-stats">
+        <div class="bi-stat bi-stat--valid">
+          <span class="bi-stat-value">{{ s.imported }}</span>
+          <span class="bi-stat-label">Imported</span>
+        </div>
+        <div class="bi-stat bi-stat--dup">
+          <span class="bi-stat-value">{{ s.skipped }}</span>
+          <span class="bi-stat-label">Skipped</span>
+        </div>
+        <div class="bi-stat bi-stat--invalid">
+          <span class="bi-stat-value">{{ s.invalid }}</span>
+          <span class="bi-stat-label">Invalid</span>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
