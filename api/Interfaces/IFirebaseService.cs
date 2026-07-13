@@ -4,7 +4,7 @@ namespace Vrindaya.Api.Interfaces;
 
 /// <summary>
 /// Firebase Admin SDK access. Today this only exposes a Firestore client
-/// (built lazily from FirebaseOptions' service-account credentials, for
+/// (built lazily from the Firebase service account key file, for
 /// CampaignDeliveryWorker) — ID token verification for
 /// TokenValidationMiddleware is still a reserved, unimplemented concern
 /// that would also live here.

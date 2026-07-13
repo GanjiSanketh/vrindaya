@@ -77,8 +77,13 @@ vulnerability will be treated as a priority.
 All configuration that varies by environment or contains a secret is
 supplied via environment variables, never hardcoded:
 
-- `api/` uses ASP.NET Core's double-underscore convention
-  (`Firebase__PrivateKey`, `WhatsApp__AccessToken`, etc.) — see
+- `api/` uses ASP.NET Core's double-underscore convention for most
+  secrets (`WhatsApp__AccessToken`, etc.); the Firebase service account
+  credential is the one exception — it's `FIREBASE_SERVICE_ACCOUNT_JSON`,
+  a non-double-underscore variable that's remapped into
+  `Firebase:ServiceAccountJson` through the configuration pipeline (never
+  read directly with `Environment.GetEnvironmentVariable()` in application
+  code) — see
   [docs/setup/environment-variables.md](../docs/setup/environment-variables.md)
   for the complete list.
 - `web/`'s Firebase **web** config (`apiKey`, etc.) is intentionally

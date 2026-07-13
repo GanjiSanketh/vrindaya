@@ -72,9 +72,7 @@ never in a committed `appsettings.json`.
 ```
 ASPNETCORE_ENVIRONMENT=Production
 Cors__AllowedOrigins__0=https://vrindaya.vercel.app
-Firebase__ProjectId=<your-project-id>
-Firebase__ClientEmail=<service-account-client-email>
-Firebase__PrivateKey=<service-account-private-key>
+FIREBASE_SERVICE_ACCOUNT_JSON=<the service account key file's full JSON contents>
 WhatsApp__AccessToken=<meta-access-token>
 WhatsApp__PhoneNumberId=<meta-phone-number-id>
 WhatsApp__BusinessAccountId=<meta-waba-id>
@@ -84,11 +82,16 @@ CampaignDelivery__BatchSize=20
 CampaignDelivery__PollingIntervalSeconds=5
 ```
 
-`Firebase:*` and `WhatsApp:*` are **required for the app to actually do
-anything**, not optional — without valid `Firebase:*`, the background
-worker logs a retryable error every poll tick (see
+`FIREBASE_SERVICE_ACCOUNT_JSON` and `WhatsApp:*` are **required for the
+app to actually do anything**, not optional — without a valid
+`FIREBASE_SERVICE_ACCOUNT_JSON`, the background worker logs a retryable
+error every poll tick (see
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md#worker-not-running)) but the API
-itself still starts and serves HTTP requests.
+itself still starts and serves HTTP requests. Note `FIREBASE_SERVICE_ACCOUNT_JSON`
+doesn't follow the usual `Firebase__Key` double-underscore convention —
+it's remapped into `Firebase:ServiceAccountJson` through the
+configuration pipeline (not read directly in application code) — see
+[Firebase Setup](FIREBASE_SETUP.md#production).
 
 ### Vercel (`web/`)
 
@@ -124,8 +127,8 @@ Full guide: [META_WHATSAPP_SETUP.md](META_WHATSAPP_SETUP.md).
 
 - [ ] `firestore.rules`/`storage.rules` deployed and match the code being
       deployed
-- [ ] All `Firebase:*` and `WhatsApp:*` environment variables set on
-      Render with real, production values
+- [ ] `FIREBASE_SERVICE_ACCOUNT_JSON` and all `WhatsApp:*` environment
+      variables set on Render with real, production values
 - [ ] `Cors:AllowedOrigins` includes the actual production Vercel domain
       (and no others)
 - [ ] Meta webhook Callback URL points at the actual Render URL, verify

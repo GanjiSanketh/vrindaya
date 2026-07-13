@@ -46,12 +46,32 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Binds every strongly typed configuration section (Options pattern).
     /// Values come from appsettings.*.json, overridable by environment
-    /// variables using the standard double-underscore convention
-    /// (e.g. Firebase__PrivateKey, WhatsApp__AccessToken, Jwt__SecretKey).
+    /// variables using the standard double-underscore convention (e.g.
+    /// Firebase__ServiceAccountPath, WhatsApp__AccessToken, Jwt__SecretKey).
+    ///
+    /// FirebaseOptions.ServiceAccountJson is the one exception:
+    /// FIREBASE_SERVICE_ACCOUNT_JSON doesn't follow that "Section__Key"
+    /// convention (Render sets it as a flat variable name), so it can't
+    /// bind automatically from the "Firebase" section alone. It's merged
+    /// in here explicitly — read via the configuration indexer, which is
+    /// backed by the environment-variables provider ASP.NET Core registers
+    /// by default, never via Environment.GetEnvironmentVariable() — so
+    /// FirebaseService only ever depends on IOptions&lt;FirebaseOptions&gt;,
+    /// same as every other consumer of this method.
     /// </summary>
     public static IServiceCollection AddApplicationOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<FirebaseOptions>(configuration.GetSection(FirebaseOptions.SectionName));
+        services.Configure<FirebaseOptions>(options =>
+        {
+            configuration.GetSection(FirebaseOptions.SectionName).Bind(options);
+
+            var serviceAccountJson = configuration["FIREBASE_SERVICE_ACCOUNT_JSON"];
+            if (!string.IsNullOrWhiteSpace(serviceAccountJson))
+            {
+                options.ServiceAccountJson = serviceAccountJson;
+            }
+        });
+
         services.Configure<WhatsAppOptions>(configuration.GetSection(WhatsAppOptions.SectionName));
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.Configure<CorsOptions>(configuration.GetSection(CorsOptions.SectionName));

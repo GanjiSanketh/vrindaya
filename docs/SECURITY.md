@@ -65,16 +65,19 @@ in this API today.
 | Secret | Where it lives | Committed? |
 | --- | --- | --- |
 | Meta WhatsApp access token | `WhatsApp:AccessToken` | Never — `appsettings.json` ships empty; real value via env var or git-ignored `appsettings.Development.json` |
-| Firebase service-account private key | `Firebase:PrivateKey` | Never — same pattern |
+| Firebase service account key | `FIREBASE_SERVICE_ACCOUNT_JSON` (production) / `api/Firebase/serviceAccount.json` (local, git-ignored) | Never — same pattern |
 | Firebase **web** API key | `environment.ts`/`environment.prod.ts` | **Yes, intentionally** — Firebase's web config is public by design; its security model relies on Security Rules, not key secrecy |
 | Admin email | `AdminAuthService.ADMIN_EMAIL`, `firestore.rules`, `storage.rules` | Yes — not a secret, just a literal that must stay in sync across three files |
 
 `api/appsettings.Development.json` is git-ignored specifically because it
-is the expected location for a developer's real local Meta/Firebase
-credentials during development — this was fixed during the v1.0.0-beta
-release prep (see [RELEASE_NOTES_v1.0.0-beta.md](RELEASE_NOTES_v1.0.0-beta.md)):
-the file previously existed untracked but un-ignored, meaning a routine
+is the expected location for a developer's real local Meta credentials
+during development — this was fixed during the v1.0.0-beta release prep
+(see [RELEASE_NOTES_v1.0.0-beta.md](RELEASE_NOTES_v1.0.0-beta.md)): the
+file previously existed untracked but un-ignored, meaning a routine
 `git add -A` would have committed a real access token into git history.
+The Firebase service account key follows the same never-commit rule but
+lives at its own git-ignored path, `api/Firebase/serviceAccount.json` —
+see [Firebase Setup](FIREBASE_SETUP.md).
 
 **Never** put a real secret in `appsettings.json` (tracked) — only in
 environment variables (Render dashboard) or the git-ignored

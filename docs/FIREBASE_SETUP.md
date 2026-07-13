@@ -17,9 +17,10 @@ configuring both applications to use it.
    This gives you the public web config (`apiKey`, `authDomain`, etc.)
    used by `web/`.
 4. Generate a **service account key** (Project Settings → Service
-   Accounts → Generate new private key). This gives `api/` a
-   `project_id`/`client_email`/`private_key` triple to connect to
-   Firestore server-side.
+   Accounts → Generate new private key). This gives `api/` the JSON key
+   file `FirebaseService` uses to connect to Firestore server-side —
+   locally as a file, in production as an environment variable (see
+   [Environment Variables](#environment-variables) below).
 
 ## Authentication
 
@@ -174,19 +175,48 @@ appear in the repo today.
 
 ### `api/`
 
-| Variable | Section | Purpose |
-| --- | --- | --- |
-| `Firebase__ProjectId` | `Firebase:ProjectId` | Service account project ID |
-| `Firebase__ClientEmail` | `Firebase:ClientEmail` | Service account client email |
-| `Firebase__PrivateKey` | `Firebase:PrivateKey` | Service account private key — **secret** |
+`FirebaseService` reads everything through the standard Options pattern —
+`IOptions<FirebaseOptions>` — not `ASPNETCORE_ENVIRONMENT`, and not a
+direct environment variable read. There's no `Firebase:ProjectId`/
+`ClientEmail`/`PrivateKey` to set anymore:
 
-These three build the in-memory service-account credential
-`FirebaseService.BuildFirestoreDb()` uses to connect
-`CampaignDeliveryWorker` to Firestore. `api/appsettings.json` ships with
-all three empty; real values go in environment variables (Render
-dashboard) or, for local dev, `api/appsettings.Development.json` — which
-is **git-ignored specifically because it's expected to hold real local
-credentials**.
+| `FirebaseOptions` property | Source | Purpose |
+| --- | --- | --- |
+| `ServiceAccountJson` | `FIREBASE_SERVICE_ACCOUNT_JSON` environment variable, merged in by `AddApplicationOptions` (see below) | Production — the service account key's full JSON contents |
+| `ServiceAccountPath` | `Firebase:ServiceAccountPath` in `appsettings.json` (defaults to `Firebase/serviceAccount.json`, relative to `api/`'s content root) | Local development — a file on disk |
+
+`ServiceAccountJson` takes priority whenever it's set; `ServiceAccountPath`
+is only used as a fallback. This is why local dev works with nothing but
+the file in place (no environment variable set, so it falls through to
+the path), while Render works with nothing but the environment variable
+set (present, so it's used directly — no file needed in the container).
+Nothing about this decision checks `ASPNETCORE_ENVIRONMENT` — it's purely
+"is `ServiceAccountJson` populated or not."
+
+**Why `FIREBASE_SERVICE_ACCOUNT_JSON` needs a small merge step**: ASP.NET
+Core's environment-variables configuration provider only nests a variable
+under a section when it uses the `Section__Key` double-underscore
+convention (e.g. `Firebase__ServiceAccountPath` → `Firebase:ServiceAccountPath`).
+`FIREBASE_SERVICE_ACCOUNT_JSON` doesn't follow that shape, so it can't
+bind into `FirebaseOptions.ServiceAccountJson` automatically from
+`configuration.GetSection("Firebase")` alone.
+`ServiceCollectionExtensions.AddApplicationOptions` handles this with the
+smallest possible amount of extra code: inside the `Configure<FirebaseOptions>`
+delegate, after binding the "Firebase" section normally, it reads
+`configuration["FIREBASE_SERVICE_ACCOUNT_JSON"]` (the configuration
+indexer — backed by the environment-variables provider ASP.NET Core
+registers by default, never a direct `Environment.GetEnvironmentVariable()`
+call) and assigns it onto the options object if present. `FirebaseService`
+itself only ever depends on `IOptions<FirebaseOptions>`, exactly like
+every other service in this app — and delegates the actual credential
+resolution to `FirebaseCredentialProvider`, an internal helper that keeps
+`FirebaseService` focused purely on building the `FirestoreDb` client.
+
+Both sources build the same `ServiceAccountCredential` that
+`FirebaseCredentialProvider.GetCredential()` returns; the project ID is
+read directly from the credential, not from separate config.
+`api/Firebase/serviceAccount.json` is **git-ignored specifically because
+it holds a real credential** — never commit it.
 
 ## Local Development
 
@@ -202,8 +232,10 @@ repo. Writes made while developing locally land in the real database.
 cd api && dotnet restore && dotnet run
 ```
 
-Without valid `Firebase:*` credentials, `CampaignDeliveryWorker` logs a
-retryable error every poll tick but the API still starts and serves
+Without a service account key file at `api/Firebase/serviceAccount.json`,
+`CampaignDeliveryWorker` logs a retryable
+`InvalidOperationException: Firebase service account file was not found.`
+error every poll tick but the API still starts and serves
 `/health`/`/api/v1/health` normally — see
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md#worker-not-running).
 
@@ -211,8 +243,9 @@ retryable error every poll tick but the API still starts and serves
 
 - Deploy rules with `firebase deploy --only firestore:rules,storage:rules`
   from the repo root whenever `firestore.rules`/`storage.rules` change.
-- Set `Firebase:*` as real environment variables on Render (never in a
-  committed `appsettings.json`).
+- Set `FIREBASE_SERVICE_ACCOUNT_JSON` as a real environment variable on
+  Render — the service account key file's full JSON contents, pasted in
+  directly (never a file path, and never in a committed `appsettings.json`).
 - Keep the admin email in sync across `web/`'s `AdminAuthService`,
   `firestore.rules`, and `storage.rules` — see
   [Authentication](#authentication) above.

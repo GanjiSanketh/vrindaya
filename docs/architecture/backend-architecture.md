@@ -119,7 +119,7 @@ and [Roadmap](../roadmap/roadmap.md) for when this is expected to happen.
 Five strongly typed classes, bound from `appsettings.*.json` and
 overridable by environment variables:
 
-- `FirebaseOptions` (`Firebase:*`) — service-account credentials, consumed by `FirebaseService`
+- `FirebaseOptions` (`Firebase:*`) — `ServiceAccountPath` (local dev file path) and `ServiceAccountJson` (production, merged in from `FIREBASE_SERVICE_ACCOUNT_JSON` by `AddApplicationOptions`, since that variable doesn't follow the usual double-underscore naming), resolved into an actual credential by `FirebaseCredentialProvider` (an internal helper — see below) and consumed by `FirebaseService`
 - `WhatsAppOptions` (`WhatsApp:*`) — Meta Cloud API credentials, consumed by `MetaWhatsAppProvider`/`WhatsAppService`
 - `CampaignDeliveryOptions` (`CampaignDelivery:*`) — `BatchSize`/`PollingIntervalSeconds`, consumed by `CampaignDeliveryWorker`
 - `JwtOptions` (`Jwt:*`) — not consumed by anything yet
@@ -175,9 +175,12 @@ Every piece of this architecture has been exercised, not just written:
 - `CampaignDeliveryWorker` confirmed to start (`CampaignDeliveryWorker
   started. PollingIntervalSeconds: 5, BatchSize: 20` logged with the
   correct default config values), and to fail a poll cycle *gracefully*
-  when `Firebase:*` is empty — logging an error and retrying on the next
-  tick — without crashing the app or affecting `/health`/`/api/v1/health`,
-  which kept responding normally throughout.
+  when no Firebase service account credential is available (neither
+  `ServiceAccountJson` nor `ServiceAccountPath` resolves to a valid
+  credential — this check never looks at `ASPNETCORE_ENVIRONMENT`) —
+  logging an error and retrying on the next tick — without
+  crashing the app or affecting `/health`/`/api/v1/health`, which kept
+  responding normally throughout.
 
 See [API Conventions](../api/api-conventions.md) for the contract this
 architecture is meant to guarantee for any client.

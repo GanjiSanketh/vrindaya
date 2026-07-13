@@ -39,9 +39,7 @@ e.g.:
 ```
 ASPNETCORE_ENVIRONMENT=Production
 Cors__AllowedOrigins__0=https://vrindaya.vercel.app
-Firebase__ProjectId=vrindaya-ad7b0
-Firebase__ClientEmail=<service-account-client-email>
-Firebase__PrivateKey=<service-account-private-key>
+FIREBASE_SERVICE_ACCOUNT_JSON=<paste the entire service account key JSON file's contents as one value>
 WhatsApp__AccessToken=<...>
 WhatsApp__PhoneNumberId=<...>
 WhatsApp__BusinessAccountId=<...>
@@ -49,18 +47,30 @@ WhatsApp__VerifyToken=<...>
 Jwt__SecretKey=<...>
 ```
 
-**`Firebase:*` and `WhatsApp:*` are both required for this app to actually
-do anything**, not placeholders: `CampaignDeliveryWorker` (a
-`BackgroundService` that starts with the app — see
+`FIREBASE_SERVICE_ACCOUNT_JSON` doesn't follow the usual `Firebase__Key`
+double-underscore convention — there's no corresponding `appsettings.json`
+key. `ServiceCollectionExtensions.AddApplicationOptions` merges it into
+`FirebaseOptions.ServiceAccountJson` through the standard configuration
+pipeline (read via the configuration indexer — never a direct
+`Environment.GetEnvironmentVariable()` call in application code), and it
+takes priority over the local file path whenever it's set. Paste the
+downloaded service
+account key file's raw JSON contents as the value (Render's environment
+variable editor accepts multi-line values).
+
+**`FIREBASE_SERVICE_ACCOUNT_JSON` and `WhatsApp:*` are both required for
+this app to actually do anything**, not placeholders: `CampaignDeliveryWorker`
+(a `BackgroundService` that starts with the app — see
 [Campaign Module](../marketing/campaign-module.md#background-delivery-worker))
-connects to Firestore using the `Firebase:*` service-account fields and
-sends real WhatsApp messages via Meta using `WhatsApp:*`. Without a valid
-`Firebase:PrivateKey`, the worker will log a `CampaignDeliveryWorker poll
-cycle failed unexpectedly` error every `PollingIntervalSeconds` — the app
-still starts and serves HTTP requests fine, but no campaign will ever
-actually send. `Jwt:*` remains genuinely unused, reserved until
-`TokenValidationMiddleware` is implemented — see
-[Roadmap](../roadmap/roadmap.md).
+connects to Firestore using the service account credential and sends real
+WhatsApp messages via Meta using `WhatsApp:*`. Without a valid
+`FIREBASE_SERVICE_ACCOUNT_JSON`, the worker will log a
+`CampaignDeliveryWorker poll cycle failed unexpectedly` error every
+`PollingIntervalSeconds` (with an `InvalidOperationException` saying the
+variable is missing or the JSON is invalid) — the app still starts and
+serves HTTP requests fine, but no campaign will ever actually send.
+`Jwt:*` remains genuinely unused, reserved until `TokenValidationMiddleware`
+is implemented — see [Roadmap](../roadmap/roadmap.md).
 
 ## Health check
 

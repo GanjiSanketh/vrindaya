@@ -41,9 +41,8 @@ automatically in any environment; no extra code is needed to support it.
 | JSON path | Environment variable | Bound to | Consumed by |
 | --- | --- | --- | --- |
 | `Cors:AllowedOrigins` | `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, ... | `CorsOptions` | `AddCorsPolicy()` — see [API Conventions](../api/api-conventions.md#cors) |
-| `Firebase:ProjectId` | `Firebase__ProjectId` | `FirebaseOptions` | `FirebaseService.GetFirestoreDb()` — builds the `FirestoreDb` client `CampaignDeliveryWorker` uses. `TokenValidationMiddleware` doesn't use it yet. |
-| `Firebase:ClientEmail` | `Firebase__ClientEmail` | `FirebaseOptions` | Same — Firebase Admin SDK service-account email, part of the in-memory credential `FirebaseService` builds |
-| `Firebase:PrivateKey` | `Firebase__PrivateKey` | `FirebaseOptions` | Same — Firebase Admin SDK service-account private key. **Never commit a real value.** |
+| `Firebase:ServiceAccountPath` | `Firebase__ServiceAccountPath` | `FirebaseOptions` | Local dev — file path (relative to `api/`'s content root), defaults to `Firebase/serviceAccount.json` in `appsettings.json`. Ignored whenever `ServiceAccountJson` is set. |
+| `Firebase:ServiceAccountJson` | `FIREBASE_SERVICE_ACCOUNT_JSON` (note: **not** `Firebase__ServiceAccountJson` — see below) | `FirebaseOptions` | Production — the service account key's full JSON contents. Takes priority over `ServiceAccountPath` whenever set. **Never commit a real value.** |
 | `WhatsApp:AccessToken` | `WhatsApp__AccessToken` | `WhatsAppOptions` | `MetaWhatsAppProvider` — Bearer token on every Graph API call. **Never commit a real value.** |
 | `WhatsApp:PhoneNumberId` | `WhatsApp__PhoneNumberId` | `WhatsAppOptions` | `MetaWhatsAppProvider` — the sending number, and `WhatsAppService.GetHealthStatus()` |
 | `WhatsApp:BusinessAccountId` | `WhatsApp__BusinessAccountId` | `WhatsAppOptions` | Not consumed by any request path yet — reserved for future WABA-level operations (e.g. template management via the Graph API) |
@@ -58,11 +57,22 @@ automatically in any environment; no extra code is needed to support it.
 | `Serilog:MinimumLevel:Default` | `Serilog__MinimumLevel__Default` | Serilog config (not a custom Options class — Serilog reads its own section directly) | Controls verbosity; `Information` in `appsettings.json`, `Debug` in `appsettings.Development.json` |
 | `ASPNETCORE_ENVIRONMENT` | (itself, no JSON equivalent) | ASP.NET Core's built-in hosting env | Gates Swagger (dev-only) and selects which `appsettings.*.json` overlay loads |
 
-**`Firebase:*` and `WhatsApp:*` are both genuinely live now** —
-`CampaignDeliveryWorker` builds a real `FirestoreDb` client from the
-former and calls the real Meta Graph API via the latter. Only `Jwt:*`
-remains fully unconsumed, reserved for when `TokenValidationMiddleware`
-is implemented (see [Roadmap](../roadmap/roadmap.md)).
+**`FIREBASE_SERVICE_ACCOUNT_JSON` is the one variable in this table that
+doesn't follow the double-underscore convention** — Render sets it as a
+flat name, not `Firebase__ServiceAccountJson`. `ServiceCollectionExtensions.AddApplicationOptions`
+reads it via the configuration indexer (`configuration["FIREBASE_SERVICE_ACCOUNT_JSON"]`)
+and assigns it onto `FirebaseOptions.ServiceAccountJson` directly inside
+the `Configure<FirebaseOptions>` delegate — still entirely through
+`IConfiguration`, never a direct `Environment.GetEnvironmentVariable()`
+call in application code. From `FirebaseOptions`' perspective it's
+indistinguishable from any other
+bound value.
+
+**Firebase credentials and `WhatsApp:*` are both genuinely live now** —
+`CampaignDeliveryWorker` builds a real `FirestoreDb` client from
+`FirebaseOptions` and calls the real Meta Graph API via `WhatsApp:*`. Only
+`Jwt:*` remains fully unconsumed, reserved for when `TokenValidationMiddleware` is
+implemented (see [Roadmap](../roadmap/roadmap.md)).
 
 ## What must stay in sync manually
 

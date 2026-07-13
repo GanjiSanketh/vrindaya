@@ -35,6 +35,7 @@ api/**/publish/
 # must never enter git. See docs/setup/environment-variables.md.
 api/appsettings.Development.json
 api/appsettings.*.local.json
+api/Firebase/serviceAccount.json
 
 # ── Generic, repo-wide (belt-and-suspenders alongside the web/api-scoped
 # entries above — catches anything outside those two folders too) ───────────

@@ -191,9 +191,9 @@ dotnet run               # http://localhost:5000, https://localhost:5001
 
 `CampaignDeliveryWorker` starts automatically with the app and polls
 Firestore every 5 seconds by default (see
-[Environment Variables](#environment-variables)). Without valid
-`Firebase:*` credentials it logs a retryable error each tick but does not
-crash the app or affect the HTTP endpoints.
+[Environment Variables](#environment-variables)). Without a valid Firebase
+service account credential it logs a retryable error each tick but does
+not crash the app or affect the HTTP endpoints.
 
 ## Firebase Setup
 
@@ -208,10 +208,18 @@ crash the app or affect the HTTP endpoints.
    (`apiKey`, `authDomain`, etc. — safe to commit; Firebase's security
    model relies on Security Rules, not key secrecy).
 4. For `api/`, generate a **service account key** (Project Settings →
-   Service Accounts → Generate new private key) and set `Firebase:ProjectId`,
-   `Firebase:ClientEmail`, `Firebase:PrivateKey` (see
-   [Environment Variables](#environment-variables)) — this is what
-   `CampaignDeliveryWorker` uses to connect to Firestore server-side.
+   Service Accounts → Generate new private key):
+   - **Local dev**: save it as `api/Firebase/serviceAccount.json`
+     (git-ignored). No further config needed —
+     `Firebase:ServiceAccountPath` in `appsettings.json` already defaults
+     to that path.
+   - **Production**: set the key's full JSON contents as the
+     `FIREBASE_SERVICE_ACCOUNT_JSON` environment variable instead (see
+     [Environment Variables](#environment-variables)) — no file needed;
+     it's automatically mapped into configuration and takes priority over
+     the file path whenever it's set.
+   - This is what `CampaignDeliveryWorker` uses to connect to Firestore
+     server-side.
 5. Update `AdminAuthService.ADMIN_EMAIL` (`web/`) and the matching
    `isAdminUser()` literal in `firestore.rules`/`storage.rules` to your
    own admin account — these three must stay in sync manually (see
@@ -257,7 +265,7 @@ convention (these override the matching JSON section automatically).
 
 | Section | Variables | Consumed by |
 | --- | --- | --- |
-| Firebase | `Firebase__ProjectId`, `Firebase__ClientEmail`, `Firebase__PrivateKey` | `FirebaseService` → `CampaignDeliveryWorker` |
+| Firebase | `FIREBASE_SERVICE_ACCOUNT_JSON` (production; the service account key's full JSON) or `Firebase__ServiceAccountPath` (optional, local dev only — see [Firebase Setup](#firebase-setup)) | `FirebaseService` → `CampaignDeliveryWorker` |
 | WhatsApp | `WhatsApp__AccessToken`, `WhatsApp__PhoneNumberId`, `WhatsApp__BusinessAccountId`, `WhatsApp__VerifyToken`, `WhatsApp__ApiVersion` | `MetaWhatsAppProvider`, `WhatsAppService` |
 | CampaignDelivery | `CampaignDelivery__BatchSize` (default 20), `CampaignDelivery__PollingIntervalSeconds` (default 5) | `CampaignDeliveryWorker` |
 | Cors | `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, ... | `AddCorsPolicy()` |

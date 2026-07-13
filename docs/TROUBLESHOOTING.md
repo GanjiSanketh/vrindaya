@@ -110,9 +110,10 @@ Symptom: a campaign shows `READY_TO_SEND` or its execution shows
 1. **Is `CampaignDeliveryWorker` actually running?** See
    [Worker Not Running](#worker-not-running) below — if the API process
    itself isn't up, nothing processes the queue.
-2. **Check `Firebase:*` credentials** — if the worker can't connect to
-   Firestore, it logs a retryable error every poll tick and never claims
-   any execution. See the API's logs for
+2. **Check the Firebase service account credential** (`api/Firebase/serviceAccount.json`
+   locally, `FIREBASE_SERVICE_ACCOUNT_JSON` in production) — if the worker
+   can't connect to Firestore, it logs a retryable error every poll tick
+   and never claims any execution. See the API's logs for
    `CampaignDeliveryWorker poll cycle failed unexpectedly`.
 3. **Check the execution's status directly in Firestore** — if it's
    still `QUEUED` (never claimed), the worker hasn't ticked yet, or isn't
@@ -138,13 +139,30 @@ ticks.
    missing (e.g. from a bad merge), the worker never starts — this
    would be a code regression, not a config issue.
 2. If it starts but every tick logs
-   `CampaignDeliveryWorker poll cycle failed unexpectedly` with
-   `JSON data does not represent a valid service account credential` —
-   `Firebase:PrivateKey`/`ClientEmail`/`ProjectId` are missing or
-   malformed. This is expected behavior with empty/placeholder Firebase
-   credentials (e.g. a fresh clone before setup) — the API still starts
-   and serves HTTP requests normally; only the worker's Firestore calls
-   fail, and it retries every `CampaignDelivery:PollingIntervalSeconds`.
+   `CampaignDeliveryWorker poll cycle failed unexpectedly` with:
+   - `InvalidOperationException: Firebase credentials have not been
+     configured.` — neither `Firebase:ServiceAccountPath` nor
+     `FIREBASE_SERVICE_ACCOUNT_JSON` resolved to a value at all. Expected
+     on a fresh local clone before setup, or if someone explicitly
+     overrides `Firebase:ServiceAccountPath` to empty — see
+     [Firebase Setup](FIREBASE_SETUP.md).
+   - `InvalidOperationException: Firebase service account file was not
+     found. Expected it at '<path>'.` — `Firebase:ServiceAccountPath` is
+     set (it defaults to `api/Firebase/serviceAccount.json`), but no file
+     exists there and `FIREBASE_SERVICE_ACCOUNT_JSON` isn't set either.
+     Most common case for a fresh local clone.
+   - `InvalidOperationException: Invalid Firebase service account JSON.`
+     — a value was found (file or `FIREBASE_SERVICE_ACCOUNT_JSON`) but its
+     contents aren't valid service account key JSON.
+
+   Note none of this depends on `ASPNETCORE_ENVIRONMENT` — which message
+   you get is decided purely by which of `ServiceAccountJson`/
+   `ServiceAccountPath` is populated and whether the file/JSON it points
+   to is actually valid, not by which environment the app thinks it's
+   running in. This is expected behavior with a fresh clone before setup
+   — the API still starts and serves HTTP requests normally; only the
+   worker's Firestore calls fail, and it retries every
+   `CampaignDelivery:PollingIntervalSeconds`.
 3. If credentials are valid but nothing happens, confirm there's
    actually a `QUEUED`/`IN_PROGRESS` execution in Firestore to find —
    the worker does nothing if there's no work.
