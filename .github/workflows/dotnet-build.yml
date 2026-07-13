@@ -1,0 +1,64 @@
+name: .NET Build
+
+# Build-verification workflow for api/. Runs dotnet restore + build always;
+# runs dotnet test only if a test project actually exists in the repo, so
+# this doesn't fail merely because no test suite has been added yet
+# (see docs/RELEASE_NOTES_v1.0.0-beta.md#known-limitations).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - '.github/workflows/dotnet-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - '.github/workflows/dotnet-build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: dotnet-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build .NET API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Check for test projects
+        id: find-tests
+        shell: bash
+        run: |
+          if find . -iname "*.Tests.csproj" -o -iname "*.Test.csproj" | grep -q .; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run tests
+        if: steps.find-tests.outputs.found == 'true'
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: No test projects found
+        if: steps.find-tests.outputs.found == 'false'
+        run: echo "No .NET test projects found under api/ — skipping dotnet test. See docs/DEVELOPMENT_GUIDELINES.md."

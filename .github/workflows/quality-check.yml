@@ -1,0 +1,62 @@
+name: Quality Check
+
+# Repository hygiene checks, independent of the build/test workflows:
+# no leftover TODO markers in production code, no obviously hardcoded
+# secrets, and the baseline repo files (README, LICENSE) are present.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  quality:
+    name: Repository Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: No TODO / FIXME markers in production code
+        shell: bash
+        run: |
+          echo "Scanning web/src/app and api/ for TODO/FIXME/HACK markers..."
+          MATCHES=$(grep -rnE "(TODO|FIXME|HACK:)" \
+            --include="*.ts" --include="*.html" --include="*.cs" \
+            web/src/app api \
+            2>/dev/null || true)
+          if [ -n "$MATCHES" ]; then
+            echo "$MATCHES"
+            echo "::error::Found TODO/FIXME/HACK markers in production code. Resolve or track them as GitHub issues instead."
+            exit 1
+          fi
+          echo "No TODO/FIXME/HACK markers found."
+
+      - name: No hardcoded secrets
+        shell: bash
+        run: |
+          echo "Scanning for obviously hardcoded secrets..."
+          # web/src/environments/*.ts intentionally contains a PUBLIC
+          # Firebase web config (apiKey, etc.) — Firebase's security model
+          # relies on Security Rules, not key secrecy. See docs/SECURITY.md.
+          # It is deliberately excluded from this scan.
+          MATCHES=$(grep -rniE "(access[_-]?token|private[_-]?key|client[_-]?secret|password)\s*[:=]\s*['\"][a-zA-Z0-9_\-]{15,}['\"]" \
+            --include="*.ts" --include="*.cs" --include="*.json" \
+            --exclude-dir=node_modules --exclude-dir=bin --exclude-dir=obj --exclude-dir=dist \
+            web api 2>/dev/null \
+            | grep -v "web/src/environments/environment" || true)
+          if [ -n "$MATCHES" ]; then
+            echo "$MATCHES"
+            echo "::error::Potential hardcoded secret found. Use environment variables instead — see docs/SECURITY.md#secrets."
+            exit 1
+          fi
+          echo "No hardcoded secrets found."
+
+      - name: README exists
+        run: test -f README.md || (echo "::error::README.md is missing from the repository root." && exit 1)
+
+      - name: LICENSE exists
+        run: test -f LICENSE || (echo "::error::LICENSE is missing from the repository root." && exit 1)

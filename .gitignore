@@ -1,15 +1,55 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+#
+# Monorepo layout:
+#   /web  — Angular 21 application
+#   /api  — ASP.NET Core Web API
 
-# Compiled output
-/dist
+# ── web/ (Angular) ──────────────────────────────────────────────────────────
+web/dist
 /tmp
-/out-tsc
+web/out-tsc
 /bazel-out
-
-# Node
-/node_modules
+web/.angular/cache
+web/node_modules
 npm-debug.log
 yarn-error.log
+.sass-cache/
+/connect.lock
+web/coverage
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+web/.vercel
+
+# ── api/ (.NET) ──────────────────────────────────────────────────────────────
+api/bin/
+api/obj/
+api/**/bin/
+api/**/obj/
+api/**/publish/
+*.user
+.vs/
+
+# Local-only secrets — real Meta/Firebase credentials during development
+# must never enter git. See docs/setup/environment-variables.md.
+api/appsettings.Development.json
+api/appsettings.*.local.json
+
+# ── Generic, repo-wide (belt-and-suspenders alongside the web/api-scoped
+# entries above — catches anything outside those two folders too) ───────────
+node_modules/
+bin/
+obj/
+publish/
+dist/
+coverage/
+*.local.json
+logs/
+*.log
+.env
+.env.*
+!.env.example
 
 # IDEs and editors
 .idea/
@@ -27,16 +67,6 @@ yarn-error.log
 !.vscode/launch.json
 !.vscode/extensions.json
 .history/*
-
-# Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
-__screenshots__/
 
 # System files
 .DS_Store

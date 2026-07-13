@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    /**
+     * Vrindaya currently authorizes a single hardcoded admin email
+     * (see AdminAuthService.ADMIN_EMAIL in the app, and the matching
+     * isAdminUser() helper in firestore.rules). Keep this literal in sync
+     * until the app migrates to the Firestore-backed admin-users directory.
+     */
+    function isAdminUser() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() == 'gsanketh7121@gmail.com';
+    }
+
+    /**
+     * Campaign images — uploaded by an admin when composing a campaign.
+     * Public read: the image URL is embedded directly in outbound WhatsApp
+     * messages, so it must be fetchable without auth once a campaign sends.
+     * Write is admin-only and capped to prevent oversized uploads.
+     */
+    match /campaign-images/{fileName} {
+      allow read: if true;
+      allow write: if isAdminUser()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    /**
+     * Campaign videos — same public-read/admin-write shape as
+     * campaign-images, capped at WhatsApp Cloud API's own 16MB video limit
+     * and restricted to the video formats Meta's API accepts.
+     */
+    match /campaign-videos/{fileName} {
+      allow read: if true;
+      allow write: if isAdminUser()
+        && request.resource.size < 16 * 1024 * 1024
+        && request.resource.contentType.matches('video/.*');
+    }
+
+    /**
+     * Campaign documents — PDF only (this app's only supported document
+     * media type), capped at WhatsApp Cloud API's own 100MB document limit.
+     */
+    match /campaign-documents/{fileName} {
+      allow read: if true;
+      allow write: if isAdminUser()
+        && request.resource.size < 100 * 1024 * 1024
+        && request.resource.contentType == 'application/pdf';
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,55 @@
+name: Angular Build
+
+# Focused build-verification workflow for web/ — distinct from ci.yml's
+# Quality Gate (lint + test + SonarCloud + Vercel deploy). This one only
+# confirms `npm install` + `npm run build` succeed, and runs on any push
+# or PR that touches web/ (or this workflow file itself).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/angular-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/angular-build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: angular-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Angular App
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build (production)
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+          retention-days: 7

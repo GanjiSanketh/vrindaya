@@ -1,0 +1,38 @@
+All Rights Reserved
+
+Copyright © Vrindaya. All rights reserved.
+
+This repository and its contents — including all source code, scripts,
+configuration, documentation, designs, and assets contained within it
+(the "Software") — are the proprietary and confidential property of
+Vrindaya and its owner(s).
+
+This is NOT open source software, and no license is granted to any
+person or entity except as explicitly stated in a separate, signed
+written agreement with the copyright holder.
+
+Without limiting the foregoing, no part of this Software may be:
+
+- copied, reproduced, or duplicated, in whole or in part, in any form;
+- redistributed, published, sublicensed, or made available to any third
+  party;
+- modified, adapted, or used to create derivative works;
+- used for any commercial purpose; or
+- sold, rented, leased, or otherwise commercially exploited,
+
+in each case without the prior express written permission of the
+copyright holder.
+
+Access to this repository (e.g. as a collaborator, contractor, or
+reviewer) does not, by itself, grant any of the rights described above.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For licensing inquiries, contact the repository owner — see
+[CODEOWNERS](.github/CODEOWNERS).

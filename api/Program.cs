@@ -1,0 +1,55 @@
+using Serilog;
+using Vrindaya.Api.Constants;
+using Vrindaya.Api.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ── Logging ──────────────────────────────────────────────────────────────────
+// Serilog replaces the default provider entirely and reads its configuration
+// from appsettings.*.json ("Serilog" section), so log levels and sinks are
+// environment-specific without touching this file.
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
+
+// ── Configuration (strongly typed Options) ────────────────────────────────────
+builder.Services.AddApplicationOptions(builder.Configuration);
+
+// ── Application services (DI composition root) ───────────────────────────────
+builder.Services.AddApplicationServices();
+
+// ── External API integrations (typed HttpClient via IHttpClientFactory) ──────
+builder.Services.AddWhatsAppIntegration();
+
+// ── Background workers ────────────────────────────────────────────────────────
+builder.Services.AddCampaignDeliveryWorker();
+
+// ── Cross-cutting infrastructure ──────────────────────────────────────────────
+builder.Services.AddCorsPolicy(builder.Configuration);
+builder.Services.AddApiVersioningSupport();
+builder.Services.AddHealthChecks();
+
+// ── MVC + API documentation ───────────────────────────────────────────────────
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerDocumentation();
+
+var app = builder.Build();
+
+// ── Request pipeline ──────────────────────────────────────────────────────────
+// Order matters: exception handling wraps everything, request logging comes
+// next so it captures the true outcome, then Swagger/CORS/auth/routing.
+app.UseGlobalExceptionHandling();
+app.UseSerilogRequestLogging();
+
+app.UseSwaggerInDevelopment();
+
+app.UseHttpsRedirection();
+app.UseCors(AppConstants.CorsPolicyName);
+
+app.UseTokenValidation();
+app.UseAuthorization();
+
+app.MapControllers();
+app.MapHealthChecks("/health");
+
+app.Run();

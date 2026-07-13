@@ -80,6 +80,53 @@ service cloud.firestore {
     }
 
     /* ══════════════════════════════════════════════════════════════
+       campaigns/{campaignId}
+       campaignTemplates/{templateId}
+       whatsappSettings/{docId}
+       campaignQueue/{itemId}
+       testMessages/{messageId}
+       campaignExecutions/{executionId}
+       campaignRecipients/{recipientId}
+       Purely internal admin data — no public surface at all, unlike
+       marketingSubscribers. Fully admin-gated.
+       ══════════════════════════════════════════════════════════════ */
+    match /campaigns/{campaignId} {
+      allow read, write: if isAdminUser();
+    }
+
+    match /campaignTemplates/{templateId} {
+      allow read, write: if isAdminUser();
+    }
+
+    match /whatsappSettings/{docId} {
+      allow read, write: if isAdminUser();
+    }
+
+    match /campaignQueue/{itemId} {
+      allow read, write: if isAdminUser();
+    }
+
+    match /testMessages/{messageId} {
+      allow read, write: if isAdminUser();
+    }
+
+    // One execution record per "Send Campaign" click — tracking only in
+    // this phase (see CampaignExecutionService.createExecution). A future
+    // batch-sending worker (next phase) will update processedRecipients/
+    // successfulRecipients/failedRecipients/status on the same document.
+    match /campaignExecutions/{executionId} {
+      allow read, write: if isAdminUser();
+    }
+
+    // One document per subscriber snapshotted into a given execution (see
+    // CampaignRecipientService.createRecipientsForExecution). A future
+    // batch-sending worker (next phase) will update status/messageId/
+    // attempts/errorMessage/*At fields on these same documents.
+    match /campaignRecipients/{recipientId} {
+      allow read, write: if isAdminUser();
+    }
+
+    /* ══════════════════════════════════════════════════════════════
        Everything else is untouched by this change and stays locked
        down, matching the project's existing "deny by default" policy.
        ══════════════════════════════════════════════════════════════ */

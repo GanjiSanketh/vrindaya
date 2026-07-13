@@ -1,0 +1,22 @@
+# Code Owners
+#
+# This file defines who is automatically requested for review when a pull
+# request touches a given path. See:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# ─────────────────────────────────────────────────────────────────────────
+# REPLACE @YOUR_GITHUB_USERNAME BELOW with the actual GitHub username (or
+# team, e.g. @vrindaya/backend) that should own the repository. The git
+# remote for this repo currently points at github.com/GanjiSanketh/vrindaya
+# — if that's you, replace the placeholder with @GanjiSanketh.
+# ─────────────────────────────────────────────────────────────────────────
+
+# Default owner for everything not matched more specifically below.
+* @YOUR_GITHUB_USERNAME
+
+# Uncomment and adjust once the team grows past one owner, e.g.:
+# /web/    @YOUR_GITHUB_USERNAME @frontend-teammate
+# /api/     @YOUR_GITHUB_USERNAME @backend-teammate
+# /docs/     @YOUR_GITHUB_USERNAME
+# firestore.rules  @YOUR_GITHUB_USERNAME
+# storage.rules     @YOUR_GITHUB_USERNAME
