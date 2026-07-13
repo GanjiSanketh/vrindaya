@@ -1,0 +1,86 @@
+.ws-page { max-width: 800px; }
+
+.ws-header { margin-bottom: 1.5rem; }
+
+.ws-title   { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.4rem; }
+.ws-welcome { font-size: 0.85rem; color: #6b7280; margin: 0; max-width: 560px; line-height: 1.6; }
+
+.ws-state { color: #6b7280; font-size: 0.85rem; }
+
+.ws-form {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e8ecf0;
+  padding: 1.75rem;
+}
+
+.ws-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.ws-field--full { grid-column: 1 / -1; }
+
+.ws-field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.ws-label { font-size: 0.78rem; font-weight: 600; color: #1a1a2e; }
+.ws-required { color: #d64545; }
+.ws-hint { font-size: 0.72rem; color: #9ca3af; }
+
+.form-control { border-radius: 8px; border-color: #e8ecf0; font-size: 0.88rem; }
+.form-control.invalid { border-color: #d64545; }
+
+.ws-token-wrap { position: relative; display: flex; }
+.ws-token-wrap input { padding-right: 2.5rem; }
+
+.ws-token-toggle {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.ws-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f0f4f7;
+}
+
+.ws-actions .btn-outline:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ws-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: wsSpin 0.7s linear infinite;
+  vertical-align: -2px;
+}
+
+@keyframes wsSpin { to { transform: rotate(360deg); } }
+
+.ws-updated {
+  margin: 1rem 0 0;
+  font-size: 0.72rem;
+  color: #9ca3af;
+}
+
+@media (max-width: 640px) {
+  .ws-grid { grid-template-columns: 1fr; }
+  .ws-actions { flex-direction: column; }
+  .ws-actions > * { width: 100%; justify-content: center; }
+}

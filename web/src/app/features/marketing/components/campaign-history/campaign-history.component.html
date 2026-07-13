@@ -1,0 +1,52 @@
+<div class="ch-page">
+
+  <div class="ch-header">
+    <div>
+      <h1 class="ch-title">Campaign History</h1>
+      <p class="ch-welcome">A record of every campaign that has been sent or cancelled.</p>
+    </div>
+    <a [routerLink]="BASE" class="ch-back"><i class="bi bi-arrow-left"></i> Back to Campaigns</a>
+  </div>
+
+  <div class="ch-section">
+    @if (svc.loading()) {
+      <p class="ch-state">Loading history...</p>
+    } @else if (svc.error()) {
+      <p class="ch-state ch-state--error">{{ svc.error() }}</p>
+    } @else if (historyCampaigns().length === 0) {
+      <p class="ch-state">No sent or cancelled campaigns yet.</p>
+    } @else {
+      <div class="ch-table-wrap">
+        <table class="ch-table">
+          <thead>
+            <tr>
+              <th>Campaign</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th class="d-none d-md-table-cell">Reach</th>
+              <th class="d-none d-sm-table-cell">Last Updated</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of historyCampaigns(); track c.id) {
+              <tr>
+                <td><span class="ch-name">{{ c.campaignName }}</span></td>
+                <td>{{ c.campaignType }}</td>
+                <td><span class="ch-badge ch-badge--{{ c.status.toLowerCase() }}">{{ c.status }}</span></td>
+                <td class="d-none d-md-table-cell">{{ c.subscriberCount }}</td>
+                <td class="d-none d-sm-table-cell">{{ formatDateTime(c.updatedAt) }}</td>
+                <td>
+                  <a [routerLink]="BASE + '/' + c.id" class="ch-view" title="View">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>

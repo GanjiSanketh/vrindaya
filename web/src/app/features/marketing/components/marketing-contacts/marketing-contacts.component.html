@@ -1,0 +1,64 @@
+<div class="mkc-page">
+
+  <div class="mkc-header">
+    <h1 class="mkc-title">Marketing Contacts</h1>
+    <p class="mkc-welcome">Manage VIP Club subscribers and bulk-import contacts for WhatsApp campaigns.</p>
+  </div>
+
+  <ul class="nav nav-tabs mkc-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button
+        type="button"
+        class="nav-link"
+        [class.active]="activeTab() === 'subscribers'"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'subscribers'"
+        (click)="selectTab('subscribers')"
+      >
+        <i class="bi bi-people"></i> Subscribers
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button
+        type="button"
+        class="nav-link"
+        [class.active]="activeTab() === 'bulk-import'"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'bulk-import'"
+        (click)="selectTab('bulk-import')"
+      >
+        <i class="bi bi-upload"></i> Bulk Import
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button
+        type="button"
+        class="nav-link"
+        [class.active]="activeTab() === 'history'"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'history'"
+        (click)="selectTab('history')"
+      >
+        <i class="bi bi-clock-history"></i> Import History
+      </button>
+    </li>
+  </ul>
+
+  <div class="mkc-tab-content">
+    @switch (activeTab()) {
+      @case ('subscribers') {
+        <app-marketing-dashboard />
+      }
+      @case ('bulk-import') {
+        <app-bulk-import />
+      }
+      @case ('history') {
+        <div class="mkc-placeholder">
+          <i class="bi bi-clock-history mkc-placeholder-icon"></i>
+          <p>Import History is coming soon — a record of every bulk import batch will appear here.</p>
+        </div>
+      }
+    }
+  </div>
+
+</div>

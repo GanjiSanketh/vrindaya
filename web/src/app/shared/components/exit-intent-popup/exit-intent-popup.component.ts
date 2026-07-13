@@ -1,0 +1,22 @@
+import { Component, inject } from '@angular/core';
+import { Router }              from '@angular/router';
+import { ExitIntentService }   from '../../../core/services/exit-intent.service';
+import { APP_ROUTES }          from '../../../core/constants/routes.constants';
+
+@Component({
+  selector: 'app-exit-intent-popup',
+  standalone: true,
+  templateUrl: './exit-intent-popup.component.html',
+  styleUrl:    './exit-intent-popup.component.css',
+})
+export class ExitIntentPopupComponent {
+  readonly svc   = inject(ExitIntentService);
+  private router = inject(Router);
+
+  goToNewArrivals(): void {
+    this.svc.dismiss();
+    this.router.navigate(['/', APP_ROUTES.NEW_ARRIVALS]);
+  }
+
+  dismiss(): void { this.svc.dismiss(); }
+}

@@ -1,0 +1,97 @@
+.nf-section {
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+  background: var(--cream, #ffffff);
+  text-align: center;
+}
+
+.nf-container {
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nf-lotus {
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+.nf-label {
+  font-family: var(--font-sans, 'DM Sans', sans-serif);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  color: var(--gold, #c9a54c);
+  margin-bottom: 0.5rem;
+}
+
+.nf-code {
+  font-family: var(--font-serif, 'Cormorant Garamond', serif);
+  font-size: clamp(6rem, 20vw, 9rem);
+  font-weight: 300;
+  line-height: 1;
+  color: var(--maroon, #0f6f84);
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.nf-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem auto 1.5rem;
+  width: 200px;
+}
+
+.nf-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--gold, #c9a54c);
+  opacity: 0.35;
+}
+
+.nf-ornament {
+  color: var(--gold, #c9a54c);
+  font-size: 0.65rem;
+}
+
+.nf-title {
+  font-family: var(--font-serif, 'Cormorant Garamond', serif);
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 500;
+  color: var(--text, #222222);
+  margin-bottom: 1rem;
+}
+
+.nf-desc {
+  font-family: var(--font-sans, 'DM Sans', sans-serif);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-muted, #666666);
+  margin-bottom: 2.25rem;
+}
+
+.nf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 2.25rem;
+  background: var(--maroon, #0f6f84);
+  color: #fff;
+  font-family: var(--font-sans, 'DM Sans', sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  border-radius: var(--r-sm, 6px);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.nf-btn:hover {
+  background: var(--maroon-dark, #0b5868);
+  transform: translateY(-1px);
+  color: #fff;
+}

@@ -1,0 +1,330 @@
+/* ═══════════════════════════════════════════════════════
+   VRINDAYA — Global Design System
+   Palette: White · Deep Wine Maroon · Soft Gold
+   Fonts:   Cormorant Garamond (serif) · DM Sans (sans)
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Core palette ── */
+  --cream:         #ffffff;
+  --cream-light:   #fafafa;
+  --cream-mid:     #f0f0f0;
+  --maroon:        #0f6f84;   /* Vrindaya brand teal */
+  --maroon-dark:   #0b5868;   /* deep teal */
+  --maroon-mid:    #4d95a5;   /* mid teal */
+  --maroon-light:  #e6f4f7;   /* very light teal tint */
+  --gold:          #c9a54c;
+  --gold-light:    #e8d5a3;
+  --gold-pale:     #faf5e8;
+  --white:         #ffffff;
+  --text:          #222222;
+  --text-muted:    #666666;
+  --text-light:    #999999;
+  --border:        #eaeaea;
+
+  /* ── Typography ── */
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans:  'DM Sans', system-ui, sans-serif;
+
+  /* ── Shadows (neutral, not maroon-tinted) ── */
+  --shadow-sm:   0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-md:   0 8px 30px rgba(0, 0, 0, 0.10);
+  --shadow-lg:   0 16px 48px rgba(0, 0, 0, 0.14);
+
+  /* ── Radii ── */
+  --r-sm:   6px;
+  --r-md:   12px;
+  --r-lg:   20px;
+  --r-pill: 50px;
+
+  --transition: all 0.3s ease;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: var(--font-sans);
+  background: #ffffff;
+  color: var(--text);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-serif);
+  color: var(--text);
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+img { max-width: 100%; display: block; }
+a   { text-decoration: none; color: inherit; }
+button { font-family: var(--font-sans); cursor: pointer; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #f9f9f9; }
+::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 3px; }
+
+/* ══════════════════════════════════════
+   SECTION UTILITIES
+   ══════════════════════════════════════ */
+.section-pad      { padding: 2.5rem 0; }   /* 40px × 2 = 80px between sections — desktop target */
+.section-pad-lg   { padding: 3rem 0; }
+.section-pad-sm   { padding: 1.5rem 0; }
+.container-vr     { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+
+/* ── Section Header Pattern (used across all sections) ── */
+.section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.section-label {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.section-script {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.section-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  margin: 0.875rem auto 1.25rem;
+}
+
+.section-rule::before,
+.section-rule::after {
+  content: '';
+  flex: 1;
+  max-width: 80px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.5;
+}
+
+.section-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.75;
+}
+
+/* Lotus SVG ornament (used inline) */
+.lotus-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-block;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 2rem;
+  background: var(--maroon);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background: var(--maroon-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(15, 111, 132, 0.28);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.8rem 1.75rem;
+  background: #fff;
+  color: var(--maroon);
+  border: 1.5px solid var(--maroon);
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-outline:hover {
+  background: var(--maroon);
+  color: #fff;
+}
+
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 2rem;
+  background: var(--gold);
+  color: var(--text);
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-gold:hover {
+  background: var(--gold-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(201, 162, 77, 0.4);
+}
+
+/* ══════════════════════════════════════
+   FLOATING BUTTONS
+   ══════════════════════════════════════ */
+.floating-btn {
+  position: fixed;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  font-size: 1.2rem;
+  z-index: 999;
+  transition: var(--transition);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+}
+
+.floating-btn:hover { transform: scale(1.1); }
+.instagram-btn { right: 1.5rem; bottom: 5.5rem; background: #e1306c; color: #fff; }
+.scroll-top-btn {
+  right: 1.5rem; bottom: 1.25rem;
+  background: var(--maroon); color: #fff;
+  opacity: 0; pointer-events: none; transform: scale(0.8);
+}
+.scroll-top-btn.visible { opacity: 1; pointer-events: all; transform: scale(1); }
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.fade-up { animation: fadeUp 0.7s ease both; }
+
+/* Scroll-reveal directive target */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+[data-reveal].revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ══════════════════════════════════════
+   VIEW TRANSITIONS — page cross-fade
+   ══════════════════════════════════════ */
+::view-transition-old(root) {
+  animation: vt-fade-out 200ms ease forwards;
+}
+::view-transition-new(root) {
+  animation: vt-fade-in 280ms ease forwards;
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Disable on prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
+}
+
+/* ══════════════════════════════════════
+   BOOTSTRAP OVERRIDES
+   ══════════════════════════════════════ */
+.container, .container-fluid { --bs-gutter-x: 1.5rem; }
+
+/* ── Tablet ── */
+@media (max-width: 1024px) {
+  .section-pad    { padding: 2rem 0; }     /* 32px × 2 = 64px between sections — tablet target */
+  .section-pad-lg { padding: 2.5rem 0; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .section-pad    { padding: 1.25rem 0; }  /* 20px × 2 = 40px between sections — mobile target */
+  .section-pad-lg { padding: 1.75rem 0; }
+  .container-vr   { padding: 0 1.25rem; }
+
+  /* Section header — prevent long titles from overflowing narrow screens.
+     clamp floor drops from 2rem to 1.5rem so titles like "Explore Collections"
+     (19 chars) stay within a 280px content area at 320px viewport. */
+  .section-title {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    overflow-wrap: break-word;
+  }
+  .section-header { margin-bottom: 1.5rem; }
+  .section-desc   { font-size: 0.875rem; }
+}

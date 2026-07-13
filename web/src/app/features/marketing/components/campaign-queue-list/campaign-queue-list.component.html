@@ -1,0 +1,74 @@
+<div class="cq-page">
+
+  <div class="cq-header">
+    <h1 class="cq-title">Campaign Queue</h1>
+    <p class="cq-welcome">Every queued message across all campaigns, ready for the WhatsApp send pipeline.</p>
+  </div>
+
+  <!-- Stat / filter chips -->
+  <div class="cq-chips">
+    <button type="button" class="cq-chip" [class.cq-chip--active]="filter() === 'ALL'" (click)="setFilter('ALL')">
+      All <span class="cq-chip-count">{{ svc.queueItems().length }}</span>
+    </button>
+    <button type="button" class="cq-chip" [class.cq-chip--active]="filter() === 'PENDING'" (click)="setFilter('PENDING')">
+      Pending <span class="cq-chip-count">{{ svc.pendingCount() }}</span>
+    </button>
+    <button type="button" class="cq-chip" [class.cq-chip--active]="filter() === 'PROCESSING'" (click)="setFilter('PROCESSING')">
+      Processing <span class="cq-chip-count">{{ svc.processingCount() }}</span>
+    </button>
+    <button type="button" class="cq-chip" [class.cq-chip--active]="filter() === 'SENT'" (click)="setFilter('SENT')">
+      Sent <span class="cq-chip-count">{{ svc.sentCount() }}</span>
+    </button>
+    <button type="button" class="cq-chip" [class.cq-chip--active]="filter() === 'DELIVERED'" (click)="setFilter('DELIVERED')">
+      Delivered <span class="cq-chip-count">{{ svc.deliveredCount() }}</span>
+    </button>
+    <button type="button" class="cq-chip" [class.cq-chip--active]="filter() === 'READ'" (click)="setFilter('READ')">
+      Read <span class="cq-chip-count">{{ svc.readCount() }}</span>
+    </button>
+    <button type="button" class="cq-chip cq-chip--failed" [class.cq-chip--active]="filter() === 'FAILED'" (click)="setFilter('FAILED')">
+      Failed <span class="cq-chip-count">{{ svc.failedCount() }}</span>
+    </button>
+  </div>
+
+  <div class="cq-section">
+    @if (svc.loading()) {
+      <p class="cq-state">Loading queue...</p>
+    } @else if (svc.error()) {
+      <p class="cq-state cq-state--error">{{ svc.error() }}</p>
+    } @else if (filteredItems().length === 0) {
+      <p class="cq-state">No queued messages{{ filter() === 'ALL' ? ' yet' : ' with this status' }}.</p>
+    } @else {
+      <div class="cq-table-wrap">
+        <table class="cq-table">
+          <thead>
+            <tr>
+              <th>Campaign</th>
+              <th>Recipient</th>
+              <th>Status</th>
+              <th class="d-none d-sm-table-cell">Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredItems(); track item.id) {
+              <tr>
+                <td><span class="cq-name">{{ item.campaignName }}</span></td>
+                <td>
+                  {{ item.mobileNumber }}
+                  @if (item.firstName) { <span class="cq-recipient-name">({{ item.firstName }})</span> }
+                </td>
+                <td>
+                  <span class="cq-badge cq-badge--{{ item.status.toLowerCase() }}">{{ item.status }}</span>
+                  @if (item.status === 'FAILED' && item.failureReason) {
+                    <span class="cq-failure-reason">{{ item.failureReason }}</span>
+                  }
+                </td>
+                <td class="d-none d-sm-table-cell">{{ formatDateTime(item.updatedAt) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>

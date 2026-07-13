@@ -1,0 +1,316 @@
+<div class="cf-page">
+
+  <div class="cf-header">
+    <h1 class="cf-title">{{ isEdit() ? 'Edit Campaign' : 'Create Campaign' }}</h1>
+    <a [routerLink]="BASE" class="cf-back"><i class="bi bi-arrow-left"></i> Back to Campaigns</a>
+  </div>
+
+  @if (loadingCampaign()) {
+    <p class="cf-state">Loading campaign...</p>
+  } @else {
+    <div class="cf-layout">
+
+      <form class="cf-form" [formGroup]="form">
+
+        <div class="cf-grid">
+
+          <!-- Campaign Name -->
+          <div class="cf-field cf-field--full">
+            <label for="cf-name" class="cf-label">Campaign Name <span class="cf-required">*</span></label>
+            <input id="cf-name" type="text" class="form-control" formControlName="campaignName"
+                   placeholder="e.g. Festival Collection Launch" [class.invalid]="isInvalid('campaignName')" />
+            @if (isInvalid('campaignName')) {
+              <span class="cf-error">Campaign name must be at least 3 characters.</span>
+            }
+          </div>
+
+          <!-- Campaign Type (channel) -->
+          <div class="cf-field">
+            <label for="cf-type" class="cf-label">Campaign Type <span class="cf-required">*</span></label>
+            <select id="cf-type" class="form-select" formControlName="campaignType">
+              @for (t of campaignTypes; track t) {
+                <option [value]="t" [disabled]="!activeCampaignTypes.includes(t)">
+                  {{ t }}{{ activeCampaignTypes.includes(t) ? '' : ' (coming soon)' }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <!-- Media Type -->
+          <div class="cf-field">
+            <label for="cf-mediaType" class="cf-label">Media Type <span class="cf-required">*</span></label>
+            <select id="cf-mediaType" class="form-select" formControlName="mediaType">
+              @for (t of mediaTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+            <span class="cf-hint">Controls which media upload appears below and what Execution actually sends.</span>
+          </div>
+
+          <!-- Audience -->
+          <div class="cf-field">
+            <label for="cf-audience" class="cf-label">Audience <span class="cf-required">*</span></label>
+            <select id="cf-audience" class="form-select" formControlName="audience">
+              <option value="ALL_ACTIVE_SUBSCRIBERS">All Active Subscribers</option>
+            </select>
+            @if (subscriberPreview() !== null) {
+              <span class="cf-hint">~{{ subscriberPreview() }} subscriber(s) will be reached</span>
+            }
+          </div>
+
+          <!-- Template picker -->
+          <div class="cf-field cf-field--full">
+            <label for="cf-template" class="cf-label">Campaign Template</label>
+            <select
+              id="cf-template"
+              class="form-select"
+              formControlName="templateId"
+              (change)="onTemplateChange($any($event.target).value)"
+            >
+              <option value="">Start from scratch…</option>
+              @for (t of templateSvc.templates(); track t.id) {
+                <option [value]="t.id">{{ t.name }}</option>
+              }
+            </select>
+            <span class="cf-hint">Choosing a template pre-fills the message below — you can still edit it freely.</span>
+          </div>
+
+          <!-- Message -->
+          <div class="cf-field cf-field--full">
+            <label for="cf-message" class="cf-label">Message <span class="cf-required">*</span></label>
+            <div class="cf-placeholders">
+              @for (p of placeholders; track p) {
+                <button type="button" class="cf-placeholder-btn" (click)="insertPlaceholder(p)">{{ p }}</button>
+              }
+            </div>
+            <textarea
+              id="cf-message"
+              #messageInput
+              class="form-control cf-textarea"
+              rows="5"
+              formControlName="message"
+              placeholder="Use the buttons above to insert variables, e.g. a greeting with the subscriber's name…"
+              [class.invalid]="isInvalid('message')"
+            ></textarea>
+            @if (isInvalid('message')) {
+              <span class="cf-error">Message must be at least 5 characters.</span>
+            }
+          </div>
+
+          <!-- Image upload -->
+          @if (form.controls.mediaType.value === 'Image' || form.controls.mediaType.value === 'Mixed') {
+            <div class="cf-field">
+              <label for="cf-image" class="cf-label">
+                Image{{ form.controls.mediaType.value === 'Mixed' ? ' (optional)' : '' }}
+              </label>
+              @if (imageUrl()) {
+                <div class="cf-media-preview">
+                  <app-media-preview kind="image" [url]="imageUrl()!" />
+                  <button type="button" class="cf-image-remove" (click)="removeImage()" aria-label="Remove image">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              } @else {
+                <input id="cf-image" type="file" class="form-control" accept="image/*"
+                       (change)="onImageSelected($event)" [disabled]="uploadingImage()" />
+                @if (uploadingImage()) {
+                  <span class="cf-hint"><span class="cf-spinner" aria-hidden="true"></span> Uploading…</span>
+                }
+              }
+            </div>
+          }
+
+          <!-- Video upload -->
+          @if (form.controls.mediaType.value === 'Video' || form.controls.mediaType.value === 'Mixed') {
+            <div class="cf-field">
+              <label for="cf-video" class="cf-label">
+                Video{{ form.controls.mediaType.value === 'Mixed' ? ' (optional)' : '' }}
+              </label>
+              @if (videoUrl()) {
+                <div class="cf-media-preview">
+                  <app-media-preview kind="video" [url]="videoUrl()!" />
+                  <button type="button" class="cf-image-remove" (click)="removeVideo()" aria-label="Remove video">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              } @else {
+                <input id="cf-video" type="file" class="form-control" accept="video/mp4,video/3gpp"
+                       (change)="onVideoSelected($event)" [disabled]="uploadingVideo()" />
+                <span class="cf-hint">MP4 or 3GPP, up to 16 MB (WhatsApp's limit).</span>
+                @if (uploadingVideo()) {
+                  <span class="cf-hint"><span class="cf-spinner" aria-hidden="true"></span> Uploading…</span>
+                }
+              }
+            </div>
+          }
+
+          <!-- Document (PDF) upload -->
+          @if (form.controls.mediaType.value === 'PDF' || form.controls.mediaType.value === 'Mixed') {
+            <div class="cf-field">
+              <label for="cf-document" class="cf-label">
+                Document (PDF){{ form.controls.mediaType.value === 'Mixed' ? ' (optional)' : '' }}
+              </label>
+              @if (documentUrl()) {
+                <div class="cf-media-preview">
+                  <app-media-preview kind="pdf" [url]="documentUrl()!" />
+                  <button type="button" class="cf-image-remove" (click)="removeDocument()" aria-label="Remove document">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              } @else {
+                <input id="cf-document" type="file" class="form-control" accept="application/pdf"
+                       (change)="onDocumentSelected($event)" [disabled]="uploadingDocument()" />
+                <span class="cf-hint">PDF only, up to 100 MB (WhatsApp's limit).</span>
+                @if (uploadingDocument()) {
+                  <span class="cf-hint"><span class="cf-spinner" aria-hidden="true"></span> Uploading…</span>
+                }
+              }
+            </div>
+          }
+
+          <!-- Thumbnail upload — display-only, never sent to Meta -->
+          @if (form.controls.mediaType.value === 'Video' || form.controls.mediaType.value === 'Mixed') {
+            <div class="cf-field">
+              <label for="cf-thumbnail" class="cf-label">Thumbnail (optional)</label>
+              @if (thumbnailUrl()) {
+                <div class="cf-media-preview">
+                  <app-media-preview kind="image" [url]="thumbnailUrl()!" />
+                  <button type="button" class="cf-image-remove" (click)="removeThumbnail()" aria-label="Remove thumbnail">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              } @else {
+                <input id="cf-thumbnail" type="file" class="form-control" accept="image/*"
+                       (change)="onThumbnailSelected($event)" [disabled]="uploadingThumbnail()" />
+                <span class="cf-hint">A poster image shown in this app only — never sent to WhatsApp.</span>
+                @if (uploadingThumbnail()) {
+                  <span class="cf-hint"><span class="cf-spinner" aria-hidden="true"></span> Uploading…</span>
+                }
+              }
+            </div>
+          }
+
+          <!-- Caption — accompanies media messages; Text campaigns use the Message field above instead -->
+          @if (form.controls.mediaType.value !== 'Text') {
+            <div class="cf-field cf-field--full">
+              <label for="cf-caption" class="cf-label">Caption (optional)</label>
+              <textarea id="cf-caption" class="form-control cf-textarea" rows="2" formControlName="caption"
+                        placeholder="Shown alongside the media in WhatsApp"></textarea>
+            </div>
+          }
+
+          <!-- Footer -->
+          <div class="cf-field">
+            <label for="cf-footer" class="cf-label">Footer text (optional)</label>
+            <input id="cf-footer" type="text" class="form-control" formControlName="footer"
+                   placeholder="e.g. Vrindaya — Timeless Elegance" />
+            <span class="cf-hint">Shown in the live preview only — not part of the message Meta sends today.</span>
+          </div>
+
+          <!-- Button Text -->
+          <div class="cf-field">
+            <label for="cf-buttonText" class="cf-label">Button Text (optional)</label>
+            <input id="cf-buttonText" type="text" class="form-control" formControlName="buttonText"
+                   placeholder="e.g. Shop Now" />
+          </div>
+
+          <!-- Button URL -->
+          <div class="cf-field">
+            <label for="cf-buttonUrl" class="cf-label">Button URL (optional)</label>
+            <input id="cf-buttonUrl" type="url" class="form-control" formControlName="buttonUrl"
+                   placeholder="https://vrindaya.in/new-arrivals" />
+          </div>
+
+          <!-- Schedule -->
+          <div class="cf-field cf-field--full">
+            <label class="cf-checkbox">
+              <input type="checkbox" [checked]="scheduleEnabled()" (change)="scheduleEnabled.set($any($event.target).checked)" />
+              <span>Schedule for later</span>
+            </label>
+            @if (scheduleEnabled()) {
+              <input type="datetime-local" class="form-control cf-datetime" formControlName="scheduledAt" />
+            }
+          </div>
+
+          <!-- Send Test -->
+          <div class="cf-field cf-field--full cf-test-row">
+            <div class="cf-test-input">
+              <label for="cf-testRecipient" class="cf-label">Send Test To</label>
+              <input
+                id="cf-testRecipient"
+                type="tel"
+                class="form-control"
+                maxlength="10"
+                inputmode="numeric"
+                placeholder="10-digit mobile number"
+                [value]="testRecipient()"
+                (input)="onTestRecipientInput($event)"
+              />
+            </div>
+            <button
+              type="button"
+              class="btn-outline"
+              (click)="sendTest()"
+              [disabled]="!whatsappSvc.isConfigured() || sendingTest()"
+              [title]="whatsappSvc.isConfigured() ? '' : 'Configure WhatsApp Settings first'"
+            >
+              @if (sendingTest()) {
+                <span class="cf-spinner" aria-hidden="true"></span> Sending…
+              } @else {
+                <i class="bi bi-send"></i> Send Test
+              }
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="cf-actions">
+          <button type="button" class="btn-outline" (click)="saveDraft()" [disabled]="saving()">
+            Save as Draft
+          </button>
+          @if (scheduleEnabled()) {
+            <button type="button" class="btn-outline" (click)="schedule()" [disabled]="saving()">
+              Schedule
+            </button>
+          }
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="sendCampaign()"
+            [disabled]="saving() || !whatsappSvc.isConfigured()"
+            [title]="whatsappSvc.isConfigured() ? '' : 'Configure WhatsApp Settings first'"
+          >
+            @if (saving()) {
+              <span class="cf-spinner" aria-hidden="true"></span> Saving…
+            } @else {
+              Send Campaign
+            }
+          </button>
+        </div>
+
+        @if (!whatsappSvc.isConfigured() && !whatsappSvc.loading()) {
+          <p class="cf-config-hint">
+            <i class="bi bi-info-circle"></i>
+            Send Test and Send Campaign are disabled until WhatsApp is configured in
+            <a [routerLink]="'/' + 'admin' + '/whatsapp-settings'">WhatsApp Settings</a>.
+          </p>
+        }
+
+      </form>
+
+      <!-- Live preview -->
+      <aside class="cf-preview">
+        <span class="cf-preview-label">Live Preview</span>
+        <app-whatsapp-preview
+          [businessName]="whatsappSvc.settings()?.businessName || 'Vrindaya'"
+          [message]="form.controls.message.value ?? ''"
+          [imageUrl]="imageUrl()"
+          [buttonUrl]="form.controls.buttonUrl.value || undefined"
+        />
+      </aside>
+
+    </div>
+  }
+
+</div>

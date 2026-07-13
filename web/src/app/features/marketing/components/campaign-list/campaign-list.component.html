@@ -1,0 +1,129 @@
+<div class="cl-page">
+
+  <div class="cl-header">
+    <div>
+      <h1 class="cl-title">Campaigns</h1>
+      <p class="cl-welcome">Compose, schedule and track WhatsApp campaigns to your VIP Club subscribers.</p>
+    </div>
+    <div class="cl-actions">
+      <a [routerLink]="BASE + '/history'" class="btn-outline">
+        <i class="bi bi-clock-history"></i> History
+      </a>
+      <a [routerLink]="BASE + '/new'" class="btn-primary">
+        <i class="bi bi-plus-lg"></i> New Campaign
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="cl-stats">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--draft"><i class="bi bi-file-earmark"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ svc.draftCount() }}</span>
+        <span class="stat-label">Drafts</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--scheduled"><i class="bi bi-calendar-event"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ svc.scheduledCount() }}</span>
+        <span class="stat-label">Scheduled</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--ready"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ svc.readyToSendCount() }}</span>
+        <span class="stat-label">Ready to Send</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--sent"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ svc.sentCount() }}</span>
+        <span class="stat-label">Sent</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--cancelled"><i class="bi bi-x-circle"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ svc.cancelledCount() }}</span>
+        <span class="stat-label">Cancelled</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Campaign table -->
+  <div class="cl-section">
+    <div class="cl-section-header">
+      <h2 class="cl-section-title">All Campaigns</h2>
+    </div>
+
+    @if (svc.loading()) {
+      <p class="cl-state">Loading campaigns...</p>
+    } @else if (svc.error()) {
+      <p class="cl-state cl-state--error">{{ svc.error() }}</p>
+    } @else if (svc.campaigns().length === 0) {
+      <p class="cl-state">No campaigns yet. Create your first campaign to get started.</p>
+    } @else {
+      <div class="cl-table-wrap">
+        <table class="cl-table">
+          <thead>
+            <tr>
+              <th>Campaign</th>
+              <th>Type</th>
+              <th>Media</th>
+              <th>Status</th>
+              <th class="d-none d-md-table-cell">Audience</th>
+              <th class="d-none d-sm-table-cell">Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of svc.campaigns(); track c.id) {
+              <tr>
+                <td><span class="ct-name">{{ c.campaignName }}</span></td>
+                <td>{{ c.campaignType }}</td>
+                <td>
+                  <span class="ct-media-badge ct-media-badge--{{ c.mediaType.toLowerCase() }}">
+                    <i class="bi {{ mediaTypeIcon(c.mediaType) }}"></i> {{ c.mediaType }}
+                  </span>
+                </td>
+                <td><span class="ct-badge ct-badge--{{ c.status.toLowerCase() }}">{{ c.status.replace('_', ' ') }}</span></td>
+                <td class="d-none d-md-table-cell">{{ c.subscriberCount }} subscribers</td>
+                <td class="d-none d-sm-table-cell">{{ formatDate(c.createdAt) }}</td>
+                <td>
+                  <div class="ct-row-actions">
+                    <a [routerLink]="BASE + '/' + c.id" class="ct-action" title="View">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    @if (c.status === 'DRAFT') {
+                      <a [routerLink]="BASE + '/' + c.id + '/edit'" class="ct-action" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button type="button" class="ct-action ct-action--danger" title="Delete" (click)="delete(c.id)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    }
+                    @if (c.status === 'SCHEDULED' || c.status === 'READY_TO_SEND') {
+                      <button type="button" class="ct-action ct-action--danger" title="Cancel" (click)="cancel(c.id)">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    }
+                    @if (c.status === 'READY_TO_SEND' || c.status === 'SENT') {
+                      <a [routerLink]="BASE + '/' + c.id + '/execution'" class="ct-action" title="View Progress">
+                        <i class="bi bi-activity"></i>
+                      </a>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>

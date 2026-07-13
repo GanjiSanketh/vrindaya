@@ -1,0 +1,37 @@
+<div class="wap-phone">
+  <div class="wap-notch"></div>
+
+  <div class="wap-header">
+    <i class="bi bi-arrow-left wap-header-icon"></i>
+    <div class="wap-header-avatar"><i class="bi bi-shop"></i></div>
+    <div class="wap-header-info">
+      <span class="wap-header-name">{{ businessName() || 'Vrindaya' }}</span>
+      <span class="wap-header-sub">Business Account</span>
+    </div>
+    <i class="bi bi-three-dots-vertical wap-header-icon"></i>
+  </div>
+
+  <div class="wap-chat">
+    @if (hasContent()) {
+      <div class="wap-bubble">
+        @if (imageUrl()) {
+          <img [src]="imageUrl()" alt="Message image" class="wap-bubble-image" />
+        }
+        @if (message()) {
+          <p class="wap-bubble-text">{{ message() }}</p>
+        }
+        @if (buttonUrl()) {
+          <div class="wap-bubble-button">
+            <i class="bi bi-box-arrow-up-right"></i> View Link
+          </div>
+        }
+        <span class="wap-bubble-time">{{ currentTime() }} <i class="bi bi-check2-all wap-bubble-tick"></i></span>
+      </div>
+    } @else {
+      <div class="wap-empty">
+        <i class="bi bi-chat-dots"></i>
+        <span>Your message preview will appear here</span>
+      </div>
+    }
+  </div>
+</div>

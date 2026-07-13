@@ -1,0 +1,112 @@
+@if (svc.product(); as product) {
+  <div class="qv-backdrop" (click)="onBackdropClick($event)"
+       role="dialog" aria-modal="true" [attr.aria-label]="'Quick view: ' + product.name">
+
+    <div class="qv-panel">
+
+      <!-- Close -->
+      <button class="qv-close" (click)="close()" aria-label="Close quick view">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <!-- ── Gallery ── -->
+      <div class="qv-gallery">
+
+        <div class="qv-main-wrap" (click)="openLightbox()" title="Click to zoom"
+             (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()">
+          <img [src]="selectedImage()" [alt]="product.name"
+               class="qv-main-img" loading="eager" draggable="false"
+               [style.transform-origin]="transformOrigin()"
+               [class.zoomed]="isZoomed()" />
+          <div class="qv-zoom-hint"><i class="bi bi-zoom-in"></i></div>
+        </div>
+
+        @if (allImages().length > 1) {
+          <div class="qv-thumbs">
+            @for (img of allImages(); track img; let i = $index) {
+              <button class="qv-thumb" [class.active]="selectedIndex() === i"
+                      (click)="selectedIndex.set(i)"
+                      [attr.aria-label]="'View image ' + (i + 1)">
+                <img [src]="img" [alt]="product.name + ' view ' + (i + 1)"
+                     loading="lazy" draggable="false" />
+              </button>
+            }
+          </div>
+        }
+
+      </div>
+
+      <!-- ── Details ── -->
+      <div class="qv-details">
+
+        <!-- Badge -->
+        <div class="qv-badge-row">
+          @if (product.isBestSeller) {
+            <span class="qv-badge">BESTSELLER</span>
+          } @else if (product.isTrending) {
+            <span class="qv-badge">TRENDING</span>
+          } @else if (product.isNew) {
+            <span class="qv-badge qv-badge--new">NEW ARRIVAL</span>
+          }
+        </div>
+
+        <h2 class="qv-name">{{ product.name }}</h2>
+
+        <!-- Collection tag -->
+        <div class="qv-collection-tag">
+          <i class="bi bi-gem"></i> Premium Collection — Available Exclusively on Flipkart
+        </div>
+
+        <div class="qv-rule"></div>
+
+        <!-- Description -->
+        @if (product.description) {
+          <p class="qv-desc">{{ product.description }}</p>
+        }
+
+        <!-- Meta -->
+        <div class="qv-meta">
+          <div class="qv-meta-row">
+            <span class="qv-meta-label">Category</span>
+            <span class="qv-meta-value">{{ product.category }}</span>
+          </div>
+          @if (product.fabric) {
+            <div class="qv-meta-row">
+              <span class="qv-meta-label">Fabric</span>
+              <span class="qv-meta-value">{{ product.fabric }}</span>
+            </div>
+          }
+          <div class="qv-meta-row">
+            <span class="qv-meta-label">Rating</span>
+            <span class="qv-meta-value">
+              <i class="bi bi-star-fill qv-star"></i>
+              {{ product.rating }} / 5
+            </span>
+          </div>
+        </div>
+
+        <div class="qv-rule"></div>
+
+        <!-- Actions -->
+        <div class="qv-actions">
+          <a [href]="product.flipkartUrl" target="_blank" rel="noopener noreferrer"
+             class="qv-cta" (click)="close()">
+            View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
+          </a>
+
+          <button class="qv-wish-btn" (click)="toggleWishlist()"
+                  [class.wishlisted]="isWishlisted()"
+                  [attr.aria-label]="isWishlisted() ? 'Remove from wishlist' : 'Add to wishlist'">
+            <i class="bi" [class.bi-heart-fill]="isWishlisted()" [class.bi-heart]="!isWishlisted()"></i>
+          </button>
+        </div>
+
+        <p class="qv-zoom-tip">
+          <i class="bi bi-zoom-in"></i> Hover to zoom · Click to fullscreen
+        </p>
+
+      </div>
+    </div>
+
+  </div>
+}

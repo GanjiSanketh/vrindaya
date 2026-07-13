@@ -1,0 +1,93 @@
+<div class="dd-page">
+
+  <div class="dd-header">
+    <div>
+      <h1 class="dd-title">Delivery Dashboard</h1>
+      <p class="dd-welcome">Queue health and campaign delivery at a glance.</p>
+    </div>
+    <button type="button" class="btn-outline" disabled title="Requires Meta Cloud API integration">
+      <i class="bi bi-arrow-clockwise"></i> Retry Failed
+    </button>
+  </div>
+
+  <!-- Queue statistics -->
+  <div class="dd-section-label">Queue Statistics</div>
+  <div class="dd-stats">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--pending"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ queueSvc.pendingCount() }}</span><span class="stat-label">Pending</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--processing"><i class="bi bi-arrow-repeat"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ queueSvc.processingCount() }}</span><span class="stat-label">Processing</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--sent"><i class="bi bi-send-check"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ queueSvc.sentCount() }}</span><span class="stat-label">Sent</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--delivered"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ queueSvc.deliveredCount() }}</span><span class="stat-label">Delivered</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--read"><i class="bi bi-eye"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ queueSvc.readCount() }}</span><span class="stat-label">Read</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--failed"><i class="bi bi-x-circle"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ queueSvc.failedCount() }}</span><span class="stat-label">Failed</span></div>
+    </div>
+  </div>
+
+  <!-- Campaign statistics -->
+  <div class="dd-section-label">Campaign Statistics</div>
+  <div class="dd-stats dd-stats--campaigns">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--draft"><i class="bi bi-file-earmark"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ campaignSvc.draftCount() }}</span><span class="stat-label">Drafts</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--scheduled"><i class="bi bi-calendar-event"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ campaignSvc.scheduledCount() }}</span><span class="stat-label">Scheduled</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--ready"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ campaignSvc.readyToSendCount() }}</span><span class="stat-label">Ready to Send</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--sentc"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ campaignSvc.sentCount() }}</span><span class="stat-label">Sent</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--cancelled"><i class="bi bi-x-circle"></i></div>
+      <div class="stat-body"><span class="stat-value">{{ campaignSvc.cancelledCount() }}</span><span class="stat-label">Cancelled</span></div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="dd-section-label">Recent Activity</div>
+  <div class="dd-section">
+    @if (queueSvc.loading()) {
+      <p class="dd-state">Loading activity...</p>
+    } @else if (recentActivity().length === 0) {
+      <p class="dd-state">No queue activity yet — send a campaign to populate the delivery pipeline.</p>
+    } @else {
+      <ul class="dd-timeline">
+        @for (item of recentActivity(); track item.id) {
+          <li class="dd-timeline-item">
+            <span class="dd-timeline-icon dd-timeline-icon--{{ item.status.toLowerCase() }}">
+              <i class="bi {{ statusIcon(item.status) }}"></i>
+            </span>
+            <div class="dd-timeline-body">
+              <span class="dd-timeline-text">
+                <strong>{{ item.campaignName }}</strong> — {{ item.mobileNumber }} is <strong>{{ item.status.toLowerCase() }}</strong>
+              </span>
+              <span class="dd-timeline-time">{{ formatDateTime(item.updatedAt) }}</span>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+</div>

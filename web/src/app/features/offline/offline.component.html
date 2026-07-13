@@ -1,0 +1,19 @@
+<div class="offline-wrap">
+  <div class="offline-card">
+    <div class="offline-icon">
+      <i class="bi bi-wifi-off"></i>
+    </div>
+    <h1 class="offline-title">You're Offline</h1>
+    <p class="offline-msg">
+      No internet connection found.<br />Check your connection and try again.
+    </p>
+    <div class="offline-actions">
+      <button class="offline-btn offline-btn--primary" (click)="retry()">
+        <i class="bi bi-arrow-clockwise"></i> Try Again
+      </button>
+      <a routerLink="/" class="offline-btn offline-btn--ghost">
+        Go to Homepage
+      </a>
+    </div>
+  </div>
+</div>

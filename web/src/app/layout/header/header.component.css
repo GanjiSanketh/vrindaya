@@ -1,0 +1,294 @@
+/* ═══════════════════════════════════════════
+   NAVBAR — vr-nav
+   CSS Grid: left-links | logo | right-links
+   All class names match navbar.html exactly
+   ═══════════════════════════════════════════ */
+
+.vr-nav {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  background: #fff;
+  border-bottom: 1px solid #eaeaea;
+  transition: box-shadow 0.3s ease;
+}
+
+.vr-nav.scrolled {
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* ── 3-column grid: equal | logo | equal ── */
+.nav-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 96px;
+  padding: 0 2rem;
+  overflow: hidden;
+}
+
+/* ── Left nav (desktop) ── */
+.nav-left {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  justify-content: flex-start;
+  min-width: 0;               /* allow flex items to shrink */
+}
+
+/* Nav links */
+.nav-link {
+  position: relative;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #222222;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  background: none;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+/* Underline expands from center on hover */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  right: 50%;
+  height: 1.5px;
+  background: var(--maroon);
+  transition: left 0.25s ease, right 0.25s ease;
+}
+
+.nav-link:hover        { color: var(--maroon); }
+.nav-link:hover::after { left: 0.75rem; right: 0.75rem; }
+
+/* Active route — teal text + teal underline */
+.nav-link.nav-link-active        { color: var(--maroon); }
+.nav-link.nav-link-active::after {
+  left: 0.75rem;
+  right: 0.75rem;
+  background: var(--maroon);
+  transition: none;
+}
+
+/* ── CENTER: Logo ── */
+.nav-logo {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0 1.5rem;
+  justify-self: center;
+  height: 96px;
+  overflow: hidden;
+  transition: opacity 0.2s;
+}
+
+.nav-logo:hover { opacity: 0.82; }
+
+/* ── Logo icon — 70px tall on desktop ── */
+.logo-icon {
+  height: 70px;
+  width: auto;
+  max-width: 180px;
+  max-height: 70px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ── Brand name ── */
+.logo-brand {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.36em;
+  color: #0f6f84;
+  white-space: nowrap;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ── Tagline ── */
+.logo-tagline {
+  font-family: var(--font-sans);
+  font-size: 0.44rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: #4d95a5;
+  white-space: nowrap;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ── Right nav (desktop) ── */
+.nav-right {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+/* Icon buttons */
+.nav-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #222222;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  text-decoration: none;
+}
+
+.nav-icon:hover { color: var(--maroon); background: var(--maroon-light); }
+
+/* Wishlist badge */
+.nav-wish-icon { position: relative; }
+
+.nav-wish-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  background: var(--gold, #c9a54c);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ── Mobile hamburger ── */
+.hamburger {
+  grid-column: 1;
+  justify-self: start;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+}
+
+.hamburger span {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background: #222222;
+  border-radius: 1px;
+  transition: all 0.28s ease;
+}
+
+.hamburger span.open:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
+.hamburger span.open:nth-child(2) { opacity: 0; }
+.hamburger span.open:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+
+/* ── Mobile right actions ── */
+.nav-right.d-flex  { grid-column: 3; justify-self: end; }
+.nav-mobile-right  { grid-column: 3; justify-self: end; display: flex; align-items: center; }
+
+/* ── Mobile drawer ── */
+.mobile-drawer {
+  background: #fff;
+  border-top: 1px solid #eaeaea;
+  padding: 0.5rem 1.5rem 1.5rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.drawer-link {
+  display: block;
+  padding: 0.75rem 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #222222;
+  border-bottom: 1px solid #eaeaea;
+  cursor: pointer;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+
+.drawer-link:last-child       { border-bottom: none; }
+.drawer-link:hover            { color: var(--maroon); }
+.drawer-link.drawer-highlight { color: var(--gold); font-weight: 600; }
+
+/* Active route in mobile drawer */
+.drawer-link.drawer-link-active {
+  color: var(--maroon);
+  font-weight: 600;
+  border-left: 2.5px solid var(--maroon);
+  padding-left: 0.625rem;
+  transition: none;
+}
+.drawer-divider               { height: 1px; background: #eaeaea; margin: 0.75rem 0; }
+.drawer-cat-label             { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin: 0.5rem 0 0.25rem; }
+
+/* ── Mobile breakpoint: 3-col 44px|1fr|44px ── */
+@media (max-width: 1279px) {
+  .nav-inner {
+    grid-template-columns: 44px 1fr 44px;
+    height: 78px;
+    padding: 0 1.25rem;
+  }
+
+  .nav-logo {
+    padding: 0;
+    justify-self: center;
+    height: 78px;
+  }
+
+  /* 50px logo icon on mobile */
+  .logo-icon {
+    height: 50px;
+    max-height: 50px;
+    max-width: 140px;
+  }
+
+  .logo-brand {
+    font-size: 0.56rem;
+    letter-spacing: 0.28em;
+  }
+
+  .logo-tagline {
+    font-size: 0.40rem;
+  }
+}
+
+
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

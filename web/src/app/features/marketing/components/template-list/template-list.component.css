@@ -1,0 +1,59 @@
+.tl-page { max-width: 1000px; }
+
+.tl-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tl-title   { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.25rem; }
+.tl-welcome { font-size: 0.85rem; color: #6b7280; margin: 0; max-width: 480px; }
+
+.tl-section { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; overflow: hidden; }
+
+.tl-state { padding: 2rem 1.25rem; text-align: center; color: #6b7280; font-size: 0.85rem; }
+.tl-state--error { color: #d64545; }
+
+.tl-table-wrap { overflow-x: auto; }
+.tl-table { width: 100%; border-collapse: collapse; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; }
+.tl-table thead tr { border-bottom: 1px solid #f0f4f7; }
+.tl-table th { padding: 0.625rem 1rem; text-align: left; font-size: 0.72rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.tl-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f0f4f7; vertical-align: middle; }
+.tl-table tbody tr:last-child td { border-bottom: none; }
+.tl-table tbody tr:hover td { background: #fafbfc; }
+
+.tl-name { font-weight: 600; color: #1a1a2e; white-space: nowrap; }
+.tl-preview {
+  color: #6b7280;
+  display: block;
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  background: #e6f4f7;
+  color: #0f6f84;
+}
+
+.tl-row-actions { display: flex; gap: 0.4rem; }
+
+.tl-action {
+  width: 30px; height: 30px; border-radius: 6px;
+  background: #f0f4f7; color: #0f6f84;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; text-decoration: none; cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tl-action:hover { background: #0f6f84; color: #fff; }
+.tl-action--danger:hover { background: #d64545; color: #fff; }

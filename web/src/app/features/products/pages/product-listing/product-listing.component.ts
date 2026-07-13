@@ -1,0 +1,71 @@
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink }                             from '@angular/router';
+import { Subscription }                                           from 'rxjs';
+import { ProductService, SortOrder }                              from '../../../../core/services/product.service';
+import { Category }                                               from '../../../../core/models/product.model';
+import { ProductCard }                                            from '../../../../shared/components/product-card/product-card';
+import { SkeletonGridComponent }                                  from '../../../../shared/components/skeleton/skeleton-grid.component';
+import { SeoService }                                             from '../../../../core/services/seo.service';
+
+@Component({
+  selector: 'app-product-listing',
+  standalone: true,
+  imports: [RouterLink, ProductCard, SkeletonGridComponent],
+  templateUrl: './product-listing.component.html',
+  styleUrl: './product-listing.component.css',
+})
+export class ProductListingComponent implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly svc   = inject(ProductService);
+  private readonly seo   = inject(SeoService);
+  private paramSub!: Subscription;
+
+  readonly categoryId = signal('');
+  readonly sortOrder  = signal<SortOrder>('default');
+
+  readonly category = computed<Category | undefined>(() =>
+    this.svc.categories.find(c => c.id === this.categoryId())
+  );
+
+  readonly products = computed(() => {
+    const raw = this.svc.getByCategory(this.categoryId());
+    switch (this.sortOrder()) {
+      case 'rating': return [...raw].sort((a, b) => b.rating - a.rating);
+      default:       return raw;
+    }
+  });
+
+  ngOnInit(): void {
+    this.paramSub = this.route.paramMap.subscribe(params => {
+      const id = params.get('id') ?? '';
+      if (this.svc.categories.some(c => c.id === id)) {
+        this.categoryId.set(id);
+        this.sortOrder.set('default');
+        const cat = this.svc.categories.find(c => c.id === id);
+        if (cat) {
+          this.seo.setPage({
+            title:       cat.name,
+            description: `Shop premium ${cat.name} at Vrindaya. ${cat.subtitle}. Free delivery across India.`,
+            keywords:    [cat.name.toLowerCase(), cat.id.replace(/-/g, ' '), 'ethnic wear', 'buy online india'],
+            url:         `/category/${id}`,
+            image:       cat.image,
+            jsonLd: {
+              '@context': 'https://schema.org',
+              '@type': 'CollectionPage',
+              'name': cat.name,
+              'url': `https://vrindaya.in/category/${id}`,
+              'description': `Shop ${cat.name} — ${cat.subtitle} at Vrindaya`,
+              'isPartOf': { '@type': 'WebSite', 'url': 'https://vrindaya.in' },
+            },
+          });
+        }
+      }
+    });
+  }
+
+  ngOnDestroy(): void { this.paramSub.unsubscribe(); }
+
+  setSort(event: Event): void {
+    this.sortOrder.set((event.target as HTMLSelectElement).value as SortOrder);
+  }
+}
