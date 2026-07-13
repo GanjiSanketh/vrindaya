@@ -71,7 +71,7 @@ with no quality gate. Once `api/` has real business logic worth
 protecting, add a `.github/workflows` job: `dotnet build`, `dotnet test`
 (once tests exist), and ideally a Render deploy hook gated on that job
 passing — mirroring the `quality` → `deploy` dependency `web/` already
-has. See [Render Deployment](../deployment/render-deployment.md).
+has. See [Render Deployment](../deployment/render.md).
 
 ## 6. Campaign audience segmentation
 

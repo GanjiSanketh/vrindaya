@@ -36,9 +36,12 @@ builder.Services.AddSwaggerDocumentation();
 var app = builder.Build();
 
 // ── Request pipeline ──────────────────────────────────────────────────────────
-// Order matters: exception handling wraps everything, request logging comes
-// next so it captures the true outcome, then Swagger/CORS/auth/routing.
+// Order matters: exception handling wraps everything, forwarded headers
+// come next so every later middleware (logging, HTTPS redirection) sees the
+// client's real IP/scheme instead of Render's proxy hop, then request
+// logging, then Swagger/CORS/auth/routing.
 app.UseGlobalExceptionHandling();
+app.UseRenderForwardedHeaders();
 app.UseSerilogRequestLogging();
 
 app.UseSwaggerInDevelopment();

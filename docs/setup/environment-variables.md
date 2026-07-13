@@ -16,7 +16,7 @@ that affects these values.
 | --- | --- | --- | --- |
 | `production` | `false` | `true` | Angular's own build-mode flag |
 | `adminEmail` | `'gsanketh7121@gmail.com'` | same | Must exactly match `isAdminUser()`'s hardcoded check in `firestore.rules` — see [Firestore Schema](../database/firestore-schema.md) |
-| `apiBaseUrl` | `'https://localhost:5001/api/v1'` | `'https://YOUR_RENDER_URL/api/v1'` | **Placeholder** — not consumed by any service yet. Replace `YOUR_RENDER_URL` once the Render service exists (see [Render Deployment](../deployment/render-deployment.md)) |
+| `apiBaseUrl` | `'https://localhost:5001/api/v1'` | `'https://YOUR_RENDER_URL/api/v1'` | **Placeholder** — not consumed by any service yet. Replace `YOUR_RENDER_URL` once the Render service exists (see [Render Deployment](../deployment/render.md)) |
 | `firebase.apiKey` | Firebase Web API key | same | Public by design — Firebase's security model relies on Security Rules, not key secrecy. Safe to commit. |
 | `firebase.authDomain` | `vrindaya-ad7b0.firebaseapp.com` | same | |
 | `firebase.projectId` | `vrindaya-ad7b0` | same | |

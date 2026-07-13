@@ -42,14 +42,14 @@ Security headers and the CSP are defined in `web/vercel.json` — see
 [deployment/vercel-deployment.md](deployment/vercel-deployment.md) for
 the full header list and rationale.
 
-## API Deployment (Render)
+## API Deployment (Render, Docker)
 
 | Setting | Value |
 | --- | --- |
 | Root Directory | `api` |
-| Runtime | Native .NET (auto-detected from `Vrindaya.Api.csproj`) |
-| Build Command | `dotnet publish -c Release -o out` |
-| Start Command | `dotnet out/Vrindaya.Api.dll` |
+| Runtime | Docker (Render auto-detects `api/Dockerfile`) |
+| Build Command | *(none — the Dockerfile's multi-stage build replaces it)* |
+| Start Command | *(none — the Dockerfile's `ENTRYPOINT` replaces it)* |
 
 **There is no CI/CD pipeline for `api/` yet.** Render deploys via its own
 Git-push watcher with no automated quality gate (no `dotnet build`/
@@ -60,7 +60,9 @@ Cold starts: Render's free/starter tiers spin down idle services. The
 first request after idle can take several seconds while the instance
 restarts — expected infrastructure behavior, not an application bug.
 
-Full guide: [deployment/render-deployment.md](deployment/render-deployment.md).
+Full guides: [deployment/docker.md](deployment/docker.md) (the image
+itself, local build/run), [deployment/render.md](deployment/render.md)
+(Render-specific setup and environment variables).
 
 ## Environment Variables
 

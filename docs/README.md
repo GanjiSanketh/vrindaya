@@ -32,7 +32,8 @@ architectural changes, and update it when you do.
 
 ### Deployment
 - [Vercel Deployment](deployment/vercel-deployment.md) — deploying `web/`
-- [Render Deployment](deployment/render-deployment.md) — deploying `api/`
+- [Docker](deployment/docker.md) — the `api/` container image, local build/run
+- [Render Deployment](deployment/render.md) — deploying `api/` (Docker-based)
 
 ### Marketing
 - [Marketing Module](marketing/marketing-module.md) — subscribers, bulk import, the Insider ribbon/modal

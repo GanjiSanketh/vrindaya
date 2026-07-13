@@ -150,6 +150,7 @@ Full detail per module: [docs/marketing/](docs/marketing/).
 - .NET 9 SDK (`api/global.json` pins the exact version)
 - A Firebase project (Firestore + Storage + Authentication enabled)
 - A Meta developer app with WhatsApp Cloud API access (for real sending)
+- Docker (optional — only needed to build/run `api/` as a container locally; see [docs/deployment/docker.md](docs/deployment/docker.md))
 
 ### Clone and install
 
@@ -194,6 +195,23 @@ Firestore every 5 seconds by default (see
 [Environment Variables](#environment-variables)). Without a valid Firebase
 service account credential it logs a retryable error each tick but does
 not crash the app or affect the HTTP endpoints.
+
+### Running the API in Docker
+
+```bash
+cd api
+docker build -t vrindaya-api .
+docker run --rm -p 8080:8080 \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  -e FIREBASE_SERVICE_ACCOUNT_JSON="$(cat Firebase/serviceAccount.json)" \
+  vrindaya-api
+
+curl http://localhost:8080/health   # → Healthy
+```
+
+This is the same multi-stage image Render builds in production. Full
+guide, including a non-Firebase-configured smoke test and troubleshooting:
+[docs/deployment/docker.md](docs/deployment/docker.md).
 
 ## Firebase Setup
 
@@ -252,10 +270,10 @@ not crash the app or affect the HTTP endpoints.
 | App | Platform | Notes |
 | --- | --- | --- |
 | `web/` | Vercel | Root Directory = `web`; deploys via `.github/workflows/ci.yml` after lint/test/SonarCloud pass |
-| `api/` | Render | Root Directory = `api`; Build: `dotnet publish -c Release -o out`; Start: `dotnet out/Vrindaya.Api.dll` |
+| `api/` | Render (Docker) | Root Directory = `api`; Render auto-detects `api/Dockerfile` — no Build/Start Command needed |
 
 Full guides: [Vercel Deployment](docs/deployment/vercel-deployment.md),
-[Render Deployment](docs/deployment/render-deployment.md).
+[Docker](docs/deployment/docker.md), [Render Deployment](docs/deployment/render.md).
 
 ## Environment Variables
 

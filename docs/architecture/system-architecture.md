@@ -46,11 +46,11 @@ Both applications ship from one repository so that:
 | App | Platform | Why |
 | --- | --- | --- |
 | `web/` | Vercel | Angular SSR + static prerendering is a first-class Vercel workload; the app was already deployed there before the monorepo split, and stayed put. |
-| `api/` | Render | ASP.NET Core needs a long-running process (not a serverless function per request), which Render supports directly as a native .NET web service. |
+| `api/` | Render (Docker) | ASP.NET Core needs a long-running process (not a serverless function per request), which Render runs as a container built from `api/Dockerfile`. |
 
 The two are deployed independently. A change to `api/` does not require a
 `web/` deploy, and vice versa — enforced by GitHub Actions running from each
-app's own subdirectory (see [Render Deployment](../deployment/render-deployment.md)
+app's own subdirectory (see [Render Deployment](../deployment/render.md)
 and [Vercel Deployment](../deployment/vercel-deployment.md)).
 
 ## Why Firebase stays the source of truth (for now)

@@ -240,7 +240,7 @@ docs/
 ├── architecture/                 Deeper-dive architecture docs (frontend/backend/system)
 ├── api/                            api-conventions.md — versioning, response shape rules
 ├── database/                        firestore-schema.md — full field-level schema
-├── deployment/                       vercel-deployment.md, render-deployment.md
+├── deployment/                       vercel-deployment.md, docker.md, render.md
 ├── marketing/                         marketing-module.md, campaign-module.md,
 │                                        whatsapp-integration-plan.md
 ├── branding/                           design-system.md — palette/typography tokens

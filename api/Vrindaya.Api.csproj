@@ -19,4 +19,15 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The SDK's default glob otherwise treats this local, git-ignored
+         credential like any other file under the project and copies it
+         into the build/publish output — which would bake a real Firebase
+         secret into a container image or CI artifact. It's read directly
+         off disk at runtime (see FirebaseCredentialProvider), never
+         compiled in, so it must never be part of the output. -->
+    <Content Remove="Firebase/**" />
+    <None Remove="Firebase/**" />
+  </ItemGroup>
+
 </Project>
