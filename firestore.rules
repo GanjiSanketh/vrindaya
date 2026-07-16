@@ -127,6 +127,19 @@ service cloud.firestore {
     }
 
     /* ══════════════════════════════════════════════════════════════
+       products/{productId}
+       First "public read / admin write" collection at the list level
+       in this app. Every public storefront query MUST include
+       where('active','==', true) explicitly — Firestore only allows a
+       `list` when the query's own where-clause guarantees every
+       possible matching doc satisfies the rule.
+       ══════════════════════════════════════════════════════════════ */
+    match /products/{productId} {
+      allow get, list: if isAdminUser() || resource.data.active == true;
+      allow create, update, delete: if isAdminUser();
+    }
+
+    /* ══════════════════════════════════════════════════════════════
        Everything else is untouched by this change and stays locked
        down, matching the project's existing "deny by default" policy.
        ══════════════════════════════════════════════════════════════ */

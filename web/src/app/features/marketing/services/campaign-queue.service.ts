@@ -4,6 +4,7 @@ import { environment } from '../../../../environments/environment';
 import { Campaign } from '../models/campaign.model';
 import { CampaignQueueItem, QueueStatus } from '../models/campaign-queue.model';
 import { mapFirestoreError } from '../../../shared/utils/firestore-error.util';
+import { LoggerService } from '../../../core/services/logger.service';
 
 const QUEUE_COLLECTION = 'campaignQueue';
 const SUBSCRIBERS_COLLECTION = 'marketingSubscribers';
@@ -13,7 +14,8 @@ const WRITE_BATCH_CHUNK = 400;
 
 @Injectable({ providedIn: 'root' })
 export class CampaignQueueService {
-  private readonly pid = inject(PLATFORM_ID);
+  private readonly pid    = inject(PLATFORM_ID);
+  private readonly logger = inject(LoggerService);
 
   readonly queueItems = signal<CampaignQueueItem[]>([]);
   readonly loading    = signal(true);
@@ -61,13 +63,13 @@ export class CampaignQueueService {
           this.error.set(null);
         },
         err => {
-          console.error('[CampaignQueue]', err);
+          this.logger.error('[CampaignQueue]', err);
           this.error.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
           this.loading.set(false);
         },
       );
     } catch (err) {
-      console.error('[CampaignQueue]', err);
+      this.logger.error('[CampaignQueue]', err);
       this.error.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
       this.loading.set(false);
     }
@@ -127,7 +129,7 @@ export class CampaignQueueService {
 
       return recipients.length;
     } catch (err) {
-      console.error('[CampaignQueue]', err);
+      this.logger.error('[CampaignQueue]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     } finally {
       this.enqueuing.set(false);

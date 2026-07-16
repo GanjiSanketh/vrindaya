@@ -54,17 +54,32 @@ Root Directory it configures). Applies to every route (`/(.*)`):
 - A `Content-Security-Policy` scoped to exactly what the app needs:
   Google Sign-In (`apis.google.com`, `accounts.google.com`), Firebase
   (`*.firebaseio.com`, `*.googleapis.com`, `identitytoolkit.googleapis.com`,
-  `securetoken.googleapis.com`), Google Fonts, and `frame-src` for the
-  Firebase Auth popup (`vrindaya-ad7b0.firebaseapp.com`)
+  `securetoken.googleapis.com`), Google Fonts, Cloudinary-hosted images
+  (`res.cloudinary.com`), and `frame-src` for the Firebase Auth popup
+  (`vrindaya-ad7b0.firebaseapp.com`)
 - `/assets/(.*)` gets `Cache-Control: public, max-age=31536000, immutable`
   — safe because Angular fingerprints asset filenames on every build
 
+**The same CSP string exists in THREE places, not one** — `web/vercel.json`
+(the real HTTP header, enforced on every deployed request), and two
+`<meta http-equiv="Content-Security-Policy">` tags: `web/src/index.html`
+(dev — used by `ng serve` and the `development` build config, where
+`vercel.json` never applies) and `web/src/index.prod.html` (prod — swapped
+in as the build's `index.html` by `angular.json`'s `production`
+configuration; still present in the deployed HTML alongside the
+`vercel.json` header as defense-in-depth for non-Vercel hosting). Browsers
+enforce **all** active CSPs simultaneously (the effective policy is the
+intersection, not "the header wins") — so missing even one of the three
+still blocks the resource in whichever context that file governs.
+
 **If you add a new external service** (an analytics script, a new font
-host, a payment widget), the CSP will silently block it in production
-while working fine in local dev (where `ng serve` doesn't apply
-`vercel.json`). Add the new origin to the relevant `-src` directive in
-`web/vercel.json` in the same PR — don't discover this only after a
-production report of "X doesn't work."
+host, a payment widget, a new image CDN), the CSP will silently block it
+while working fine wherever a different one of the three files happens to
+already allow it. Add the new origin to the relevant `-src` directive in
+**all three files** (`web/vercel.json`, `web/src/index.html`,
+`web/src/index.prod.html`) in the same PR — don't discover this only after
+a production report of "X doesn't work," or a browser DevTools
+`(blocked:csp)` network status.
 
 Also note: `rewrites` sends every path to `/index.html` — this is what
 lets Angular's client-side router handle deep links like `/admin/campaigns`

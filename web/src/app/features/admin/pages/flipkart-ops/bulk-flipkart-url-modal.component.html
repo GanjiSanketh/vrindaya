@@ -1,0 +1,52 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal-box modal-box--wide" (click)="$event.stopPropagation()">
+
+    <div class="bfu-header">
+      <h2 class="bfu-title">Bulk Update URLs</h2>
+      <button type="button" class="bfu-close" (click)="cancel()">&times;</button>
+    </div>
+
+    @if (formError()) {
+      <div class="bfu-error"><i class="bi bi-exclamation-circle-fill"></i> {{ formError() }}</div>
+    }
+
+    <p class="bfu-hint">{{ rows().length }} product(s) selected — edit each product's Flipkart URL and Seller SKU, then save all at once.</p>
+
+    <div class="bfu-table-wrap">
+      <table class="bfu-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>SKU</th>
+            <th>Flipkart URL</th>
+            <th>Seller SKU</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows(); track trackById($index, r)) {
+            <tr>
+              <td class="bfu-name">{{ r.name }}</td>
+              <td class="bfu-sku">{{ r.sku }}</td>
+              <td>
+                <input class="bfu-input" type="url" placeholder="https://www.flipkart.com/..."
+                       [value]="r.flipkartProductUrl" (input)="updateUrl(r.id, $any($event.target).value)" />
+              </td>
+              <td>
+                <input class="bfu-input" type="text"
+                       [value]="r.flipkartSellerSku" (input)="updateSku(r.id, $any($event.target).value)" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bfu-submit-row">
+      <button type="button" class="bfu-cancel" (click)="cancel()">Cancel</button>
+      <button type="button" class="bfu-submit" [disabled]="saving()" (click)="saveAll()">
+        @if (saving()) { Saving… } @else { Save All }
+      </button>
+    </div>
+
+  </div>
+</div>

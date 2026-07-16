@@ -24,7 +24,7 @@
 
     <!-- Category grid -->
     <div class="cat-grid">
-      @for (cat of categories; track cat.id) {
+      @for (cat of categories(); track cat.id) {
         <a
           class="cat-card"
           [routerLink]="['/category', cat.id]"

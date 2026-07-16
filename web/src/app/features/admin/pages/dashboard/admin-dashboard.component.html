@@ -23,7 +23,7 @@
     <div class="stat-card">
       <div class="stat-icon stat-icon--total"><i class="bi bi-bag-heart-fill"></i></div>
       <div class="stat-body">
-        <span class="stat-value">{{ productSvc.totalCount() }}</span>
+        <span class="stat-value">{{ totalCount() }}</span>
         <span class="stat-label">Total Products</span>
       </div>
     </div>
@@ -31,7 +31,7 @@
     <div class="stat-card">
       <div class="stat-icon stat-icon--new"><i class="bi bi-stars"></i></div>
       <div class="stat-body">
-        <span class="stat-value">{{ productSvc.newArrivalsCount() }}</span>
+        <span class="stat-value">{{ newArrivalsCount() }}</span>
         <span class="stat-label">New Arrivals</span>
       </div>
     </div>
@@ -39,7 +39,7 @@
     <div class="stat-card">
       <div class="stat-icon stat-icon--trend"><i class="bi bi-graph-up-arrow"></i></div>
       <div class="stat-body">
-        <span class="stat-value">{{ productSvc.trendingCount() }}</span>
+        <span class="stat-value">{{ trendingCount() }}</span>
         <span class="stat-label">Trending</span>
       </div>
     </div>
@@ -47,9 +47,71 @@
     <div class="stat-card">
       <div class="stat-icon stat-icon--best"><i class="bi bi-award-fill"></i></div>
       <div class="stat-body">
-        <span class="stat-value">{{ productSvc.bestSellersCount() }}</span>
+        <span class="stat-value">{{ bestSellersCount() }}</span>
         <span class="stat-label">Bestsellers</span>
       </div>
+    </div>
+  </div>
+
+  <!-- Inventory & Lifecycle stat cards -->
+  <h2 class="dash-flipkart-heading">Inventory & Lifecycle</h2>
+  <div class="dash-stats dash-stats--flipkart">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--missing"><i class="bi bi-link-45deg"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ missingFlipkartUrlCount() }}</span>
+        <span class="stat-label">Missing Flipkart URL</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--missing"><i class="bi bi-image"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ missingImagesCount() }}</span>
+        <span class="stat-label">Missing Images</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--missing"><i class="bi bi-file-earmark-text"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ missingSeoCount() }}</span>
+        <span class="stat-label">Missing SEO</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--missing"><i class="bi bi-tags"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ missingMarketplaceCategoryCount() }}</span>
+        <span class="stat-label">Missing Categories</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--low-stock"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ lowStockCount() }}</span>
+        <span class="stat-label">Low Stock</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--archived"><i class="bi bi-x-octagon"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ outOfStockCount() }}</span>
+        <span class="stat-label">Out Of Stock</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products by Lifecycle Stage -->
+  <div class="dash-section">
+    <div class="dash-section-header">
+      <h2 class="dash-section-title">Products by Status</h2>
+    </div>
+    <div class="stage-breakdown">
+      @for (row of stageBreakdown(); track row.stage) {
+        <div class="stage-chip">
+          <span class="stage-chip-count">{{ row.count }}</span>
+          <span class="stage-chip-label">{{ row.stage }}</span>
+        </div>
+      }
     </div>
   </div>
 
@@ -60,6 +122,14 @@
       <div>
         <span class="nav-card-title">Manage Products</span>
         <span class="nav-card-sub">Add, edit or delete products</span>
+      </div>
+      <i class="bi bi-chevron-right nav-card-arrow"></i>
+    </a>
+    <a [routerLink]="BASE + '/flipkart-ops'" class="nav-card">
+      <i class="bi bi-shop nav-card-icon"></i>
+      <div>
+        <span class="nav-card-title">Flipkart Operations</span>
+        <span class="nav-card-sub">Lifecycle stage, bulk tools, marketplace data</span>
       </div>
       <i class="bi bi-chevron-right nav-card-arrow"></i>
     </a>

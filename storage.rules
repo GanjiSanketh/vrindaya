@@ -51,6 +51,19 @@ service firebase.storage {
         && request.resource.contentType == 'application/pdf';
     }
 
+    /**
+     * Product images — uploaded by an admin via the product form.
+     * Public read: every storefront page needs to render these
+     * without auth. Deterministic per-slot path (products/{id}/{slot}.ext)
+     * so re-uploading a slot overwrites the same object.
+     */
+    match /products/{productId}/{fileName} {
+      allow read: if true;
+      allow write: if isAdminUser()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

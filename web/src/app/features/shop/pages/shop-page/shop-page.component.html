@@ -1,0 +1,99 @@
+<main class="sp-page">
+
+  <!-- Breadcrumb -->
+  <nav class="sp-breadcrumb" aria-label="Breadcrumb">
+    <div class="container-vr sp-bc-inner">
+      <a routerLink="/" class="sp-bc-link">Home</a>
+      <i class="bi bi-chevron-right sp-bc-sep" aria-hidden="true"></i>
+      <span class="sp-bc-current">
+        @if (searchTerm()) { Search Results } @else { Shop All Products }
+      </span>
+    </div>
+  </nav>
+
+  <div class="container-vr">
+
+    @if (searchTerm()) {
+      <div class="sp-search-banner">
+        <span>Showing results for <strong>"{{ searchTerm() }}"</strong></span>
+        <button type="button" class="sp-clear-btn" (click)="clearSearch()">Clear Search</button>
+      </div>
+    } @else {
+
+      <!-- Filter chips -->
+      <div class="sp-filters">
+        <button type="button" class="sp-chip" [class.active]="filterKind() === 'none'" (click)="setFilter('none')">All</button>
+        <button type="button" class="sp-chip" [class.active]="filterKind() === 'availability'" (click)="setFilter('availability')">In Stock</button>
+        <button type="button" class="sp-chip" [class.active]="filterKind() === 'featured'" (click)="setFilter('featured')">Featured</button>
+        <button type="button" class="sp-chip" [class.active]="filterKind() === 'bestSeller'" (click)="setFilter('bestSeller')">Best Sellers</button>
+        <button type="button" class="sp-chip" [class.active]="filterKind() === 'newArrival'" (click)="setFilter('newArrival')">New Arrivals</button>
+
+        <select class="sp-select" [value]="categoryId()" (change)="setCategory($any($event.target).value)" aria-label="Filter by category">
+          <option value="">Category…</option>
+          @for (c of categories(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+
+        <form class="sp-price-form" (submit)="$event.preventDefault(); applyPriceRange(minInput.value, maxInput.value)">
+          <input #minInput class="sp-price-input" type="number" min="0" placeholder="Min ₹" [value]="minPrice() ?? ''" />
+          <span class="sp-price-sep">–</span>
+          <input #maxInput class="sp-price-input" type="number" min="0" placeholder="Max ₹" [value]="maxPrice() ?? ''" />
+          <button type="submit" class="sp-price-apply">Go</button>
+        </form>
+      </div>
+    }
+
+    <!-- Sort -->
+    <div class="sp-sort-row">
+      <select class="sp-sort-select" [value]="sortKey()" (change)="setSort($event)" aria-label="Sort products">
+        @for (key of sortOptionKeys; track key) {
+          <option [value]="key">{{ sortOptions[key].label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Products -->
+    <section class="sp-products">
+      @if (loading()) {
+        <app-skeleton-grid [count]="8" />
+      } @else if (error()) {
+        <div class="sp-empty">
+          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+          <p class="sp-empty-title">{{ error() }}</p>
+          <button type="button" class="btn-primary" (click)="retry()">Retry</button>
+        </div>
+      } @else if (items().length > 0) {
+        <div class="sp-grid">
+          @for (product of items(); track product.id) {
+            <app-product-card [product]="product" />
+          }
+        </div>
+
+        @if (nextCursor()) {
+          <div class="sp-load-more">
+            <button type="button" class="btn-primary" [disabled]="loadingMore()" (click)="loadMore()">
+              @if (loadingMore()) { Loading… } @else { Load More }
+            </button>
+          </div>
+        }
+      } @else {
+        <div class="sp-empty">
+          <i class="bi bi-bag-x" aria-hidden="true"></i>
+          @if (searchTerm()) {
+            <p class="sp-empty-title">No results for "{{ searchTerm() }}"</p>
+            <p class="sp-empty-sub">Try a different search term or browse by category.</p>
+          } @else if (filterKind() !== 'none') {
+            <p class="sp-empty-title">No products match this filter</p>
+            <p class="sp-empty-sub">Try a different filter or view all products.</p>
+            <button type="button" class="btn-primary" (click)="setFilter('none')">View All Products</button>
+          } @else {
+            <p class="sp-empty-title">No products yet</p>
+            <p class="sp-empty-sub">New styles are on their way — check back soon.</p>
+          }
+        </div>
+      }
+    </section>
+
+  </div>
+</main>

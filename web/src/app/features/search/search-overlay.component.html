@@ -21,25 +21,52 @@
       </div>
 
       <!-- Results -->
-      @if (results().length > 0) {
+      @if (loading()) {
+        <div class="so-empty">
+          <span class="so-spinner"></span>
+          <p>Searching…</p>
+        </div>
+      } @else if (error()) {
+        <div class="so-empty">
+          <i class="bi bi-exclamation-triangle"></i>
+          <p>{{ error() }}</p>
+          <button type="button" class="so-chip" (click)="retry()">Retry</button>
+        </div>
+      } @else if (results().length > 0) {
         <ul class="so-results" role="listbox" aria-label="Search results">
-          @for (p of results(); track p.id) {
-            <li class="so-result" role="option" (click)="navigate(p)"
-                [attr.aria-label]="p.name + ', ' + p.category">
-              <img [src]="p.image" [alt]="p.name" class="so-thumb" loading="lazy" draggable="false" />
+          @for (item of results(); track resultKey(item)) {
+            <li class="so-result" role="option" (click)="navigate(item)"
+                [attr.aria-label]="resultName(item) + ', ' + resultSubLabel(item)">
+              @if (item.kind === 'product') {
+                <img [src]="item.product.image" [alt]="item.product.name" class="so-thumb" loading="lazy" draggable="false" />
+              } @else if (item.kind === 'category') {
+                <img [src]="item.category.image" [alt]="item.category.name" class="so-thumb" loading="lazy" draggable="false" />
+              } @else if (item.collection.image) {
+                <img [src]="item.collection.image" [alt]="item.collection.name" class="so-thumb" loading="lazy" draggable="false" />
+              } @else {
+                <span class="so-thumb so-thumb--icon"><i class="bi bi-collection"></i></span>
+              }
               <div class="so-result-info">
-                <span class="so-result-name">{{ p.name }}</span>
-                <span class="so-result-cat">{{ p.category }}</span>
+                <span class="so-result-name">{{ resultName(item) }}</span>
+                <span class="so-result-cat">{{ resultSubLabel(item) }}</span>
               </div>
-              <span class="so-result-cta">On Flipkart</span>
+              @if (item.kind === 'product') {
+                <span class="so-result-cta">View Details</span>
+              } @else {
+                <span class="so-result-cta so-result-cta--type">{{ item.kind === 'category' ? 'Category' : 'Collection' }}</span>
+              }
               <i class="bi bi-arrow-right so-result-arrow"></i>
             </li>
           }
         </ul>
+
+        <button type="button" class="so-view-all" (click)="viewAllResults()">
+          View all results for "{{ query() }}" <i class="bi bi-arrow-right"></i>
+        </button>
       } @else if (query().trim().length > 0) {
         <div class="so-empty">
           <i class="bi bi-search"></i>
-          <p>No products found for <strong>"{{ query() }}"</strong></p>
+          <p>Nothing found for <strong>"{{ query() }}"</strong></p>
           <p class="so-empty-hint">Try "floral", "indigo", "3-piece" or a colour</p>
         </div>
       } @else {

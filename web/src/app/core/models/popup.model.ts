@@ -3,7 +3,7 @@ export type CampaignType = 'BEST_SELLER' | 'TRENDING' | 'NEW_ARRIVAL' | 'MANUAL_
 
 export interface PopupConfig {
   enabled:            boolean;
-  productId:          number;
+  productId:          string;
   triggerType:        TriggerType;
   scrollPercentage:   number;
   timeDelaySeconds:   number;

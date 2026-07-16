@@ -51,6 +51,13 @@
   padding-top: 0.75rem;
 }
 
+/* ── Load more ── */
+.pl-load-more {
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+}
+
 /* ── Empty state ── */
 .pl-empty {
   display: flex;

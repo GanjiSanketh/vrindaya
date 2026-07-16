@@ -1,0 +1,156 @@
+/* ══════════════════════════════════════
+   SHOP / BROWSE PAGE
+══════════════════════════════════════ */
+
+.sp-page { min-height: 100vh; background: #ffffff; }
+
+/* ── Breadcrumb ── */
+.sp-breadcrumb { padding: 1rem 0; }
+.sp-bc-inner { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; }
+.sp-bc-link  { color: var(--text-muted); text-decoration: none; }
+.sp-bc-link:hover { color: var(--maroon); }
+.sp-bc-sep     { color: var(--text-light); font-size: 0.6rem; }
+.sp-bc-current { color: var(--text); font-weight: 500; }
+
+/* ── Search banner ── */
+.sp-search-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--cream-mid, #f5f5f0);
+  border-radius: var(--r-sm, 6px);
+  font-size: 0.88rem;
+  color: var(--text, #222);
+  margin-bottom: 1.25rem;
+}
+
+.sp-clear-btn {
+  border: 1px solid var(--border, #eaeaea);
+  background: #fff;
+  border-radius: var(--r-pill, 50px);
+  padding: 0.3rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--maroon, #0f6f84);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sp-clear-btn:hover { background: var(--maroon, #0f6f84); color: #fff; }
+
+/* ── Filter chips ── */
+.sp-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.sp-chip {
+  padding: 0.4rem 1rem;
+  border-radius: var(--r-pill, 50px);
+  border: 1px solid var(--border, #eaeaea);
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #666);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.sp-chip:hover  { border-color: var(--maroon, #0f6f84); color: var(--maroon, #0f6f84); }
+.sp-chip.active { background: var(--maroon, #0f6f84); border-color: var(--maroon, #0f6f84); color: #fff; }
+
+.sp-select, .sp-sort-select {
+  padding: 0.4rem 1.75rem 0.4rem 0.75rem;
+  border: 1px solid var(--border, #eaeaea);
+  border-radius: var(--r-sm, 6px);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text, #222);
+  background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+  background-size: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.sp-price-form {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sp-price-input {
+  width: 80px;
+  padding: 0.38rem 0.5rem;
+  border: 1px solid var(--border, #eaeaea);
+  border-radius: var(--r-sm, 6px);
+  font-size: 0.8rem;
+}
+
+.sp-price-sep { color: var(--text-light, #999); }
+
+.sp-price-apply {
+  padding: 0.38rem 0.75rem;
+  border: 1px solid var(--maroon, #0f6f84);
+  border-radius: var(--r-sm, 6px);
+  background: #fff;
+  color: var(--maroon, #0f6f84);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sp-price-apply:hover { background: var(--maroon, #0f6f84); color: #fff; }
+
+/* ── Sort row ── */
+.sp-sort-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Grid ── */
+.sp-products { padding-bottom: 3.5rem; }
+
+.sp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  padding-top: 0.5rem;
+}
+
+.sp-load-more { display: flex; justify-content: center; padding-top: 2rem; }
+
+/* ── Empty state ── */
+.sp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+
+.sp-empty i     { font-size: 3rem; color: var(--gold); opacity: 0.4; }
+.sp-empty-title { font-family: var(--font-serif); font-size: 1.1rem; color: var(--text); margin: 0; }
+.sp-empty-sub   { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .sp-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .sp-grid { grid-template-columns: repeat(2, 1fr); gap: 0.875rem; }
+  .sp-filters { gap: 0.4rem; }
+}
+
+@media (max-width: 480px) {
+  .sp-grid { gap: 0.625rem; }
+  .sp-price-input { width: 64px; }
+}

@@ -78,9 +78,15 @@
         <div class="pu-divider"></div>
 
         <div class="pu-actions">
-          <button class="pu-btn-primary" (click)="shopNow()">
-            View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
-          </button>
+          @if (product.flipkartUrl) {
+            <button class="pu-btn-primary" (click)="shopNow()">
+              View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
+            </button>
+          } @else {
+            <button class="pu-btn-primary pu-btn-primary--soon" disabled>
+              Coming Soon
+            </button>
+          }
           <button class="pu-btn-secondary" (click)="viewCollection()">
             View Collection
           </button>

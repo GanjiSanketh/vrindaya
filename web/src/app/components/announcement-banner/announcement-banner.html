@@ -1,0 +1,8 @@
+@if (announcement()?.message) {
+  <div class="announcement-bar">
+    <span>{{ announcement()!.message }}</span>
+    @if (announcement()!.linkText && announcement()!.linkUrl) {
+      <a [href]="announcement()!.linkUrl" class="announcement-link">{{ announcement()!.linkText }}</a>
+    }
+  </div>
+}

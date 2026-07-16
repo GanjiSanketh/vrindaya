@@ -42,7 +42,10 @@ automatically in any environment; no extra code is needed to support it.
 | --- | --- | --- | --- |
 | `Cors:AllowedOrigins` | `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, ... | `CorsOptions` | `AddCorsPolicy()` — see [API Conventions](../api/api-conventions.md#cors) |
 | `Firebase:ServiceAccountPath` | `Firebase__ServiceAccountPath` | `FirebaseOptions` | Local dev — file path (relative to `api/`'s content root), defaults to `Firebase/serviceAccount.json` in `appsettings.json`. Ignored whenever `ServiceAccountJson` is set. |
-| `Firebase:ServiceAccountJson` | `FIREBASE_SERVICE_ACCOUNT_JSON` (note: **not** `Firebase__ServiceAccountJson` — see below) | `FirebaseOptions` | Production — the service account key's full JSON contents. Takes priority over `ServiceAccountPath` whenever set. **Never commit a real value.** |
+| `Firebase:ServiceAccountJson` | `FIREBASE_SERVICE_ACCOUNT_JSON` (note: **not** `Firebase__ServiceAccountJson` — see below) | `FirebaseOptions` | Production — the service account key's full JSON contents. Takes priority over `ServiceAccountPath` whenever set. **Never commit a real value.** Firestore only now — Firebase Storage was fully removed in favor of Cloudinary. |
+| `Cloudinary:CloudName` | `Cloudinary__CloudName` | `CloudinaryOptions` | `CloudinaryService` — your Cloudinary account's cloud name |
+| `Cloudinary:ApiKey` | `Cloudinary__ApiKey` | `CloudinaryOptions` | `CloudinaryService` — signs every upload/delete/replace call server-side |
+| `Cloudinary:ApiSecret` | `Cloudinary__ApiSecret` | `CloudinaryOptions` | `CloudinaryService`. **Never commit a real value; never returned in any API response.** All uploads are signed server-side — there is no unsigned/client-side Cloudinary path anywhere in this app. |
 | `WhatsApp:AccessToken` | `WhatsApp__AccessToken` | `WhatsAppOptions` | `MetaWhatsAppProvider` — Bearer token on every Graph API call. **Never commit a real value.** |
 | `WhatsApp:PhoneNumberId` | `WhatsApp__PhoneNumberId` | `WhatsAppOptions` | `MetaWhatsAppProvider` — the sending number, and `WhatsAppService.GetHealthStatus()` |
 | `WhatsApp:BusinessAccountId` | `WhatsApp__BusinessAccountId` | `WhatsAppOptions` | Not consumed by any request path yet — reserved for future WABA-level operations (e.g. template management via the Graph API) |

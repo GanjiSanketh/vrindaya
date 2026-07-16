@@ -1,27 +1,57 @@
-<main>
-  <app-hero />
+@if (loading()) {
+  <main class="hp-loading">
+    <app-skeleton-grid [count]="8" />
+  </main>
+} @else if (error()) {
+  <main class="hp-error">
+    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+    <p class="hp-error-title">{{ error() }}</p>
+    <button type="button" class="btn-primary" (click)="retry()">Retry</button>
+  </main>
+} @else {
+  <main>
+    <app-announcement-banner [announcement]="homepage()?.announcement ?? null" />
 
-  <app-categories />
+    <app-hero [banner]="homepage()?.hero ?? null" />
 
-  @defer (on viewport; prefetch on immediate) {
-    <app-new-arrivals />
-  } @placeholder {
-    <div style="min-height: 400px;"></div>
-  }
+    <app-categories [categories]="homepage()?.categories ?? []" />
 
-  @defer (on viewport; prefetch on immediate) {
-    <app-trending-products />
-  } @placeholder {
-    <div style="min-height: 400px;"></div>
-  }
+    <app-promotional-banner [banners]="homepage()?.promotionalBanners ?? []" />
 
-  @defer (on viewport; prefetch on immediate) {
-    <app-customer-love />
-  } @placeholder {
-    <div style="min-height: 300px;"></div>
-  }
+    @defer (on viewport; prefetch on immediate) {
+      <app-new-arrivals [products]="homepage()?.newArrivals ?? []" />
+    } @placeholder {
+      <div style="min-height: 400px;"></div>
+    }
 
-</main>
+    @defer (on viewport; prefetch on immediate) {
+      <app-trending-products [products]="homepage()?.trendingProducts ?? []" />
+    } @placeholder {
+      <div style="min-height: 400px;"></div>
+    }
+
+    @defer (on viewport; prefetch on immediate) {
+      <app-best-sellers [products]="homepage()?.bestSellers ?? []" />
+    } @placeholder {
+      <div style="min-height: 400px;"></div>
+    }
+
+    @defer (on viewport; prefetch on immediate) {
+      <app-instagram-section [instagram]="homepage()?.instagram ?? null" />
+    } @placeholder {
+      <div style="min-height: 200px;"></div>
+    }
+
+    @defer (on viewport; prefetch on immediate) {
+      <app-customer-love />
+    } @placeholder {
+      <div style="min-height: 300px;"></div>
+    }
+
+    <app-footer-banner [banner]="homepage()?.footerBanner ?? null" />
+
+  </main>
+}
 
 <!-- Scroll to top -->
 <button class="floating-btn scroll-top-btn" [class.visible]="showScrollTop()"

@@ -54,6 +54,10 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
+              "index": {
+                "input": "src/index.prod.html",
+                "output": "index.html"
+              },
               "optimization": {
                 "fonts": {
                   "inline": false
@@ -67,8 +71,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "32kB",
-                  "maximumError": "64kB"
+                  "maximumWarning": "16kB",
+                  "maximumError": "32kB"
                 }
               ],
               "outputHashing": "all"

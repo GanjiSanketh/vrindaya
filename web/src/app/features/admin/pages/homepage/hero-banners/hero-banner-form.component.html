@@ -1,0 +1,100 @@
+<div class="hbf-page">
+
+  <div class="hbf-header">
+    <a [routerLink]="BASE" class="hbf-back"><i class="bi bi-arrow-left"></i> Hero Banners</a>
+    <h1 class="hbf-title">{{ isEdit() ? 'Edit Banner' : 'Add Hero Banner' }}</h1>
+  </div>
+
+  @if (saved()) {
+    <div class="hbf-success"><i class="bi bi-check-circle-fill"></i> Banner {{ isEdit() ? 'updated' : 'added' }}! Redirecting…</div>
+  }
+  @if (formError()) {
+    <div class="hbf-error">
+      <i class="bi bi-exclamation-circle-fill"></i> {{ formError() }}
+      <button type="button" (click)="formError.set(null)">×</button>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="hbf-grid">
+
+      <div class="hbf-main">
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">Content</h2>
+
+          <div class="hbf-field">
+            <label class="hbf-label">Title *</label>
+            <input class="hbf-input" [class.hbf-input--err]="isInvalid('title')" formControlName="title" type="text" placeholder="Wear the Grace" />
+            @if (isInvalid('title')) { <span class="hbf-err">Title is required</span> }
+          </div>
+
+          <div class="hbf-field">
+            <label class="hbf-label">Subtitle</label>
+            <textarea class="hbf-textarea" formControlName="subtitle" rows="2" placeholder="Elegant ethnic wear designed for modern women…"></textarea>
+          </div>
+
+          <div class="hbf-field-row">
+            <div class="hbf-field">
+              <label class="hbf-label">Button Text</label>
+              <input class="hbf-input" formControlName="buttonText" type="text" placeholder="Shop Now" />
+            </div>
+            <div class="hbf-field">
+              <label class="hbf-label">Button URL</label>
+              <input class="hbf-input" formControlName="buttonUrl" type="text" placeholder="/category/long-kurtas" />
+            </div>
+          </div>
+        </div>
+
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">Scheduling</h2>
+          <div class="hbf-field-row">
+            <div class="hbf-field">
+              <label class="hbf-label">Display Order</label>
+              <input class="hbf-input" formControlName="displayOrder" type="number" min="0" />
+            </div>
+            <div class="hbf-field">
+              <label class="hbf-label">Start Date</label>
+              <input class="hbf-input" formControlName="startDate" type="date" />
+            </div>
+            <div class="hbf-field">
+              <label class="hbf-label">End Date</label>
+              <input class="hbf-input" formControlName="endDate" type="date" />
+            </div>
+          </div>
+          <p class="hbf-hint">Leave dates blank for an always-on banner. The homepage shows exactly one: the lowest-order Active banner currently in its date range.</p>
+          <label class="hbf-check">
+            <input type="checkbox" formControlName="active" />
+            <span class="hbf-check-box"></span>
+            <span>Active</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="hbf-side">
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">Images</h2>
+          <app-single-image-upload
+            label="Background Image *"
+            section="hero"
+            [currentUrl]="backgroundImage()?.url ?? null"
+            (uploaded)="onBackgroundUploaded($event)"
+            (removed)="onBackgroundRemoved()" />
+          <app-single-image-upload
+            label="Mobile Image (optional)"
+            section="hero"
+            [currentUrl]="mobileImage()?.url ?? null"
+            (uploaded)="onMobileUploaded($event)"
+            (removed)="onMobileRemoved()" />
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hbf-submit-row">
+      <a [routerLink]="BASE" class="hbf-cancel">Cancel</a>
+      <button type="submit" class="hbf-submit" [disabled]="saving()">
+        @if (saving()) { Saving… } @else { {{ isEdit() ? 'Update Banner' : 'Add Banner' }} }
+      </button>
+    </div>
+  </form>
+</div>

@@ -2,6 +2,8 @@ using System.Text.Json;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Vrindaya.Api.Constants;
 using Vrindaya.Api.DTOs.WhatsApp;
 using Vrindaya.Api.Interfaces;
 
@@ -30,9 +32,12 @@ public class WhatsAppController : ControllerBase
     /// <summary>
     /// Sends a real WhatsApp text message via Meta's Cloud API. 502 (not 500)
     /// on a Meta rejection — the request was handled correctly by this API,
-    /// an upstream dependency declined it.
+    /// an upstream dependency declined it. Admin-only — this triggers a real,
+    /// billable Meta send, unlike GetHealth above.
     /// </summary>
     [HttpPost("test")]
+    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
+    [EnableRateLimiting("whatsapp-send")]
     [ProducesResponseType(typeof(SendMessageResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(SendMessageResponse), StatusCodes.Status502BadGateway)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]

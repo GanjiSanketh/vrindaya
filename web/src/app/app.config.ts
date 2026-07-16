@@ -2,11 +2,14 @@ import { ApplicationConfig, ErrorHandler, isDevMode, provideBrowserGlobalErrorLi
 import { provideRouter, withInMemoryScrolling, withViewTransitions } from '@angular/router';
 import { provideClientHydration, withEventReplay }               from '@angular/platform-browser';
 import { provideAnimationsAsync }                                from '@angular/platform-browser/animations/async';
-import { provideHttpClient, withFetch }                          from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors }        from '@angular/common/http';
 import { provideServiceWorker }                                  from '@angular/service-worker';
 
 import { routes } from './app.routes';
 import { GlobalErrorHandlerService } from './core/services/error-handler.service';
+import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
+import { retryInterceptor } from './core/interceptors/retry.interceptor';
+import { timeoutInterceptor } from './core/interceptors/timeout.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,7 +22,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideClientHydration(withEventReplay()),
     provideAnimationsAsync(),         /* lazy-loaded animation engine — keeps it out of the main bundle */
-    provideHttpClient(withFetch()),   /* required by PopupService to load popup-config.json */
+    provideHttpClient(withFetch(), withInterceptors([authTokenInterceptor, retryInterceptor, timeoutInterceptor])),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',

@@ -4,6 +4,7 @@ import { environment } from '../../../../environments/environment';
 import { Campaign } from '../models/campaign.model';
 import { CampaignExecution } from '../models/campaign-execution.model';
 import { mapFirestoreError } from '../../../shared/utils/firestore-error.util';
+import { LoggerService } from '../../../core/services/logger.service';
 
 const EXECUTIONS_COLLECTION = 'campaignExecutions';
 
@@ -16,7 +17,8 @@ const EXECUTIONS_COLLECTION = 'campaignExecutions';
  */
 @Injectable({ providedIn: 'root' })
 export class CampaignExecutionService {
-  private readonly pid = inject(PLATFORM_ID);
+  private readonly pid    = inject(PLATFORM_ID);
+  private readonly logger = inject(LoggerService);
 
   readonly currentExecution = signal<CampaignExecution | null>(null);
   readonly currentLoading   = signal(true);
@@ -53,7 +55,7 @@ export class CampaignExecutionService {
       const ref = await addDoc(collection(db, EXECUTIONS_COLLECTION), payload);
       return ref.id;
     } catch (err) {
-      console.error('[CampaignExecution]', err);
+      this.logger.error('[CampaignExecution]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -82,7 +84,7 @@ export class CampaignExecutionService {
         updatedAt: serverTimestamp(),
       });
     } catch (err) {
-      console.error('[CampaignExecution]', err);
+      this.logger.error('[CampaignExecution]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -107,7 +109,7 @@ export class CampaignExecutionService {
       const snap = await getDocs(q);
       return snap.empty ? null : this.toExecution(snap.docs[0].id, snap.docs[0].data());
     } catch (err) {
-      console.error('[CampaignExecution]', err);
+      this.logger.error('[CampaignExecution]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -143,13 +145,13 @@ export class CampaignExecutionService {
           this.currentError.set(null);
         },
         err => {
-          console.error('[CampaignExecution]', err);
+          this.logger.error('[CampaignExecution]', err);
           this.currentError.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
           this.currentLoading.set(false);
         },
       );
     } catch (err) {
-      console.error('[CampaignExecution]', err);
+      this.logger.error('[CampaignExecution]', err);
       this.currentError.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
       this.currentLoading.set(false);
     }

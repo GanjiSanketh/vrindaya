@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, isDevMode } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BulkImportService } from '../../services/bulk-import.service';
 import { AdminAuthService } from '../../../admin/services/admin-auth.service';
@@ -62,7 +62,7 @@ export class BulkImportComponent {
         ? await this.svc.parseFile(this.selectedFile()!)
         : this.svc.parseLines(this.rawText());
     } catch (err) {
-      console.error('[BulkImport]', err);
+      if (isDevMode()) console.error('[BulkImport]', err);
       this.toast.error('Could not read that file. Please check its format and try again.');
       return;
     }
@@ -79,7 +79,7 @@ export class BulkImportComponent {
       this.preview.set(preview);
       this.summary.set(null);
     } catch (err) {
-      console.error('[BulkImport]', err);
+      if (isDevMode()) console.error('[BulkImport]', err);
       this.toast.error('Failed to check existing subscribers. Please try again.');
     } finally {
       this.previewLoading.set(false);
@@ -96,7 +96,7 @@ export class BulkImportComponent {
       this.summary.set(summary);
       this.toast.success(`Imported ${summary.imported} subscriber(s).`);
     } catch (err) {
-      console.error('[BulkImport]', err);
+      if (isDevMode()) console.error('[BulkImport]', err);
       this.toast.error('Import failed partway through. Check the browser console for details.');
     }
   }

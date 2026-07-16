@@ -15,9 +15,11 @@ web/src/app/
 ├── components/                                            Homepage-only presentational sections (Hero, Categories, ...)
 ├── core/                                                  App-wide constants, models, and services (Product, Wishlist, SEO, ...)
 ├── shared/                                                 Reusable components/directives used across features
-├── features/                                               Routed pages, one subfolder per route area
-└── data/                                                   Static seed data (products.json)
+└── features/                                               Routed pages, one subfolder per route area
 ```
+
+(`data/products.json`, a static seed array from before the product
+catalog moved to Firestore/the API, is dead — nothing imports it anymore.)
 
 ## Why `components/` and `features/` are both present
 
@@ -87,6 +89,19 @@ This keeps Firebase's SDK weight out of the initial bundle (it's only
 fetched when a component that needs it actually mounts) and makes SSR safe,
 since every such call is also guarded by `isPlatformBrowser(this.pid)`
 before running — Firebase never executes during server-side rendering.
+
+**This pattern now covers Marketing/Auth/the public storefront's product
+reads only.** Product Management and the Homepage CMS talk to `api/`
+instead, via plain `HttpClient` services (`ProductApiService`,
+`ProductQueryService`, `HomepageService`, `HomepageAdminService`,
+`CategoryService`) — no dynamic Firebase imports, no direct Firestore
+calls. An `authTokenInterceptor` attaches the same Firebase ID token these
+services' admin-only calls need (via a small `FirebaseTokenService`, kept
+deliberately separate from `AdminAuthService` so `core/interceptors`
+doesn't depend on a feature module), and a `retryInterceptor` retries
+transient GET failures. A `HttpCacheService` (TTL + in-flight de-dupe)
+sits in front of every public GET. See
+[API Reference](../API_REFERENCE.md) for what these services actually call.
 
 ## Admin portal
 

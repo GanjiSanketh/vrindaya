@@ -1,6 +1,6 @@
 import {
   Component, ElementRef, HostListener, OnDestroy, ViewChild,
-  inject, signal, effect, PLATFORM_ID,
+  inject, signal, effect, isDevMode, PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -140,7 +140,7 @@ export class InsiderModalComponent implements OnDestroy {
 
       this.autoCloseTimer = setTimeout(() => this.close(), AUTO_CLOSE_DELAY_MS);
     } catch (err) {
-      console.error('[Marketing]', err);
+      if (isDevMode()) console.error('[Marketing]', err);
       this.errorMessage.set('Something went wrong. Please try again.');
     } finally {
       this.form.enable();

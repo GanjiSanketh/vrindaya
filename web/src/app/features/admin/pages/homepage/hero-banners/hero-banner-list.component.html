@@ -1,0 +1,79 @@
+<div class="hbl-page">
+
+  <div class="hbl-header">
+    <div>
+      <h1 class="hbl-title">Hero Banners</h1>
+      <p class="hbl-count">{{ banners().length }} banner(s) — the homepage always shows exactly one: the lowest-order Active, in-date-range banner.</p>
+    </div>
+    <a [routerLink]="BASE + '/new'" class="btn-primary-sm">
+      <i class="bi bi-plus-lg"></i> Add Banner
+    </a>
+  </div>
+
+  <div class="hbl-card">
+    @if (loading()) {
+      <div class="hbl-loading"><span class="hbl-spinner"></span> Loading…</div>
+    } @else if (error()) {
+      <div class="hbl-empty">
+        <i class="bi bi-exclamation-triangle"></i>
+        <p>{{ error() }}</p>
+        <button type="button" class="btn-primary-sm" (click)="load()">Retry</button>
+      </div>
+    } @else if (banners().length === 0) {
+      <div class="hbl-empty">
+        <i class="bi bi-image"></i>
+        <p>No hero banners yet.</p>
+        <a [routerLink]="BASE + '/new'" class="btn-primary-sm">Add your first banner</a>
+      </div>
+    } @else {
+      <table class="hbl-table">
+        <thead>
+          <tr><th></th><th>Title</th><th>Order</th><th>Dates</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (b of banners(); track b.id) {
+            <tr>
+              <td><img [src]="b.backgroundImageUrl" alt="" class="hbl-thumb" /></td>
+              <td>
+                <div class="hbl-name">{{ b.title }}</div>
+                @if (b.buttonText) { <div class="hbl-sub">CTA: {{ b.buttonText }}</div> }
+              </td>
+              <td>{{ b.displayOrder }}</td>
+              <td class="hbl-dates">
+                {{ b.startDate ? (b.startDate | date:'mediumDate') : '—' }} → {{ b.endDate ? (b.endDate | date:'mediumDate') : '—' }}
+              </td>
+              <td>
+                @if (isCurrentlyShowing(b)) {
+                  <span class="hbl-badge hbl-badge--live">Currently Showing</span>
+                } @else if (!b.active) {
+                  <span class="hbl-badge hbl-badge--off">Inactive</span>
+                } @else {
+                  <span class="hbl-badge">Scheduled</span>
+                }
+              </td>
+              <td class="hbl-actions">
+                <a [routerLink]="BASE + '/' + b.id + '/edit'" class="hbl-action"><i class="bi bi-pencil"></i></a>
+                <button type="button" class="hbl-action hbl-action--del" (click)="confirmDelete(b.id)"><i class="bi bi-trash3"></i></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+</div>
+
+@if (deleteId() !== null) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon"><i class="bi bi-trash3-fill"></i></div>
+      <h3 class="modal-title">Delete Banner?</h3>
+      <p class="modal-body">This banner will be permanently removed.</p>
+      <div class="modal-actions">
+        <button class="modal-cancel" (click)="cancelDelete()">Cancel</button>
+        <button class="modal-confirm" (click)="doDelete()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+}

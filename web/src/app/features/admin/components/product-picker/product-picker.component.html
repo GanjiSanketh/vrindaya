@@ -1,0 +1,41 @@
+<div class="pp-root">
+
+  <div class="pp-search-wrap">
+    <i class="bi bi-search pp-search-icon"></i>
+    <input class="pp-search" type="search" placeholder="Search products by name or SKU to add…"
+           [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+  </div>
+
+  @if (searchResults().length > 0) {
+    <div class="pp-results">
+      @for (p of searchResults(); track p.id) {
+        <button type="button" class="pp-result" (click)="add(p.id)">
+          <img [src]="p.image" [alt]="p.name" class="pp-result-thumb" loading="lazy" />
+          <span class="pp-result-name">{{ p.name }}</span>
+          <span class="pp-result-sku">{{ p.sku }}</span>
+          <i class="bi bi-plus-lg"></i>
+        </button>
+      }
+    </div>
+  }
+
+  <div class="pp-selected-grid">
+    @for (p of selectedProducts(); track trackById($index, p); let i = $index) {
+      <div class="pp-selected-item">
+        <img [src]="p.image" [alt]="p.name" class="pp-selected-thumb" loading="lazy" />
+        <div class="pp-selected-info">
+          <span class="pp-selected-name">{{ p.name }}</span>
+          <span class="pp-selected-sku">{{ p.sku }}</span>
+        </div>
+        <div class="pp-selected-actions">
+          <button type="button" [disabled]="i === 0" (click)="moveLeft(i)" title="Move earlier"><i class="bi bi-chevron-left"></i></button>
+          <button type="button" [disabled]="i === selectedProducts().length - 1" (click)="moveRight(i)" title="Move later"><i class="bi bi-chevron-right"></i></button>
+          <button type="button" class="pp-remove" (click)="remove(p.id)" title="Remove"><i class="bi bi-x-lg"></i></button>
+        </div>
+      </div>
+    } @empty {
+      <p class="pp-empty">No products selected yet — search above to add some.</p>
+    }
+  </div>
+
+</div>

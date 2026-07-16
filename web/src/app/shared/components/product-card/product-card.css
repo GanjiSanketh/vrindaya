@@ -153,6 +153,7 @@
 }
 
 .pc-badge-new { background: var(--gold); color: var(--text); }
+.pc-badge-oos { background: #4b4b4b; color: #fff; }
 
 /* ── Wishlist heart — color + state only ── */
 .pc-wish-btn { color: var(--text-muted); }
@@ -192,6 +193,8 @@
   color: #fff;
   display: flex; align-items: center; gap: 0.5rem;
 }
+
+.pc-overlay-cta--soon { opacity: 0.75; }
 
 /* ── Quick View button — color + state only ── */
 .pc-qv-btn { color: var(--text); font-size: 0.95rem; }
@@ -267,6 +270,9 @@
 }
 
 .pc-link:hover { color: var(--maroon-dark); gap: 0.6rem; }
+
+.pc-link--soon { color: var(--text-muted); cursor: not-allowed; }
+.pc-link--soon:hover { color: var(--text-muted); gap: 0.4rem; }
 
 /* Touch devices — show overlay persistently */
 @media (hover: none) and (min-width: 769px) {

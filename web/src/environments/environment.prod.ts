@@ -1,7 +1,6 @@
 export const environment = {
   production:   true,
   adminEmail:   'gsanketh7121@gmail.com',
-  /** ASP.NET Core Web API — not yet integrated, prepared for future use. */
   apiBaseUrl:   'https://vrindaya-api.onrender.com/api/v1',
   firebase: {
     apiKey:            'AIzaSyAGIZzyi-1o4kR86IYbWLRaCExH343sJUY',

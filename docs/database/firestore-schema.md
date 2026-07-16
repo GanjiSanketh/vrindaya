@@ -6,12 +6,159 @@ shared infrastructure, not Angular-specific config.
 
 ## What's *not* in Firestore
 
-Product catalog and wishlist data are **not** in Firestore — they live in
-`localStorage`, seeded from `web/src/app/data/products.json`
-(`ProductStoreService`). This is a deliberate simplicity choice for a
-catalog that doesn't need multi-device sync yet. If products move to
-Firestore later, this document needs a new section and `firestore.rules`
-needs rules for a `products` collection that doesn't exist today.
+Wishlist data is **not** in Firestore — it lives in `localStorage`
+(`WishlistService`), keyed by product id only, since it's a personal,
+single-device convenience list with no account system behind it.
+
+> **Superseded note**: this section previously said the product catalog
+> itself lived in `localStorage` too. That was true before the API-mediated
+> Product Management phases — `products`, `categories`, `heroBanners`,
+> `promotionalBanners`, and `homepageConfig` are now real Firestore
+> collections, written exclusively through `api/`'s ASP.NET Core
+> controllers (never directly from `web/`). See the sections below.
+
+## Collection: `products`
+
+**Document ID: auto-generated** (`db.Collection("products").Document().Id`,
+pre-issued via `POST /api/v1/products/ids` so image uploads can start
+before the product document exists). Written exclusively by `api/`'s
+`ProductController`/`ProductService`/`ProductRepository` — `web/` never
+calls Firestore for products directly (`ProductRepository.listenActive` on
+the public storefront is the one remaining direct-Firestore **read**; all
+writes and all image uploads go through the API).
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name`, `slug`, `category`, `subCategory`, `description`, `shortDescription` | string | `subCategory`/`description`/`shortDescription` optional, omitted (not empty-string) when unset. |
+| `price`, `mrp`, `discount` | number | |
+| `fabric`, `pattern`, `fit`, `sleeve`, `neck`, `occasion`, `color` | string (optional) | |
+| `sizes` | array of `{ size, stock }` | Per-size inventory ledger — source of truth for `stock`. |
+| `stock` | number | Denormalized `sum(sizes[].stock)`, recomputed on every write, never hand-edited. |
+| `sku` | string | |
+| `tags` | array of string | |
+| `featured`, `newArrival`, `bestSeller`, `active` | boolean | `active` is the public visibility gate — non-admin callers only ever see `active == true`. |
+| `displayOrder` | number | |
+| `brand`, `flipkartProductUrl`, `flipkartProductId` | string (optional) | Vrindaya is a discovery site, not a checkout — `flipkartProductUrl` is where "Buy" actually sends the customer. |
+| `seoTitle`, `seoDescription` | string (optional) | |
+| `seoKeywords` | array of string | |
+| `searchKeywords` | array of string | Lowercased, tokenized bag of words (name+brand+category+sku+tags), computed server-side on every create/update — powers `GET /api/v1/products/search`'s `array-contains-any` query. Documents saved before this field existed default to `[]` until their next edit. |
+| `images` | array of `{ url, path, slot?, order }` | Free-form, admin-orderable gallery (max 10) — `slot` is legacy-only (documents written before the free-form gallery); new uploads never set it. Position (lowest `order`) 0 is the thumbnail. |
+| `deleted`, `deletedAt` | boolean, Timestamp (optional) | Soft-delete — `deleted=true` is always set alongside `active=false`, so public active-only queries need no separate index dimension. Storage is never touched on delete. |
+| `createdBy`, `createdAt`, `updatedBy`, `updatedAt` | string, Timestamp | |
+| `flipkartSellerSku`, `flipkartFsn` | string (optional) | Flipkart Operations metadata. `flipkartProductUrl`/`flipkartProductId` above are the primary listing link/id; these are additive. |
+| `launchDate`, `lastSyncDate` | Timestamp (optional) | `launchDate` also drives the derived "Launched"/"Not Launched" display — there's no separate stored launch-status field. |
+| `marketplacePrice`, `marketplaceMrp`, `marketplaceDiscount` | number (optional) | Flipkart's own price/MRP/discount, independent of `price`/`mrp`/`discount` above (the storefront's own pricing). |
+| `marketplaceCategory` | string (optional) | Flipkart's category taxonomy — distinct from `category` above (Vrindaya's own). |
+| `marketplaceTags` | array of string | |
+| `websiteClickCount`, `lastClickAt` | number, Timestamp (optional) | "Buy on Flipkart" click tracking. `websiteClickCount` is incremented atomically (`FieldValue.Increment`) by the public, unauthenticated `POST /api/v1/analytics/products/{id}/click`. |
+| `lifecycleStage` | string | One of `Constants.LifecycleStage.All` (Draft, Photography Pending, Photography Complete, Image Editing Complete, Ready For Website, Published On Website, Ready For Flipkart, Listed On Flipkart, Sold Out, Archived). Replaces the earlier, narrower `listingStatus` — plain string, not a native Firestore/C# enum, same convention as `category`. Archived products are automatically excluded from the homepage's curated Featured/Trending/Collections sections (`ProductService.GetSummariesByIdsAsync`). |
+| `lowStockThreshold` | number (optional) | Admin-configurable per product. Unset = low-stock check doesn't apply. |
+| `reservedStock` | number | Reserved for future use (e.g. items held in an unpaid cart) — always `0` this phase, never written to. |
+| `autoHideWhenOutOfStock` | boolean | Admin opt-in automation: when `stock` reaches `0`, `InventoryService.UpdateInventoryAsync` also sets `active=false` in the same write. |
+| `stockUpdatedAt` | Timestamp (optional) | Stamped only by inventory-specific writes (`PATCH /products/{id}/stock`, `PATCH /inventory/{id}`) — distinct from the general `updatedAt`, which any product edit touches. |
+
+`isLowStock`/`isOutOfStock` are **not** stored fields — both are derived
+at read time (`Stock <= 0`, and `LowStockThreshold` set with
+`0 < Stock <= LowStockThreshold`, respectively) in `ProductService`/
+`InventoryService`, so they can never drift out of sync with `stock`.
+
+**Composite indexes** (`firestore.indexes.json`, repo root): `active+displayOrder`,
+`active+featured+displayOrder`, `active+newArrival+createdAt desc`,
+`active+bestSeller+displayOrder`, `active+category+displayOrder`,
+`active+searchKeywords(CONTAINS)+displayOrder`. **These must be deployed**
+(`firebase deploy --only firestore:indexes`) before the corresponding
+queries work against a fresh project — declaring them in the JSON file
+does not create them.
+
+**Rules**: not yet updated to lock out direct client writes now that the
+API is the sole writer — `firestore.rules`' `products` rule still permits
+`create/update/delete` from an authenticated admin client SDK call. This
+path is unused (Angular never writes to Firestore directly for products
+anymore) but still technically open; tightening it to `allow write: if false`
+is a known follow-up, not yet done.
+
+## Collection: `categories`
+
+**Document ID: the category slug** (`long-kurtas`, `short-kurtas`,
+`2-piece-sets`, `3-piece-sets`, ...) — the same vocabulary as
+`products.category`. Evolved from a static in-memory list in `api/` into a
+real collection so admin can add/edit/reorder/hide categories without a
+code deploy.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name`, `subtitle` | string (subtitle optional) | |
+| `image`, `imagePath` | string | Firebase Storage URL + object path. |
+| `displayOrder` | number | |
+| `active` | boolean | Visibility gate — public `GET /api/v1/categories` only returns `active == true`, ordered. |
+| `createdAt`, `updatedAt` | Timestamp | |
+
+**Rules**: same pattern as `products` — writes should be admin-only via
+the API; `firestore.rules` not yet tightened (same follow-up as above).
+
+## Collection: `heroBanners`
+
+**Document ID: auto-generated.** Multiple banners can exist for
+scheduling — the public homepage always renders exactly **one**: the
+lowest-`displayOrder` banner that is `active` and currently within
+`startDate`/`endDate` (see `HomepageService.GetActiveBannerAsync` — no
+carousel, this is a schedule-and-pick-one design).
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `title` | string | |
+| `subtitle`, `buttonText`, `buttonUrl` | string (optional) | No CTA button renders if `buttonText` is unset. |
+| `backgroundImageUrl`, `backgroundImagePath` | string | |
+| `mobileImageUrl`, `mobileImagePath` | string (optional) | |
+| `displayOrder` | number | |
+| `startDate`, `endDate` | Timestamp (optional) | Null = no bound on that side. |
+| `active` | boolean | |
+| `createdAt`, `updatedAt` | Timestamp | |
+
+## Collection: `promotionalBanners`
+
+**Document ID: auto-generated.** Unlike Hero, **every** currently `active`
+banner renders on the homepage (ordered by `displayOrder`) — not a
+pick-one design, since these are meant to stack (e.g. multiple concurrent
+sale promotions).
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `desktopImageUrl`, `desktopImagePath` | string | |
+| `mobileImageUrl`, `mobileImagePath` | string (optional) | |
+| `buttonText`, `buttonUrl` | string (optional) | |
+| `displayOrder` | number | |
+| `active` | boolean | |
+| `createdAt`, `updatedAt` | Timestamp | |
+
+## Collection: `homepageConfig` <a name="homepageconfig"></a>
+
+**Singleton** — always exactly one document, `homepageConfig/singleton`.
+Consolidates every homepage section that only ever needs one record
+(rather than four-plus near-empty collections), edited as one form
+(`PUT /api/v1/homepage-config`) from the admin's Homepage Settings page.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `featuredProductIds` | array of string | Ordered, admin-picked product ids — "Featured Collection". Resolved to `ProductSummaryResponse`s via a Firestore batch-get (`GetAllSnapshotsAsync`), in this saved order, dropping any id that's missing/inactive. |
+| `trendingProductIds` | array of string | Same shape — "Trending Collection". |
+| `newArrivalsOverrideIds` | array of string | Empty = automatic (latest active products by `createdAt desc`, same query the homepage always used). Non-empty = admin's exact manual order. |
+| `announcement` | `{ enabled, message?, linkText?, linkUrl? }` | Included in `GET /api/v1/homepage`'s response only if `enabled`. |
+| `instagram` | `{ enabled, heading?, handle?, profileUrl?, images: [{url,path,linkUrl?}] }` | Same — only if `enabled`. No real Instagram API integration; `images` is an admin-curated, manually-uploaded set. |
+| `footerBanner` | `{ active, title?, subtitle?, imageUrl?, imagePath?, buttonText?, buttonUrl? }` | Only if `active`. |
+| `seo` | `{ metaTitle?, metaDescription?, metaKeywords: string[], ogImage?, canonicalUrl? }` | Homepage-specific meta tags; falls back to hardcoded defaults in `web/` if unset. |
+| `updatedBy`, `updatedAt` | string, Timestamp | |
+
+**Rules**: admin-only, same pattern as the collections above.
+
+## Aggregation: `GET /api/v1/homepage`
+
+Not a collection — a computed, server-cached (`IMemoryCache`, 60s TTL,
+fixed key, invalidated immediately by every homepage-CMS mutation above)
+aggregation across `heroBanners`, `promotionalBanners`, `categories`,
+`homepageConfig/singleton`, and `products` (for the three curated/automatic
+product lists). One call returns everything the public homepage needs —
+see [API Reference](../API_REFERENCE.md#homepagecontroller).
 
 ## Collection: `marketingSubscribers`
 

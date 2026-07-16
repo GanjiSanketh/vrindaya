@@ -18,12 +18,28 @@
   <section class="pl-products">
     <div class="container-vr">
 
-      @if (products().length > 0) {
+      @if (loading()) {
+        <app-skeleton-grid [count]="8" />
+      } @else if (error()) {
+        <div class="pl-empty">
+          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+          <p class="pl-empty-title">{{ error() }}</p>
+          <button type="button" class="btn-primary" (click)="retry()">Retry</button>
+        </div>
+      } @else if (products().length > 0) {
         <div class="pl-grid">
           @for (product of products(); track product.id) {
             <app-product-card [product]="product" />
           }
         </div>
+
+        @if (nextCursor()) {
+          <div class="pl-load-more">
+            <button type="button" class="btn-primary" [disabled]="loadingMore()" (click)="loadMore()">
+              @if (loadingMore()) { Loading… } @else { Load More }
+            </button>
+          </div>
+        }
       } @else {
         <div class="pl-empty">
           <i class="bi bi-bag-x" aria-hidden="true"></i>

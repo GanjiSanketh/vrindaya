@@ -15,4 +15,13 @@ public class AnalyticsController : ControllerBase
     {
         _analyticsService = analyticsService;
     }
+
+    /// <summary>Public, no auth — fired by anonymous storefront visitors clicking "Buy on Flipkart" (matches GetProducts/GetProductById's existing no-auth precedent).</summary>
+    [HttpPost("products/{id}/click")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> RecordProductClick(string id, CancellationToken cancellationToken)
+    {
+        await _analyticsService.RecordProductClickAsync(id, cancellationToken);
+        return NoContent();
+    }
 }

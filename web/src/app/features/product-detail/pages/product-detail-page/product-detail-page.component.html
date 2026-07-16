@@ -1,0 +1,156 @@
+<main class="pd-page">
+
+  @if (loading()) {
+    <div class="container-vr pd-wrap">
+      <div class="pd-skeleton">
+        <div class="pd-skel-gallery shimmer"></div>
+        <div class="pd-skel-details">
+          <div class="pd-skel-line pd-skel-line--title shimmer"></div>
+          <div class="pd-skel-line pd-skel-line--price shimmer"></div>
+          <div class="pd-skel-line pd-skel-line--text shimmer"></div>
+          <div class="pd-skel-line pd-skel-line--text shimmer"></div>
+          <div class="pd-skel-line pd-skel-line--btn shimmer"></div>
+        </div>
+      </div>
+    </div>
+  } @else if (notFound()) {
+    <div class="pd-empty">
+      <i class="bi bi-bag-x" aria-hidden="true"></i>
+      <p class="pd-empty-title">Product not found</p>
+      <p class="pd-empty-sub">This product may have been removed or is no longer available.</p>
+      <a routerLink="/shop" class="btn-primary">Continue Shopping</a>
+    </div>
+  } @else if (error()) {
+    <div class="pd-empty">
+      <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+      <p class="pd-empty-title">{{ error() }}</p>
+      <button type="button" class="btn-primary" (click)="retry()">Retry</button>
+    </div>
+  } @else if (product(); as p) {
+
+    <div class="container-vr pd-wrap">
+
+      <!-- Breadcrumb -->
+      <nav class="pd-breadcrumb" aria-label="Breadcrumb">
+        <a routerLink="/" class="pd-bc-link">Home</a>
+        <i class="bi bi-chevron-right pd-bc-sep" aria-hidden="true"></i>
+        <a [routerLink]="['/category', p.category]" class="pd-bc-link">{{ p.category }}</a>
+        <i class="bi bi-chevron-right pd-bc-sep" aria-hidden="true"></i>
+        <span class="pd-bc-current">{{ p.name }}</span>
+      </nav>
+
+      <div class="pd-main">
+
+        <!-- Gallery -->
+        <div class="pd-gallery">
+          <div class="pd-main-wrap" (click)="openLightbox()" title="Click to zoom"
+               (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()">
+            <img [src]="selectedImage()" [alt]="p.name"
+                 class="pd-main-img" loading="eager" draggable="false"
+                 [style.transform-origin]="transformOrigin()"
+                 [class.zoomed]="isZoomed()" />
+            <div class="pd-zoom-hint"><i class="bi bi-zoom-in"></i></div>
+          </div>
+
+          @if (allImages().length > 1) {
+            <div class="pd-thumbs">
+              @for (img of allImages(); track img; let i = $index) {
+                <button type="button" class="pd-thumb" [class.active]="selectedIndex() === i"
+                        (click)="selectImage(i)" [attr.aria-label]="'View image ' + (i + 1)">
+                  <img [src]="img" [alt]="p.name + ' view ' + (i + 1)" loading="lazy" draggable="false" />
+                </button>
+              }
+            </div>
+          }
+
+          <p class="pd-zoom-tip"><i class="bi bi-zoom-in"></i> Hover to zoom · Click to fullscreen</p>
+        </div>
+
+        <!-- Details -->
+        <div class="pd-details">
+
+          <div class="pd-badge-row">
+            @if (p.isOutOfStock)      { <span class="pd-badge pd-badge--oos">OUT OF STOCK</span> }
+            @else if (p.isBestSeller) { <span class="pd-badge">BESTSELLER</span> }
+            @else if (p.isTrending)   { <span class="pd-badge">FEATURED</span> }
+            @else if (p.isNew)        { <span class="pd-badge pd-badge--new">NEW ARRIVAL</span> }
+          </div>
+
+          <h1 class="pd-name">{{ p.name }}</h1>
+
+          <div class="pd-price-row">
+            <span class="pd-price">₹{{ p.price }}</span>
+            @if (p.mrp > p.price) { <span class="pd-mrp">₹{{ p.mrp }}</span> }
+            @if (p.discount > 0)  { <span class="pd-discount">{{ p.discount }}% off</span> }
+          </div>
+
+          <p class="pd-sku">SKU: {{ p.sku }}</p>
+
+          <div class="pd-rule"></div>
+
+          @if (p.description || p.shortDescription) {
+            <div class="pd-block">
+              @if (p.shortDescription) { <p class="pd-short-desc">{{ p.shortDescription }}</p> }
+              @if (p.description) { <p class="pd-desc">{{ p.description }}</p> }
+            </div>
+          }
+
+          @if (p.sizes.length) {
+            <div class="pd-block">
+              <h3 class="pd-block-title">Available Sizes</h3>
+              <div class="pd-sizes">
+                @for (s of p.sizes; track s.size) {
+                  <span class="pd-size-chip" [class.pd-size-chip--out]="s.stock <= 0">
+                    {{ s.size }} @if (s.stock <= 0) { <small>(Out of stock)</small> }
+                  </span>
+                }
+              </div>
+            </div>
+          }
+
+          @if (p.color || p.fabric || p.washCare) {
+            <div class="pd-block">
+              <dl class="pd-specs">
+                @if (p.color)    { <dt>Colour</dt><dd>{{ p.color }}</dd> }
+                @if (p.fabric)   { <dt>Fabric</dt><dd>{{ p.fabric }}</dd> }
+                @if (p.washCare) { <dt>Wash Care</dt><dd>{{ p.washCare }}</dd> }
+              </dl>
+            </div>
+          }
+
+          <div class="pd-rule"></div>
+
+          <div class="pd-actions">
+            @if (p.flipkartUrl) {
+              <button type="button" class="pd-cta" (click)="shopOnFlipkart()">
+                Buy on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
+              </button>
+            } @else {
+              <button type="button" class="pd-cta pd-cta--soon" disabled>Coming Soon</button>
+            }
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Similar Products -->
+      @if (relatedLoading()) {
+        <section class="pd-related">
+          <h2 class="pd-related-title">Similar Products</h2>
+          <app-skeleton-grid [count]="4" />
+        </section>
+      } @else if (relatedProducts().length > 0) {
+        <section class="pd-related">
+          <h2 class="pd-related-title">Similar Products</h2>
+          <div class="pd-related-grid">
+            @for (rp of relatedProducts(); track rp.id) {
+              <app-product-card [product]="rp" />
+            }
+          </div>
+        </section>
+      }
+
+    </div>
+  }
+
+</main>

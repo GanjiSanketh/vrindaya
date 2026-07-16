@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   adminEmail: 'gsanketh7121@gmail.com',
-  /** ASP.NET Core Web API — not yet integrated, prepared for future use. */
+  /** ASP.NET Core Web API — run `dotnet run` in api/ locally to match this URL. */
   apiBaseUrl: 'https://localhost:5001/api/v1',
   firebase: {
     apiKey: "AIzaSyAGIZzyi-1o4kR86IYbWLRaCExH343sJUY",

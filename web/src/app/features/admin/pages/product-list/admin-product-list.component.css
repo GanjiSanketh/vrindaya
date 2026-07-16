@@ -32,9 +32,29 @@
 
 .btn-primary-sm:hover { background: #0c5c6e; color: #fff; }
 
+/* ── Tabs ── */
+.pl-tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; border-bottom: 1px solid #e8ecf0; }
+
+.pl-tab {
+  padding: 0.625rem 1rem; border: none; background: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: #6b7280;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  display: inline-flex; align-items: center; gap: 0.375rem;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.pl-tab:hover { color: #0f6f84; }
+.pl-tab--active { color: #0f6f84; border-bottom-color: #0f6f84; }
+
 /* ── Filters ── */
 .pl-filters {
-  display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;
+  display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;
+}
+
+.pl-flag-check {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: #374151;
+  cursor: pointer; white-space: nowrap;
 }
 
 .pl-search-wrap {
@@ -69,6 +89,42 @@
 
 .pl-select:focus { border-color: #0f6f84; }
 
+.pl-price-range { display: flex; align-items: center; gap: 0.4rem; color: #9ca3af; font-size: 0.82rem; }
+.pl-price-input {
+  width: 90px; padding: 0.5rem 0.625rem;
+  border: 1px solid #e0e4ea; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+  background: #fff; outline: none;
+  transition: border-color 0.18s;
+}
+.pl-price-input:focus { border-color: #0f6f84; }
+
+.pl-page-size { font-size: 0.8rem; padding: 0.4rem 0.625rem; margin-right: auto; }
+
+/* ── Bulk toolbar ── */
+.pl-bulk-toolbar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+  padding: 0.625rem 1rem; margin-bottom: 1rem;
+  background: #e6f4f7; border: 1px solid #b8dee6; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: #0c4a58;
+}
+
+.pl-bulk-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.pl-bulk-actions .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+.pl-bulk-divider { width: 1px; height: 20px; background: #b8dee6; }
+.pl-bulk-danger { border-color: #dc2626; color: #dc2626; }
+.pl-bulk-danger:hover { background: #dc2626; color: #fff; }
+
+.pl-th-check { width: 36px; }
+
+/* ── Pagination ── */
+.pl-pagination {
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+  padding: 0.875rem 1rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: #6b7280;
+  border-top: 1px solid #f0f4f7;
+}
+
 /* ── Card ── */
 .pl-card {
   background: #fff; border-radius: 12px;
@@ -97,6 +153,26 @@
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
+
+/* ── Skeleton loading ── */
+.pl-skeleton { display: flex; flex-direction: column; padding: 0.5rem 1rem; }
+.pl-skeleton-row { display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem 0; border-bottom: 1px solid #f0f4f7; }
+.pl-skeleton-row:last-child { border-bottom: none; }
+.pl-skeleton-thumb { width: 44px; height: 44px; border-radius: 6px; background: #eef1f4; animation: pl-shimmer 1.3s ease-in-out infinite; flex-shrink: 0; }
+.pl-skeleton-lines { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+.pl-skeleton-line { height: 10px; border-radius: 4px; background: #eef1f4; animation: pl-shimmer 1.3s ease-in-out infinite; }
+.pl-skeleton-line--wide   { width: 60%; }
+.pl-skeleton-line--narrow { width: 30%; }
+
+@keyframes pl-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* ── Extra columns ── */
+.pl-flag-yes { color: #1a8435; font-size: 0.95rem; }
+.pl-updated  { font-size: 0.78rem; color: #6b7280; white-space: nowrap; }
+
+.pl-link { cursor: pointer; }
+.pl-link:hover { color: #0f6f84; text-decoration: underline; }
+.pl-thumb { cursor: pointer; }
 
 .btn-link { border: none; background: none; color: #0f6f84; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline; }
 
@@ -152,6 +228,7 @@
 .pl-badge--new   { background: #fef9ec; color: #a67c23; }
 .pl-badge--trend { background: #edf7ef; color: #1a8435; }
 .pl-badge--best  { background: #f4eef9; color: #7a27c7; }
+.pl-badge--del   { background: #fef2f2; color: #dc2626; }
 
 /* ── Row actions ── */
 .pl-row-actions { display: flex; gap: 0.375rem; justify-content: flex-end; }

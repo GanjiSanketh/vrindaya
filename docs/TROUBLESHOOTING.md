@@ -211,11 +211,14 @@ dotnet run
   confirm `web/vercel.json`'s SPA rewrite rule
   (`{ "source": "/(.*)", "destination": "/index.html" }`) is present and
   that Vercel's Root Directory is `web`, so it's actually picked up.
-- **CSP blocks a resource in production only** — `web/vercel.json`'s
+- **A resource shows `(blocked:csp)` in DevTools → Network** — the
   Content-Security-Policy is scoped to exactly the domains this app
-  currently needs (Google Sign-In, Firebase, Google Fonts). Adding any
-  new external script/font/image host requires adding it to the relevant
-  CSP directive in the same change — see
+  currently needs (Google Sign-In, Firebase, Google Fonts, Cloudinary).
+  It's defined in **three places**, not one: `web/vercel.json` (the real
+  HTTP header, production only) and two meta tags,
+  `web/src/index.html` (dev) and `web/src/index.prod.html` (prod). Adding
+  any new external script/font/image host requires adding it to the
+  relevant CSP directive in **all three files** in the same change — see
   [deployment/vercel-deployment.md](deployment/vercel-deployment.md).
 - **Both Vercel's own Git integration and the GitHub Actions workflow
   deploy** — disable Vercel's automatic Git deploys for this project;

@@ -1,0 +1,139 @@
+@if (productId()) {
+  <div class="ppd-backdrop" (click)="onBackdropClick($event)">
+    <aside class="ppd-drawer">
+      <button type="button" class="ppd-close" (click)="close()" title="Close" aria-label="Close preview">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      @if (loading()) {
+        <div class="ppd-loading">
+          <span class="ppd-spinner"></span> Loading product…
+        </div>
+      } @else if (error()) {
+        <div class="ppd-error">
+          <i class="bi bi-exclamation-triangle"></i>
+          <p>{{ error() }}</p>
+        </div>
+      } @else if (product(); as p) {
+        <div class="ppd-content">
+
+          <!-- Gallery -->
+          <div class="ppd-gallery">
+            @if (p.images.length) {
+              <div class="ppd-main-image">
+                <img [src]="p.images[activeImageIndex()]?.url ?? p.images[0].url" [alt]="p.name" />
+              </div>
+              @if (p.images.length > 1) {
+                <div class="ppd-thumbs">
+                  @for (img of p.images; track img.publicId; let i = $index) {
+                    <button type="button" class="ppd-thumb" [class.ppd-thumb--active]="i === activeImageIndex()" (click)="selectImage(i)">
+                      <img [src]="img.url" alt="" />
+                    </button>
+                  }
+                </div>
+              }
+            } @else {
+              <div class="ppd-main-image ppd-no-image">
+                <i class="bi bi-image"></i>
+              </div>
+            }
+          </div>
+
+          <!-- Header -->
+          <div class="ppd-header">
+            <h2 class="ppd-name">{{ p.name }}</h2>
+            <div class="ppd-badges">
+              @if (p.deleted)     { <span class="ppd-badge ppd-badge--del">Deleted</span> }
+              @if (!p.active)     { <span class="ppd-badge ppd-badge--del">Inactive</span> }
+              @if (p.featured)    { <span class="ppd-badge ppd-badge--trend">Featured</span> }
+              @if (p.bestSeller)  { <span class="ppd-badge ppd-badge--best">Best Seller</span> }
+              @if (p.newArrival)  { <span class="ppd-badge ppd-badge--new">New Arrival</span> }
+            </div>
+            <div class="ppd-price-row">
+              <span class="ppd-price">₹{{ p.price }}</span>
+              @if (p.mrp > p.price) { <span class="ppd-mrp">₹{{ p.mrp }}</span> }
+              @if (p.discount > 0)  { <span class="ppd-discount">{{ p.discount }}% off</span> }
+            </div>
+            <p class="ppd-meta">SKU {{ p.sku }} · {{ p.category }} @if (p.brand) { · {{ p.brand }} }</p>
+          </div>
+
+          <!-- Description -->
+          @if (p.description || p.shortDescription) {
+            <section class="ppd-section">
+              <h3>Description</h3>
+              @if (p.shortDescription) { <p class="ppd-short-desc">{{ p.shortDescription }}</p> }
+              @if (p.description) { <p>{{ p.description }}</p> }
+            </section>
+          }
+
+          <!-- Sizes -->
+          @if (p.sizes.length) {
+            <section class="ppd-section">
+              <h3>Available Sizes</h3>
+              <div class="ppd-sizes">
+                @for (s of p.sizes; track s.size) {
+                  <span class="ppd-size-chip" [class.ppd-size-chip--out]="s.stock <= 0">
+                    {{ s.size }} <small>({{ s.stock }})</small>
+                  </span>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- Color -->
+          @if (p.color) {
+            <section class="ppd-section">
+              <h3>Color</h3>
+              <p>{{ p.color }}</p>
+            </section>
+          }
+
+          <!-- Specifications -->
+          @if (p.fabric || p.pattern || p.fit || p.sleeve || p.neck || p.occasion) {
+            <section class="ppd-section">
+              <h3>Specifications</h3>
+              <dl class="ppd-specs">
+                @if (p.fabric)   { <dt>Fabric</dt><dd>{{ p.fabric }}</dd> }
+                @if (p.pattern)  { <dt>Pattern</dt><dd>{{ p.pattern }}</dd> }
+                @if (p.fit)      { <dt>Fit</dt><dd>{{ p.fit }}</dd> }
+                @if (p.sleeve)   { <dt>Sleeve</dt><dd>{{ p.sleeve }}</dd> }
+                @if (p.neck)     { <dt>Neck</dt><dd>{{ p.neck }}</dd> }
+                @if (p.occasion) { <dt>Occasion</dt><dd>{{ p.occasion }}</dd> }
+              </dl>
+            </section>
+          }
+
+          <!-- SEO -->
+          @if (p.seoTitle || p.seoDescription || (p.seoKeywords && p.seoKeywords.length)) {
+            <section class="ppd-section">
+              <h3>SEO</h3>
+              @if (p.seoTitle) { <p><strong>Title:</strong> {{ p.seoTitle }}</p> }
+              @if (p.seoDescription) { <p><strong>Description:</strong> {{ p.seoDescription }}</p> }
+              @if (p.seoKeywords && p.seoKeywords.length) {
+                <div class="ppd-tags">
+                  @for (kw of p.seoKeywords; track kw) { <span class="ppd-tag">{{ kw }}</span> }
+                </div>
+              }
+            </section>
+          }
+
+          <!-- Flipkart -->
+          @if (p.flipkartProductUrl) {
+            <section class="ppd-section">
+              <h3>Flipkart</h3>
+              <a [href]="p.flipkartProductUrl" target="_blank" rel="noopener noreferrer" class="ppd-flipkart-link">
+                <i class="bi bi-box-arrow-up-right"></i> View on Flipkart
+              </a>
+            </section>
+          }
+
+          <div class="ppd-actions">
+            <a [routerLink]="BASE + '/products/' + p.id + '/edit'" class="btn-primary-sm">
+              <i class="bi bi-pencil"></i> Edit Product
+            </a>
+          </div>
+        </div>
+      }
+    </aside>
+  </div>
+}

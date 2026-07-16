@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import type { Timestamp } from 'firebase/firestore';
 import { environment } from '../../../../environments/environment';
 import { CampaignTemplate, CampaignTemplateInput } from '../models/campaign-template.model';
+import { LoggerService } from '../../../core/services/logger.service';
 
 const COLLECTION = 'campaignTemplates';
 
@@ -36,7 +37,8 @@ const DEFAULT_TEMPLATES: CampaignTemplateInput[] = [
 
 @Injectable({ providedIn: 'root' })
 export class CampaignTemplateService {
-  private readonly pid = inject(PLATFORM_ID);
+  private readonly pid    = inject(PLATFORM_ID);
+  private readonly logger = inject(LoggerService);
 
   readonly templates = signal<CampaignTemplate[]>([]);
   readonly loading   = signal(true);
@@ -92,13 +94,13 @@ export class CampaignTemplateService {
           this.error.set(null);
         },
         err => {
-          console.error('[CampaignTemplates]', err);
+          this.logger.error('[CampaignTemplates]', err);
           this.error.set('Failed to load campaign templates.');
           this.loading.set(false);
         },
       );
     } catch (err) {
-      console.error('[CampaignTemplates]', err);
+      this.logger.error('[CampaignTemplates]', err);
       this.error.set('Failed to load campaign templates.');
       this.loading.set(false);
     }
@@ -119,7 +121,7 @@ export class CampaignTemplateService {
       const snap = await getDoc(doc(getFirestore(app), COLLECTION, id));
       return snap.exists() ? this.toTemplate(snap.id, snap.data()) : null;
     } catch (err) {
-      console.error('[CampaignTemplates]', err);
+      this.logger.error('[CampaignTemplates]', err);
       throw new Error('Failed to load the template.');
     }
   }
@@ -147,7 +149,7 @@ export class CampaignTemplateService {
       const ref = await addDoc(collection(db, COLLECTION), payload);
       return ref.id;
     } catch (err) {
-      console.error('[CampaignTemplates]', err);
+      this.logger.error('[CampaignTemplates]', err);
       throw new Error('Failed to create the template.');
     } finally {
       this.saving.set(false);
@@ -168,7 +170,7 @@ export class CampaignTemplateService {
         buttonUrl: input.buttonUrl || deleteField(),
       });
     } catch (err) {
-      console.error('[CampaignTemplates]', err);
+      this.logger.error('[CampaignTemplates]', err);
       throw new Error('Failed to update the template.');
     } finally {
       this.saving.set(false);
@@ -183,7 +185,7 @@ export class CampaignTemplateService {
       const app = getApps().length ? getApp() : initializeApp(environment.firebase);
       await deleteDoc(doc(getFirestore(app), COLLECTION, id));
     } catch (err) {
-      console.error('[CampaignTemplates]', err);
+      this.logger.error('[CampaignTemplates]', err);
       throw new Error('Failed to delete the template.');
     }
   }

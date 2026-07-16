@@ -3,9 +3,11 @@ import {
   inject, PLATFORM_ID, signal, untracked,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { QuickViewService }  from '../../../core/services/quick-view.service';
 import { LightboxService }   from '../../../core/services/lightbox.service';
 import { WishlistService }   from '../../../core/services/wishlist.service';
+import { ProductService }    from '../../../core/services/product.service';
 
 @Component({
   selector: 'app-product-quick-view',
@@ -19,6 +21,8 @@ export class ProductQuickViewComponent {
   private readonly lb   = inject(LightboxService);
   private readonly wl   = inject(WishlistService);
   private readonly pid  = inject(PLATFORM_ID);
+  private readonly productService = inject(ProductService);
+  private readonly router = inject(Router);
 
   readonly selectedIndex  = signal(0);
   readonly isZoomed       = signal(false);
@@ -79,8 +83,21 @@ export class ProductQuickViewComponent {
     if (p) this.wl.toggle(p.id);
   }
 
+  shopOnFlipkart(): void {
+    const p = this.svc.product();
+    if (p) this.productService.openProduct(p);
+    this.close();
+  }
+
   openLightbox(): void {
     this.lb.open(this.allImages(), this.selectedIndex());
+  }
+
+  viewFullDetails(): void {
+    const p = this.svc.product();
+    if (!p) return;
+    this.close();
+    void this.router.navigate(['/product', p.id]);
   }
 
   close(): void {

@@ -1,6 +1,7 @@
-import { Routes }         from '@angular/router';
-import { adminAuthGuard } from './guards/admin-auth.guard';
-import { roleGuard }      from './guards/role.guard';
+import { Routes }              from '@angular/router';
+import { adminAuthGuard }      from './guards/admin-auth.guard';
+import { roleGuard }           from './guards/role.guard';
+import { unsavedChangesGuard } from './guards/unsaved-changes.guard';
 
 export const ADMIN_ROUTES: Routes = [
   /* ── Public: login ─────────────────────────────────────────────── */
@@ -27,13 +28,88 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/product-list/admin-product-list.component').then(m => m.AdminProductListComponent),
       },
       {
-        path:          'products/new',
-        loadComponent: () => import('./pages/product-form/admin-product-form.component').then(m => m.AdminProductFormComponent),
+        path:            'products/new',
+        loadComponent:   () => import('./pages/product-form/admin-product-form.component').then(m => m.AdminProductFormComponent),
+        canDeactivate:   [unsavedChangesGuard],
       },
       {
-        path:          'products/:id/edit',
-        loadComponent: () => import('./pages/product-form/admin-product-form.component').then(m => m.AdminProductFormComponent),
+        path:            'products/:id/edit',
+        loadComponent:   () => import('./pages/product-form/admin-product-form.component').then(m => m.AdminProductFormComponent),
+        canDeactivate:   [unsavedChangesGuard],
       },
+      {
+        path:          'flipkart-ops',
+        loadComponent: () => import('./pages/flipkart-ops/flipkart-ops-list.component').then(m => m.FlipkartOpsListComponent),
+      },
+      /* Homepage CMS — literal-path routes ('new') must be declared before
+         the ':id' param routes, or they'd be swallowed as an id. */
+      {
+        path:          'homepage',
+        loadComponent: () => import('./pages/homepage/homepage-hub.component').then(m => m.HomepageHubComponent),
+      },
+      {
+        path:          'homepage/hero-banners',
+        loadComponent: () => import('./pages/homepage/hero-banners/hero-banner-list.component').then(m => m.HeroBannerListComponent),
+      },
+      {
+        path:          'homepage/hero-banners/new',
+        loadComponent: () => import('./pages/homepage/hero-banners/hero-banner-form.component').then(m => m.HeroBannerFormComponent),
+      },
+      {
+        path:          'homepage/hero-banners/:id/edit',
+        loadComponent: () => import('./pages/homepage/hero-banners/hero-banner-form.component').then(m => m.HeroBannerFormComponent),
+      },
+      {
+        path:          'homepage/promotional-banners',
+        loadComponent: () => import('./pages/homepage/promotional-banners/promotional-banner-list.component').then(m => m.PromotionalBannerListComponent),
+      },
+      {
+        path:          'homepage/promotional-banners/new',
+        loadComponent: () => import('./pages/homepage/promotional-banners/promotional-banner-form.component').then(m => m.PromotionalBannerFormComponent),
+      },
+      {
+        path:          'homepage/promotional-banners/:id/edit',
+        loadComponent: () => import('./pages/homepage/promotional-banners/promotional-banner-form.component').then(m => m.PromotionalBannerFormComponent),
+      },
+      {
+        path:          'homepage/settings',
+        loadComponent: () => import('./pages/homepage/settings/homepage-settings.component').then(m => m.HomepageSettingsComponent),
+      },
+
+      /* Brand CMS — own top-level nav entry (About Us/Contact/Store Info/
+         Social Links/FAQs/Policies/Footer), single settings screen. */
+      {
+        path:          'brand',
+        loadComponent: () => import('./pages/brand/brand-settings.component').then(m => m.BrandSettingsComponent),
+      },
+
+      /* Categories & Collections — own top-level nav entries, literal-path
+         routes ('new') declared before ':id' param routes. */
+      {
+        path:          'categories',
+        loadComponent: () => import('./pages/categories/category-list.component').then(m => m.CategoryListComponent),
+      },
+      {
+        path:          'categories/new',
+        loadComponent: () => import('./pages/categories/category-form.component').then(m => m.CategoryFormComponent),
+      },
+      {
+        path:          'categories/:id/edit',
+        loadComponent: () => import('./pages/categories/category-form.component').then(m => m.CategoryFormComponent),
+      },
+      {
+        path:          'collections',
+        loadComponent: () => import('./pages/collections/collection-list.component').then(m => m.CollectionListComponent),
+      },
+      {
+        path:          'collections/new',
+        loadComponent: () => import('./pages/collections/collection-form.component').then(m => m.CollectionFormComponent),
+      },
+      {
+        path:          'collections/:id/edit',
+        loadComponent: () => import('./pages/collections/collection-form.component').then(m => m.CollectionFormComponent),
+      },
+
       {
         path:          'marketing',
         loadComponent: () => import('../marketing/components/marketing-dashboard/marketing-dashboard.component').then(m => m.MarketingDashboardComponent),

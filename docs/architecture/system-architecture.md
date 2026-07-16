@@ -20,11 +20,32 @@ that share one Firebase project:
           └─────────────────────┘             └─────────────────────┘
 ```
 
-**Today**, `web/` talks to Firebase directly (Firestore reads/writes,
-Firebase Authentication for the admin portal) and `api/` is an
-infrastructure-only foundation that `web/` does not yet call. This is a
-deliberate, staged migration — see [Roadmap](../roadmap/roadmap.md) — not an
-oversight.
+**Today**, this is a genuinely mixed picture, by area:
+
+- **Product Management & Homepage CMS** — fully API-mediated. Angular
+  never writes to Firestore or uploads to Storage for products, categories,
+  hero banners, promotional banners, or homepage config; every write and
+  every image upload goes through `api/`'s controllers. The public
+  storefront's product **reads** are the one exception on the write side
+  of this boundary — `ProductRepository.listenActive` still reads Firestore
+  directly for the homepage/category/search-adjacent live listeners; admin
+  reads and every mutation go through the API. See
+  [API Reference](../API_REFERENCE.md) and
+  [Firestore Schema](../database/firestore-schema.md).
+- **Marketing (subscribers, campaigns, WhatsApp delivery)** — still
+  Firebase-first: `web/` reads/writes Firestore directly for all of it;
+  `api/`'s `CampaignDeliveryWorker` is the one piece of server-side logic
+  in this area (a background poller, not a request-driven endpoint).
+- **Admin authentication** — Firebase Auth (Google Sign-In) in `web/`,
+  as before, but the *same* Firebase ID token is now verified server-side
+  too (JWT Bearer, `api/`'s `AddFirebaseAuthentication()`) for every
+  Product/Homepage-CMS mutation — see
+  [Backend Architecture](backend-architecture.md).
+
+This asymmetry is intentional, not drift: Product Management and the
+Homepage CMS were built API-first from the start (see
+[Firestore Schema](../database/firestore-schema.md)); Marketing hasn't
+been migrated yet and remains a candidate for the same treatment later.
 
 ## Why a monorepo
 
@@ -71,17 +92,29 @@ filling in existing infrastructure, not building new plumbing.
 
 ## Request flow (current state)
 
-**Storefront / admin portal (`web/`):**
+**Product Management & Homepage CMS (`web/` → `api/` → Firestore/Storage):**
+```
+Browser → Angular → api.<render-domain>/api/v1/{products|hero-banners|
+                     promotional-banners|categories|homepage-config|
+                     homepage|homepage-assets}
+        → GlobalExceptionMiddleware → UseAuthentication (JWT Bearer,
+          verifies the Firebase ID token Angular already has) →
+          UseAuthorization ("AdminOnly" policy on mutations)
+        → Controller → I*Service → Firestore / Firebase Storage
+```
+The homepage itself makes exactly one call — `GET /api/v1/homepage` —
+which the API aggregates server-side and caches (`IMemoryCache`, 60s TTL).
+
+**Marketing (subscribers, campaigns, WhatsApp), admin auth (`web/`):**
 ```
 Browser → Angular (SSR + hydration, or pure CSR for /admin/**)
         → Firebase SDK (dynamic imports) → Firestore / Firebase Auth
 ```
 
-**API (`api/`), reachable but not yet called by `web/`:**
+**WhatsApp send/webhook (`api/`), called by `web/`'s admin WhatsApp settings page:**
 ```
-Browser / any client → api.<render-domain>/api/v1/{controller}
-                      → GlobalExceptionMiddleware → TokenValidationMiddleware (pass-through)
-                      → Controller → I*Service → (no implementation yet)
+Browser → api.<render-domain>/api/v1/whatsapp/*
+        → GlobalExceptionMiddleware → Controller → IWhatsAppService → Meta Cloud API
 ```
 
 ## Cross-cutting concerns and where they live
@@ -95,15 +128,31 @@ Browser / any client → api.<render-domain>/api/v1/{controller}
 | Logging | Serilog in `api/` (structured, environment-configurable); `console.error`/`console.log` with feature prefixes (`[Marketing]`, `[Campaigns]`, `[Insider]`) in `web/` |
 | Secrets | Never committed — `appsettings.json` ships with empty values, real values via environment variables; Angular's Firebase config is a public client key by design (Firebase's security model relies on rules, not key secrecy) |
 
-## What "infrastructure-only" means for `api/`
+## What's actually implemented in `api/`
 
-The API was deliberately built to a specific stopping point: every
-controller, service interface, and cross-cutting concern (logging,
-exceptions, versioning, CORS, health checks) is wired and *provably works*
-(see [Backend Architecture](backend-architecture.md#verification)), but
-**no controller other than `Health` has an implemented action**, and
-**no business logic, WhatsApp API call, or Firebase Authentication check
-has been written**. This is intentional — the next feature to land in
-`api/` should only need to fill in an existing `I*Service` and add actions
-to its already-injected controller, not touch `Program.cs` or the DI
-composition root.
+Every cross-cutting concern (logging, exceptions, versioning, CORS, health
+checks) is wired and *provably works* (see
+[Backend Architecture](backend-architecture.md#verification)). On top of
+that foundation, two feature areas now have full business logic:
+
+- **Product Management** — `ProductController` (CRUD, search, bulk
+  status/restore, image upload) plus its collaborators
+  (`ProductValidationService`, `InventoryService`, `ProductStorageService`,
+  `ImageCompressionService`).
+- **Homepage CMS** — `HeroBannerController`, `PromotionalBannerController`,
+  `CategoryController`, `HomepageConfigController`, `HomepageController`
+  (the `GET /homepage` aggregator), `HomepageAssetsController`, backed by
+  `HomepageStorageService` and `HomepageCacheService`.
+
+Firebase ID token verification (JWT Bearer) is real and enforced on every
+mutating action in both areas — see
+[Backend Architecture](backend-architecture.md#authentication). `Health`
+and `WhatsApp` (send + webhook) were the original implemented areas and
+remain unauthenticated, unchanged. `Marketing`, `Campaign`, `Analytics`,
+`Orders`, `Auth` controllers are still scaffolding-only (registered,
+zero actions) — see
+[Controllers with no implemented endpoints](../API_REFERENCE.md#controllers-with-no-implemented-endpoints-scaffolding-only).
+Adding a feature to either implemented area, or filling in a scaffolded
+one, follows the same pattern either way: fill in an `I*Service`, add
+actions to its controller — `Program.cs` and the DI composition root
+shouldn't need to change.

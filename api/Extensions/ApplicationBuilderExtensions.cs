@@ -43,12 +43,6 @@ public static class ApplicationBuilderExtensions
         return app;
     }
 
-    public static WebApplication UseTokenValidation(this WebApplication app)
-    {
-        app.UseMiddleware<TokenValidationMiddleware>();
-        return app;
-    }
-
     /// <summary>Swagger UI is Development-only — never exposed in production.</summary>
     public static WebApplication UseSwaggerInDevelopment(this WebApplication app)
     {
@@ -67,6 +61,18 @@ public static class ApplicationBuilderExtensions
             }
         });
 
+        return app;
+    }
+
+    /// <summary>
+    /// Must run early — before anything that writes to the response body —
+    /// so every JSON API response (this app has no static files/views to
+    /// compress) gets gzip/brotli applied. Paired with
+    /// AddResponseCompressionSupport() in ServiceCollectionExtensions.
+    /// </summary>
+    public static WebApplication UseResponseCompressionSupport(this WebApplication app)
+    {
+        app.UseResponseCompression();
         return app;
     }
 }

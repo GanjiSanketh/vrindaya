@@ -2,9 +2,10 @@ import { Component, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser }                                 from '@angular/common';
 import { Subscription }                                      from 'rxjs';
 
-import { PopupService } from '../../core/services/popup.service';
-import { PopupConfig }  from '../../core/models/popup.model';
-import { Product }      from '../../core/models/product.model';
+import { PopupService }   from '../../core/services/popup.service';
+import { PopupConfig }    from '../../core/models/popup.model';
+import { Product }        from '../../core/models/product.model';
+import { ProductService } from '../../core/services/product.service';
 
 @Component({
   selector:    'app-popup',
@@ -13,8 +14,9 @@ import { Product }      from '../../core/models/product.model';
   styleUrl:    './popup.component.css',
 })
 export class PopupComponent implements OnInit, OnDestroy {
-  private readonly svc        = inject(PopupService);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly svc            = inject(PopupService);
+  private readonly platformId     = inject(PLATFORM_ID);
+  private readonly productService = inject(ProductService);
 
   cardVisible  = false;
   modalVisible = false;
@@ -51,9 +53,7 @@ export class PopupComponent implements OnInit, OnDestroy {
   shopNow(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.svc.closeFullPopup();
-    if (this.product?.flipkartUrl) {
-      window.open(this.product.flipkartUrl, '_blank', 'noopener,noreferrer');
-    }
+    if (this.product) this.productService.openProduct(this.product);
   }
 
   viewCollection(): void {

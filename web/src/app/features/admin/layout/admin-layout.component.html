@@ -24,6 +24,26 @@
         <i class="bi bi-bag-heart"></i>
         <span>Products</span>
       </a>
+      <a [routerLink]="BASE + '/flipkart-ops'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+        <i class="bi bi-shop"></i>
+        <span>Flipkart Operations</span>
+      </a>
+      <a [routerLink]="BASE + '/categories'" routerLinkActive="al-nav-item--active" [routerLinkActiveOptions]="{ exact: false }" class="al-nav-item">
+        <i class="bi bi-grid-3x3-gap"></i>
+        <span>Categories</span>
+      </a>
+      <a [routerLink]="BASE + '/collections'" routerLinkActive="al-nav-item--active" [routerLinkActiveOptions]="{ exact: false }" class="al-nav-item">
+        <i class="bi bi-collection"></i>
+        <span>Collections</span>
+      </a>
+      <a [routerLink]="BASE + '/homepage'" routerLinkActive="al-nav-item--active" [routerLinkActiveOptions]="{ exact: false }" class="al-nav-item">
+        <i class="bi bi-house-heart"></i>
+        <span>Homepage</span>
+      </a>
+      <a [routerLink]="BASE + '/brand'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+        <i class="bi bi-award"></i>
+        <span>Brand</span>
+      </a>
       <a [routerLink]="BASE + '/marketing'" routerLinkActive="al-nav-item--active" class="al-nav-item">
         <i class="bi bi-envelope-heart"></i>
         <span>Marketing</span>

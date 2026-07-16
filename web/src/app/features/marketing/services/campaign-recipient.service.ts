@@ -4,6 +4,7 @@ import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { environment } from '../../../../environments/environment';
 import { CampaignRecipient, RECIPIENT_STATUSES, RecipientStatus } from '../models/campaign-recipient.model';
 import { mapFirestoreError } from '../../../shared/utils/firestore-error.util';
+import { LoggerService } from '../../../core/services/logger.service';
 
 const RECIPIENTS_COLLECTION = 'campaignRecipients';
 const SUBSCRIBERS_COLLECTION = 'marketingSubscribers';
@@ -31,7 +32,8 @@ export type RecipientStatusFilter = RecipientStatus | 'ALL';
  */
 @Injectable({ providedIn: 'root' })
 export class CampaignRecipientService {
-  private readonly pid = inject(PLATFORM_ID);
+  private readonly pid    = inject(PLATFORM_ID);
+  private readonly logger = inject(LoggerService);
 
   readonly recipients        = signal<CampaignRecipient[]>([]);
   readonly loadingFirstPage  = signal(false);
@@ -99,7 +101,7 @@ export class CampaignRecipientService {
 
       return docs.length;
     } catch (err) {
-      console.error('[CampaignRecipient]', err);
+      this.logger.error('[CampaignRecipient]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -129,7 +131,7 @@ export class CampaignRecipientService {
 
       return { ...byStatus, total: counts.reduce((sum, c) => sum + c, 0) };
     } catch (err) {
-      console.error('[CampaignRecipient]', err);
+      this.logger.error('[CampaignRecipient]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -196,7 +198,7 @@ export class CampaignRecipientService {
       this.hasMore.set(snap.docs.length === PAGE_SIZE);
       this.recipients.update(existing => [...existing, ...snap.docs.map(d => this.toRecipient(d.id, d.data()))]);
     } catch (err) {
-      console.error('[CampaignRecipient]', err);
+      this.logger.error('[CampaignRecipient]', err);
       this.error.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }

@@ -9,6 +9,19 @@
         <i class="bi bi-x-lg"></i>
       </button>
 
+      <!-- Full-detail fetch state (Product Details API) — first open only, cached after -->
+      @if (svc.detailLoading()) {
+        <div class="qv-detail-status" aria-live="polite">
+          <span class="qv-detail-spinner"></span>
+        </div>
+      } @else if (svc.detailError()) {
+        <div class="qv-detail-status qv-detail-status--error" role="alert">
+          <i class="bi bi-exclamation-triangle"></i>
+          <span>{{ svc.detailError() }}</span>
+          <button type="button" (click)="svc.retryDetail()">Retry</button>
+        </div>
+      }
+
       <!-- ── Gallery ── -->
       <div class="qv-gallery">
 
@@ -41,10 +54,12 @@
 
         <!-- Badge -->
         <div class="qv-badge-row">
-          @if (product.isBestSeller) {
+          @if (product.isOutOfStock) {
+            <span class="qv-badge qv-badge--oos">OUT OF STOCK</span>
+          } @else if (product.isBestSeller) {
             <span class="qv-badge">BESTSELLER</span>
           } @else if (product.isTrending) {
-            <span class="qv-badge">TRENDING</span>
+            <span class="qv-badge">FEATURED</span>
           } @else if (product.isNew) {
             <span class="qv-badge qv-badge--new">NEW ARRIVAL</span>
           }
@@ -89,10 +104,15 @@
 
         <!-- Actions -->
         <div class="qv-actions">
-          <a [href]="product.flipkartUrl" target="_blank" rel="noopener noreferrer"
-             class="qv-cta" (click)="close()">
-            View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
-          </a>
+          @if (product.flipkartUrl) {
+            <button type="button" class="qv-cta" (click)="shopOnFlipkart()">
+              View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
+            </button>
+          } @else {
+            <button type="button" class="qv-cta qv-cta--soon" disabled>
+              Coming Soon
+            </button>
+          }
 
           <button class="qv-wish-btn" (click)="toggleWishlist()"
                   [class.wishlisted]="isWishlisted()"
@@ -100,6 +120,10 @@
             <i class="bi" [class.bi-heart-fill]="isWishlisted()" [class.bi-heart]="!isWishlisted()"></i>
           </button>
         </div>
+
+        <button type="button" class="qv-full-details" (click)="viewFullDetails()">
+          View Full Details <i class="bi bi-arrow-right"></i>
+        </button>
 
         <p class="qv-zoom-tip">
           <i class="bi bi-zoom-in"></i> Hover to zoom · Click to fullscreen

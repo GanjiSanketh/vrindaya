@@ -16,6 +16,15 @@
     </div>
   }
 
+  <!-- Error banner -->
+  @if (formError()) {
+    <div class="pf-error">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      {{ formError() }}
+      <button type="button" (click)="formError.set(null)">×</button>
+    </div>
+  }
+
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <div class="pf-grid">
 
@@ -33,41 +42,140 @@
             @if (isInvalid('name')) { <span class="pf-err">Product name is required (min 3 chars)</span> }
           </div>
 
+          <div class="pf-field-row">
+            <div class="pf-field">
+              <label class="pf-label">Slug *</label>
+              <input class="pf-input" [class.pf-input--err]="isInvalid('slug') || slugError()"
+                     formControlName="slug" type="text" (input)="onSlugInput()" placeholder="indigo-floral-kurta-set" />
+              @if (isInvalid('slug')) { <span class="pf-err">Lowercase letters, numbers, hyphens only</span> }
+              @if (slugError()) { <span class="pf-err">{{ slugError() }}</span> }
+            </div>
+            <div class="pf-field">
+              <label class="pf-label">SKU *</label>
+              <input class="pf-input" [class.pf-input--err]="isInvalid('sku') || skuError()"
+                     formControlName="sku" type="text" placeholder="VRN-KRT-001" />
+              @if (isInvalid('sku')) { <span class="pf-err">SKU is required</span> }
+              @if (skuError()) { <span class="pf-err">{{ skuError() }}</span> }
+            </div>
+          </div>
+
+          <div class="pf-field-row">
+            <div class="pf-field">
+              <label class="pf-label">Category *</label>
+              <select class="pf-select" formControlName="category">
+                @for (cat of categories; track cat.id) {
+                  <option [value]="cat.id">{{ cat.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="pf-field">
+              <label class="pf-label">Subcategory</label>
+              <input class="pf-input" formControlName="subCategory" type="text" placeholder="e.g. Anarkali" />
+            </div>
+          </div>
+
           <div class="pf-field">
-            <label class="pf-label">Category *</label>
-            <select class="pf-select" [class.pf-input--err]="isInvalid('categoryId')" formControlName="categoryId">
-              @for (cat of categories; track cat.id) {
-                <option [value]="cat.id">{{ cat.label }}</option>
-              }
-            </select>
+            <label class="pf-label">Brand</label>
+            <input class="pf-input" formControlName="brand" type="text" placeholder="Vrindaya" />
+          </div>
+
+          <div class="pf-field">
+            <label class="pf-label">Short Description</label>
+            <input class="pf-input" formControlName="shortDescription" type="text" maxlength="160"
+                   placeholder="One-line summary shown on the product card" />
           </div>
 
           <div class="pf-field">
             <label class="pf-label">Description</label>
-            <textarea class="pf-textarea" formControlName="description" rows="3"
+            <textarea class="pf-textarea" formControlName="description" rows="4"
                       placeholder="Describe the fabric, fit, occasion…"></textarea>
-          </div>
-
-          <div class="pf-field">
-            <label class="pf-label">Fabric</label>
-            <input class="pf-input" formControlName="fabric" type="text" placeholder="e.g. Cotton Blend, Rayon" />
-          </div>
-
-          <div class="pf-field">
-            <label class="pf-label">Flipkart URL *</label>
-            <input class="pf-input" [class.pf-input--err]="isInvalid('flipkartUrl')"
-                   formControlName="flipkartUrl" type="url" placeholder="https://www.flipkart.com/…" />
-            @if (isInvalid('flipkartUrl')) { <span class="pf-err">Flipkart URL is required</span> }
           </div>
         </div>
 
-        <!-- Details -->
+        <!-- Pricing -->
         <div class="pf-section">
-          <h2 class="pf-section-title">Details</h2>
-          <div class="pf-field pf-field--half">
-            <label class="pf-label">Rating (0–5)</label>
-            <input class="pf-input" formControlName="rating" type="number" step="0.1" min="0" max="5" />
+          <h2 class="pf-section-title">Pricing</h2>
+          <div class="pf-field-row pf-field-row--3">
+            <div class="pf-field">
+              <label class="pf-label">MRP (₹) *</label>
+              <input class="pf-input" [class.pf-input--err]="isInvalid('mrp')"
+                     formControlName="mrp" type="number" min="0" step="0.01" />
+            </div>
+            <div class="pf-field">
+              <label class="pf-label">Selling Price (₹) *</label>
+              <input class="pf-input" [class.pf-input--err]="isInvalid('price')"
+                     formControlName="price" type="number" min="0" step="0.01" />
+            </div>
+            <div class="pf-field">
+              <label class="pf-label">Discount (%)</label>
+              <input class="pf-input" formControlName="discount" type="number" min="0" max="100"
+                     (input)="onDiscountInput()" />
+            </div>
           </div>
+        </div>
+
+        <!-- Attributes -->
+        <div class="pf-section">
+          <h2 class="pf-section-title">Attributes</h2>
+          <div class="pf-field-row pf-field-row--3">
+            <div class="pf-field">
+              <label class="pf-label">Fabric</label>
+              <input class="pf-input" formControlName="fabric" type="text" placeholder="Cotton Blend" />
+            </div>
+            <div class="pf-field">
+              <label class="pf-label">Pattern</label>
+              <input class="pf-input" formControlName="pattern" type="text" placeholder="Floral" />
+            </div>
+            <div class="pf-field">
+              <label class="pf-label">Color</label>
+              <input class="pf-input" formControlName="color" type="text" placeholder="Indigo" />
+            </div>
+          </div>
+          <div class="pf-field-row pf-field-row--3">
+            <div class="pf-field">
+              <label class="pf-label">Fit</label>
+              <input class="pf-input" formControlName="fit" type="text" placeholder="Regular" />
+            </div>
+            <div class="pf-field">
+              <label class="pf-label">Sleeve</label>
+              <input class="pf-input" formControlName="sleeve" type="text" placeholder="3/4th" />
+            </div>
+            <div class="pf-field">
+              <label class="pf-label">Neck</label>
+              <input class="pf-input" formControlName="neck" type="text" placeholder="Round" />
+            </div>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Occasion</label>
+            <input class="pf-input" formControlName="occasion" type="text" placeholder="Festive, Daily Wear" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Wash Care</label>
+            <input class="pf-input" formControlName="washCare" type="text" placeholder="Hand wash cold, do not bleach" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Tags (comma separated)</label>
+            <input class="pf-input" formControlName="tags" type="text" placeholder="ethnic, cotton, summer" />
+          </div>
+        </div>
+
+        <!-- Sizes & Stock -->
+        <div class="pf-section">
+          <h2 class="pf-section-title">Sizes &amp; Stock</h2>
+          <div formArrayName="sizes" class="pf-sizes">
+            @for (sizeGroup of sizesArray.controls; track $index; let i = $index) {
+              <div [formGroupName]="i" class="pf-size-row">
+                <input class="pf-input pf-size-input" formControlName="size" type="text" placeholder="Size (e.g. M)" />
+                <input class="pf-input pf-size-input" formControlName="stock" type="number" min="0" placeholder="Stock" />
+                <button type="button" class="pf-size-remove" (click)="removeSize(i)" title="Remove size">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </div>
+            }
+          </div>
+          <button type="button" class="btn-link" (click)="addSize()">
+            <i class="bi bi-plus-lg"></i> Add Size
+          </button>
         </div>
 
         <!-- Status badges -->
@@ -75,20 +183,70 @@
           <h2 class="pf-section-title">Product Status</h2>
           <div class="pf-checkboxes">
             <label class="pf-check">
-              <input type="checkbox" formControlName="isNew" />
+              <input type="checkbox" formControlName="active" />
+              <span class="pf-check-box"></span>
+              <span class="pf-check-label">Active (visible on storefront)</span>
+            </label>
+            <label class="pf-check">
+              <input type="checkbox" formControlName="newArrival" />
               <span class="pf-check-box"></span>
               <span class="pf-check-label">New Arrival</span>
             </label>
             <label class="pf-check">
-              <input type="checkbox" formControlName="isTrending" />
+              <input type="checkbox" formControlName="featured" />
               <span class="pf-check-box"></span>
-              <span class="pf-check-label">Trending</span>
+              <span class="pf-check-label">Featured</span>
             </label>
             <label class="pf-check">
-              <input type="checkbox" formControlName="isBestSeller" />
+              <input type="checkbox" formControlName="bestSeller" />
               <span class="pf-check-box"></span>
               <span class="pf-check-label">Bestseller</span>
             </label>
+            <label class="pf-check">
+              <input type="checkbox" formControlName="autoHideWhenOutOfStock" />
+              <span class="pf-check-box"></span>
+              <span class="pf-check-label">Auto-hide when stock reaches zero</span>
+            </label>
+          </div>
+          <div class="pf-field pf-field--half">
+            <label class="pf-label">Display Order</label>
+            <input class="pf-input" formControlName="displayOrder" type="number" min="0" />
+          </div>
+          <div class="pf-field pf-field--half">
+            <label class="pf-label">Low Stock Threshold</label>
+            <input class="pf-input" formControlName="lowStockThreshold" type="number" min="0" placeholder="e.g. 5" />
+          </div>
+        </div>
+
+        <!-- Flipkart -->
+        <div class="pf-section">
+          <h2 class="pf-section-title">Flipkart Listing</h2>
+          <p class="pf-hint-block">Vrindaya is a discovery site — customers are redirected to Flipkart to purchase.</p>
+          <div class="pf-field">
+            <label class="pf-label">Flipkart Product URL</label>
+            <input class="pf-input" formControlName="flipkartProductUrl" type="url" placeholder="https://www.flipkart.com/…" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Flipkart Product ID</label>
+            <input class="pf-input" formControlName="flipkartProductId" type="text" placeholder="itm1234567890abc" />
+          </div>
+        </div>
+
+        <!-- SEO -->
+        <div class="pf-section">
+          <h2 class="pf-section-title">SEO</h2>
+          <div class="pf-field">
+            <label class="pf-label">SEO Title</label>
+            <input class="pf-input" formControlName="seoTitle" type="text" maxlength="70" placeholder="Falls back to the product name" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">SEO Description</label>
+            <textarea class="pf-textarea" formControlName="seoDescription" rows="2" maxlength="160"
+                      placeholder="Falls back to the short description"></textarea>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">SEO Keywords (comma separated)</label>
+            <input class="pf-input" formControlName="seoKeywords" type="text" placeholder="kurta, ethnic wear, cotton" />
           </div>
         </div>
 
@@ -96,41 +254,16 @@
 
       <!-- ══ RIGHT: images ══ -->
       <div class="pf-side">
-
         <div class="pf-section">
-          <h2 class="pf-section-title">Images</h2>
-          <p class="pf-hint-block">Enter asset paths (e.g. <code>assets/products/001-wine-mandala-kurta/cover.png</code>) or full URLs.</p>
-
-          <!-- Cover image -->
-          <div class="pf-field">
-            <label class="pf-label">Cover Image (main) *</label>
-            <input class="pf-input" [class.pf-input--err]="isInvalid('image')"
-                   formControlName="image" type="text" placeholder="assets/products/…/cover.png" />
-            @if (isInvalid('image')) { <span class="pf-err">Cover image is required</span> }
-            @if (form.value.image) {
-              <div class="pf-img-preview">
-                <img [src]="form.value.image" alt="Cover preview" loading="lazy" draggable="false"
-                     onerror="this.style.display='none'" />
-              </div>
-            }
-          </div>
-
-          <!-- Gallery -->
-          <div class="pf-gallery-group">
-            <label class="pf-label">Gallery Images (up to 4)</label>
-            @for (g of galleryFields; track g; let i = $index) {
-              <div class="pf-gallery-item">
-                <input class="pf-input" [formControlName]="g" type="text"
-                       [placeholder]="'assets/products/…/gallery-' + (i + 1) + '.png'" />
-                @if (galleryValue(g)) {
-                  <img [src]="galleryValue(g)!" [alt]="'Gallery ' + (i + 1)" class="pf-gallery-thumb"
-                       loading="lazy" draggable="false" onerror="this.style.display='none'" />
-                }
-              </div>
-            }
-          </div>
+          <h2 class="pf-section-title">Images ({{ filledImageCount() }}/{{ maxImages }})</h2>
+          <app-product-image-gallery
+            [(images)]="images"
+            [maxImages]="maxImages"
+            (filesAdded)="addFiles($event)"
+            (retryImage)="retryImage($event)"
+            (removeImage)="removeImage($event)"
+            (replaceImage)="replaceImage($event)" />
         </div>
-
       </div>
     </div>
 

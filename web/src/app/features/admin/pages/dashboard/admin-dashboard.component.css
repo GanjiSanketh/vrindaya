@@ -70,6 +70,39 @@
 .stat-icon--trend { background: #edf7ef; color: #22a34a; }
 .stat-icon--best  { background: #f4eef9; color: #9b4fe0; }
 
+.stat-icon--missing        { background: #fef2f2; color: #dc2626; }
+.stat-icon--archived       { background: #f0f4f7; color: #6b7280; }
+.stat-icon--low-stock      { background: #fffbeb; color: #b45309; }
+
+/* ── Products by Status breakdown ── */
+.stage-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  padding: 1.125rem 1.25rem;
+}
+
+.stage-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  background: #fafbfc;
+  border: 1px solid #e8ecf0;
+  border-radius: 8px;
+}
+
+.stage-chip-count { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+.stage-chip-label { font-size: 0.75rem; color: #6b7280; white-space: nowrap; }
+
+.dash-flipkart-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; font-weight: 600; color: #0c4a58;
+  margin: 0 0 0.875rem;
+}
+
+.dash-stats--flipkart { margin-bottom: 1.5rem; }
+
 .stat-body { display: flex; flex-direction: column; gap: 0.2rem; }
 .stat-value { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; line-height: 1; }
 .stat-label { font-size: 0.72rem; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; }

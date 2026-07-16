@@ -1,23 +1,27 @@
 # Version
 
-**Current Version:** v1.0.0-beta
+**Current Version:** v1.1.0-beta
 **Status:** Beta
-**Release Date:** 2026-07-13
+**Release Date:** Unreleased
 
 ## What "Beta" means for this release
 
 The platform is feature-complete for its current scope (storefront, admin
 portal, marketing/campaign engine, media campaigns, WhatsApp Cloud API
-sending) and builds/runs cleanly end to end. It's marked Beta rather than
-a stable `1.0.0` because of known, documented gaps that affect real-world
-usage before a general production rollout:
+sending, Collections, Flipkart Operations, Inventory & Lifecycle
+Management, Brand CMS & SEO) and builds/runs cleanly end to end. It's
+marked Beta rather than a stable `1.0.0` because of known, documented gaps
+that affect real-world usage before a general production rollout:
 
 - Most real WhatsApp sends will currently be rejected by Meta outside a
   24-hour customer-initiated window — template-approved sending isn't
   implemented yet (see [WhatsApp Integration Plan](docs/marketing/whatsapp-integration-plan.md)).
-- `api/`'s `TokenValidationMiddleware` is a reserved pass-through — no
-  endpoint in `api/` enforces authentication yet.
 - No subscriber opt-out/unsubscribe flow exists.
+
+The previous release's third beta-blocker — `api/`'s auth being a reserved
+pass-through — is now resolved: real Firebase JWT Bearer authentication
+plus an `AdminOnly` policy enforce every admin/mutating endpoint (see
+[docs/SECURITY.md](docs/SECURITY.md)).
 
 None of these are defects in what's built — they're the next items on
 [docs/roadmap/roadmap.md](docs/roadmap/roadmap.md), sequenced deliberately

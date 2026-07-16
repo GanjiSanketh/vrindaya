@@ -1,0 +1,112 @@
+<div class="hbf-page">
+
+  <div class="hbf-header">
+    <a [routerLink]="BASE" class="hbf-back"><i class="bi bi-arrow-left"></i> Categories</a>
+    <h1 class="hbf-title">{{ isEdit() ? 'Edit Category' : 'Add Category' }}</h1>
+  </div>
+
+  @if (saved()) {
+    <div class="hbf-success"><i class="bi bi-check-circle-fill"></i> Category {{ isEdit() ? 'updated' : 'added' }}! Redirecting…</div>
+  }
+  @if (formError()) {
+    <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ formError() }} <button type="button" (click)="formError.set(null)">×</button></div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="hbf-grid">
+
+      <div class="hbf-main">
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">Details</h2>
+
+          @if (!isEdit()) {
+            <div class="hbf-field">
+              <label class="hbf-label">Id (slug) *</label>
+              <input class="hbf-input" [class.hbf-input--err]="isInvalid('id')" formControlName="id" type="text" placeholder="long-kurtas" />
+              @if (isInvalid('id')) { <span class="hbf-err">Lowercase letters, numbers, hyphens only</span> }
+            </div>
+          }
+
+          <div class="hbf-field">
+            <label class="hbf-label">Name *</label>
+            <input class="hbf-input" [class.hbf-input--err]="isInvalid('name')" formControlName="name" type="text" placeholder="Long Kurtas" />
+          </div>
+
+          <div class="hbf-field">
+            <label class="hbf-label">Subtitle</label>
+            <input class="hbf-input" formControlName="subtitle" type="text" placeholder="Elegant Everyday Styles" />
+          </div>
+
+          <div class="hbf-field">
+            <label class="hbf-label">Description</label>
+            <textarea class="hbf-input" formControlName="description" rows="3" placeholder="Shown on the category landing page"></textarea>
+          </div>
+
+          <div class="hbf-field">
+            <label class="hbf-label">Display Order</label>
+            <input class="hbf-input" formControlName="displayOrder" type="number" min="0" style="max-width:160px;" />
+          </div>
+
+          <label class="hbf-check">
+            <input type="checkbox" formControlName="active" />
+            <span class="hbf-check-box"></span>
+            <span>Visible on the storefront</span>
+          </label>
+
+          <label class="hbf-check">
+            <input type="checkbox" formControlName="featured" />
+            <span class="hbf-check-box"></span>
+            <span>Featured category</span>
+          </label>
+        </div>
+
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">SEO</h2>
+          <div class="hbf-field">
+            <label class="hbf-label">SEO Title</label>
+            <input class="hbf-input" formControlName="seoTitle" type="text" maxlength="70" placeholder="Falls back to the category name" />
+          </div>
+          <div class="hbf-field">
+            <label class="hbf-label">SEO Description</label>
+            <textarea class="hbf-input" formControlName="seoDescription" rows="2" maxlength="160"
+                      placeholder="Falls back to the description/subtitle"></textarea>
+          </div>
+          <div class="hbf-field">
+            <label class="hbf-label">SEO Keywords (comma separated)</label>
+            <input class="hbf-input" formControlName="seoKeywords" type="text" placeholder="kurta, ethnic wear, cotton" />
+          </div>
+        </div>
+      </div>
+
+      <div class="hbf-side">
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">Image</h2>
+          <app-single-image-upload
+            label="Category Image *"
+            section="categories"
+            [currentUrl]="image()?.url ?? null"
+            (uploaded)="onImageUploaded($event)"
+            (removed)="onImageRemoved()" />
+        </div>
+
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">Banner Image</h2>
+          <app-single-image-upload
+            label="Banner Image"
+            section="categories"
+            [currentUrl]="bannerImage()?.url ?? null"
+            (uploaded)="onBannerUploaded($event)"
+            (removed)="onBannerRemoved()" />
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hbf-submit-row">
+      <a [routerLink]="BASE" class="hbf-cancel">Cancel</a>
+      <button type="submit" class="hbf-submit" [disabled]="saving()">
+        @if (saving()) { Saving… } @else { {{ isEdit() ? 'Update Category' : 'Add Category' }} }
+      </button>
+    </div>
+  </form>
+</div>

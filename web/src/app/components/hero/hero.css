@@ -168,6 +168,14 @@
   flex-shrink: 0;
 }
 
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  animation: heroFadeUp 0.6s 0.9s ease both;
+}
+
 /* ════════════════════════════════════════
    TABLET  (768px – 1199px)
    Two-column side-by-side, left-aligned

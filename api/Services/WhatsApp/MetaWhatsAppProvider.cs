@@ -124,7 +124,7 @@ public class MetaWhatsAppProvider : IWhatsAppProvider
 
         _logger.LogInformation(
             "Sending WhatsApp {MessageType} message. PhoneNumber: {PhoneNumber}",
-            payload.Type, phoneNumber);
+            payload.Type, MaskPhoneNumber(phoneNumber));
 
         try
         {
@@ -138,8 +138,8 @@ public class MetaWhatsAppProvider : IWhatsAppProvider
                 var messageId = metaResponse?.Messages?.FirstOrDefault()?.Id;
 
                 _logger.LogInformation(
-                    "Meta accepted WhatsApp message. PhoneNumber: {PhoneNumber}, MessageId: {MessageId}, DurationMs: {DurationMs}, MetaResponse: {MetaResponse}",
-                    phoneNumber, messageId, stopwatch.ElapsedMilliseconds, responseBody);
+                    "Meta accepted WhatsApp message. PhoneNumber: {PhoneNumber}, MessageId: {MessageId}, DurationMs: {DurationMs}",
+                    MaskPhoneNumber(phoneNumber), messageId, stopwatch.ElapsedMilliseconds);
 
                 return new WhatsAppSendResult { Success = true, MessageId = messageId };
             }
@@ -147,8 +147,8 @@ public class MetaWhatsAppProvider : IWhatsAppProvider
             var metaError = TryDeserializeError(responseBody);
 
             _logger.LogWarning(
-                "Meta rejected WhatsApp message. PhoneNumber: {PhoneNumber}, StatusCode: {StatusCode}, DurationMs: {DurationMs}, MetaResponse: {MetaResponse}",
-                phoneNumber, (int)response.StatusCode, stopwatch.ElapsedMilliseconds, responseBody);
+                "Meta rejected WhatsApp message. PhoneNumber: {PhoneNumber}, StatusCode: {StatusCode}, DurationMs: {DurationMs}, MetaErrorMessage: {MetaErrorMessage}",
+                MaskPhoneNumber(phoneNumber), (int)response.StatusCode, stopwatch.ElapsedMilliseconds, metaError?.Error?.Message);
 
             return new WhatsAppSendResult
             {
@@ -164,7 +164,7 @@ public class MetaWhatsAppProvider : IWhatsAppProvider
             _logger.LogError(
                 ex,
                 "Unable to reach the Meta WhatsApp API. PhoneNumber: {PhoneNumber}, DurationMs: {DurationMs}",
-                phoneNumber, stopwatch.ElapsedMilliseconds);
+                MaskPhoneNumber(phoneNumber), stopwatch.ElapsedMilliseconds);
 
             return new WhatsAppSendResult
             {
@@ -174,6 +174,10 @@ public class MetaWhatsAppProvider : IWhatsAppProvider
             };
         }
     }
+
+    /// <summary>Keeps the last 4 digits only — enough to correlate log entries with a support ticket without persisting the full number in the log sink.</summary>
+    private static string MaskPhoneNumber(string phoneNumber) =>
+        phoneNumber.Length > 4 ? $"***{phoneNumber[^4..]}" : "***";
 
     private static MetaErrorResponse? TryDeserializeError(string responseBody)
     {

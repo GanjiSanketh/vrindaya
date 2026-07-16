@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ProductService } from '../../core/services/product.service';
 import { ProductCard } from '../../shared/components/product-card/product-card';
+import { Product } from '../../core/models/product.model';
 
 @Component({
   selector: 'app-trending-products',
@@ -11,6 +11,6 @@ import { ProductCard } from '../../shared/components/product-card/product-card';
   styleUrl: './trending-products.css',
 })
 export class TrendingProducts {
-  protected readonly svc = inject(ProductService);
-  readonly products = this.svc.trending;
+  /** Supplied by the home page's single GET /homepage fetch — see HomepageService. */
+  readonly products = input<Product[]>([]);
 }

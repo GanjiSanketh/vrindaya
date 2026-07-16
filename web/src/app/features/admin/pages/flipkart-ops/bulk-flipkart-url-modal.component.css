@@ -1,0 +1,51 @@
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+
+.modal-box--wide {
+  background: #fff; border-radius: 16px;
+  padding: 1.75rem; max-width: 880px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.bfu-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.bfu-title  { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 700; color: #0c4a58; margin: 0; }
+.bfu-close  { border: none; background: none; font-size: 1.5rem; line-height: 1; color: #6b7280; cursor: pointer; }
+
+.bfu-error {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1rem; margin-bottom: 1rem;
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
+  font-size: 0.85rem; color: #dc2626;
+}
+
+.bfu-hint { font-size: 0.82rem; color: #6b7280; margin: 0 0 1rem; }
+
+.bfu-table-wrap { overflow-x: auto; margin-bottom: 1.25rem; border: 1px solid #e8ecf0; border-radius: 10px; }
+
+.bfu-table { width: 100%; border-collapse: collapse; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; }
+.bfu-table th {
+  padding: 0.625rem 0.875rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #6b7280; text-align: left; background: #fafbfc; white-space: nowrap;
+}
+.bfu-table td { padding: 0.5rem 0.875rem; border-top: 1px solid #f0f4f7; vertical-align: middle; }
+
+.bfu-name { font-weight: 600; color: #1a1a2e; white-space: nowrap; }
+.bfu-sku  { font-size: 0.78rem; color: #9ca3af; white-space: nowrap; }
+
+.bfu-input {
+  width: 100%; min-width: 200px; padding: 0.4rem 0.625rem; border: 1px solid #e0e4ea; border-radius: 6px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: #1a1a2e; background: #fff; outline: none; box-sizing: border-box;
+}
+.bfu-input:focus { border-color: #0f6f84; box-shadow: 0 0 0 3px rgba(15,111,132,0.1); }
+
+.bfu-submit-row { display: flex; align-items: center; justify-content: flex-end; gap: 0.875rem; }
+.bfu-cancel { padding: 0.625rem 1.25rem; border: 1px solid #e0e4ea; border-radius: 8px; background: none; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: #374151; cursor: pointer; }
+.bfu-cancel:hover { background: #f0f4f7; }
+.bfu-submit { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.5rem; background: #0f6f84; color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.bfu-submit:hover:not(:disabled) { background: #0c5c6e; }
+.bfu-submit:disabled { opacity: 0.7; cursor: not-allowed; }

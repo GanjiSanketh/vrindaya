@@ -28,19 +28,37 @@ api/
 
 **Rule of thumb**: a Controller should never contain a `try`/`catch`, a
 Firestore/HTTP call, or a conditional beyond routing — that all belongs in
-the injected service. Most `I*Service`s tied to the API's original
-"infrastructure-only" controllers are still intentionally empty (see
+the injected service. Several `I*Service`s tied to the API's original
+scaffolding-only controllers are still intentionally empty (see
 [Completed Features](../roadmap/completed-features.md)); WhatsApp
-(`Services/WhatsApp/`) and campaign delivery (`Services/CampaignDelivery/`)
-are the two feature areas that actually have implementations, each in its
-own subfolder rather than flat in `Services/` — a feature that spans
-several closely related classes (a provider/repository plus its worker or
-service) gets a subfolder; a single implementation class stays flat.
+(`Services/WhatsApp/`), campaign delivery (`Services/CampaignDelivery/`),
+Product Management (`Services/Products/`), and the Homepage CMS
+(`Services/Homepage/`) are the feature areas that actually have
+implementations, each in its own subfolder rather than flat in
+`Services/` — a feature that spans several closely related classes (a
+repository plus its collaborator services, or a provider plus its worker)
+gets a subfolder; a single implementation class stays flat.
 
 Note also `ICampaignDeliveryRepository`/`CampaignDeliveryRepository` — a
 *Repository*, not a `*Service`, deliberately: it's pure Firestore data
 access for one background worker, distinct from the app-facing
 `I*Service` layer that HTTP controllers depend on.
+
+**Inventory & Product Lifecycle** (`InventoryController`, `Services/Products/InventoryService.cs`,
+`Services/Products/LifecycleService.cs`) sit inside the Product Management
+area rather than getting their own top-level folder — both operate on the
+same `products` Firestore collection `ProductRepository` already owns, so
+they compose `IProductRepository` directly rather than introducing a
+parallel repository. `InventoryController` is deliberately separate from
+`ProductController`: it's a narrow, partial-write surface (stock/sizes/
+low-stock threshold/auto-hide, and lifecycle-stage transitions) that must
+never clobber an unrelated field an editor is mid-edit on in the main
+product form — the same reasoning that already justified `PATCH
+/products/{id}/stock` as its own endpoint. `Constants/LifecycleStage.cs`
+holds the 10-stage vocabulary (Draft → ... → Archived); Firestore stores it
+as a plain string field (`lifecycleStage`), not a native enum — consistent
+with how `Category` is already a plain string keyed to a separate
+collection rather than a closed C# enum.
 
 ## Dependency injection
 
@@ -70,20 +88,26 @@ a short list of steps rather than a wall of configuration.
 
 ```csharp
 app.UseGlobalExceptionHandling();   // catches everything downstream
+app.UseRenderForwardedHeaders();    // trusts X-Forwarded-* from Render's edge proxy
 app.UseSerilogRequestLogging();     // logs method, path, status, elapsed time
 app.UseSwaggerInDevelopment();      // no-ops outside Development
 app.UseHttpsRedirection();
 app.UseCors(AppConstants.CorsPolicyName);
-app.UseTokenValidation();           // reserved slot — currently a pass-through
-app.UseAuthorization();
+app.UseAuthentication();            // JWT Bearer — verifies the Firebase ID token, if present
+app.UseAuthorization();             // "AdminOnly" policy on mutating Product/Homepage-CMS actions
 app.MapControllers();
 app.MapHealthChecks("/health");
 ```
 
 Order matters here specifically because exception handling must wrap
 *everything* downstream (including the middleware that logs requests, so a
-failure in logging itself doesn't crash the pipeline unhandled), and CORS
-must run before anything that could short-circuit the response.
+failure in logging itself doesn't crash the pipeline unhandled), CORS must
+run before anything that could short-circuit the response, and
+`UseAuthentication()` must run before `UseAuthorization()` — it populates
+`HttpContext.User` from a valid Bearer token if one was sent, even on
+endpoints with no `[Authorize]` attribute at all (e.g. `ProductController`'s
+`GET` actions, which behave differently for an authenticated admin vs an
+anonymous caller without rejecting the anonymous one).
 
 ## Global exception handling
 
@@ -99,20 +123,36 @@ user-reported trace ID is directly greppable in logs. This was verified by
 adding a temporary throwing endpoint, confirming both the response shape
 and the log entry, then removing it — not just read as correct.
 
-## Token validation (reserved, not implemented)
+## Authentication <a name="authentication"></a>
 
-`Middleware/TokenValidationMiddleware.cs` is registered in the pipeline but
-its `InvokeAsync` is a pure pass-through today:
+`Middleware/TokenValidationMiddleware.cs` — the reserved pass-through
+described in earlier drafts of this document — has been **removed**,
+superseded by standard ASP.NET Core JWT Bearer authentication
+(`AddFirebaseAuthentication()` in `ServiceCollectionExtensions.cs`):
 
-```csharp
-public async Task InvokeAsync(HttpContext context) => await _next(context);
-```
+- **Authority**: `https://securetoken.google.com/{projectId}` — Google's
+  Secure Token Service, JWKS auto-discovered, so key rotation needs no
+  manual code. `projectId` is resolved lazily from `IOptions<FirebaseOptions>`
+  (deferred options configuration), staying in sync with the same binding
+  every other Firebase consumer uses.
+- **What's verified**: the exact Firebase ID token `web/`'s existing
+  Google Sign-In flow already obtains — no new login system. Signature,
+  issuer, audience, and expiry are checked; nothing else.
+- **"AdminOnly" policy**: `AdminOnlyRequirement`/`AdminOnlyAuthorizationHandler`
+  check the verified token's `email` claim against a single hardcoded
+  address (`AppConstants.AdminEmail`) — the same trust boundary as
+  `firestore.rules`'/`storage.rules`' `isAdminUser()` and `web/`'s
+  `AdminAuthService`. Applied via `[Authorize(Policy = AppConstants.AdminOnlyPolicy)]`
+  on every mutating Product/Homepage-CMS action.
+- **Optional auth on GETs**: endpoints with no `[Authorize]` attribute at
+  all (e.g. `GET /products`, `GET /products/{id}`, `GET /categories`)
+  still get `HttpContext.User` populated if a valid Bearer token was sent,
+  but aren't rejected if one wasn't — `ProductService` checks
+  `User.IsAdmin()` internally to decide whether to include inactive/deleted
+  records, rather than the framework rejecting the request outright.
 
-The reason it's registered *now*, doing nothing, rather than added later:
-when Firebase ID token verification is implemented, it goes inside this one
-method. `Program.cs`, the DI registration, and every controller stay
-untouched. See [WhatsApp Integration Plan](../marketing/whatsapp-integration-plan.md)
-and [Roadmap](../roadmap/roadmap.md) for when this is expected to happen.
+See [System Architecture](system-architecture.md#whats-actually-implemented-in-api)
+for which controllers this actually gates today.
 
 ## Configuration (Options pattern)
 

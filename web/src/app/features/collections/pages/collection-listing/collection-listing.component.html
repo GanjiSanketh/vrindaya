@@ -1,0 +1,54 @@
+<main class="pl-page">
+
+  @if (collection()?.bannerImage) {
+    <div class="cl-banner">
+      <img [src]="collection()!.bannerImage" [alt]="collection()!.name" class="cl-banner-img" loading="lazy" />
+      <div class="cl-banner-overlay">
+        <h1 class="cl-banner-title">{{ collection()!.name }}</h1>
+        @if (collection()!.description) { <p class="cl-banner-desc">{{ collection()!.description }}</p> }
+      </div>
+    </div>
+  }
+
+  <!-- Breadcrumb -->
+  <nav class="pl-breadcrumb" aria-label="Breadcrumb">
+    <div class="container-vr pl-bc-inner">
+      <div class="pl-bc-path">
+        <a routerLink="/" class="pl-bc-link">Home</a>
+        <i class="bi bi-chevron-right pl-bc-sep" aria-hidden="true"></i>
+        <span class="pl-bc-current">{{ collection()?.name }}</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Products -->
+  <section class="pl-products">
+    <div class="container-vr">
+
+      @if (loading()) {
+        <app-skeleton-grid [count]="8" />
+      } @else if (error()) {
+        <div class="pl-empty">
+          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+          <p class="pl-empty-title">{{ error() }}</p>
+          <button type="button" class="btn-primary" (click)="retry()">Retry</button>
+        </div>
+      } @else if (collection() && collection()!.products.length > 0) {
+        <div class="pl-grid">
+          @for (product of collection()!.products; track product.id) {
+            <app-product-card [product]="product" />
+          }
+        </div>
+      } @else {
+        <div class="pl-empty">
+          <i class="bi bi-bag-x" aria-hidden="true"></i>
+          <p class="pl-empty-title">No products in this collection yet</p>
+          <p class="pl-empty-sub">New styles are on their way — check back soon.</p>
+          <a routerLink="/" class="btn-primary">Back to Home</a>
+        </div>
+      }
+
+    </div>
+  </section>
+
+</main>

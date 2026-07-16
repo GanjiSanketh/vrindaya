@@ -1,0 +1,70 @@
+<div class="hbf-page">
+
+  <div class="hbf-header">
+    <a [routerLink]="BASE" class="hbf-back"><i class="bi bi-arrow-left"></i> Promotional Banners</a>
+    <h1 class="hbf-title">{{ isEdit() ? 'Edit Banner' : 'Add Promotional Banner' }}</h1>
+  </div>
+
+  @if (saved()) {
+    <div class="hbf-success"><i class="bi bi-check-circle-fill"></i> Banner {{ isEdit() ? 'updated' : 'added' }}! Redirecting…</div>
+  }
+  @if (formError()) {
+    <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ formError() }} <button type="button" (click)="formError.set(null)">×</button></div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="hbf-grid">
+
+      <div class="hbf-main">
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">CTA</h2>
+          <div class="hbf-field-row">
+            <div class="hbf-field">
+              <label class="hbf-label">Button Text</label>
+              <input class="hbf-input" formControlName="buttonText" type="text" placeholder="Shop the Sale" />
+            </div>
+            <div class="hbf-field">
+              <label class="hbf-label">Button URL</label>
+              <input class="hbf-input" formControlName="buttonUrl" type="text" placeholder="/category/long-kurtas" />
+            </div>
+          </div>
+          <div class="hbf-field">
+            <label class="hbf-label">Display Order</label>
+            <input class="hbf-input" formControlName="displayOrder" type="number" min="0" style="max-width:160px;" />
+          </div>
+          <label class="hbf-check">
+            <input type="checkbox" formControlName="active" />
+            <span class="hbf-check-box"></span>
+            <span>Active</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="hbf-side">
+        <div class="hbf-section">
+          <h2 class="hbf-section-title">Images</h2>
+          <app-single-image-upload
+            label="Desktop Image *"
+            section="promotional"
+            [currentUrl]="desktopImage()?.url ?? null"
+            (uploaded)="onDesktopUploaded($event)"
+            (removed)="onDesktopRemoved()" />
+          <app-single-image-upload
+            label="Mobile Image (optional)"
+            section="promotional"
+            [currentUrl]="mobileImage()?.url ?? null"
+            (uploaded)="onMobileUploaded($event)"
+            (removed)="onMobileRemoved()" />
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hbf-submit-row">
+      <a [routerLink]="BASE" class="hbf-cancel">Cancel</a>
+      <button type="submit" class="hbf-submit" [disabled]="saving()">
+        @if (saving()) { Saving… } @else { {{ isEdit() ? 'Update Banner' : 'Add Banner' }} }
+      </button>
+    </div>
+  </form>
+</div>

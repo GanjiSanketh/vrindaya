@@ -1,0 +1,175 @@
+<div class="pl-page">
+
+  <!-- Header -->
+  <div class="pl-header">
+    <div>
+      <h1 class="pl-title">Flipkart Operations</h1>
+      <p class="pl-count">{{ filteredProducts().length }} of {{ totalCount() }} products</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="pl-filters">
+    <div class="pl-search-wrap">
+      <i class="bi bi-search pl-search-icon"></i>
+      <input class="pl-search" type="search" placeholder="Search name, SKU, seller SKU, or FSN…"
+             [value]="searchQuery()"
+             (input)="searchQuery.set($any($event.target).value); resetFiltersAndPage()" />
+    </div>
+    <select class="pl-select" [value]="lifecycleStageFilter()" (change)="lifecycleStageFilter.set($any($event.target).value); resetFiltersAndPage()">
+      <option value="all">All Stages</option>
+      @for (s of stages; track s) { <option [value]="s">{{ s }}</option> }
+    </select>
+    <label class="pl-flag-check">
+      <input type="checkbox" [checked]="missingUrlOnly()" (change)="missingUrlOnly.set($any($event.target).checked); resetFiltersAndPage()" /> Missing URL
+    </label>
+    <label class="pl-flag-check">
+      <input type="checkbox" [checked]="missingImagesOnly()" (change)="missingImagesOnly.set($any($event.target).checked); resetFiltersAndPage()" /> Missing Images
+    </label>
+    <label class="pl-flag-check">
+      <input type="checkbox" [checked]="missingSeoOnly()" (change)="missingSeoOnly.set($any($event.target).checked); resetFiltersAndPage()" /> Missing SEO
+    </label>
+  </div>
+
+  <!-- Bulk action toolbar -->
+  @if (selectedCount() > 0) {
+    <div class="pl-bulk-toolbar">
+      <span>{{ selectedCount() }} selected</span>
+      <div class="pl-bulk-actions">
+        <select class="pl-select" [value]="bulkStageChoice()" (change)="bulkStageChoice.set($any($event.target).value)">
+          @for (s of stages; track s) { <option [value]="s">{{ s }}</option> }
+        </select>
+        <button class="btn-outline" [disabled]="bulkBusy()" (click)="bulkUpdateStage()">
+          <i class="bi bi-arrow-repeat"></i> Bulk Status Update
+        </button>
+        <input class="pl-select" type="date" [value]="bulkLaunchDate()" (change)="bulkLaunchDate.set($any($event.target).value)" />
+        <button class="btn-outline" [disabled]="bulkBusy()" (click)="bulkLaunch()">
+          <i class="bi bi-rocket-takeoff"></i> Bulk Launch
+        </button>
+        <button class="btn-outline" [disabled]="bulkBusy()" (click)="openBulkUrlModal()">
+          <i class="bi bi-link-45deg"></i> Bulk Update URLs
+        </button>
+        <button class="btn-outline" [disabled]="bulkBusy()" (click)="bulkArchive()">
+          <i class="bi bi-archive"></i> Bulk Archive
+        </button>
+        <button class="btn-link" (click)="clearSelection()">Clear</button>
+      </div>
+    </div>
+  }
+
+  <!-- Table -->
+  <div class="pl-card">
+    @if (api.loading()) {
+      <div class="pl-loading"><span class="pl-spinner"></span> Loading products…</div>
+    } @else if (filteredProducts().length === 0) {
+      <div class="pl-empty">
+        <i class="bi bi-shop"></i>
+        <p>No products match your search.</p>
+      </div>
+    } @else {
+      <div class="pl-table-wrap">
+        <table class="pl-table">
+          <thead>
+            <tr>
+              <th class="pl-th-check">
+                <input type="checkbox" [checked]="allVisibleSelected()" (change)="toggleSelectAllVisible()" />
+              </th>
+              <th class="pl-th-img"></th>
+              <th class="pl-th-sort" (click)="setSort('name')">
+                Name <i class="bi" [class.bi-chevron-up]="sortField() === 'name' && sortAsc()"
+                             [class.bi-chevron-down]="sortField() === 'name' && !sortAsc()"
+                             [class.bi-chevron-expand]="sortField() !== 'name'"></i>
+              </th>
+              <th class="pl-th-sort" (click)="setSort('lifecycleStage')">
+                Lifecycle Stage <i class="bi" [class.bi-chevron-up]="sortField() === 'lifecycleStage' && sortAsc()"
+                             [class.bi-chevron-down]="sortField() === 'lifecycleStage' && !sortAsc()"
+                             [class.bi-chevron-expand]="sortField() !== 'lifecycleStage'"></i>
+              </th>
+              <th class="pl-th-sort d-none d-md-table-cell" (click)="setSort('launchDate')">
+                Launched <i class="bi" [class.bi-chevron-up]="sortField() === 'launchDate' && sortAsc()"
+                             [class.bi-chevron-down]="sortField() === 'launchDate' && !sortAsc()"
+                             [class.bi-chevron-expand]="sortField() !== 'launchDate'"></i>
+              </th>
+              <th class="d-none d-lg-table-cell">Marketplace</th>
+              <th class="d-none d-lg-table-cell">Category</th>
+              <th class="pl-th-sort d-none d-lg-table-cell" (click)="setSort('websiteClickCount')">
+                Clicks <i class="bi" [class.bi-chevron-up]="sortField() === 'websiteClickCount' && sortAsc()"
+                             [class.bi-chevron-down]="sortField() === 'websiteClickCount' && !sortAsc()"
+                             [class.bi-chevron-expand]="sortField() !== 'websiteClickCount'"></i>
+              </th>
+              <th class="pl-th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of pagedProducts(); track p.id) {
+              <tr>
+                <td>
+                  <input type="checkbox" [checked]="selectedIds().has(p.id)" (change)="toggleSelect(p.id)" />
+                </td>
+                <td>
+                  <img [src]="p.image" [alt]="p.name" class="pl-thumb" loading="lazy" draggable="false" />
+                </td>
+                <td>
+                  <div class="pl-product-name">{{ p.name }}</div>
+                  <div class="pl-product-id">{{ p.sku }}</div>
+                </td>
+                <td>
+                  <span [class]="'status-pill status-pill--' + statusClass(p.lifecycleStage)">{{ p.lifecycleStage }}</span>
+                  @if (!p.flipkartProductUrl) { <div class="pl-missing">No URL</div> }
+                </td>
+                <td class="d-none d-md-table-cell">
+                  @if (isLaunched(p)) {
+                    <span class="pl-badge pl-badge--trend">Launched</span>
+                  } @else {
+                    <span class="pl-cat">Not launched</span>
+                  }
+                </td>
+                <td class="d-none d-lg-table-cell">
+                  @if (p.marketplacePrice != null) {
+                    <span class="pl-cat">₹{{ p.marketplacePrice }}</span>
+                  } @else {
+                    <span class="pl-cat">—</span>
+                  }
+                </td>
+                <td class="d-none d-lg-table-cell">
+                  <span class="pl-cat">{{ p.marketplaceCategory || '—' }}</span>
+                </td>
+                <td class="d-none d-lg-table-cell">
+                  <span class="pl-cat">{{ p.websiteClickCount }}</span>
+                </td>
+                <td>
+                  <div class="pl-row-actions">
+                    <button class="action-btn action-btn--edit" (click)="editFlipkartInfo(p.id)" title="Edit Flipkart Info">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() > 1) {
+        <div class="pl-pagination">
+          <button class="btn-outline" [disabled]="pageIndex() === 0" (click)="prevPage()">
+            <i class="bi bi-chevron-left"></i> Prev
+          </button>
+          <span>Page {{ pageIndex() + 1 }} of {{ totalPages() }}</span>
+          <button class="btn-outline" [disabled]="pageIndex() >= totalPages() - 1" (click)="nextPage()">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      }
+    }
+  </div>
+
+</div>
+
+@if (editingId(); as id) {
+  <app-flipkart-ops-edit-modal [productId]="id" (closed)="closeEditModal()" />
+}
+
+@if (bulkUrlModalOpen()) {
+  <app-bulk-flipkart-url-modal [productIds]="selectedIdsArray()" (closed)="closeBulkUrlModal()" />
+}

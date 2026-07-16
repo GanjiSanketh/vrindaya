@@ -8,6 +8,86 @@ Given this is the first tagged release of a long-running working tree,
 single sprint's diff — see [docs/roadmap/completed-features.md](docs/roadmap/completed-features.md)
 for the equally-detailed living version of this history.
 
+## [v1.1.0-beta] — Unreleased
+
+### Collections
+
+- Second homepage-curatable product grouping alongside Category — admin
+  CRUD (create/update/delete/reorder), public landing page
+  (`/collection/:slug`), Featured/Trending homepage sections can override
+  their product source to a specific Collection slug.
+
+### Flipkart Operations Module
+
+- Manual Flipkart listing URL/status tracking per product (explicitly no
+  Flipkart API integration) — dedicated admin dashboard, bulk
+  URL-assignment tool, per-product edit modal.
+
+### Inventory & Product Lifecycle Management
+
+- Stock/low-stock-threshold/auto-hide-when-out-of-stock fields per
+  product, editable from both the main product form and a dedicated
+  `PATCH /products/{id}/flipkart-ops`-style narrow endpoint.
+- 10-stage `LifecycleStage` (Draft → Archived), replacing the earlier,
+  narrower Flipkart-only `ListingStatus` field entirely (both the C#
+  property and the Firestore field were renamed).
+- Archived-lifecycle products are automatically excluded from every
+  homepage-curated product list (Featured/Trending/Collections/New
+  Arrivals override), scoped to that lookup path only.
+
+### Brand CMS & SEO
+
+- `brandConfig/singleton` Firestore document — About Us, Contact, Store
+  Information, Social Links, FAQs, Policies, and footer display toggles,
+  edited as one admin form; public Brand pages render every section.
+- Sitemap/robots.txt and `SeoService`-driven per-page metadata
+  (title/description/canonical/OpenGraph/Twitter Card/JSON-LD) across
+  every storefront route, including the new Brand pages.
+- Response compression (gzip + Brotli) for every `api/` JSON response.
+
+### Production Hardening
+
+- **Security**: closed an auth gap on `POST /api/v1/whatsapp/test` (was
+  missing `[Authorize]` — anyone reaching the host could trigger a real,
+  billable Meta send); added rate limiting (`Microsoft.AspNetCore.RateLimiting`
+  — a 100 req/10s global limiter plus a 5 req/min policy specifically on
+  the WhatsApp test endpoint); masked phone numbers and stopped logging
+  raw Meta/webhook response bodies in `MetaWhatsAppProvider`/`WhatsAppService`;
+  rewrote `docs/SECURITY.md` against current reality.
+- **Dead code removal**: removed the unused `Product.isBestseller` field
+  (and its two dead fallback reads), the unused `JwtOptions` configuration
+  class (and its `appsettings.json` section — real auth is Firebase
+  JWKS-based, not this reserved custom scheme), the stale
+  `web/src/app/data/products.json` snapshot, and three unregistered empty
+  route stubs (`features/categories`, `features/customer-love`,
+  `features/about`) plus their empty scaffold directories.
+- **Deduplication**: extracted the duplicated `AllowedImageContentTypes`
+  check (`ProductController`/`HomepageAssetsController`) into
+  `AppConstants`; extracted the duplicated `slugify()` method
+  (`admin-product-form`/`brand-settings` components) into
+  `shared/utils/slugify.util.ts`; extracted the byte-identical
+  confirm-delete modal CSS block, duplicated across 4 admin list
+  components, into global `styles.css` classes.
+- **Validation hardening**: added `[EmailAddress]`/`[Url]`/`[MaxLength]`/
+  the existing `WhatsAppPhoneNumberAttribute` to `BrandConfigDtos`'
+  previously-unvalidated nested DTOs; added `[MaxLength]` to
+  `ProductRequestBase`'s unbounded free-text fields; added `[Url]` to
+  Category/Collection image fields.
+- **Caching**: `CategoryService.GetActiveAsync` and
+  `CollectionService.GetActiveAsync`/`GetLandingBySlugAsync` (public path
+  only) now use the same `IMemoryCache` + fixed-key + TTL pattern already
+  proven out by `BrandConfigService`, invalidated on every mutation.
+- **Logging**: wired the previously-unused `LoggerService` into
+  `AdminAuthService`, both admin route guards, and every Marketing/
+  Campaign service, replacing raw `console.*` calls gated by `isDevMode()`.
+- **Accessibility**: added `aria-label` to unlabeled icon-only buttons
+  across the Category/Collection list pages and Homepage Settings; bound
+  real marketing-image `alt` text to each banner's own title/subtitle
+  field instead of an empty string.
+- **Performance**: tightened `angular.json`'s `anyComponentStyle` budget
+  from 32kB/64kB to 16kB/32kB now that the CSS dedup above removed the
+  bloat the looser budget was accommodating.
+
 ## [v1.0.0-beta] — 2026-07-13
 
 ### Angular Storefront

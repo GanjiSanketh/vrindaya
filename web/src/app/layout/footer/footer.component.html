@@ -22,11 +22,26 @@
           Vrindaya celebrates timeless elegance through thoughtfully curated ethnic wear
           designed for every occasion.
         </p>
+
+        @if (brand()?.footer?.showSocialLinks && (brand()?.socialLinks?.instagram || brand()?.socialLinks?.flipkart)) {
+          <div class="ft-social">
+            @if (brand()!.socialLinks.instagram) {
+              <a [href]="brand()!.socialLinks.instagram" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
+                <i class="bi bi-instagram" aria-hidden="true"></i>
+              </a>
+            }
+            @if (brand()!.socialLinks.flipkart) {
+              <a [href]="brand()!.socialLinks.flipkart" target="_blank" rel="noopener noreferrer" aria-label="Visit our Flipkart store">
+                <i class="bi bi-shop" aria-hidden="true"></i>
+              </a>
+            }
+          </div>
+        }
       </div>
 
       <div class="ft-divider-h"></div>
 
-      <!-- 2 columns: Shop · Quick Links -->
+      <!-- Columns: Shop · Quick Links · Policies (dynamic) -->
       <div class="ft-cols">
 
         <!-- Shop -->
@@ -53,13 +68,19 @@
           </ul>
         </div>
 
-        <!-- Quick Links — fragment navigation to home page sections -->
+        <!-- Quick Links -->
         <div class="ft-col">
           <h4 class="ft-col-title">QUICK LINKS</h4>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
             <li>
-              <a [routerLink]="['/']" fragment="hero">About Us</a>
+              <a routerLink="/about" routerLinkActive="ft-link-active">About Us</a>
+            </li>
+            <li>
+              <a routerLink="/contact" routerLinkActive="ft-link-active">Contact</a>
+            </li>
+            <li>
+              <a routerLink="/faq" routerLinkActive="ft-link-active">FAQs</a>
             </li>
             <li>
               <a routerLink="/new-arrivals" routerLinkActive="ft-link-active">New Arrivals</a>
@@ -67,11 +88,23 @@
             <li>
               <a routerLink="/trending" routerLinkActive="ft-link-active">Trending Collection</a>
             </li>
-            <li>
-              <a [routerLink]="['/']" fragment="customer-love">Customer Love</a>
-            </li>
           </ul>
         </div>
+
+        <!-- Policies — only shown when the admin has added at least one -->
+        @if (brand()?.footer?.showPolicyLinks && (brand()?.policies?.length ?? 0) > 0) {
+          <div class="ft-col">
+            <h4 class="ft-col-title">POLICIES</h4>
+            <div class="ft-col-rule"></div>
+            <ul class="ft-links">
+              @for (policy of brand()!.policies; track policy.id) {
+                <li>
+                  <a [routerLink]="'/policies/' + policy.id" routerLinkActive="ft-link-active">{{ policy.title }}</a>
+                </li>
+              }
+            </ul>
+          </div>
+        }
 
       </div>
     </div>
@@ -115,7 +148,7 @@
           <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
         </svg>
         <div class="ft-copy-line"></div>
-        <p class="ft-copy-text">© {{ currentYear }} Vrindaya. All Rights Reserved.</p>
+        <p class="ft-copy-text">{{ brand()?.footer?.copyrightText || ('© ' + currentYear + ' Vrindaya. All Rights Reserved.') }}</p>
         <em class="ft-copy-tag">Wear the Grace ✦</em>
       </div>
 

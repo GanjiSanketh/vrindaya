@@ -1,0 +1,25 @@
+@if (instagram()?.images?.length) {
+  <section class="ig-section section-pad">
+    <div class="container-vr">
+
+      <div class="section-header">
+        <h2 class="section-title">{{ instagram()!.heading || 'Follow Us' }}</h2>
+        @if (instagram()!.handle) {
+          <a [href]="instagram()!.profileUrl || '#'" class="ig-handle" target="_blank" rel="noopener noreferrer">
+            {{ instagram()!.handle }}
+          </a>
+        }
+      </div>
+
+      <div class="ig-grid">
+        @for (img of instagram()!.images; track img.url) {
+          <a [href]="img.linkUrl || instagram()!.profileUrl || '#'" class="ig-item" target="_blank" rel="noopener noreferrer">
+            <img [src]="img.url" [alt]="instagram()!.handle || instagram()!.heading || 'Instagram post'" loading="lazy" />
+            <span class="ig-overlay"><i class="bi bi-instagram"></i></span>
+          </a>
+        }
+      </div>
+
+    </div>
+  </section>
+}

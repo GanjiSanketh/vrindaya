@@ -1,0 +1,72 @@
+<div class="hbl-page">
+
+  <div class="hbl-header">
+    <div>
+      <h1 class="hbl-title">Collections</h1>
+      <p class="hbl-count">{{ collections().length }} collections — reorder with the arrows, toggle visibility, or edit/delete.</p>
+    </div>
+    <a [routerLink]="BASE + '/new'" class="btn-primary-sm"><i class="bi bi-plus-lg"></i> Add Collection</a>
+  </div>
+
+  <div class="hbl-card">
+    @if (loading()) {
+      <div class="hbl-loading"><span class="hbl-spinner"></span> Loading…</div>
+    } @else if (error()) {
+      <div class="hbl-empty"><i class="bi bi-exclamation-triangle"></i><p>{{ error() }}</p><button type="button" class="btn-primary-sm" (click)="load()">Retry</button></div>
+    } @else if (collections().length === 0) {
+      <div class="hbl-empty"><i class="bi bi-collection"></i><p>No collections yet.</p><a [routerLink]="BASE + '/new'" class="btn-primary-sm">Add your first collection</a></div>
+    } @else {
+      <table class="hbl-table">
+        <thead><tr><th></th><th></th><th>Name</th><th>Products</th><th>Visible</th><th></th></tr></thead>
+        <tbody>
+          @for (c of collections(); track c.id; let i = $index) {
+            <tr>
+              <td>
+                <div class="ctl-reorder">
+                  <button type="button" aria-label="Move up" [disabled]="i === 0" (click)="moveUp(i)"><i class="bi bi-chevron-up"></i></button>
+                  <button type="button" aria-label="Move down" [disabled]="i === collections().length - 1" (click)="moveDown(i)"><i class="bi bi-chevron-down"></i></button>
+                </div>
+              </td>
+              <td>
+                @if (c.image) {
+                  <img [src]="c.image" [alt]="c.name" class="hbl-thumb" />
+                } @else {
+                  <span class="hbl-thumb hbl-thumb--empty"><i class="bi bi-collection"></i></span>
+                }
+              </td>
+              <td>
+                <div class="hbl-name">{{ c.name }}</div>
+                <div class="hbl-sub">/{{ c.slug }}</div>
+              </td>
+              <td>{{ c.productIds.length }}</td>
+              <td>
+                <label class="ctl-toggle">
+                  <input type="checkbox" [checked]="c.active" (change)="toggleActive(c)" />
+                  <span></span>
+                </label>
+              </td>
+              <td class="hbl-actions">
+                <a [routerLink]="BASE + '/' + c.id + '/edit'" class="hbl-action" [attr.aria-label]="'Edit ' + c.name"><i class="bi bi-pencil"></i></a>
+                <button type="button" class="hbl-action hbl-action--del" [attr.aria-label]="'Delete ' + c.name" (click)="confirmDelete(c.id)"><i class="bi bi-trash3"></i></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
+
+@if (deleteId() !== null) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon"><i class="bi bi-trash3-fill"></i></div>
+      <h3 class="modal-title">Delete Collection?</h3>
+      <p class="modal-body">Products in this collection are unaffected — only the collection's own listing/landing page is removed.</p>
+      <div class="modal-actions">
+        <button class="modal-cancel" (click)="cancelDelete()">Cancel</button>
+        <button class="modal-confirm" (click)="doDelete()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+}

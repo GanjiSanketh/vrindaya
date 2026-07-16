@@ -15,8 +15,18 @@ public partial class WhatsAppPhoneNumberAttribute : ValidationAttribute
     {
     }
 
+    /// <summary>
+    /// Null/empty is valid here, same convention as the built-in
+    /// [EmailAddress]/[Url] attributes — pair with [Required] on fields
+    /// where the phone number itself is mandatory.
+    /// </summary>
     public override bool IsValid(object? value)
     {
+        if (value is null || (value is string s && s.Length == 0))
+        {
+            return true;
+        }
+
         return value is string phoneNumber && PhoneNumberPattern().IsMatch(phoneNumber);
     }
 

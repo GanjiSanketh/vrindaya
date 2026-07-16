@@ -1,0 +1,100 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal-box modal-box--wide" (click)="$event.stopPropagation()">
+
+    <div class="hbf-header">
+      <h2 class="hbf-title">Edit Flipkart Info</h2>
+      <button type="button" class="hbf-close" (click)="cancel()">&times;</button>
+    </div>
+
+    @if (formError()) {
+      <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ formError() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+      <div class="hbf-section">
+        <h3 class="hbf-section-title">Flipkart Listing</h3>
+        <div class="hbf-field-row">
+          <div class="hbf-field">
+            <label class="hbf-label">Flipkart Product URL</label>
+            <input class="hbf-input" formControlName="flipkartProductUrl" type="url" placeholder="https://www.flipkart.com/..." />
+          </div>
+          <div class="hbf-field">
+            <label class="hbf-label">Flipkart Product Id</label>
+            <input class="hbf-input" formControlName="flipkartProductId" type="text" />
+          </div>
+        </div>
+        <div class="hbf-field-row">
+          <div class="hbf-field">
+            <label class="hbf-label">Flipkart Seller SKU</label>
+            <input class="hbf-input" formControlName="flipkartSellerSku" type="text" />
+          </div>
+          <div class="hbf-field">
+            <label class="hbf-label">Flipkart FSN</label>
+            <input class="hbf-input" formControlName="flipkartFsn" type="text" />
+          </div>
+        </div>
+        <div class="hbf-field-row">
+          <div class="hbf-field">
+            <label class="hbf-label">Lifecycle Stage</label>
+            <select class="hbf-input" formControlName="lifecycleStage">
+              @for (s of stages; track s) { <option [value]="s">{{ s }}</option> }
+            </select>
+          </div>
+          <div class="hbf-field">
+            <label class="hbf-label">Launch Date</label>
+            <input class="hbf-input" formControlName="launchDate" type="date" />
+          </div>
+        </div>
+        <div class="hbf-field">
+          <label class="hbf-label">Last Sync Date</label>
+          <input class="hbf-input" style="max-width:220px;" formControlName="lastSyncDate" type="date" />
+        </div>
+      </div>
+
+      <div class="hbf-section">
+        <h3 class="hbf-section-title">Marketplace Snapshot</h3>
+        <div class="hbf-field-row">
+          <div class="hbf-field">
+            <label class="hbf-label">Marketplace Price</label>
+            <input class="hbf-input" formControlName="marketplacePrice" type="number" min="0" />
+          </div>
+          <div class="hbf-field">
+            <label class="hbf-label">Marketplace MRP</label>
+            <input class="hbf-input" formControlName="marketplaceMrp" type="number" min="0" />
+          </div>
+        </div>
+        <div class="hbf-field-row">
+          <div class="hbf-field">
+            <label class="hbf-label">Marketplace Discount (%)</label>
+            <input class="hbf-input" formControlName="marketplaceDiscount" type="number" min="0" max="100" (input)="onDiscountInput()" />
+          </div>
+          <div class="hbf-field">
+            <label class="hbf-label">Marketplace Category</label>
+            <input class="hbf-input" formControlName="marketplaceCategory" type="text" />
+          </div>
+        </div>
+        <div class="hbf-field">
+          <label class="hbf-label">Marketplace Tags (comma separated)</label>
+          <input class="hbf-input" formControlName="marketplaceTags" type="text" placeholder="festive, ethnic, trending" />
+        </div>
+      </div>
+
+      <div class="hbf-section hbf-section--tracking">
+        <h3 class="hbf-section-title">Tracking</h3>
+        <div class="hbf-tracking-row">
+          <span><strong>{{ clickCount() }}</strong> website clicks</span>
+          <span>Last click: {{ lastClickAt() ? (lastClickAt() | date:'medium') : '—' }}</span>
+        </div>
+      </div>
+
+      <div class="hbf-submit-row">
+        <button type="button" class="hbf-cancel" (click)="cancel()">Cancel</button>
+        <button type="submit" class="hbf-submit" [disabled]="saving()">
+          @if (saving()) { Saving… } @else { Save }
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>

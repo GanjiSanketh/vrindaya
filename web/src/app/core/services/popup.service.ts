@@ -6,15 +6,16 @@ import { catchError, of }                  from 'rxjs';
 
 import { PopupConfig, CampaignType } from '../models/popup.model';
 import { Product }                   from '../models/product.model';
-import productsData                  from '../../data/products.json';
+import { ProductService }            from './product.service';
 
 const SESSION_KEY = 'vrindaya_popup_shown';
 const STORAGE_KEY = 'vrindaya_popup_config';
 
 @Injectable({ providedIn: 'root' })
 export class PopupService {
-  private readonly http       = inject(HttpClient);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly http          = inject(HttpClient);
+  private readonly platformId    = inject(PLATFORM_ID);
+  private readonly productService = inject(ProductService);
 
   private readonly _floatingCard = new BehaviorSubject<boolean>(false);
   private readonly _fullPopup    = new BehaviorSubject<boolean>(false);
@@ -23,7 +24,8 @@ export class PopupService {
   readonly fullPopup$    = this._fullPopup.asObservable();
   readonly visible$      = this._fullPopup.asObservable();
 
-  readonly allProducts = productsData as Product[];
+  /** Live, active-products-only list — was a static products.json snapshot before the Firestore migration. */
+  get allProducts(): Product[] { return this.productService.allProducts; }
 
   private config:         PopupConfig | null = null;
   private product:        Product | undefined;
@@ -171,7 +173,7 @@ export class PopupService {
     switch (campaign) {
       case 'TRENDING':     return this.allProducts.find(p => p.isTrending);
       case 'NEW_ARRIVAL':  return this.allProducts.find(p => p.isNew);
-      case 'BEST_SELLER':  return this.allProducts.find(p => p.isBestSeller || p.isBestseller);
+      case 'BEST_SELLER':  return this.allProducts.find(p => p.isBestSeller);
       default:             return this.allProducts.find(p => p.id === this.config!.productId);
     }
   }

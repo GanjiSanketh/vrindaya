@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Vrindaya.Api.Configuration;
 using Vrindaya.Api.DTOs.WhatsApp;
@@ -78,9 +79,28 @@ public class WhatsAppService : IWhatsAppService
     /// Records an incoming webhook event for visibility only — see
     /// docs/marketing/whatsapp-integration-plan.md for why processing
     /// (updating campaignQueue delivery status, etc.) isn't implemented yet.
+    /// Logs the event's shape (entry/change count), not the raw body — Meta's
+    /// webhook payloads embed customer phone numbers and message content.
     /// </summary>
     public void RecordWebhookEvent(string payload)
     {
-        _logger.LogInformation("WhatsApp webhook event received: {WebhookPayload}", payload);
+        _logger.LogInformation(
+            "WhatsApp webhook event received: {EntryCount} entr(y/ies), {PayloadLength} bytes",
+            CountEntries(payload), payload.Length);
+    }
+
+    private static int CountEntries(string payload)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+            return document.RootElement.TryGetProperty("entry", out var entry) && entry.ValueKind == JsonValueKind.Array
+                ? entry.GetArrayLength()
+                : 0;
+        }
+        catch (JsonException)
+        {
+            return 0;
+        }
     }
 }

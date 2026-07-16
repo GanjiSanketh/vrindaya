@@ -1,1 +1,19 @@
-/* Home page has no additional styles — all section styles live in their components */
+/* Home page has no additional styles beyond the loading/error states below — all section styles live in their components */
+
+.hp-loading {
+  padding: 2.5rem 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.hp-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 6rem 2rem;
+  text-align: center;
+}
+
+.hp-error i { font-size: 3rem; color: var(--gold); opacity: 0.4; }
+.hp-error-title { font-family: var(--font-serif); font-size: 1.1rem; color: var(--text); margin: 0; }

@@ -29,6 +29,41 @@
   animation: qv-slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ── Full-detail fetch status (Product Details API) ── */
+.qv-detail-status {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--r-pill, 50px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  font-size: 0.78rem;
+  color: var(--text-muted, #666);
+}
+
+.qv-detail-status--error { color: #dc2626; }
+.qv-detail-status--error button {
+  border: 1px solid #dc2626; border-radius: var(--r-pill, 50px);
+  background: none; color: #dc2626; font-size: 0.72rem; font-weight: 700;
+  padding: 0.15rem 0.6rem; cursor: pointer;
+}
+.qv-detail-status--error button:hover { background: #dc2626; color: #fff; }
+
+.qv-detail-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border, #eaeaea);
+  border-top-color: var(--maroon, #0f6f84);
+  border-radius: 50%;
+  animation: qv-spin 0.7s linear infinite;
+}
+
+@keyframes qv-spin { to { transform: rotate(360deg); } }
+
 /* ── Close button ── */
 .qv-close {
   position: absolute;
@@ -162,6 +197,7 @@
 }
 
 .qv-badge--new { background: var(--gold, #c9a54c); color: var(--text, #222); }
+.qv-badge--oos { background: #4b4b4b; color: #fff; }
 
 .qv-name {
   font-family: var(--font-serif, 'Cormorant Garamond', serif);
@@ -235,8 +271,10 @@
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.04em;
+  border: none;
   border-radius: var(--r-sm, 6px);
   text-decoration: none;
+  cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease;
   align-self: flex-start;
   flex-shrink: 0;
@@ -246,6 +284,16 @@
   background: var(--maroon-dark, #0b5868);
   transform: translateY(-1px);
   color: #fff;
+}
+
+.qv-cta--soon {
+  background: var(--text-muted, #999);
+  cursor: not-allowed;
+}
+
+.qv-cta--soon:hover {
+  background: var(--text-muted, #999);
+  transform: none;
 }
 
 /* Wishlist button in modal */
@@ -267,6 +315,23 @@
 
 .qv-wish-btn:hover      { color: #e53935; border-color: #e53935; transform: scale(1.08); }
 .qv-wish-btn.wishlisted { color: #e53935; border-color: #e53935; }
+
+.qv-full-details {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--maroon, #0f6f84);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.qv-full-details:hover { text-decoration: underline; }
 
 .qv-zoom-tip {
   font-size: 0.72rem;

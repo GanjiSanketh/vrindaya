@@ -1,0 +1,51 @@
+.pp-root { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.pp-search-wrap { position: relative; }
+.pp-search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 0.9rem; }
+.pp-search {
+  width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  border: 1px solid #e0e4ea; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem; outline: none;
+}
+.pp-search:focus { border-color: #0f6f84; }
+
+.pp-results {
+  display: flex; flex-direction: column; gap: 2px;
+  border: 1px solid #e8ecf0; border-radius: 8px; overflow: hidden;
+}
+
+.pp-result {
+  display: flex; align-items: center; gap: 0.625rem;
+  padding: 0.5rem 0.75rem; border: none; background: #fff; text-align: left; cursor: pointer;
+  transition: background 0.15s;
+}
+.pp-result:hover { background: #f0f7f9; }
+.pp-result-thumb { width: 32px; height: 32px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.pp-result-name { flex: 1; font-size: 0.82rem; font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-result-sku { font-size: 0.7rem; color: #9ca3af; }
+.pp-result i { color: #0f6f84; }
+
+.pp-selected-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.625rem;
+}
+
+.pp-selected-item {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem; border: 1px solid #e8ecf0; border-radius: 8px; background: #fff;
+}
+
+.pp-selected-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 5px; flex-shrink: 0; }
+.pp-selected-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pp-selected-name { font-size: 0.8rem; font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-selected-sku { font-size: 0.68rem; color: #9ca3af; }
+
+.pp-selected-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.pp-selected-actions button {
+  width: 22px; height: 22px; border: 1px solid #e0e4ea; border-radius: 5px; background: #fff;
+  color: #6b7280; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.pp-selected-actions button:hover:not(:disabled) { border-color: #0f6f84; color: #0f6f84; }
+.pp-selected-actions button:disabled { opacity: 0.35; cursor: not-allowed; }
+.pp-remove:hover { border-color: #dc2626 !important; color: #dc2626 !important; }
+
+.pp-empty { font-size: 0.82rem; color: #9ca3af; grid-column: 1 / -1; }

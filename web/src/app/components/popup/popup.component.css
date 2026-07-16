@@ -404,6 +404,15 @@
   cursor:          pointer;
   transition:      background 0.22s, transform 0.22s, box-shadow 0.22s;
 }
+.pu-btn-primary--soon {
+  background: var(--text-muted, #999);
+  cursor:     not-allowed;
+}
+.pu-btn-primary--soon:hover {
+  background: var(--text-muted, #999);
+  transform:  none;
+  box-shadow: none;
+}
 .pu-btn-primary:hover {
   background:  var(--maroon-dark, #0b5868);
   transform:   translateY(-1px);

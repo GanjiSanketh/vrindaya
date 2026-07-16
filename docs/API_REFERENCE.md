@@ -10,11 +10,18 @@ Production:    https://<your-render-service>.onrender.com/api/v1
 All routes are versioned by URL segment (`/api/v1/...`). Swagger UI is
 available at `/swagger` in Development only.
 
-**Authentication**: no endpoint in this API enforces authentication
-today. `TokenValidationMiddleware` is registered in the pipeline but is a
-pure pass-through — see [SECURITY.md](SECURITY.md) and
-[ARCHITECTURE.md](ARCHITECTURE.md#net-api-architecture). Every endpoint
-below is reachable without a token.
+**Authentication**: `TokenValidationMiddleware` (the reserved pass-through
+described elsewhere in this doc set) has been superseded by real JWT
+Bearer authentication — every request's `Authorization: Bearer <token>`
+header, when present, is verified against Google's Secure Token Service
+(the same Firebase ID token `web/`'s existing Google Sign-In flow already
+obtains; no separate login system). Endpoints under `ProductController`,
+`HeroBannerController`, `PromotionalBannerController`, `CategoryController`
+(mutations), and `HomepageConfigController` require the token's `email`
+claim to match the single hardcoded admin address
+(`AppConstants.AdminEmail`, policy name `"AdminOnly"`) — see
+[Backend Architecture](architecture/backend-architecture.md). `Health` and
+`WhatsApp` below remain unauthenticated, unchanged.
 
 **Error shape (unhandled exceptions)** — from `GlobalExceptionMiddleware`,
 wraps every controller:
@@ -45,17 +52,106 @@ wraps every controller:
 
 - [HealthController](#healthcontroller)
 - [WhatsAppController](#whatsappcontroller)
+- [ProductController](#productcontroller)
+- [HeroBannerController](#herobannercontroller)
+- [PromotionalBannerController](#promotionalbannercontroller)
+- [CategoryController](#categorycontroller)
+- [HomepageConfigController](#homepageconfigcontroller)
+- [HomepageController](#homepagecontroller)
+- [HomepageAssetsController](#homepageassetscontroller)
 
 ## Controllers with no implemented endpoints (scaffolding only)
 
-`ProductController`, `MarketingController`, `CampaignController`,
-`AnalyticsController`, `OrdersController`, `AuthController` are each
-registered, versioned, and constructor-injected against their `I*Service`
-interface — but have **zero `[Http*]` actions today**. Hitting any route
-under these controllers (e.g. `GET /api/v1/product`) returns a `404`,
-since there is no matching action, not a `501` or placeholder response.
-See [Completed Features](roadmap/completed-features.md) for what's
-planned for each.
+`MarketingController`, `CampaignController`, `AnalyticsController`,
+`OrdersController`, `AuthController` are each registered, versioned, and
+constructor-injected against their `I*Service` interface — but have
+**zero `[Http*]` actions today**. Hitting any route under these
+controllers returns a `404`, since there is no matching action, not a
+`501` or placeholder response. See
+[Completed Features](roadmap/completed-features.md) for what's planned
+for each. (`ProductController` previously listed here has since been
+fully implemented — see below.)
+
+---
+
+## ProductController
+
+Route prefix: `api/v{version:apiVersion}/products`. Full CRUD + search +
+image upload for the product catalog — see
+[Firestore Schema](database/firestore-schema.md#collection-products) for
+the underlying document shape. GET actions are public (active-only for
+non-admins); every mutation requires the `AdminOnly` policy.
+
+| Endpoint | Auth | Notes |
+| --- | --- | --- |
+| `GET /products` | Optional | Cursor-paginated, filterable (`category`/`featured`/`newArrival`/`bestSeller`, one at a time), sortable. Admin sees inactive/deleted too. |
+| `GET /products/{id}` | Optional | 404 (not 403) if inactive and caller isn't admin — doesn't leak draft existence. |
+| `GET /products/search?q=` | Public | Always active-only. Tokenizes `q` and matches against each product's precomputed `searchKeywords`. |
+| `POST /products/ids` | Admin | Generates a Firestore doc id with zero writes, so image upload can start before the product document exists. |
+| `POST /products` | Admin | Body includes the pre-issued `id`. `409` on duplicate slug/SKU. |
+| `PUT /products/{id}` | Admin | Full replace of editable fields. |
+| `DELETE /products/{id}` | Admin | **Soft delete** — sets `deleted=true` and `active=false`; Storage is never touched. |
+| `POST /products/{id}/restore` | Admin | Clears the soft-delete flag. `active` deliberately stays `false` — restoring never silently republishes a product. |
+| `PATCH /products/bulk-status` | Admin | `{ ids: string[], active: bool }`, one batched Firestore write. |
+| `POST /products/bulk-restore` | Admin | `{ ids: string[] }`, one batched write. |
+| `POST /products/upload-images` | Admin | Multipart (`productId`, `file`) — one file per call. Compresses/converts to WebP server-side, returns `{ url, path }`. Final image order is decided entirely by the admin's drag-reorder and sent in `Images[]` on save. |
+| `DELETE /products/upload-images?productId=&path=` | Admin | Deletes one Storage object; idempotent. |
+| `PATCH /products/{id}/status` | Admin | `{ active: bool }`. |
+| `PATCH /products/{id}/stock` | Admin | `{ sizes: [{size,stock}] }` — narrow partial write, recomputes the denormalized `stock` total. |
+
+---
+
+## HeroBannerController
+
+Route prefix: `api/v{version:apiVersion}/hero-banners`. Admin-only CRUD
+(`GET`/`GET {id}`/`POST`/`PUT {id}`/`DELETE {id}`) for hero banner records
+— see [Firestore Schema](database/firestore-schema.md#collection-herobanners).
+Images are uploaded separately via `HomepageAssetsController` (below)
+before create/update; the returned `{url, path}` pair goes straight into
+the create/update request body.
+
+## PromotionalBannerController
+
+Route prefix: `api/v{version:apiVersion}/promotional-banners`. Same
+admin-only CRUD shape as Hero Banners — see
+[Firestore Schema](database/firestore-schema.md#collection-promotionalbanners).
+
+## CategoryController
+
+Route prefix: `api/v{version:apiVersion}/categories`. `GET /categories`
+is public (active-only, ordered) — everything else is admin-only:
+`GET /categories/all` (every category, including hidden), `POST`,
+`PUT /{id}`, `DELETE /{id}`, `PATCH /categories/reorder`
+(`{ orderedIds: string[] }`, one batched write setting `displayOrder` to
+each id's index).
+
+## HomepageConfigController
+
+Route prefix: `api/v{version:apiVersion}/homepage-config`. Admin-only
+`GET`/`PUT` of the `homepageConfig/singleton` document as a whole — see
+[Firestore Schema](database/firestore-schema.md#collection-homepageconfig).
+
+## HomepageAssetsController
+
+Route prefix: `api/v{version:apiVersion}/homepage-assets`. One shared
+admin-only image upload/delete endpoint for every homepage CMS section
+(`POST /homepage-assets/images` with `[FromForm] string section` ∈
+`hero`/`promotional`/`categories`/`footer`/`instagram`, plus `file`;
+`DELETE /homepage-assets/images?path=`) — avoids duplicating multipart
+handling across four-plus controllers. Mirrors `ProductController`'s
+upload-images endpoint: upload first, get `{url, path}` back, then
+include those in the section's own create/update body.
+
+## HomepageController
+
+Route prefix: `api/v{version:apiVersion}/homepage`. `GET /homepage` —
+public, no auth — the single aggregated call the storefront's homepage
+makes for everything it renders (hero, featured/new-arrival/trending
+products, categories, promotional banners, announcement, Instagram,
+footer banner, SEO). Server-cached (`IMemoryCache`, 60s TTL); every
+homepage-CMS mutation above invalidates the cache immediately. See
+[Firestore Schema](database/firestore-schema.md#aggregation-get-apiv1homepage)
+for exactly what it assembles and from where.
 
 ---
 

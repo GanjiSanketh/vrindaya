@@ -23,8 +23,9 @@
 
     <!-- Badge: top-left slot — always above action buttons -->
     <div class="pc-slot--tl pc-badges pc-badges--img">
-      @if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
-      @else if (product().isTrending) { <span class="pc-badge">TRENDING</span> }
+      @if (product().isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
+      @else if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
+      @else if (product().isTrending) { <span class="pc-badge">FEATURED</span> }
       @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
@@ -44,7 +45,11 @@
 
     <!-- Hover overlay: desktop only -->
     <div class="pc-overlay">
-      <span class="pc-overlay-cta">View on Flipkart <i class="bi bi-arrow-right"></i></span>
+      @if (product().flipkartUrl) {
+        <span class="pc-overlay-cta">View on Flipkart <i class="bi bi-arrow-right"></i></span>
+      } @else {
+        <span class="pc-overlay-cta pc-overlay-cta--soon">Coming Soon</span>
+      }
     </div>
   </div>
 
@@ -52,8 +57,9 @@
   <div class="pc-info">
     <!-- Badge: mobile — shown below image in info panel -->
     <div class="pc-badges pc-badges--info">
-      @if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
-      @else if (product().isTrending) { <span class="pc-badge">TRENDING</span> }
+      @if (product().isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
+      @else if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
+      @else if (product().isTrending) { <span class="pc-badge">FEATURED</span> }
       @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
@@ -62,8 +68,14 @@
       <span class="pc-cta-label"><i class="bi bi-gem"></i> Exclusive Collection</span>
     </div>
     <div class="pc-rule"></div>
-    <button class="pc-link" (click)="openFlipart($event)">
-      Shop on Flipkart <i class="bi bi-arrow-right"></i>
-    </button>
+    @if (product().flipkartUrl) {
+      <button class="pc-link" (click)="openFlipart($event)">
+        Shop on Flipkart <i class="bi bi-arrow-right"></i>
+      </button>
+    } @else {
+      <button class="pc-link pc-link--soon" disabled>
+        Coming Soon
+      </button>
+    }
   </div>
 </div>

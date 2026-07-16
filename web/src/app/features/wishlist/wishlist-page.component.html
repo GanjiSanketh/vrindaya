@@ -11,7 +11,9 @@
 
   <div class="container-vr">
 
-    @if (count() > 0) {
+    @if (loading()) {
+      <app-skeleton-grid [count]="4" />
+    } @else if (count() > 0) {
       <!-- Grid -->
       <div class="wl-grid" appScrollReveal [srDelay]="100">
         @for (product of wishlisted(); track product.id) {

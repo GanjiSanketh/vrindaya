@@ -1,0 +1,202 @@
+<div class="hs-page">
+
+  <div class="hbl-header">
+    <div>
+      <h1 class="hbl-title">Brand Settings</h1>
+      <p class="hbl-count">About Us, Contact, Store Information, Social Links, FAQs, Policies, and Footer display — one save applies every tab.</p>
+    </div>
+    <button type="button" class="btn-primary-sm" [disabled]="saving() || loading()" (click)="saveAll()">
+      @if (saving()) { Saving… } @else { <i class="bi bi-check-lg"></i> Save Changes }
+    </button>
+  </div>
+
+  @if (saved()) {
+    <div class="hbf-success"><i class="bi bi-check-circle-fill"></i> Brand settings saved.</div>
+  }
+  @if (error()) {
+    <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ error() }} <button type="button" (click)="error.set(null)">×</button></div>
+  }
+
+  @if (loading()) {
+    <div class="hbl-loading"><span class="hbl-spinner"></span> Loading settings…</div>
+  } @else {
+
+    <div class="hs-tabs">
+      @for (tab of tabs; track tab.key) {
+        <button type="button" class="hs-tab" [class.hs-tab--active]="activeTab() === tab.key" (click)="setTab(tab.key)">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <div class="hbf-section">
+
+      @switch (activeTab()) {
+
+        @case ('aboutUs') {
+          <h2 class="hbf-section-title">About Us</h2>
+          <form [formGroup]="aboutUsForm">
+            <div class="hbf-field">
+              <label class="hbf-label">Heading</label>
+              <input class="hbf-input" formControlName="heading" type="text" placeholder="Wear the Grace" />
+            </div>
+            <div class="hbf-field">
+              <label class="hbf-label">Body</label>
+              <textarea class="hbf-textarea" formControlName="body" rows="6" placeholder="Vrindaya celebrates timeless elegance through thoughtfully curated ethnic wear..."></textarea>
+            </div>
+          </form>
+          <app-single-image-upload
+            label="About Us Image"
+            section="brand"
+            [currentUrl]="aboutImage()?.url ?? null"
+            (uploaded)="onAboutImageUploaded($event)"
+            (removed)="onAboutImageRemoved()" />
+        }
+
+        @case ('contact') {
+          <h2 class="hbf-section-title">Contact</h2>
+          <form [formGroup]="contactForm">
+            <div class="hbf-field-row">
+              <div class="hbf-field">
+                <label class="hbf-label">Email</label>
+                <input class="hbf-input" formControlName="email" type="email" placeholder="hello@vrindaya.in" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Phone</label>
+                <input class="hbf-input" formControlName="phone" type="text" placeholder="+91 98765 43210" />
+              </div>
+            </div>
+            <div class="hbf-field-row">
+              <div class="hbf-field">
+                <label class="hbf-label">WhatsApp</label>
+                <input class="hbf-input" formControlName="whatsApp" type="text" placeholder="+91 98765 43210" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Business Hours</label>
+                <input class="hbf-input" formControlName="businessHours" type="text" placeholder="Mon–Sat, 10am–7pm" />
+              </div>
+            </div>
+            <div class="hbf-field">
+              <label class="hbf-label">Address</label>
+              <textarea class="hbf-textarea" formControlName="address" rows="2"></textarea>
+            </div>
+            <div class="hbf-field">
+              <label class="hbf-label">Map Embed URL</label>
+              <input class="hbf-input" formControlName="mapEmbedUrl" type="text" placeholder="https://www.google.com/maps/embed?..." />
+            </div>
+          </form>
+        }
+
+        @case ('storeInfo') {
+          <h2 class="hbf-section-title">Store Information</h2>
+          <form [formGroup]="storeInfoForm">
+            <div class="hbf-field-row">
+              <div class="hbf-field">
+                <label class="hbf-label">Legal Name</label>
+                <input class="hbf-input" formControlName="legalName" type="text" placeholder="Vrindaya Ethnic Wear Pvt. Ltd." />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">GSTIN</label>
+                <input class="hbf-input" formControlName="gstin" type="text" />
+              </div>
+            </div>
+            <div class="hbf-field-row">
+              <div class="hbf-field">
+                <label class="hbf-label">Registered Address</label>
+                <input class="hbf-input" formControlName="registeredAddress" type="text" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Established Year</label>
+                <input class="hbf-input" formControlName="establishedYear" type="text" placeholder="2024" />
+              </div>
+            </div>
+          </form>
+        }
+
+        @case ('socialLinks') {
+          <h2 class="hbf-section-title">Social Links</h2>
+          <form [formGroup]="socialLinksForm">
+            <div class="hbf-field">
+              <label class="hbf-label">Instagram URL</label>
+              <input class="hbf-input" formControlName="instagram" type="text" placeholder="https://www.instagram.com/vrindaya.co" />
+            </div>
+            <div class="hbf-field">
+              <label class="hbf-label">Flipkart Store URL</label>
+              <input class="hbf-input" formControlName="flipkart" type="text" placeholder="https://www.flipkart.com/seller/vrindaya" />
+            </div>
+          </form>
+        }
+
+        @case ('faqs') {
+          <h2 class="hbf-section-title">FAQs</h2>
+          <div class="hs-list">
+            @for (faq of faqs(); track faq.id; let i = $index) {
+              <div class="hs-list-item">
+                <div class="hs-list-reorder">
+                  <button type="button" [disabled]="i === 0" (click)="moveFaq(i, -1)"><i class="bi bi-chevron-up"></i></button>
+                  <button type="button" [disabled]="i === faqs().length - 1" (click)="moveFaq(i, 1)"><i class="bi bi-chevron-down"></i></button>
+                </div>
+                <div class="hs-list-fields">
+                  <input class="hbf-input" type="text" placeholder="Question" [value]="faq.question" (input)="updateFaq(i, 'question', $any($event.target).value)" />
+                  <textarea class="hbf-textarea" rows="2" placeholder="Answer" (input)="updateFaq(i, 'answer', $any($event.target).value)">{{ faq.answer }}</textarea>
+                </div>
+                <button type="button" class="hs-list-remove" (click)="removeFaq(i)"><i class="bi bi-trash3"></i></button>
+              </div>
+            } @empty {
+              <p class="hbf-hint">No FAQs yet.</p>
+            }
+          </div>
+          <button type="button" class="btn-primary-sm" (click)="addFaq()"><i class="bi bi-plus-lg"></i> Add FAQ</button>
+        }
+
+        @case ('policies') {
+          <h2 class="hbf-section-title">Policies</h2>
+          <p class="hbf-hint">Each policy gets its own page at /policies/&lt;slug&gt;. Leave the slug blank to auto-generate it from the title.</p>
+          <div class="hs-list">
+            @for (policy of policies(); track $index; let i = $index) {
+              <div class="hs-list-item">
+                <div class="hs-list-reorder">
+                  <button type="button" [disabled]="i === 0" (click)="movePolicy(i, -1)"><i class="bi bi-chevron-up"></i></button>
+                  <button type="button" [disabled]="i === policies().length - 1" (click)="movePolicy(i, 1)"><i class="bi bi-chevron-down"></i></button>
+                </div>
+                <div class="hs-list-fields">
+                  <div class="hbf-field-row">
+                    <input class="hbf-input" type="text" placeholder="Title (e.g. Privacy Policy)" [value]="policy.title" (input)="updatePolicy(i, 'title', $any($event.target).value)" />
+                    <input class="hbf-input" type="text" placeholder="Slug (auto if blank)" [value]="policy.id" (input)="updatePolicy(i, 'id', $any($event.target).value)" />
+                  </div>
+                  <textarea class="hbf-textarea" rows="4" placeholder="Content" (input)="updatePolicy(i, 'content', $any($event.target).value)">{{ policy.content }}</textarea>
+                </div>
+                <button type="button" class="hs-list-remove" (click)="removePolicy(i)"><i class="bi bi-trash3"></i></button>
+              </div>
+            } @empty {
+              <p class="hbf-hint">No policies yet.</p>
+            }
+          </div>
+          <button type="button" class="btn-primary-sm" (click)="addPolicy()"><i class="bi bi-plus-lg"></i> Add Policy</button>
+        }
+
+        @case ('footer') {
+          <h2 class="hbf-section-title">Footer</h2>
+          <form [formGroup]="footerForm">
+            <label class="hbf-check">
+              <input type="checkbox" formControlName="showSocialLinks" />
+              <span class="hbf-check-box"></span>
+              <span>Show social links in footer</span>
+            </label>
+            <label class="hbf-check">
+              <input type="checkbox" formControlName="showPolicyLinks" />
+              <span class="hbf-check-box"></span>
+              <span>Show policy links in footer</span>
+            </label>
+            <div class="hbf-field">
+              <label class="hbf-label">Copyright Text (leave blank for default)</label>
+              <input class="hbf-input" formControlName="copyrightText" type="text" placeholder="© 2026 Vrindaya. All Rights Reserved." />
+            </div>
+          </form>
+        }
+      }
+
+    </div>
+  }
+
+</div>

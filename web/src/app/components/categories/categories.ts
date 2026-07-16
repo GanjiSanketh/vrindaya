@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ProductService } from '../../core/services/product.service';
+import { HomepageCategory } from '../../core/models/homepage.model';
 
 @Component({
   selector: 'app-categories',
@@ -10,6 +10,6 @@ import { ProductService } from '../../core/services/product.service';
   styleUrl: './categories.css',
 })
 export class Categories {
-  /** Same array used by the navbar — single source of truth */
-  readonly categories = inject(ProductService).categories;
+  /** Supplied by the home page's single GET /homepage fetch — see HomepageService. */
+  readonly categories = input<HomepageCategory[]>([]);
 }

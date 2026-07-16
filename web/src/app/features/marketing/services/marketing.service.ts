@@ -10,6 +10,7 @@ import {
 } from '../models/marketing-subscriber.model';
 import { mapFirestoreError } from '../../../shared/utils/firestore-error.util';
 import { formatShortDate } from '../../../shared/utils/date-format.util';
+import { LoggerService } from '../../../core/services/logger.service';
 
 /**
  * Document schema: marketingSubscribers/{mobileNumber}
@@ -22,7 +23,8 @@ const COLLECTION = 'marketingSubscribers';
 
 @Injectable({ providedIn: 'root' })
 export class MarketingService {
-  private readonly pid = inject(PLATFORM_ID);
+  private readonly pid    = inject(PLATFORM_ID);
+  private readonly logger = inject(LoggerService);
 
   readonly subscribers = signal<MarketingSubscriber[]>([]);
   readonly loading     = signal(true);
@@ -36,14 +38,14 @@ export class MarketingService {
   private unsub: (() => void) | null = null;
 
   constructor() {
-    console.log('[Marketing] Marketing service initialized');
+    this.logger.log('[Marketing] Marketing service initialized');
   }
 
   // ── Real-time listener (admin dashboard) ────────────────────────────────────
 
   getSubscribers(): void {
     if (this.unsub || !isPlatformBrowser(this.pid)) return;
-    console.log('[Marketing] Reading subscribers — collection:', COLLECTION);
+    this.logger.log('[Marketing] Reading subscribers — collection:', COLLECTION);
     this.loading.set(true);
     this.setupSnapshot();
   }
@@ -64,7 +66,7 @@ export class MarketingService {
       const db  = getFirestore(app);
       const q   = query(collection(db, COLLECTION), orderBy('createdAt', 'desc'));
 
-      console.log('[Marketing] Firestore query started');
+      this.logger.log('[Marketing] Firestore query started');
 
       this.unsub = onSnapshot(
         q,
@@ -73,16 +75,16 @@ export class MarketingService {
           this.subscribers.set(snap.docs.map(d => this.toSubscriber(d.id, d.data())));
           this.loading.set(false);
           this.error.set(null);
-          console.log('[Marketing] Firestore query completed — subscriber count:', snap.docs.length);
+          this.logger.log('[Marketing] Firestore query completed — subscriber count:', snap.docs.length);
         },
         err => {
-          console.error('[Marketing]', err);
+          this.logger.error('[Marketing]', err);
           this.error.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
           this.loading.set(false);
         },
       );
     } catch (err) {
-      console.error('[Marketing]', err);
+      this.logger.error('[Marketing]', err);
       this.error.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
       this.loading.set(false);
     }
@@ -115,18 +117,18 @@ export class MarketingService {
     const db  = getFirestore(app);
     const ref = doc(db, COLLECTION, mobileNumber);
 
-    console.log('[Marketing] Checking subscriber...', ref.path);
+    this.logger.log('[Marketing] Checking subscriber...', ref.path);
 
     try {
       const snapshot = await getDoc(ref);
 
       if (snapshot.exists()) {
-        console.log('[Marketing] Subscriber found');
-        console.log('[Marketing] Duplicate subscriber');
+        this.logger.log('[Marketing] Subscriber found');
+        this.logger.log('[Marketing] Duplicate subscriber');
         return 'duplicate';
       }
 
-      console.log('[Marketing] Creating subscriber');
+      this.logger.log('[Marketing] Creating subscriber');
 
       const firstName = input.firstName?.trim();
       const payload: Record<string, unknown> = {
@@ -143,10 +145,10 @@ export class MarketingService {
 
       await setDoc(ref, payload);
 
-      console.log('[Marketing] Subscriber created');
+      this.logger.log('[Marketing] Subscriber created');
       return 'subscribed';
     } catch (err) {
-      console.error('[Marketing]', err);
+      this.logger.error('[Marketing]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -159,20 +161,20 @@ export class MarketingService {
     const app = getApps().length ? getApp() : initializeApp(environment.firebase);
     const ref = doc(getFirestore(app), COLLECTION, mobileNumber.trim());
 
-    console.log('[Marketing] Checking subscriber...', ref.path);
+    this.logger.log('[Marketing] Checking subscriber...', ref.path);
 
     try {
       const snapshot = await getDoc(ref);
-      console.log(snapshot.exists() ? '[Marketing] Subscriber found' : '[Marketing] Subscriber not found');
+      this.logger.log(snapshot.exists() ? '[Marketing] Subscriber found' : '[Marketing] Subscriber not found');
       return snapshot.exists();
     } catch (err) {
-      console.error('[Marketing]', err);
+      this.logger.error('[Marketing]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
 
   async deleteSubscriber(mobileNumber: string): Promise<void> {
-    console.log('[Marketing] Delete subscriber:', mobileNumber);
+    this.logger.log('[Marketing] Delete subscriber:', mobileNumber);
 
     try {
       const { getApps, getApp, initializeApp } = await import('firebase/app');
@@ -181,14 +183,14 @@ export class MarketingService {
       const app = getApps().length ? getApp() : initializeApp(environment.firebase);
       await deleteDoc(doc(getFirestore(app), COLLECTION, mobileNumber));
     } catch (err) {
-      console.error('[Marketing]', err);
+      this.logger.error('[Marketing]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
 
   exportSubscribers(): void {
     if (!isPlatformBrowser(this.pid)) return;
-    console.log('[Marketing] CSV export started — subscriber count:', this.totalCount());
+    this.logger.log('[Marketing] CSV export started — subscriber count:', this.totalCount());
 
     const header: string[] = ['Mobile Number', 'First Name', 'Joined Date', 'Status', 'Source'];
     const rows: string[][] = this.subscribers().map(s => [

@@ -5,6 +5,7 @@ import { RouterLink }                                  from '@angular/router';
 import { catchError, of }                              from 'rxjs';
 
 import { PopupService }                                from '../../../../core/services/popup.service';
+import { ProductApiService }                           from '../../../../core/services/product-api.service';
 import { PopupConfig, TriggerType, CampaignType }      from '../../../../core/models/popup.model';
 import { Product }                                     from '../../../../core/models/product.model';
 
@@ -16,11 +17,14 @@ import { Product }                                     from '../../../../core/mo
   styleUrl:    './popup-config.component.css',
 })
 export class PopupConfigComponent implements OnInit {
-  private readonly fb   = inject(FormBuilder);
-  private readonly svc  = inject(PopupService);
-  private readonly http = inject(HttpClient);
+  private readonly fb        = inject(FormBuilder);
+  private readonly svc       = inject(PopupService);
+  private readonly http      = inject(HttpClient);
+  private readonly productApi = inject(ProductApiService);
 
-  products:     Product[] = [];
+  /** Admin's full catalog (not just active/public-eligible products) — this picker needs to find ANY product, including drafts, for the MANUAL_PRODUCT campaign type. */
+  get products(): Product[] { return this.productApi.products(); }
+
   saveSuccess   = false;
   resetSuccess  = false;
   configPreview = '';
@@ -41,7 +45,7 @@ export class PopupConfigComponent implements OnInit {
   form = this.fb.group({
     enabled:            [true],
     campaignType:       ['NEW_ARRIVAL' as CampaignType, Validators.required],
-    productId:          [11, Validators.required],
+    productId:          ['', Validators.required],
     title:              ['New Arrival',        [Validators.required, Validators.maxLength(60)]],
     subtitle:           ['Limited Time Offer', [Validators.required, Validators.maxLength(80)]],
     triggerType:        ['SCROLL_OR_TIME' as TriggerType, Validators.required],
@@ -51,7 +55,7 @@ export class PopupConfigComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.products = this.svc.allProducts;
+    void this.productApi.ensureLoaded();
     this.loadCurrentConfig();
   }
 
@@ -76,8 +80,8 @@ export class PopupConfigComponent implements OnInit {
     switch (type) {
       case 'TRENDING':     return this.products.find(p => p.isTrending);
       case 'NEW_ARRIVAL':  return this.products.find(p => p.isNew);
-      case 'BEST_SELLER':  return this.products.find(p => p.isBestSeller || p.isBestseller);
-      default:             return this.products.find(p => p.id === Number(this.form.value.productId));
+      case 'BEST_SELLER':  return this.products.find(p => p.isBestSeller);
+      default:             return this.products.find(p => p.id === this.form.value.productId);
     }
   }
 
@@ -87,7 +91,7 @@ export class PopupConfigComponent implements OnInit {
     const config: PopupConfig = {
       enabled:            !!this.form.value.enabled,
       campaignType:       this.form.value.campaignType as CampaignType,
-      productId:          Number(this.form.value.productId),
+      productId:          this.form.value.productId!,
       title:              this.form.value.title!,
       subtitle:           this.form.value.subtitle!,
       triggerType:        this.form.value.triggerType as TriggerType,

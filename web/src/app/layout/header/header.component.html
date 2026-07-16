@@ -12,7 +12,7 @@
         Home
       </a>
 
-      @for (cat of categories; track cat.id) {
+      @for (cat of categories(); track cat.id) {
         <a class="nav-link"
            [routerLink]="['/category', cat.id]"
            routerLinkActive="nav-link-active">
@@ -82,7 +82,7 @@
       <div class="drawer-divider"></div>
       <p class="drawer-cat-label">Shop by Style</p>
 
-      @for (cat of categories; track cat.id) {
+      @for (cat of categories(); track cat.id) {
         <a class="drawer-link"
            [routerLink]="['/category', cat.id]"
            routerLinkActive="drawer-link-active"

@@ -1,0 +1,73 @@
+<main class="bp-page">
+  <div class="container-vr">
+
+    @if (loading()) {
+      <p class="bp-loading">Loading…</p>
+    } @else if (error()) {
+      <div class="bp-empty">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        <p>{{ error() }}</p>
+        <button type="button" class="btn-primary" (click)="load()">Retry</button>
+      </div>
+    } @else if (brand(); as b) {
+      <h1 class="bp-heading">Contact Us</h1>
+
+      <div class="ct-grid">
+        <div class="ct-details">
+          @if (b.contact.email) {
+            <div class="ct-row">
+              <i class="bi bi-envelope" aria-hidden="true"></i>
+              <a [href]="'mailto:' + b.contact.email">{{ b.contact.email }}</a>
+            </div>
+          }
+          @if (b.contact.phone) {
+            <div class="ct-row">
+              <i class="bi bi-telephone" aria-hidden="true"></i>
+              <a [href]="'tel:' + b.contact.phone">{{ b.contact.phone }}</a>
+            </div>
+          }
+          @if (b.contact.whatsApp) {
+            <div class="ct-row">
+              <i class="bi bi-whatsapp" aria-hidden="true"></i>
+              <a [href]="'https://wa.me/' + b.contact.whatsApp.replace('+', '')" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+            </div>
+          }
+          @if (b.contact.address) {
+            <div class="ct-row">
+              <i class="bi bi-geo-alt" aria-hidden="true"></i>
+              <span>{{ b.contact.address }}</span>
+            </div>
+          }
+          @if (b.contact.businessHours) {
+            <div class="ct-row">
+              <i class="bi bi-clock" aria-hidden="true"></i>
+              <span>{{ b.contact.businessHours }}</span>
+            </div>
+          }
+          @if (b.socialLinks.instagram || b.socialLinks.flipkart) {
+            <div class="ct-social">
+              @if (b.socialLinks.instagram) {
+                <a [href]="b.socialLinks.instagram" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
+                  <i class="bi bi-instagram" aria-hidden="true"></i>
+                </a>
+              }
+              @if (b.socialLinks.flipkart) {
+                <a [href]="b.socialLinks.flipkart" target="_blank" rel="noopener noreferrer" aria-label="Visit our Flipkart store">
+                  <i class="bi bi-shop" aria-hidden="true"></i>
+                </a>
+              }
+            </div>
+          }
+          @if (!b.contact.email && !b.contact.phone && !b.contact.whatsApp && !b.contact.address) {
+            <p class="bp-body">Contact details are coming soon.</p>
+          }
+        </div>
+
+        @if (mapUrl()) {
+          <iframe class="ct-map" [src]="mapUrl()" title="Store location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        }
+      </div>
+    }
+
+  </div>
+</main>

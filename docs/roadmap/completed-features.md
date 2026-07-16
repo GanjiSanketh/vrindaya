@@ -14,6 +14,31 @@ alone doesn't answer when a milestone spans many small commits.
 > actual current state of the application; it will need a pass once these
 > changes are committed to confirm nothing drifted between now and then.
 
+> **Since this was written (2026-07-07)**: four more feature phases shipped
+> against `api/`, none reflected in the sections below yet (this addendum
+> is a pointer, not a rewrite of the historical record above it):
+> - **Collections** — a second homepage-curatable product grouping
+>   alongside Category, with its own admin CRUD, public landing page
+>   (`/collection/:slug`), and homepage Featured/Trending override slugs.
+> - **Flipkart Operations Module** — manual Flipkart listing URL/status
+>   tracking per product (no Flipkart API), its own admin dashboard and
+>   bulk-URL-assignment tooling.
+> - **Inventory & Product Lifecycle Management** — stock/low-stock-threshold/
+>   auto-hide fields plus a 10-stage `LifecycleStage` replacing the earlier,
+>   narrower Flipkart-only status; Archived products are auto-excluded from
+>   homepage-curated lists.
+> - **Brand CMS & SEO** — About Us/Contact/Store Information/Social Links/
+>   FAQs/Policies as one admin-editable `brandConfig/singleton` document,
+>   backing new public Brand pages, plus sitemap/robots.txt and
+>   `SeoService`-driven metadata across every route.
+>
+> A production-hardening pass followed (security, dead-code removal,
+> caching, validation, accessibility — see [CHANGELOG.md](../../CHANGELOG.md)
+> and [TECHNICAL_DEBT.md](../TECHNICAL_DEBT.md)), which is why `Jwt` no
+> longer appears in `api/`'s Options-pattern list below and
+> `TokenValidationMiddleware` no longer exists — real Firebase JWT Bearer
+> auth replaced both.
+
 ## Storefront (original Angular app, committed history)
 
 - Fashion landing page: hero, categories, new arrivals, trending products,

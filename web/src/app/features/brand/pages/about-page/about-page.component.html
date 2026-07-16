@@ -1,0 +1,27 @@
+<main class="bp-page">
+  <div class="container-vr">
+
+    @if (loading()) {
+      <p class="bp-loading">Loading…</p>
+    } @else if (error()) {
+      <div class="bp-empty">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        <p>{{ error() }}</p>
+        <button type="button" class="btn-primary" (click)="load()">Retry</button>
+      </div>
+    } @else if (brand(); as b) {
+      <article class="bp-content">
+        @if (b.aboutUs.imageUrl) {
+          <img [src]="b.aboutUs.imageUrl" [alt]="b.aboutUs.heading || 'About Vrindaya'" class="bp-image" loading="lazy" width="1200" height="600" />
+        }
+        <h1 class="bp-heading">{{ b.aboutUs.heading || 'About Us' }}</h1>
+        @if (b.aboutUs.body) {
+          <p class="bp-body">{{ b.aboutUs.body }}</p>
+        } @else {
+          <p class="bp-body">We're still writing our story — check back soon.</p>
+        }
+      </article>
+    }
+
+  </div>
+</main>

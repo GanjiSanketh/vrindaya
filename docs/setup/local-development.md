@@ -3,9 +3,12 @@
 There is no root-level `package.json` or build tool tying `web/` and
 `api/` together — they're two independent applications that happen to
 share a repo and a Firebase project. Run them independently; there's no
-single "start everything" command, and no need to invent one given how
-loosely coupled they currently are (`web/` doesn't call `api/` yet — see
-[System Architecture](../architecture/system-architecture.md)).
+single "start everything" command. `web/` does call `api/` today (Product/
+Category/Collection/Homepage/Brand/Inventory/Flipkart Ops/WhatsApp all go
+through `environment.ts`'s `apiBaseUrl`) — see
+[System Architecture](../architecture/system-architecture.md) — but the
+Marketing/Campaigns feature still talks to Firestore directly from the
+browser, so `api/` isn't a hard dependency for every workflow.
 
 ## Prerequisites
 
@@ -71,12 +74,13 @@ by design.
 
 ## Running both together
 
-There's genuinely nothing to coordinate yet — `web/` doesn't call
-`api/`'s endpoints, so you can run either one alone depending on what
-you're working on. If you're working on something that anticipates future
-integration (e.g. testing `apiBaseUrl` wiring), run both in separate
-terminals; `environment.ts`'s `apiBaseUrl` (`https://localhost:5001/api/v1`)
-already points at the `api/` dev HTTPS profile.
+Run both in separate terminals for any storefront/admin work that touches
+Products, Categories, Collections, Homepage config, Brand CMS, Inventory,
+Flipkart Ops, or WhatsApp — `web/` calls `api/` for all of these via
+`environment.ts`'s `apiBaseUrl` (`https://localhost:5001/api/v1`), which
+already points at the `api/` dev HTTPS profile. You can run `web/` alone
+only if you're working exclusively on the Marketing/Campaigns feature,
+which still talks to Firestore directly from the browser.
 
 **Windows-specific note**: this repo has repeatedly hit file-locking issues
 from lingering `node.exe`/`dotnet.exe` processes holding watchers open

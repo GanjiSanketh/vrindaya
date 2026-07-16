@@ -1,9 +1,19 @@
 import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import type { Timestamp } from 'firebase/firestore';
 import { environment } from '../../../../environments/environment';
 import { Campaign, CampaignInput, CampaignStatus } from '../models/campaign.model';
 import { mapFirestoreError } from '../../../shared/utils/firestore-error.util';
+import { LoggerService } from '../../../core/services/logger.service';
+
+interface UploadedImage {
+  url: string;
+  publicId: string;
+}
+
+const MARKETING_ASSETS_URL = `${environment.apiBaseUrl}/marketing-assets/images`;
 
 const CAMPAIGNS_COLLECTION = 'campaigns';
 const SUBSCRIBERS_COLLECTION = 'marketingSubscribers';
@@ -15,7 +25,9 @@ const MAX_DOCUMENT_BYTES = 100 * 1024 * 1024;
 
 @Injectable({ providedIn: 'root' })
 export class CampaignService {
-  private readonly pid = inject(PLATFORM_ID);
+  private readonly pid    = inject(PLATFORM_ID);
+  private readonly logger = inject(LoggerService);
+  private readonly http   = inject(HttpClient);
 
   readonly campaigns = signal<Campaign[]>([]);
   readonly loading   = signal(true);
@@ -61,13 +73,13 @@ export class CampaignService {
           this.error.set(null);
         },
         err => {
-          console.error('[Campaigns]', err);
+          this.logger.error('[Campaigns]', err);
           this.error.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
           this.loading.set(false);
         },
       );
     } catch (err) {
-      console.error('[Campaigns]', err);
+      this.logger.error('[Campaigns]', err);
       this.error.set(mapFirestoreError(err, isPlatformBrowser(this.pid)));
       this.loading.set(false);
     }
@@ -90,7 +102,7 @@ export class CampaignService {
       const snap = await getDoc(doc(getFirestore(app), CAMPAIGNS_COLLECTION, id));
       return snap.exists() ? this.toCampaign(snap.id, snap.data()) : null;
     } catch (err) {
-      console.error('[Campaigns]', err);
+      this.logger.error('[Campaigns]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -107,7 +119,7 @@ export class CampaignService {
       const snap = await getCountFromServer(q);
       return snap.data().count;
     } catch (err) {
-      console.error('[Campaigns]', err);
+      this.logger.error('[Campaigns]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -153,7 +165,7 @@ export class CampaignService {
       const ref = await addDoc(collection(db, CAMPAIGNS_COLLECTION), payload);
       return ref.id;
     } catch (err) {
-      console.error('[Campaigns]', err);
+      this.logger.error('[Campaigns]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -192,7 +204,7 @@ export class CampaignService {
         scheduledAt:  scheduledAt ? FsTimestamp.fromDate(scheduledAt) : null,
       });
     } catch (err) {
-      console.error('[Campaigns]', err);
+      this.logger.error('[Campaigns]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -209,7 +221,7 @@ export class CampaignService {
         updatedAt: serverTimestamp(),
       });
     } catch (err) {
-      console.error('[Campaigns]', err);
+      this.logger.error('[Campaigns]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
@@ -223,15 +235,19 @@ export class CampaignService {
       const app = getApps().length ? getApp() : initializeApp(environment.firebase);
       await deleteDoc(doc(getFirestore(app), CAMPAIGNS_COLLECTION, id));
     } catch (err) {
-      console.error('[Campaigns]', err);
+      this.logger.error('[Campaigns]', err);
       throw new Error(mapFirestoreError(err, isPlatformBrowser(this.pid)));
     }
   }
 
   // ── Media uploads ────────────────────────────────────────────────────────
-  // All media types share one storage strategy (Firebase Storage, public
-  // read so Meta can fetch the link, admin-only write) — only the folder
-  // and validation differ. See storage.rules for the matching size/type caps.
+  // Images go through the ASP.NET backend to Cloudinary (signed, server-side
+  // upload — see MarketingAssetsController/CloudinaryService). Video/document
+  // uploads are intentionally NOT part of the Cloudinary cutover — Cloudinary's
+  // video/raw-file API is a different shape than this app's image-only
+  // CloudinaryService, so those two stay on the pre-existing client-side
+  // Firebase Storage path (public read so Meta can fetch the link,
+  // admin-only write — see storage.rules) until a dedicated follow-up.
 
   async uploadCampaignImage(file: File): Promise<string> {
     if (file.size > MAX_IMAGE_BYTES) {
@@ -240,7 +256,7 @@ export class CampaignService {
     if (!file.type.startsWith('image/')) {
       throw new Error('Please choose an image file.');
     }
-    return this.uploadToStorage(file, 'campaign-images');
+    return this.uploadImageToBackend(file);
   }
 
   /** Also used for a campaign's optional thumbnail — a thumbnail is still just an image. */
@@ -268,6 +284,21 @@ export class CampaignService {
     return this.uploadToStorage(file, 'campaign-documents');
   }
 
+  /** Signed, server-side upload to Cloudinary via the ASP.NET backend — see MarketingAssetsController. */
+  private async uploadImageToBackend(file: File): Promise<string> {
+    try {
+      const formData = new FormData();
+      formData.append('section', 'campaign-images');
+      formData.append('file', file);
+
+      const result = await firstValueFrom(this.http.post<UploadedImage>(MARKETING_ASSETS_URL, formData));
+      return result.url;
+    } catch (err) {
+      this.logger.error('[Campaigns]', err);
+      throw new Error('Failed to upload image. Please try again.');
+    }
+  }
+
   private async uploadToStorage(file: File, folder: string): Promise<string> {
     try {
       const { getApps, getApp, initializeApp } = await import('firebase/app');
@@ -281,7 +312,7 @@ export class CampaignService {
       await uploadBytes(fileRef, file, { contentType: file.type });
       return await getDownloadURL(fileRef);
     } catch (err) {
-      console.error('[Campaigns]', err);
+      this.logger.error('[Campaigns]', err);
       throw new Error('Failed to upload file. Please try again.');
     }
   }

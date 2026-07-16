@@ -1,0 +1,50 @@
+.hbf-page { max-width: 1000px; }
+
+.hbf-header { margin-bottom: 1.5rem; }
+.hbf-back { display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.82rem; font-weight: 600; color: #6b7280; text-decoration: none; margin-bottom: 0.625rem; }
+.hbf-back:hover { color: #0f6f84; }
+.hbf-title { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #0c4a58; margin: 0; }
+
+.hbf-success { display: flex; align-items: center; gap: 0.625rem; padding: 0.875rem 1.25rem; margin-bottom: 1.25rem; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; font-size: 0.88rem; font-weight: 600; color: #166534; }
+.hbf-error   { display: flex; align-items: center; gap: 0.625rem; padding: 0.875rem 1.25rem; margin-bottom: 1.25rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: #dc2626; }
+.hbf-error button { margin-left: auto; background: none; border: none; color: #dc2626; cursor: pointer; font-size: 1.1rem; }
+
+.hbf-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; margin-bottom: 0.875rem; }
+.hbf-field-row .hbf-field { margin-bottom: 0; }
+
+.hbf-grid { display: grid; grid-template-columns: 1fr 360px; gap: 1.25rem; margin-bottom: 1.25rem; }
+
+.hbf-section { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+.hbf-section:last-child { margin-bottom: 0; }
+.hbf-section-title { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600; color: #0c4a58; margin: 0 0 1rem; padding-bottom: 0.625rem; border-bottom: 1px solid #f0f4f7; }
+
+.hbf-field { margin-bottom: 0.875rem; }
+.hbf-field:last-child { margin-bottom: 0; }
+.hbf-label { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #374151; margin-bottom: 0.35rem; }
+
+.hbf-input, .hbf-textarea {
+  width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e0e4ea; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: #1a1a2e; background: #fff; outline: none; box-sizing: border-box;
+}
+.hbf-input:focus, .hbf-textarea:focus { border-color: #0f6f84; box-shadow: 0 0 0 3px rgba(15,111,132,0.1); }
+.hbf-input--err { border-color: #f87171 !important; }
+.hbf-textarea { resize: vertical; min-height: 60px; }
+
+.hbf-err { display: block; font-size: 0.72rem; color: #dc2626; margin-top: 0.25rem; }
+.hbf-hint { font-size: 0.78rem; color: #6b7280; margin: 0 0 0.875rem; }
+
+.hbf-check { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.hbf-check input { display: none; }
+.hbf-check-box { width: 18px; height: 18px; border: 2px solid #e0e4ea; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.hbf-check input:checked + .hbf-check-box { background: #0f6f84; border-color: #0f6f84; }
+.hbf-check input:checked + .hbf-check-box::after { content: ''; width: 5px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px,-1px); }
+.hbf-check span:last-child { font-size: 0.85rem; font-weight: 500; color: #374151; }
+
+.hbf-submit-row { display: flex; align-items: center; justify-content: flex-end; gap: 0.875rem; padding: 1.25rem 1.5rem; background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; }
+.hbf-cancel { padding: 0.625rem 1.25rem; border: 1px solid #e0e4ea; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; color: #374151; text-decoration: none; }
+.hbf-cancel:hover { background: #f0f4f7; }
+.hbf-submit { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.75rem; background: #0f6f84; color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.hbf-submit:hover:not(:disabled) { background: #0c5c6e; }
+.hbf-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+@media (max-width: 900px) { .hbf-grid { grid-template-columns: 1fr; } .hbf-field-row { grid-template-columns: 1fr; } }

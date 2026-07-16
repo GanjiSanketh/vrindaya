@@ -22,4 +22,11 @@ public class FirebaseOptions
     /// over ServiceAccountPath when present.
     /// </summary>
     public string? ServiceAccountJson { get; set; }
+
+    /// <summary>
+    /// The Firebase/GCP project ID — needed explicitly (not lazily derived
+    /// from the credential) for JWT bearer authority/audience configuration
+    /// at startup, before any FirestoreDb is ever built.
+    /// </summary>
+    public string ProjectId { get; set; } = string.Empty;
 }
