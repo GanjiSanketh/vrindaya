@@ -30,6 +30,9 @@ public static class AppConstants
     /// <summary>IMemoryCache key for GET /brand-config — same reasoning as HomepageCacheKey (public/global, footer calls it on every page).</summary>
     public const string BrandConfigCacheKey = "brand-config:v1";
 
+    /// <summary>IMemoryCache key for GET /marketplace-settings/flipkart — public/global, same reasoning as BrandConfigCacheKey.</summary>
+    public const string FlipkartSettingsCacheKey = "flipkart-settings:v1";
+
     /// <summary>IMemoryCache key for GET /categories (active-only list) — public/global, same reasoning as BrandConfigCacheKey.</summary>
     public const string CategoriesActiveCacheKey = "categories:active:v1";
 

@@ -1,0 +1,69 @@
+<div class="hbl-page">
+
+  <div class="hbl-header">
+    <div>
+      <h1 class="hbl-title">Low Stock Report</h1>
+      <p class="hbl-count">Variants at Critical or Low stock levels — restock these first.</p>
+    </div>
+    <a [routerLink]="BASE + '/purchase-entries/new'" class="btn-primary-sm">
+      <i class="bi bi-plus-lg"></i> Record Purchase
+    </a>
+  </div>
+
+  @if (error()) {
+    <div class="hbl-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+
+  <div class="hbl-card">
+    @if (loading()) {
+      <div class="hbl-loading"><span class="hbl-spinner"></span> Loading…</div>
+    } @else if (variants().length === 0) {
+      <div class="hbl-empty">
+        <i class="bi bi-check-circle"></i>
+        <p>Nothing is low on stock right now.</p>
+      </div>
+    } @else {
+      <div class="hbl-table-wrap">
+        <table class="hbl-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Color</th>
+              <th>Size</th>
+              <th>SKU</th>
+              <th>Current Stock</th>
+              <th>Reserved</th>
+              <th>Low / Critical</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of variants(); track v.id) {
+              <tr>
+                <td class="hbl-name">{{ v.productName || v.productId }}</td>
+                <td>{{ v.color }}</td>
+                <td>{{ v.size }}</td>
+                <td>{{ v.sku || '—' }}</td>
+                <td>{{ v.currentStock }}</td>
+                <td>{{ v.reservedStock }}</td>
+                <td>{{ v.lowStockThreshold }} / {{ v.criticalStockThreshold }}</td>
+                <td>
+                  <span class="hbl-badge" [class.hbl-badge--low]="v.status === 'Low'" [class.hbl-badge--critical]="v.status === 'Critical'" [class.hbl-badge--off]="v.status === 'OutOfStock'">
+                    {{ v.status === 'OutOfStock' ? 'Out of Stock' : v.status }}
+                  </span>
+                </td>
+                <td>
+                  <a [routerLink]="BASE + '/' + v.productId" class="hbl-action" title="Product Details">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>

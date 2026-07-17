@@ -2,6 +2,7 @@ using Serilog;
 using Vrindaya.Api.Constants;
 using Vrindaya.Api.Extensions;
 using Vrindaya.Api.Scripts;
+using Vrindaya.Api.Services.Admin;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,9 +19,10 @@ builder.Services.AddApplicationOptions(builder.Configuration);
 // ── Application services (DI composition root) ───────────────────────────────
 builder.Services.AddApplicationServices();
 
-// ── Authentication/authorization — verifies Angular's existing Firebase ID
-// token; "AdminOnly" policy additionally requires the admin email ─────────────
-builder.Services.AddFirebaseAuthentication();
+// ── Authentication/authorization — two JWT Bearer schemes (validating
+// Firebase's ID token for the one-time /auth/login call, and this app's own
+// minted AppJwt for everything else); "AdminOnly" requires either RBAC role ──
+builder.Services.AddAdminAuthentication();
 
 // ── External API integrations (typed HttpClient via IHttpClientFactory) ──────
 builder.Services.AddWhatsAppIntegration();
@@ -50,6 +52,11 @@ if (args.Length > 0 && args[0] == "migrate-legacy-images")
     return;
 }
 
+// ── RBAC bootstrap — idempotent; a no-op on every boot after the first
+// (see AdminUserSeeder). Guarantees there's always at least one SuperAdmin
+// who can sign in, even against a brand-new Firestore database. ───────────
+await AdminUserSeeder.SeedInitialSuperAdminAsync(app.Services);
+
 // ── Request pipeline ──────────────────────────────────────────────────────────
 // Order matters: exception handling wraps everything, forwarded headers
 // come next so every later middleware (logging, HTTPS redirection) sees the
@@ -66,6 +73,7 @@ app.UseSerilogRequestLogging();
 app.UseSwaggerInDevelopment();
 
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseCors(AppConstants.CorsPolicyName);
 
 app.UseAuthentication();
@@ -73,6 +81,11 @@ app.UseAuthorization();
 app.UseRateLimiter();
 
 app.MapControllers();
-app.MapHealthChecks("/health");
+
+// Anonymous by design (Render's health monitor calls this unauthenticated) —
+// everything else in this app defaults to admin-only via the fallback
+// authorization policy (see AddAdminAuthentication), so this needs an
+// explicit opt-out.
+app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();

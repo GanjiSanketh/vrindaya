@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Vrindaya.Api.Common.Exceptions;
 using Vrindaya.Api.Constants;
@@ -5,6 +6,8 @@ using Vrindaya.Api.DTOs.Homepage;
 using Vrindaya.Api.DTOs.Products;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Audit;
+using System.Security.Claims;
 
 namespace Vrindaya.Api.Services.Homepage;
 
@@ -24,14 +27,22 @@ public class CollectionService : ICollectionService
     private readonly IProductService _productService;
     private readonly IHomepageCacheService _cache;
     private readonly IMemoryCache _memoryCache;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CollectionService(ICollectionRepository repository, IProductService productService, IHomepageCacheService cache, IMemoryCache memoryCache)
+    public CollectionService(ICollectionRepository repository, IProductService productService, IHomepageCacheService cache, IMemoryCache memoryCache, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
     {
         _repository = repository;
         _productService = productService;
         _cache = cache;
         _memoryCache = memoryCache;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
     }
+
+    private string? GetCurrentUserEmail() =>
+        _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email)
+        ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("email");
 
     public async Task<List<CollectionResponse>> GetActiveAsync(CancellationToken cancellationToken)
     {
@@ -127,12 +138,15 @@ public class CollectionService : ICollectionService
         await _repository.CreateAsync(request.Id, document, cancellationToken);
         _cache.Invalidate();
         _memoryCache.Remove(AppConstants.CollectionsActiveCacheKey);
+        try { await _auditLogService.LogCreateAsync("Collections", request.Id, document.Name, AuditLogService.SerializeJson(document), GetCurrentUserEmail(), null, null, $"Collection '{document.Name}' created"); } catch { }
         return ToResponse(request.Id, document);
     }
 
     public async Task<CollectionResponse> UpdateAsync(string id, UpdateCollectionRequest request, CancellationToken cancellationToken)
     {
         var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Collection", id);
+
+        var beforeData = AuditLogService.SerializeJson(existing);
 
         var document = new CollectionDocument
         {
@@ -157,6 +171,7 @@ public class CollectionService : ICollectionService
         _cache.Invalidate();
         _memoryCache.Remove(AppConstants.CollectionsActiveCacheKey);
         _memoryCache.Remove(AppConstants.CollectionLandingCacheKeyPrefix + id);
+        try { await _auditLogService.LogUpdateAsync("Collections", id, document.Name, beforeData, AuditLogService.SerializeJson(document), GetCurrentUserEmail(), null, null, $"Collection '{document.Name}' updated"); } catch { }
         return ToResponse(id, document);
     }
 
@@ -165,6 +180,8 @@ public class CollectionService : ICollectionService
     {
         var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Collection", id);
 
+        var beforeData = AuditLogService.SerializeJson(existing);
+
         existing.Active = active;
         existing.UpdatedAt = DateTime.UtcNow;
 
@@ -172,16 +189,20 @@ public class CollectionService : ICollectionService
         _cache.Invalidate();
         _memoryCache.Remove(AppConstants.CollectionsActiveCacheKey);
         _memoryCache.Remove(AppConstants.CollectionLandingCacheKeyPrefix + id);
+        var action = active ? "activated" : "deactivated";
+        try { await _auditLogService.LogUpdateAsync("Collections", id, existing.Name, beforeData, AuditLogService.SerializeJson(existing), GetCurrentUserEmail(), null, null, $"Collection '{existing.Name}' {action}"); } catch { }
         return ToResponse(id, existing);
     }
 
     public async Task DeleteAsync(string id, CancellationToken cancellationToken)
     {
-        _ = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Collection", id);
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Collection", id);
+        var beforeData = AuditLogService.SerializeJson(existing);
         await _repository.DeleteAsync(id, cancellationToken);
         _cache.Invalidate();
         _memoryCache.Remove(AppConstants.CollectionsActiveCacheKey);
         _memoryCache.Remove(AppConstants.CollectionLandingCacheKeyPrefix + id);
+        try { await _auditLogService.LogDeleteAsync("Collections", id, existing.Name, beforeData, GetCurrentUserEmail(), null, null, $"Collection '{existing.Name}' deleted"); } catch { }
     }
 
     public async Task ReorderAsync(List<string> orderedIds, CancellationToken cancellationToken)
@@ -189,6 +210,7 @@ public class CollectionService : ICollectionService
         await _repository.ReorderAsync(orderedIds, cancellationToken);
         _cache.Invalidate();
         _memoryCache.Remove(AppConstants.CollectionsActiveCacheKey);
+        try { await _auditLogService.LogCustomAsync("Reorder", "Collections", null, null, $"Collections reordered ({orderedIds.Count} items)", GetCurrentUserEmail(), null, null); } catch { }
     }
 
     public async Task<List<ProductSummaryResponse>> GetProductsBySlugAsync(string slug, CancellationToken cancellationToken)

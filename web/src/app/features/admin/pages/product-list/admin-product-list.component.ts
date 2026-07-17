@@ -41,8 +41,7 @@ export class AdminProductListComponent implements OnDestroy {
   readonly auth = inject(AdminAuthService);
   readonly BASE = `/${APP_ROUTES.ADMIN}`;
 
-  /** Editors cannot delete products. */
-  readonly canDelete = computed(() => this.auth.hasRole(['super_admin', 'admin']));
+  readonly canDelete = computed(() => this.auth.hasRole(['SuperAdmin', 'Admin']));
 
   readonly categories = ['long-kurtas', 'short-kurtas', '2-piece-sets', '3-piece-sets'];
   readonly pageSizeOptions = PAGE_SIZE_OPTIONS;

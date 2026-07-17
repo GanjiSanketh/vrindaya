@@ -29,6 +29,7 @@ public class CollectionController : ControllerBase
 
     /// <summary>Public — active/visible collections only, ordered. Metadata only — powers collection search.</summary>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<CollectionResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<CollectionResponse>>> GetActive(CancellationToken cancellationToken)
     {
@@ -37,6 +38,7 @@ public class CollectionController : ControllerBase
 
     /// <summary>Public — the collection landing page's payload (metadata + resolved products). 404 if missing or inactive+non-admin.</summary>
     [HttpGet("{slug}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(CollectionLandingResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CollectionLandingResponse>> GetBySlug(string slug, CancellationToken cancellationToken)

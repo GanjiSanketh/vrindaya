@@ -4,9 +4,9 @@ using Vrindaya.Api.Common;
 namespace Vrindaya.Api.Authorization;
 
 /// <summary>
-/// Succeeds only when the authenticated Firebase ID token's email claim
-/// matches AppConstants.AdminEmail — the same trust boundary as
-/// firestore.rules'/storage.rules' isAdminUser().
+/// Succeeds only when the authenticated principal carries the SuperAdmin
+/// or Admin role claim on the app's own AppJwt (see JwtTokenService) —
+/// i.e. an active AdminUsers record as of their last /auth/login call.
 /// </summary>
 public class AdminOnlyAuthorizationHandler : AuthorizationHandler<AdminOnlyRequirement>
 {

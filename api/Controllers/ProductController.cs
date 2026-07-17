@@ -25,6 +25,7 @@ public class ProductController : ControllerBase
 
     /// <summary>Public: active products only. Admins (valid Bearer token, admin email): everything, including drafts.</summary>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(PagedProductsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedProductsResponse>> GetProducts([FromQuery] ProductQuery query, CancellationToken cancellationToken)
     {
@@ -34,6 +35,7 @@ public class ProductController : ControllerBase
 
     /// <summary>404 (not 403) if the product is inactive and the caller isn't admin — doesn't leak draft existence.</summary>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ProductDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductDetailResponse>> GetProductById(string id, CancellationToken cancellationToken)
@@ -50,6 +52,7 @@ public class ProductController : ControllerBase
     /// exact path (ASP.NET Core routing prefers the more specific match).
     /// </summary>
     [HttpGet("search")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(PagedProductsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedProductsResponse>> SearchProducts(
         [FromQuery] string q,
@@ -291,17 +294,6 @@ public class ProductController : ControllerBase
         var updatedBy = User.FindFirstEmail();
         await _productService.UpdateStatusAsync(id, request.Active, updatedBy, cancellationToken);
         return NoContent();
-    }
-
-    [HttpPatch("{id}/stock")]
-    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
-    [ProducesResponseType(typeof(UpdateStockResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UpdateStockResponse>> UpdateStock(string id, [FromBody] UpdateStockRequest request, CancellationToken cancellationToken)
-    {
-        var updatedBy = User.FindFirstEmail();
-        var stock = await _productService.UpdateStockAsync(id, request.Sizes, updatedBy, cancellationToken);
-        return Ok(new UpdateStockResponse { Stock = stock });
     }
 
     /// <summary>Single-product edit of every Flipkart Operations field — backs the Flipkart Ops admin screen's edit modal. Independent of the main product PUT.</summary>

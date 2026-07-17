@@ -1,184 +1,66 @@
-import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser }                        from '@angular/common';
-import { environment }                              from '../../../../environments/environment';
-import { AdminUser, AdminRole }                     from '../models/admin-user.model';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom, catchError, throwError } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { AdminUser, CreateAdminUserRequest, UpdateAdminUserRequest } from '../models/admin-user.model';
+
+const URL = `${environment.apiBaseUrl}/admin-users`;
+
+/** Reads the backend's ApiErrorResponse.message (see GlobalExceptionMiddleware) — e.g. the specific lockout/self-demote/conflict text — falling back to a generic message only when the body doesn't have one. */
+function apiErrorMessage(err: unknown, fallback: string): Error {
+  if (err instanceof HttpErrorResponse && typeof err.error?.message === 'string') {
+    return new Error(err.error.message);
+  }
+  return new Error(fallback);
+}
 
 /**
- * Document schema: admin-users/{lowerCaseEmail}
- *
- * The document ID is always the user's lowercase email address.
- * This allows O(1) direct reads (getDoc) instead of collection queries (getDocs),
- * which is important because Firestore security rules may grant 'get' but not 'list'.
+ * SuperAdmin-only CRUD over the backend's AdminUsersController — no direct
+ * Firestore access from the browser (unlike most other admin CRUD in this
+ * app), since the last-SuperAdmin lockout rules only exist in
+ * AdminUserService server-side and must not be bypassable from the client.
  */
-const COLLECTION = 'admin-users';
-
 @Injectable({ providedIn: 'root' })
 export class AdminUsersService {
-  private readonly pid = inject(PLATFORM_ID);
+  private readonly http = inject(HttpClient);
 
-  readonly users   = signal<AdminUser[]>([]);
-  readonly loading = signal(true);
-  readonly error   = signal<string | null>(null);
-
-  private unsub: (() => void) | null = null;
-
-  // ── Real-time listener ────────────────────────────────────────────────────
-
-  startListening(): void {
-    if (this.unsub || !isPlatformBrowser(this.pid)) return;
-    this.loading.set(true);
-    this.setupSnapshot();
+  getAll(): Promise<AdminUser[]> {
+    return firstValueFrom(
+      this.http.get<AdminUser[]>(URL).pipe(
+        catchError(err => throwError(() => apiErrorMessage(err, 'Could not load admin users. Please try again.'))),
+      ),
+    );
   }
 
-  stopListening(): void {
-    this.unsub?.();
-    this.unsub = null;
-    this.loading.set(true);
-    this.users.set([]);
+  create(request: CreateAdminUserRequest): Promise<AdminUser> {
+    return firstValueFrom(
+      this.http.post<AdminUser>(URL, request).pipe(
+        catchError(err => throwError(() => apiErrorMessage(err, 'Failed to add admin user.'))),
+      ),
+    );
   }
 
-  private async setupSnapshot(): Promise<void> {
-    try {
-      const { getApps, getApp, initializeApp }                    = await import('firebase/app');
-      const { getFirestore, collection, query, orderBy, onSnapshot } = await import('firebase/firestore');
-
-      const app = getApps().length ? getApp() : initializeApp(environment.firebase);
-      const db  = getFirestore(app);
-      const q   = query(collection(db, COLLECTION), orderBy('createdAt', 'asc'));
-
-      this.unsub = onSnapshot(
-        q,
-        snap => {
-          this.users.set(
-            snap.docs.map(d => ({
-              docId:       d.id,   // = lowercase email
-              uid:         (d.data()['uid']         as string) || '',
-              email:       (d.data()['email']        as string) || '',
-              displayName: (d.data()['displayName']  as string) || '',
-              role:        this.normalizeRole(d.data()['role'] as string) ?? 'editor',
-              active:      (d.data()['active']       as boolean) ?? true,
-              createdAt:   (d.data()['createdAt']    as { seconds: number; nanoseconds: number } | null) ?? null,
-              createdBy:   (d.data()['createdBy']    as string) || '',
-            })),
-          );
-          this.loading.set(false);
-          this.error.set(null);
-        },
-        () => {
-          this.error.set('Failed to load admin users. Check your Firestore rules.');
-          this.loading.set(false);
-        },
-      );
-    } catch {
-      this.error.set('Failed to connect to Firestore.');
-      this.loading.set(false);
-    }
+  update(email: string, request: UpdateAdminUserRequest): Promise<AdminUser> {
+    return firstValueFrom(
+      this.http.put<AdminUser>(`${URL}/${encodeURIComponent(email)}`, request).pipe(
+        catchError(err => throwError(() => apiErrorMessage(err, 'Failed to update admin user.'))),
+      ),
+    );
   }
 
-  // ── CRUD operations ───────────────────────────────────────────────────────
-
-  /**
-   * Adds a new admin user.
-   * Uses setDoc with email as the document ID so the auth service can look up
-   * users via getDoc(doc(db, 'admin-users', email)) without needing a query.
-   */
-  async addUser(
-    email:        string,
-    role:         AdminRole,
-    active:       boolean,
-    createdByUid: string,
-  ): Promise<void> {
-    const { getApps, getApp, initializeApp }                     = await import('firebase/app');
-    const { getFirestore, doc, setDoc, serverTimestamp, getDoc } = await import('firebase/firestore');
-
-    const app        = getApps().length ? getApp() : initializeApp(environment.firebase);
-    const db         = getFirestore(app);
-    const lowerEmail = email.trim().toLowerCase();
-    const adminRef   = doc(db, COLLECTION, lowerEmail);
-
-    // Prevent overwriting an existing document
-    const existing = await getDoc(adminRef);
-    if (existing.exists()) {
-      throw new Error(`An admin user with email ${lowerEmail} already exists.`);
-    }
-
-    await setDoc(adminRef, {
-      uid:         '',   // Populated when the user first signs in
-      email:       lowerEmail,
-      displayName: '',
-      role,
-      active,
-      createdAt:   serverTimestamp(),
-      createdBy:   createdByUid,
-    });
+  activate(email: string): Promise<AdminUser> {
+    return firstValueFrom(
+      this.http.patch<AdminUser>(`${URL}/${encodeURIComponent(email)}/activate`, {}).pipe(
+        catchError(err => throwError(() => apiErrorMessage(err, 'Failed to activate admin user.'))),
+      ),
+    );
   }
 
-  async updateUserRole(docId: string, role: AdminRole): Promise<void> {
-    const { getApps, getApp, initializeApp }  = await import('firebase/app');
-    const { getFirestore, doc, updateDoc }    = await import('firebase/firestore');
-
-    const app = getApps().length ? getApp() : initializeApp(environment.firebase);
-    await updateDoc(doc(getFirestore(app), COLLECTION, docId), { role });
-  }
-
-  async activateUser(docId: string): Promise<void> {
-    const { getApps, getApp, initializeApp }  = await import('firebase/app');
-    const { getFirestore, doc, updateDoc }    = await import('firebase/firestore');
-
-    const app = getApps().length ? getApp() : initializeApp(environment.firebase);
-    await updateDoc(doc(getFirestore(app), COLLECTION, docId), { active: true });
-  }
-
-  async deactivateUser(docId: string): Promise<void> {
-    const { getApps, getApp, initializeApp }  = await import('firebase/app');
-    const { getFirestore, doc, updateDoc }    = await import('firebase/firestore');
-
-    const app = getApps().length ? getApp() : initializeApp(environment.firebase);
-    await updateDoc(doc(getFirestore(app), COLLECTION, docId), { active: false });
-  }
-
-  async deleteUser(docId: string): Promise<void> {
-    const { getApps, getApp, initializeApp }  = await import('firebase/app');
-    const { getFirestore, doc, deleteDoc }    = await import('firebase/firestore');
-
-    const app = getApps().length ? getApp() : initializeApp(environment.firebase);
-    await deleteDoc(doc(getFirestore(app), COLLECTION, docId));
-  }
-
-  /**
-   * Looks up a single admin user by email.
-   * Uses getDoc (direct read by email-as-ID) instead of a collection query.
-   */
-  async getUserByEmail(email: string): Promise<AdminUser | null> {
-    const { getApps, getApp, initializeApp } = await import('firebase/app');
-    const { getFirestore, doc, getDoc }      = await import('firebase/firestore');
-
-    const app        = getApps().length ? getApp() : initializeApp(environment.firebase);
-    const lowerEmail = email.trim().toLowerCase();
-    const d          = await getDoc(doc(getFirestore(app), COLLECTION, lowerEmail));
-
-    if (!d.exists()) return null;
-
-    return {
-      docId:       d.id,
-      uid:         (d.data()['uid']         as string) || '',
-      email:       (d.data()['email']        as string) || '',
-      displayName: (d.data()['displayName']  as string) || '',
-      role:        this.normalizeRole(d.data()['role'] as string) ?? 'editor',
-      active:      (d.data()['active']       as boolean) ?? true,
-      createdAt:   (d.data()['createdAt']    as { seconds: number; nanoseconds: number } | null) ?? null,
-      createdBy:   (d.data()['createdBy']    as string) || '',
-    };
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  /** Normalises 'super-admin' → 'super_admin' etc. */
-  private normalizeRole(raw: string): AdminRole | null {
-    const n = (raw ?? '').toLowerCase().replace(/-/g, '_').trim();
-    if (n === 'super_admin') return 'super_admin';
-    if (n === 'admin')       return 'admin';
-    if (n === 'editor')      return 'editor';
-    return null;
+  deactivate(email: string): Promise<AdminUser> {
+    return firstValueFrom(
+      this.http.patch<AdminUser>(`${URL}/${encodeURIComponent(email)}/deactivate`, {}).pipe(
+        catchError(err => throwError(() => apiErrorMessage(err, 'Failed to deactivate admin user.'))),
+      ),
+    );
   }
 }

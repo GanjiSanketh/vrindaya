@@ -5,7 +5,7 @@
     <div>
       <h1 class="dash-title">Dashboard</h1>
       @if (authSvc.currentUser(); as user) {
-        <p class="dash-welcome">Welcome back, {{ user.displayName || 'Admin' }}</p>
+        <p class="dash-welcome">Welcome back, {{ user.name || 'Admin' }}</p>
       }
     </div>
     <div class="dash-actions">
@@ -99,6 +99,51 @@
       </div>
     </div>
   </div>
+
+  <!-- Inventory Health — variant-level stock widget -->
+  @if (inventoryHealthLoading()) {
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <h2 class="dash-section-title">Variant Stock Health</h2>
+      </div>
+      <div class="dash-loading-inline"><span class="dash-spinner"></span> Loading…</div>
+    </div>
+  } @else if (inventoryHealthError(); as err) {
+    <div class="dash-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ err }}</div>
+  } @else if (inventoryHealth(); as h) {
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <h2 class="dash-section-title">Variant Stock Health</h2>
+        <a [routerLink]="BASE + '/inventory/dashboard'" class="dash-view-all">Inventory Dashboard <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="stock-health-grid">
+        <div class="health-card health-card--healthy">
+          <span class="health-count">{{ h.totalVariants - h.lowStockCount - h.criticalStockCount - h.outOfStockCount }}</span>
+          <span class="health-label">Healthy</span>
+        </div>
+        <div class="health-card health-card--low">
+          <span class="health-count">{{ h.lowStockCount }}</span>
+          <span class="health-label">Low Stock</span>
+        </div>
+        <div class="health-card health-card--critical">
+          <span class="health-count">{{ h.criticalStockCount }}</span>
+          <span class="health-label">Critical</span>
+        </div>
+        <div class="health-card health-card--out">
+          <span class="health-count">{{ h.outOfStockCount }}</span>
+          <span class="health-label">Out Of Stock</span>
+        </div>
+        <div class="health-card health-card--total">
+          <span class="health-count">{{ h.inventoryValue | currency:'INR':'symbol-narrow':'1.0-0' }}</span>
+          <span class="health-label">Inventory Value</span>
+        </div>
+      </div>
+      <div class="stock-health-footer">
+        <a [routerLink]="BASE + '/inventory/low-stock'" class="btn-link-sm"><i class="bi bi-exclamation-triangle"></i> View Low Stock Report</a>
+        <a [routerLink]="BASE + '/inventory/list'" class="btn-link-sm"><i class="bi bi-boxes"></i> View All Inventory</a>
+      </div>
+    </div>
+  }
 
   <!-- Products by Lifecycle Stage -->
   <div class="dash-section">

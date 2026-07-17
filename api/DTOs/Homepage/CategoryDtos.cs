@@ -11,6 +11,7 @@ public class CategoryResponse
     public string Slug { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;
+    public string? Code { get; set; }
     public string? Subtitle { get; set; }
     public string? Description { get; set; }
     public string Image { get; set; } = string.Empty;
@@ -31,6 +32,9 @@ public abstract class CategoryRequestBase
 {
     [Required, StringLength(100, MinimumLength = 1)]
     public string Name { get; set; } = string.Empty;
+
+    [StringLength(10, MinimumLength = 1)]
+    public string? Code { get; set; }
 
     public string? Subtitle { get; set; }
     public string? Description { get; set; }

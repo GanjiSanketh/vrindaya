@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { Product } from '../models/product.model';
 import {
   ApiPagedProducts, ApiProductDetail, ApiUploadedImage, AdminProductInput, FlipkartOpsInput,
-  ApiInventoryDetail, UpdateInventoryInput, AdminProductListQuery, ProductFlagName,
+  AdminProductListQuery, ProductFlagName,
   apiSummaryToProduct, apiDetailToProduct,
 } from '../models/product-api.model';
 import { LifecycleStageValue } from '../constants/lifecycle-stage.constants';
@@ -50,6 +50,12 @@ export class ProductApiService {
   async ensureLoaded(): Promise<void> {
     if (this.loaded) return;
     await this.refresh();
+  }
+
+  /** Called on admin sign-out so a subsequent session never shows this session's cached catalog before its own first fetch. */
+  clearCache(): void {
+    this.products.set([]);
+    this.loaded = false;
   }
 
   async refresh(): Promise<void> {
@@ -273,29 +279,7 @@ export class ProductApiService {
     ids.forEach(id => this.patchLocal(id, { lifecycleStage: 'Listed On Flipkart', launchDate: iso }));
   }
 
-  /* ── Inventory & Product Lifecycle (Phase 8) ── */
-
-  async getInventory(id: string): Promise<ApiInventoryDetail> {
-    return firstValueFrom(this.http.get<ApiInventoryDetail>(`${INVENTORY_BASE}/${id}`));
-  }
-
-  async updateInventory(id: string, input: UpdateInventoryInput): Promise<void> {
-    const dto = await firstValueFrom(this.http.patch<ApiInventoryDetail>(`${INVENTORY_BASE}/${id}`, input));
-    const patch: Partial<Product> = {
-      sizes: input.sizes,
-      stock: dto.stock,
-      lowStockThreshold: dto.lowStockThreshold,
-      autoHideWhenOutOfStock: dto.autoHideWhenOutOfStock,
-      stockUpdatedAt: dto.stockUpdatedAt ?? null,
-      isOutOfStock: dto.isOutOfStock,
-      isLowStock: dto.isLowStock,
-    };
-    // Mirrors the server-side auto-hide automation so the admin list doesn't show stale "Active" state until the next refresh.
-    if (dto.isOutOfStock && input.autoHideWhenOutOfStock) {
-      patch.active = false;
-    }
-    this.patchLocal(id, patch);
-  }
+  /* ── Product Lifecycle (Phase 8) ── */
 
   async updateLifecycleStage(id: string, stage: LifecycleStageValue): Promise<void> {
     await firstValueFrom(this.http.patch<void>(`${INVENTORY_BASE}/${id}/lifecycle`, { stage }));

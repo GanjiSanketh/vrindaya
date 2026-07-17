@@ -1,0 +1,101 @@
+<div class="forecast-page">
+
+  <div class="forecast-header">
+    <div>
+      <h1 class="forecast-title">Inventory Forecasting</h1>
+      <p class="forecast-subtitle">Estimated days remaining, reorder recommendations, and stock health — powered by sales velocity from historical data.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="forecast-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+
+  <div class="forecast-filters">
+    <div class="filter-chips">
+      @for (chip of chips; track chip) {
+        <button type="button" class="chip" [class.chip--active]="statusFilter() === chip"
+                (click)="setStatusFilter(chip)">
+          {{ chip === 'all' ? 'All Statuses' : chip }}
+        </button>
+      }
+    </div>
+    <div class="search-wrap">
+      <input class="search-input" type="text" placeholder="Search product, SKU, supplier…" [ngModel]="search()"
+             (ngModelChange)="search.set($event); onSearch()" />
+      @if (search()) {
+        <button type="button" class="search-clear" (click)="clearSearch()">&times;</button>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="forecast-loading"><span class="forecast-spinner"></span> Loading…</div>
+  } @else if (data().length === 0) {
+    <div class="forecast-empty">No variants found matching the current filters.</div>
+  } @else {
+    <div class="forecast-table-wrap">
+      <table class="forecast-table">
+        <thead>
+          <tr>
+            <th>Product / SKU</th>
+            <th>Stock</th>
+            <th>Sold</th>
+            <th>Mo. Sales</th>
+            <th>Days Left</th>
+            <th>Min Stk</th>
+            <th>Max Stk</th>
+            <th>Ideal Stk</th>
+            <th>Reorder</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of data(); track row.variantId) {
+            <tr>
+              <td>
+                <div class="cell-product">{{ row.productName }}</div>
+                <div class="cell-sku">{{ row.sku }}@if (row.color || row.size) { ({{ row.color || '-' }} / {{ row.size || '-' }}) }</div>
+              </td>
+              <td class="cell-num">{{ row.currentStock }}</td>
+              <td class="cell-num">{{ row.soldStock }}</td>
+              <td class="cell-num">{{ row.averageMonthlySales.toFixed(1) }}</td>
+              <td class="cell-num {{ daysClass(row.estimatedDaysRemaining) }}">
+                @if (row.estimatedDaysRemaining >= 999) {
+                  N/A
+                } @else {
+                  {{ row.estimatedDaysRemaining.toFixed(0) }}d
+                }
+              </td>
+              <td class="cell-num">{{ row.minimumStock }}</td>
+              <td class="cell-num">{{ row.maximumStock }}</td>
+              <td class="cell-num">{{ row.idealStock }}</td>
+              <td class="cell-num">
+                @if (needsReorder(row.recommendedReorderQuantity)) {
+                  <span class="reorder-badge">{{ row.recommendedReorderQuantity }}</span>
+                } @else {
+                  <span class="reorder-none">—</span>
+                }
+              </td>
+              <td><span class="status-badge {{ statusClass(row.status) }}">{{ row.status }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="forecast-pagination">
+      <span class="forecast-count">{{ total() }} variant{{ total() === 1 ? '' : 's' }}</span>
+      <div class="forecast-pages">
+        <button type="button" class="page-btn" [disabled]="!hasPrev()" (click)="prevPage()">
+          <i class="bi bi-chevron-left"></i> Previous
+        </button>
+        <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button type="button" class="page-btn" [disabled]="!hasNext()" (click)="nextPage()">
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

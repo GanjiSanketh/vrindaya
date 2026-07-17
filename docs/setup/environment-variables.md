@@ -53,10 +53,10 @@ automatically in any environment; no extra code is needed to support it.
 | `WhatsApp:ApiVersion` | `WhatsApp__ApiVersion` | `WhatsAppOptions` | `MetaWhatsAppProvider` — the Graph API version segment (e.g. `v23.0`) in every request URL |
 | `CampaignDelivery:BatchSize` | `CampaignDelivery__BatchSize` | `CampaignDeliveryOptions` | `CampaignDeliveryWorker` — recipients processed per execution per poll tick. Defaults to `20`. |
 | `CampaignDelivery:PollingIntervalSeconds` | `CampaignDelivery__PollingIntervalSeconds` | `CampaignDeliveryOptions` | `CampaignDeliveryWorker` — how often it polls Firestore. Defaults to `5`. |
-| `Jwt:Issuer` | `Jwt__Issuer` | `JwtOptions` | Not consumed yet |
-| `Jwt:Audience` | `Jwt__Audience` | `JwtOptions` | Not consumed yet |
-| `Jwt:SecretKey` | `Jwt__SecretKey` | `JwtOptions` | Not consumed yet. **Never commit a real value.** |
-| `Jwt:ExpiryMinutes` | `Jwt__ExpiryMinutes` | `JwtOptions` | Defaults to `60` |
+| `Jwt:Issuer` | `Jwt__Issuer` | `JwtOptions` | `JwtTokenService` — the `iss` claim on every AppJwt it mints, and the value `AddAdminAuthentication()` requires the default Bearer scheme to validate against. Not a secret. |
+| `Jwt:Audience` | `Jwt__Audience` | `JwtOptions` | `JwtTokenService` — the `aud` claim on every AppJwt it mints, validated the same way. Not a secret. |
+| `Jwt:SigningKey` | `Jwt__SigningKey` | `JwtOptions` | `JwtTokenService` (signs) and `AddAdminAuthentication()` (validates) — the HS256 symmetric key for the app's own AppJwt, issued by `POST /auth/login` after a Firebase ID token is verified. Must be at least 32 bytes (UTF-8) for HS256. **Never commit a real value.** |
+| `Jwt:ExpiryMinutes` | `Jwt__ExpiryMinutes` | `JwtOptions` | `JwtTokenService` — AppJwt lifetime. Defaults to `720` (12 hours) in `appsettings.json`. |
 | `Serilog:MinimumLevel:Default` | `Serilog__MinimumLevel__Default` | Serilog config (not a custom Options class — Serilog reads its own section directly) | Controls verbosity; `Information` in `appsettings.json`, `Debug` in `appsettings.Development.json` |
 | `ASPNETCORE_ENVIRONMENT` | (itself, no JSON equivalent) | ASP.NET Core's built-in hosting env | Gates Swagger (dev-only) and selects which `appsettings.*.json` overlay loads |
 

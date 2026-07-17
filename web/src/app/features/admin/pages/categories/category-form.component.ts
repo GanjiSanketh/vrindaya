@@ -31,6 +31,7 @@ export class CategoryFormComponent implements OnInit {
   readonly form = this.fb.group({
     id:              ['', [Validators.required, Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)]],
     name:            ['', Validators.required],
+    code:            ['', [Validators.maxLength(10), Validators.pattern(/^[A-Z0-9]{1,10}$/)]],
     subtitle:        [''],
     description:     [''],
     displayOrder:    [0],
@@ -52,7 +53,7 @@ export class CategoryFormComponent implements OnInit {
       if (!cat) { this.formError.set('Category not found.'); return; }
 
       this.form.patchValue({
-        id: cat.id, name: cat.name, subtitle: cat.subtitle ?? '', description: cat.description ?? '',
+        id: cat.id, name: cat.name, code: cat.code ?? '', subtitle: cat.subtitle ?? '', description: cat.description ?? '',
         displayOrder: cat.displayOrder, featured: cat.featured ?? false, active: cat.active,
         seoTitle: cat.seoTitle ?? '', seoDescription: cat.seoDescription ?? '',
         seoKeywords: (cat.seoKeywords ?? []).join(', '),
@@ -76,6 +77,7 @@ export class CategoryFormComponent implements OnInit {
 
     const payload = {
       name: v.name!.trim(),
+      code: v.code?.trim().toUpperCase() || undefined,
       subtitle: v.subtitle?.trim() || undefined,
       description: v.description?.trim() || undefined,
       image: img.url,

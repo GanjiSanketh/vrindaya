@@ -1,0 +1,66 @@
+<div class="tl-page">
+
+  <div class="tl-header">
+    <a [routerLink]="BASE + '/' + productId" class="tl-back"><i class="bi bi-arrow-left"></i> Back to Details</a>
+    <h1 class="tl-title">Product Timeline</h1>
+    @if (productName) { <p class="tl-sub">{{ productName }}</p> }
+  </div>
+
+  @if (error()) {
+    <div class="tl-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="tl-loading"><span class="tl-spinner"></span> Loading…</div>
+  } @else if (days().length === 0) {
+    <div class="tl-empty">
+      <i class="bi bi-clock-history"></i>
+      <p>No stock movements recorded for this product yet.</p>
+    </div>
+  } @else {
+
+    <div class="tl-timeline">
+      @for (day of days(); track day.date) {
+        <div class="tl-day">
+          <h2 class="tl-day-heading">{{ formatDay(day.date) }}</h2>
+
+          @for (m of day.movements; track m.id) {
+            <div class="tl-entry">
+              <div class="tl-entry-marker">
+                <div class="tl-dot" [class.tl-dot--up]="direction(m) === 'up'" [class.tl-dot--down]="direction(m) === 'down'" [class.tl-dot--flat]="direction(m) === 'flat'">
+                  <i class="bi" [class]="icon(m.movementType)"></i>
+                </div>
+                <div class="tl-line"></div>
+              </div>
+              <div class="tl-entry-body">
+                <div class="tl-entry-top">
+                  <span class="tl-entry-type">{{ MOVEMENT_TYPE_LABELS[m.movementType] }}</span>
+                  <span class="tl-entry-qty" [class.tl-entry-qty--up]="direction(m) === 'up'" [class.tl-entry-qty--down]="direction(m) === 'down'">
+                    @if (direction(m) === 'up') { +{{ m.quantity }} } @else if (direction(m) === 'down') { −{{ m.quantity }} } @else { {{ m.quantity }} }
+                  </span>
+                  <span class="tl-entry-time">{{ formatTime(m.createdAt) }}</span>
+                </div>
+                @if (m.color || m.size) {
+                  <p class="tl-entry-variant">{{ m.color }}{{ m.color && m.size ? ' / ' : '' }}{{ m.size }}</p>
+                }
+                <p class="tl-entry-reason">{{ m.reason || '—' }}</p>
+                <p class="tl-entry-by">by {{ m.createdBy }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="tl-pagination">
+      <button class="tl-page-btn" (click)="previousPage()" [disabled]="!hasPrevious()">
+        <i class="bi bi-chevron-left"></i> Previous
+      </button>
+      <button class="tl-page-btn" (click)="nextPage()" [disabled]="!hasNext()">
+        Next <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+  }
+
+</div>

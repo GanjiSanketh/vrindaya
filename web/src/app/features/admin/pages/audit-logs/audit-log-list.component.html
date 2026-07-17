@@ -1,0 +1,302 @@
+<div class="al-page">
+  <!-- ── Header ─────────────────────────────────────────────── -->
+  <div class="al-header">
+    <div class="al-header-left">
+      <h1>Audit Logs</h1>
+      <p>Every important admin action recorded across all modules.</p>
+    </div>
+    <div class="al-header-right">
+      <button class="al-action" (click)="exportCsv()"><i class="bi bi-filetype-csv"></i> CSV</button>
+      <button class="al-action" (click)="exportExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Excel</button>
+      <button class="al-action" (click)="exportPdf()"><i class="bi bi-filetype-pdf"></i> PDF</button>
+    </div>
+  </div>
+
+  <!-- ── Filters (sticky) ───────────────────────────────────── -->
+  <div class="al-filters">
+    <div class="al-filter-group al-filter-group--grow">
+      <label>Search</label>
+      <input type="text" placeholder="Entity name, description, email…" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); onSearchInput()" />
+    </div>
+    <div class="al-filter-group">
+      <label>Module</label>
+      <select [ngModel]="moduleFilter()" (ngModelChange)="moduleFilter.set($event)">
+        <option value="">All Modules</option>
+        @for (m of modules; track m) { <option [value]="m">{{ m }}</option> }
+      </select>
+    </div>
+    <div class="al-filter-group">
+      <label>Action</label>
+      <select [ngModel]="actionFilter()" (ngModelChange)="actionFilter.set($event)">
+        <option value="">All Actions</option>
+        @for (a of actions; track a) { <option [value]="a">{{ actionLabel(a) }}</option> }
+      </select>
+    </div>
+    <div class="al-filter-group">
+      <label>Status</label>
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <option value="">All</option>
+        @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+      </select>
+    </div>
+    <div class="al-filter-group">
+      <label>Performed By</label>
+      <input type="text" placeholder="Email…" [ngModel]="performedByFilter()" (ngModelChange)="performedByFilter.set($event)" />
+    </div>
+    <div class="al-filter-group">
+      <label>From</label>
+      <input type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)" />
+    </div>
+    <div class="al-filter-group">
+      <label>To</label>
+      <input type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)" />
+    </div>
+    <div class="al-filter-actions">
+      <button class="al-action" (click)="applyFilters()"><i class="bi bi-funnel"></i> Apply</button>
+      @if (hasActiveFilters()) {
+        <button class="btn-link" (click)="clearAllFilters()">Clear</button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Active filter pills ────────────────────────────────── -->
+  @if (activeFilters().length > 0) {
+    <div class="al-active-filters">
+      @for (pill of activeFilters(); track pill.key) {
+        <span class="al-pill">
+          {{ pill.label }}
+          <button (click)="clearFilter(pill.key)">&times;</button>
+        </span>
+      }
+    </div>
+  }
+
+  <!-- ── Error state ────────────────────────────────────────── -->
+  @if (error(); as msg) {
+    <div class="al-card">
+      <div class="al-error">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <p>{{ msg }}</p>
+        <button class="al-action" (click)="load()"><i class="bi bi-arrow-clockwise"></i> Retry</button>
+      </div>
+    </div>
+  }
+
+  <!-- ── Loading skeleton ───────────────────────────────────── -->
+  @if (loading() && !result()) {
+    <div class="al-card">
+      <div class="al-loading"><span class="al-spinner"></span> Loading audit logs…</div>
+    </div>
+  }
+
+  <!-- ── Data table ─────────────────────────────────────────── -->
+  @if (result(); as r) {
+    <div class="al-card">
+      @if (r.items.length === 0) {
+        <div class="al-empty">
+          <i class="bi bi-journal-text"></i>
+          <p>No audit logs found matching your filters.</p>
+        </div>
+      } @else {
+        <div class="al-table-wrap">
+          <table class="al-table">
+            <thead>
+              <tr>
+                <th class="al-col-timestamp">Timestamp</th>
+                <th class="al-col-action">Action</th>
+                <th class="al-col-module">Module</th>
+                <th class="al-col-entity">Entity Name</th>
+                <th class="al-col-desc">Description</th>
+                <th class="al-col-performer">Performed By</th>
+                <th class="al-col-status">Status</th>
+                <th class="al-col-actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of r.items; track log.id) {
+                <tr>
+                  <td class="al-col-timestamp">{{ log.performedAt | date:'MMM d, yyyy h:mm a' }}</td>
+                  <td class="al-col-action">
+                    <span class="al-badge" [class]="badgeClass(log.action)">{{ actionLabel(log.action) }}</span>
+                  </td>
+                  <td class="al-col-module">
+                    <span class="al-badge al-badge--module">{{ log.module }}</span>
+                  </td>
+                  <td class="al-col-entity" [title]="log.entityName || ''">{{ log.entityName || '—' }}</td>
+                  <td class="al-col-desc" [title]="log.description">{{ log.description }}</td>
+                  <td class="al-col-performer" [title]="log.performedByEmail || log.performedByName || ''">
+                    {{ log.performedByName || log.performedByEmail || '—' }}
+                  </td>
+                  <td class="al-col-status">
+                    <span class="al-badge" [class]="statusBadgeClass(log.status)">{{ log.status }}</span>
+                  </td>
+                  <td class="al-col-actions">
+                    <button class="al-action" (click)="viewDetails(log)"><i class="bi bi-eye"></i> Details</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ── Pagination ──────────────────────────────────── -->
+        <div class="al-pagination">
+          <span>{{ r.totalCount }} total entries</span>
+          <div class="al-pagination-buttons">
+            <button (click)="goToPage(page() - 1)" [disabled]="page() <= 1">Previous</button>
+            @for (p of pageNumbers(); track p) {
+              <button [class.active]="p === page()" (click)="goToPage(p)">{{ p }}</button>
+            }
+            <button (click)="goToPage(page() + 1)" [disabled]="page() >= totalPages()">Next</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ── Detail Drawer ─────────────────────────────────────────── -->
+@if (selectedLog(); as log) {
+  <div class="al-drawer-backdrop" (click)="closeDrawer()">
+    <aside class="al-drawer" (click)="$event.stopPropagation()">
+      <!-- Drawer header -->
+      <div class="al-drawer-header">
+        <h2>Audit Log Detail</h2>
+        <button type="button" class="al-drawer-close" (click)="closeDrawer()"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div class="al-drawer-body">
+        <!-- Meta grid -->
+        <div class="al-meta-grid">
+          <div class="al-meta-item">
+            <label>Action</label>
+            <span><span class="al-badge" [class]="badgeClass(log.action)">{{ actionLabel(log.action) }}</span></span>
+          </div>
+          <div class="al-meta-item">
+            <label>Module</label>
+            <span><span class="al-badge al-badge--module">{{ log.module }}</span></span>
+          </div>
+          <div class="al-meta-item">
+            <label>Entity Name</label>
+            <span>{{ log.entityName || '—' }}</span>
+          </div>
+          <div class="al-meta-item">
+            <label>Entity ID</label>
+            <span>{{ log.entityId || '—' }}</span>
+          </div>
+          <div class="al-meta-item" style="grid-column:1/-1">
+            <label>Description</label>
+            <span>{{ log.description }}</span>
+          </div>
+          <div class="al-meta-item">
+            <label>Performed By</label>
+            <span>{{ log.performedByName || log.performedByEmail || '—' }}</span>
+          </div>
+          <div class="al-meta-item">
+            <label>Performed At</label>
+            <span>{{ log.performedAt | date:'MMM d, yyyy h:mm:ss a' }}</span>
+          </div>
+          <div class="al-meta-item">
+            <label>Status</label>
+            <span><span class="al-badge" [class]="statusBadgeClass(log.status)">{{ log.status }}</span></span>
+          </div>
+          <div class="al-meta-item">
+            <label>Correlation ID</label>
+            <span style="font-family:monospace;font-size:0.78rem">{{ log.correlationId || '—' }}</span>
+          </div>
+          @if (log.ipAddress) {
+            <div class="al-meta-item">
+              <label>IP Address</label>
+              <span style="font-family:monospace;font-size:0.78rem">{{ log.ipAddress }}</span>
+            </div>
+          }
+          @if (log.browser) {
+            <div class="al-meta-item">
+              <label>Browser</label>
+              <span style="font-size:0.78rem;word-break:break-all">{{ log.browser }}</span>
+            </div>
+          }
+          @if (log.operatingSystem) {
+            <div class="al-meta-item">
+              <label>Operating System</label>
+              <span>{{ log.operatingSystem }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Timeline -->
+        <div class="al-timeline">
+          <h3>Timeline</h3>
+          <div class="al-timeline-list">
+            <span class="al-timeline-badge" [class]="timelineBadgeClass(log.action)">
+              <i class="bi" [class.bi-plus-circle]="log.action==='Create'"
+                 [class.bi-pencil-square]="log.action==='Update'"
+                 [class.bi-trash]="log.action==='Delete'"
+                 [class.bi-shield-lock]="log.action==='PermissionChange'"
+                 [class.bi-arrow-repeat]="log.action!=='Create'&&log.action!=='Update'&&log.action!=='Delete'&&log.action!=='PermissionChange'"></i>
+              {{ actionLabel(log.action) }}
+            </span>
+            @if (isPriceUpdate(log.action, log.description)) {
+              <span class="al-timeline-badge al-timeline-badge--price"><i class="bi bi-tag"></i> Price Updated</span>
+            }
+            @if (isInventoryUpdate(log.action, log.description)) {
+              <span class="al-timeline-badge al-timeline-badge--inventory"><i class="bi bi-box"></i> Inventory Updated</span>
+            }
+          </div>
+        </div>
+
+        <!-- JSON Viewer -->
+        <div class="al-json-section">
+          <h3>Data Changes</h3>
+          @if (log.beforeData || log.afterData) {
+            <div class="al-json-toggle">
+              <button [class.active]="jsonViewMode()==='split'" (click)="jsonViewMode.set('split')">Side by Side</button>
+              <button [class.active]="jsonViewMode()==='before'" (click)="jsonViewMode.set('before')">Before Only</button>
+              <button [class.active]="jsonViewMode()==='after'" (click)="jsonViewMode.set('after')">After Only</button>
+            </div>
+            @if (jsonViewMode() === 'split') {
+              <div class="al-json-viewer">
+                <div class="al-json-panel">
+                  <h4>Before Data</h4>
+                  @if (log.beforeData; as raw) {
+                    <pre class="al-pre">{{ parseJson(raw) | json }}</pre>
+                  } @else { <span class="al-json-null">No data available</span> }
+                </div>
+                <div class="al-json-panel">
+                  <h4>After Data</h4>
+                  @if (log.afterData; as raw) {
+                    <pre class="al-pre">{{ parseJson(raw) | json }}</pre>
+                  } @else { <span class="al-json-null">No data available</span> }
+                </div>
+              </div>
+            } @else if (jsonViewMode() === 'before') {
+              <div class="al-json-viewer al-json-viewer--single">
+                <div class="al-json-panel">
+                  <h4>Before Data</h4>
+                  @if (log.beforeData; as raw) {
+                    <pre class="al-pre">{{ parseJson(raw) | json }}</pre>
+                  } @else { <span class="al-json-null">No data available</span> }
+                </div>
+              </div>
+            } @else {
+              <div class="al-json-viewer al-json-viewer--single">
+                <div class="al-json-panel">
+                  <h4>After Data</h4>
+                  @if (log.afterData; as raw) {
+                    <pre class="al-pre">{{ parseJson(raw) | json }}</pre>
+                  } @else { <span class="al-json-null">No data available</span> }
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="al-json-empty">No data available</div>
+          }
+        </div>
+      </div>
+
+      <div class="al-drawer-footer">
+        <button class="al-action" (click)="closeDrawer()">Close</button>
+      </div>
+    </aside>
+  </div>
+}

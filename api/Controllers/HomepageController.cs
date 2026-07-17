@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vrindaya.Api.DTOs.Homepage;
 using Vrindaya.Api.Interfaces;
@@ -19,6 +20,7 @@ public class HomepageController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(HomepageResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<HomepageResponse>> Get(CancellationToken cancellationToken)
     {

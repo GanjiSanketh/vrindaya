@@ -1,0 +1,114 @@
+<div class="hbl-page">
+
+  <div class="hbl-header">
+    <div>
+      <h1 class="hbl-title">Suppliers</h1>
+      <p class="hbl-count">Every supplier you purchase inventory from.</p>
+    </div>
+    <a [routerLink]="BASE + '/new'" class="btn-primary-sm">
+      <i class="bi bi-plus-lg"></i> Add Supplier
+    </a>
+  </div>
+
+  <div class="hbl-filters">
+    <div class="hbl-filter-field hbl-filter-field--grow">
+      <label>Search</label>
+      <input
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        (keyup.enter)="applyFilters()"
+        placeholder="Company, contact, phone, email, GSTIN, or code…"
+      />
+    </div>
+    <div class="hbl-filter-field">
+      <label>Status</label>
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <option value="">All</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+    <button class="btn-primary-sm" (click)="applyFilters()">Apply</button>
+  </div>
+
+  @if (error()) {
+    <div class="hbl-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+  @if (actionError()) {
+    <div class="hbl-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ actionError() }}</div>
+  }
+
+  <div class="hbl-card">
+    @if (loading()) {
+      <div class="hbl-loading"><span class="hbl-spinner"></span> Loading suppliers…</div>
+    } @else if (suppliers().length === 0) {
+      <div class="hbl-empty">
+        <i class="bi bi-truck"></i>
+        <p>No suppliers found.</p>
+      </div>
+    } @else {
+      <div class="hbl-table-wrap">
+        <table class="hbl-table">
+          <thead>
+            <tr>
+              <th class="hbl-sortable" (click)="changeSort('supplierCode')">Code <i class="bi" [class]="sortIcon('supplierCode')"></i></th>
+              <th class="hbl-sortable" (click)="changeSort('companyName')">Company <i class="bi" [class]="sortIcon('companyName')"></i></th>
+              <th>Contact</th>
+              <th>Phone</th>
+              <th class="d-none d-sm-table-cell">City</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of suppliers(); track s.id) {
+              <tr>
+                <td class="hbl-name">{{ s.supplierCode }}</td>
+                <td>{{ s.companyName }}</td>
+                <td>{{ s.contactPerson || '—' }}</td>
+                <td>{{ s.phone || '—' }}</td>
+                <td class="d-none d-sm-table-cell">{{ s.city || '—' }}</td>
+                <td>
+                  <span class="hbl-badge" [class.hbl-badge--live]="s.isActive" [class.hbl-badge--off]="!s.isActive">
+                    {{ s.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="hbl-row-actions">
+                    <a [routerLink]="BASE + '/' + s.id" class="hbl-action" title="Details"><i class="bi bi-eye"></i></a>
+                    <a [routerLink]="BASE + '/' + s.id + '/edit'" class="hbl-action" title="Edit"><i class="bi bi-pencil"></i></a>
+                    <button
+                      class="hbl-action"
+                      [class.hbl-action--activate]="!s.isActive"
+                      [class.hbl-action--del]="s.isActive"
+                      (click)="toggleActive(s)"
+                      [disabled]="busyId() === s.id"
+                      [title]="s.isActive ? 'Deactivate' : 'Activate'"
+                    >
+                      @if (busyId() === s.id) {
+                        <span class="hbl-spinner hbl-spinner--sm"></span>
+                      } @else {
+                        <i class="bi" [class.bi-toggle-on]="s.isActive" [class.bi-toggle-off]="!s.isActive"></i>
+                      }
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="hbl-pagination">
+        <button class="hbl-page-btn" (click)="previousPage()" [disabled]="!hasPrevious()">
+          <i class="bi bi-chevron-left"></i> Previous
+        </button>
+        <button class="hbl-page-btn" (click)="nextPage()" [disabled]="!hasNext()">
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    }
+  </div>
+
+</div>

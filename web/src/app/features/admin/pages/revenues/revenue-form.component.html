@@ -1,0 +1,75 @@
+<div class="form-page">
+
+  <div class="form-header">
+    <div>
+      <h1 class="form-title">{{ isEdit() ? 'Edit Revenue' : 'Record Revenue' }}</h1>
+      <p class="form-subtitle">{{ isEdit() ? 'Update the revenue details below.' : 'Record revenue from any channel.' }}</p>
+    </div>
+    <a routerLink="/admin/revenues" class="btn-back"><i class="bi bi-arrow-left"></i> Back to Revenue</a>
+  </div>
+
+  @if (error()) {
+    <div class="form-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="form-loading"><span class="form-spinner"></span> Loading…</div>
+  } @else {
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Source *</label>
+          <select class="field-input" [(ngModel)]="model.source">
+            <option value="">Select source…</option>
+            @for (s of sources; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Status *</label>
+          <select class="field-input" [(ngModel)]="model.status">
+            @for (s of statuses; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Amount *</label>
+          <input class="field-input" type="number" step="0.01" min="0" [(ngModel)]="model.amount" placeholder="0.00" />
+        </div>
+        <div class="field">
+          <label class="field-label">Settlement Date *</label>
+          <input class="field-input" type="date" [(ngModel)]="model.settlementDate" />
+        </div>
+        <div class="field">
+          <label class="field-label">Expected Settlement</label>
+          <input class="field-input" type="number" step="0.01" min="0" [(ngModel)]="model.expectedSettlement" placeholder="0.00" />
+        </div>
+        <div class="field">
+          <label class="field-label">Actual Settlement</label>
+          <input class="field-input" type="number" step="0.01" min="0" [(ngModel)]="model.actualSettlement" placeholder="0.00" />
+        </div>
+        <div class="field">
+          <label class="field-label">Reference</label>
+          <input class="field-input" type="text" [(ngModel)]="model.reference" placeholder="Order/transaction reference" />
+        </div>
+        <div class="field">
+          <label class="field-label">Product Name</label>
+          <input class="field-input" type="text" [(ngModel)]="model.productName" placeholder="Linked product (optional)" />
+        </div>
+        <div class="field field-full">
+          <label class="field-label">Notes</label>
+          <textarea class="field-input field-textarea" [(ngModel)]="model.notes" placeholder="Additional notes"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-save" [disabled]="saving()" (click)="save()">
+          {{ saving() ? 'Saving…' : (isEdit() ? 'Update Revenue' : 'Record Revenue') }}
+        </button>
+        <a routerLink="/admin/revenues" class="btn-cancel-link">Cancel</a>
+      </div>
+    </div>
+  }
+
+</div>

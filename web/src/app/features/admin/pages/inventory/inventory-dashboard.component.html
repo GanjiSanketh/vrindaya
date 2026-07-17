@@ -1,0 +1,230 @@
+<div class="dash-page">
+
+  <div class="dash-header">
+    <div>
+      <h1 class="dash-title">Inventory Dashboard</h1>
+      <p class="dash-welcome">Stock, cost tracking, and purchase activity across the catalog.</p>
+    </div>
+    <div class="dash-actions">
+      <a [routerLink]="BASE + '/purchase-entries/new'" class="btn-add">
+        <i class="bi bi-plus-lg"></i> Record Purchase
+      </a>
+    </div>
+  </div>
+
+  <div class="dash-filters">
+    <select class="filter-select" [ngModel]="categoryFilter()" (ngModelChange)="categoryFilter.set($event); onFilterChange()">
+      <option value="">All Categories</option>
+      @for (c of categories(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+    </select>
+    <select class="filter-select" [ngModel]="supplierFilter()" (ngModelChange)="supplierFilter.set($event); onFilterChange()">
+      <option value="">All Suppliers</option>
+      @for (s of suppliers(); track s.id) { <option [value]="s.id">{{ s.companyName }}</option> }
+    </select>
+    <select class="filter-select" [ngModel]="collectionFilter()" (ngModelChange)="collectionFilter.set($event); onFilterChange()">
+      <option value="">All Collections</option>
+      @for (c of collections(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+    </select>
+    <div class="filter-date-range">
+      <input class="filter-date" type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); onFilterChange()" />
+      <span>–</span>
+      <input class="filter-date" type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); onFilterChange()" />
+    </div>
+    @if (hasActiveFilters()) {
+      <button type="button" class="btn-link" (click)="clearFilters()">Clear filters</button>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="dash-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="dash-loading"><span class="dash-spinner"></span> Loading…</div>
+  } @else if (data(); as d) {
+
+    <div class="dash-stats">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--best"><i class="bi bi-cash-stack"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency(d.inventoryValue) }}</span>
+          <span class="stat-label">Inventory Value</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--trend"><i class="bi bi-stack"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.currentStock }}</span>
+          <span class="stat-label">Current Stock</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--low-stock"><i class="bi bi-exclamation-triangle"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.lowStockCount }}</span>
+          <span class="stat-label">Low Stock</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--critical"><i class="bi bi-exclamation-diamond"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.criticalStockCount }}</span>
+          <span class="stat-label">Critical Stock</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--missing"><i class="bi bi-x-octagon"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.outOfStockCount }}</span>
+          <span class="stat-label">Out Of Stock</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--total"><i class="bi bi-boxes"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.totalProducts }}</span>
+          <span class="stat-label">Total Products</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--variants"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.totalVariants }}</span>
+          <span class="stat-label">Total Variants</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--purchases"><i class="bi bi-receipt"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency(d.todaysPurchases) }}</span>
+          <span class="stat-label">Today's Purchases</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--added"><i class="bi bi-box-arrow-in-down"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.todaysStockAdded }}</span>
+          <span class="stat-label">Today's Stock Added</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--revenue"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency(d.expectedRevenue) }}</span>
+          <span class="stat-label">Expected Revenue</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--profit"><i class="bi bi-piggy-bank"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency(d.expectedProfit) }}</span>
+          <span class="stat-label">Expected Profit</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3 class="chart-card-title">Inventory Trend</h3>
+        <app-chart type="line" datasetLabel="Net Stock Change" color="#0f6f84"
+                   [labels]="timeSeriesLabels(d.inventoryTrend)" [data]="timeSeriesValues(d.inventoryTrend)" />
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title">Purchases by Month</h3>
+        <app-chart type="bar" datasetLabel="Purchases (₹)" color="#c9a54c"
+                   [labels]="monthLabels(d.purchasesByMonth)" [data]="namedValues(d.purchasesByMonth)" />
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title">Top Selling Categories</h3>
+        <app-chart type="bar" datasetLabel="Units Sold" color="#9b4fe0"
+                   [labels]="namedLabels(d.topSellingCategories)" [data]="namedValues(d.topSellingCategories)" />
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title">Supplier Distribution</h3>
+        <app-chart type="doughnut" datasetLabel="Purchased (₹)"
+                   [labels]="namedLabels(d.supplierDistribution)" [data]="namedValues(d.supplierDistribution)" />
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title">Top Inventory Value</h3>
+        <app-chart type="horizontalBar" datasetLabel="Value (₹)" color="#22a34a"
+                   [labels]="namedLabels(d.topInventoryValue)" [data]="namedValues(d.topInventoryValue)" />
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title">Low Stock Trend</h3>
+        <app-chart type="bar" datasetLabel="Variants Newly Low/Out of Stock" color="#b45309"
+                   [labels]="timeSeriesLabels(d.lowStockTrend)" [data]="timeSeriesValues(d.lowStockTrend)" />
+      </div>
+    </div>
+
+    <div class="dash-nav-cards">
+      <a [routerLink]="BASE + '/list'" class="nav-card">
+        <i class="bi bi-boxes nav-card-icon"></i>
+        <div>
+          <span class="nav-card-title">Inventory List</span>
+          <span class="nav-card-sub">Stock, cost, and profit per product</span>
+        </div>
+        <i class="bi bi-chevron-right nav-card-arrow"></i>
+      </a>
+      <a [routerLink]="BASE + '/purchase-entries'" class="nav-card">
+        <i class="bi bi-receipt nav-card-icon"></i>
+        <div>
+          <span class="nav-card-title">Purchase Entries</span>
+          <span class="nav-card-sub">Invoice history by supplier</span>
+        </div>
+        <i class="bi bi-chevron-right nav-card-arrow"></i>
+      </a>
+      <a [routerLink]="BASE + '/movements'" class="nav-card">
+        <i class="bi bi-arrow-left-right nav-card-icon"></i>
+        <div>
+          <span class="nav-card-title">Stock Movement History</span>
+          <span class="nav-card-sub">Every purchase, sale, return, and adjustment</span>
+        </div>
+        <i class="bi bi-chevron-right nav-card-arrow"></i>
+      </a>
+      <a [routerLink]="BASE + '/low-stock'" class="nav-card">
+        <i class="bi bi-exclamation-triangle nav-card-icon"></i>
+        <div>
+          <span class="nav-card-title">Low Stock Report</span>
+          <span class="nav-card-sub">Critical and low stock products</span>
+        </div>
+        <i class="bi bi-chevron-right nav-card-arrow"></i>
+      </a>
+    </div>
+
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <h2 class="dash-section-title">Recent Stock Movements</h2>
+        <a [routerLink]="BASE + '/movements'" class="dash-view-all">View all <i class="bi bi-arrow-right"></i></a>
+      </div>
+
+      @if (d.recentMovements.length === 0) {
+        <div class="dash-empty">No stock movements recorded yet.</div>
+      } @else {
+        <div class="recent-table-wrap">
+          <table class="recent-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th class="d-none d-sm-table-cell">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of d.recentMovements; track m.id) {
+                <tr>
+                  <td>{{ m.productName || m.productId }}</td>
+                  <td>{{ MOVEMENT_TYPE_LABELS[m.movementType] }}</td>
+                  <td>{{ m.quantity }}</td>
+                  <td class="d-none d-sm-table-cell">{{ formatDate(m.createdAt) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+  }
+
+</div>

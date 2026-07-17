@@ -1,27 +1,39 @@
-export type AdminRole = 'super_admin' | 'admin' | 'editor';
+export type AdminRole = 'SuperAdmin' | 'Admin';
 
 export const ROLE_LABELS: Record<AdminRole, string> = {
-  super_admin: 'Super Admin',
-  admin:       'Admin',
-  editor:      'Editor',
+  SuperAdmin: 'Super Admin',
+  Admin:      'Admin',
 };
 
 export const ROLE_OPTIONS: { value: AdminRole; label: string }[] = [
-  { value: 'super_admin', label: 'Super Admin' },
-  { value: 'admin',       label: 'Admin'       },
-  { value: 'editor',      label: 'Editor'      },
+  { value: 'SuperAdmin', label: 'Super Admin' },
+  { value: 'Admin',      label: 'Admin'       },
 ];
 
-/** Stored in Firestore collection `admin-users/{lowerCaseEmail}`. */
+/** Mirrors the backend's AdminUserResponse (GET/POST/PUT `/admin-users`). */
 export interface AdminUser {
-  /** Firestore document ID — equals the user's lowercase email address. */
-  docId:       string;
-  /** Firebase Auth UID — empty string until the user first signs in. */
-  uid:         string;
-  email:       string;
-  displayName: string;
-  role:        AdminRole;
-  active:      boolean;
-  createdAt:   { seconds: number; nanoseconds: number } | null;
-  createdBy:   string;
+  id:            string;
+  googleUserId:  string | null;
+  name:          string;
+  email:         string;
+  role:          AdminRole;
+  isActive:      boolean;
+  createdAt:     string;
+  createdBy:     string;
+  updatedAt:     string;
+  updatedBy:     string;
+}
+
+/** Mirrors the backend's CreateAdminUserRequest — no password field, Google login only. */
+export interface CreateAdminUserRequest {
+  name:  string;
+  email: string;
+  role:  AdminRole;
+}
+
+/** Mirrors the backend's UpdateAdminUserRequest — Email is not editable (it's the lookup key). */
+export interface UpdateAdminUserRequest {
+  name:     string;
+  role:     AdminRole;
+  isActive: boolean;
 }

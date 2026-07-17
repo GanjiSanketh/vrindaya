@@ -1,0 +1,87 @@
+<div class="am-page">
+
+  <div class="am-form-header">
+    <a [routerLink]="BASE" class="am-back"><i class="bi bi-arrow-left"></i> Admin Users</a>
+    <h1 class="am-title">{{ isEdit() ? 'Edit Admin User' : 'Add Admin User' }}</h1>
+  </div>
+
+  @if (saved()) {
+    <div class="am-alert am-alert--success">
+      <i class="bi bi-check-circle-fill"></i>
+      Admin user {{ isEdit() ? 'updated' : 'added' }}! Redirecting…
+    </div>
+  }
+  @if (formError()) {
+    <div class="am-alert am-alert--error">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      {{ formError() }}
+      <button type="button" class="am-alert-close" (click)="formError.set(null)">×</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="am-loading">
+      <span class="am-spinner am-spinner--sm"></span> Loading…
+    </div>
+  } @else {
+    <div class="am-card am-card--form">
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+        <div class="am-field">
+          <label class="am-label" for="name">Name *</label>
+          <input id="name" class="am-input" [class.am-input--err]="isInvalid('name')" formControlName="name" type="text" placeholder="Jane Doe" />
+          @if (isInvalid('name')) { <span class="am-err">Name is required</span> }
+        </div>
+
+        <div class="am-field">
+          <label class="am-label" for="email">Email *</label>
+          <input id="email" class="am-input" [class.am-input--err]="isInvalid('email')" formControlName="email" type="email" placeholder="colleague@example.com" autocomplete="off" />
+          @if (isEdit()) {
+            <span class="am-hint">Email can't be changed — it's how this admin's Google account is matched at sign-in.</span>
+          } @else if (isInvalid('email')) {
+            <span class="am-err">Enter a valid email address</span>
+          }
+        </div>
+
+        <div class="am-field">
+          <label class="am-label" for="role">Role *</label>
+          <select id="role" class="am-select" formControlName="role">
+            @for (opt of ROLE_OPTIONS; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+          @if (lockRole()) {
+            <span class="am-hint">You can't change your own Super Admin role. Ask another Super Admin to do this.</span>
+          }
+        </div>
+
+        @if (isEdit()) {
+          <div class="am-field">
+            <label class="am-toggle">
+              <input type="checkbox" formControlName="isActive" />
+              <span class="am-toggle-track"></span>
+              <span class="am-toggle-label">{{ form.value.isActive ? 'Active' : 'Inactive' }}</span>
+            </label>
+          </div>
+        } @else {
+          <p class="am-hint">
+            New admin users are active immediately — they gain access the next time they sign in with this Google account.
+          </p>
+        }
+
+        <div class="am-form-actions">
+          <a [routerLink]="BASE" class="am-btn-cancel">Cancel</a>
+          <button class="am-btn-add" type="submit" [disabled]="saving()">
+            @if (saving()) {
+              <span class="am-spinner"></span> Saving…
+            } @else {
+              <i class="bi bi-check-lg"></i> {{ isEdit() ? 'Save Changes' : 'Add User' }}
+            }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  }
+
+</div>

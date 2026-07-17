@@ -1,0 +1,112 @@
+<div class="profit-page">
+
+  <div class="profit-header">
+    <div>
+      <h1 class="profit-title">Business Profitability</h1>
+      <p class="profit-subtitle">Per-product pricing analysis across all marketplaces — cost breakdown, profit, ROI, and stock value.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="profit-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+
+  <div class="profit-filters">
+    <div class="filter-chips">
+      @for (chip of chips; track chip) {
+        <button type="button" class="chip" [class.chip--active]="filter() === chip"
+                (click)="setFilter(chip)">
+          {{ filterLabel(chip) }}
+        </button>
+      }
+    </div>
+    <div class="filter-extra">
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Search products…" [ngModel]="search()"
+               (ngModelChange)="search.set($event); onSearch()" />
+        @if (search()) {
+          <button type="button" class="search-clear" (click)="clearSearch()">&times;</button>
+        }
+      </div>
+      <select class="filter-select" [ngModel]="marketplace()" (ngModelChange)="marketplace.set($event); onMarketplaceChange()">
+        <option value="">All Marketplaces</option>
+        @for (mp of marketplaces(); track mp) {
+          <option [value]="mp">{{ mp }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="profit-loading"><span class="profit-spinner"></span> Loading…</div>
+  } @else if (data().length === 0) {
+    <div class="profit-empty">No products found matching the current filters.</div>
+  } @else {
+    <div class="profit-table-wrap">
+      <table class="profit-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Mkt</th>
+            <th>Purchase</th>
+            <th>Pkg</th>
+            <th>Ad</th>
+            <th>Commission</th>
+            <th>Shipping</th>
+            <th>Misc</th>
+            <th>Total Cost</th>
+            <th>Sell Price</th>
+            <th>Settlement</th>
+            <th>Net Profit</th>
+            <th>Profit %</th>
+            <th>ROI %</th>
+            <th>Stock</th>
+            <th>Investment</th>
+            <th>Inv Value</th>
+            <th>Exp Revenue</th>
+            <th>Exp Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of data(); track row.productId + row.marketplace) {
+            <tr>
+              <td class="cell-name" title="{{ row.productName }}">{{ row.productName }}</td>
+              <td><span class="mp-badge">{{ row.marketplace }}</span></td>
+              <td class="cell-num">{{ formatCurrency(row.purchaseCost) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.packagingCost) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.advertisementCost) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.marketplaceCommission) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.shippingCost) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.miscellaneousCost) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.totalCost) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.sellingPrice) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.expectedSettlement) }}</td>
+              <td class="cell-num {{ profitClass(row.netProfit) }}">{{ formatCurrency(row.netProfit) }}</td>
+              <td class="cell-num {{ profitClass(row.profitPercentage) }}">{{ formatPercent(row.profitPercentage) }}</td>
+              <td class="cell-num {{ profitClass(row.roiPercentage) }}">{{ formatPercent(row.roiPercentage) }}</td>
+              <td class="cell-num">{{ row.currentStock }}</td>
+              <td class="cell-num">{{ formatCurrency(row.investment) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.inventoryValue) }}</td>
+              <td class="cell-num">{{ formatCurrency(row.expectedRevenue) }}</td>
+              <td class="cell-num {{ profitClass(row.expectedProfit) }}">{{ formatCurrency(row.expectedProfit) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="profit-pagination">
+      <span class="profit-count">{{ total() }} product{{ total() === 1 ? '' : 's' }}</span>
+      <div class="profit-pages">
+        <button type="button" class="page-btn" [disabled]="!hasPrev()" (click)="prevPage()">
+          <i class="bi bi-chevron-left"></i> Previous
+        </button>
+        <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button type="button" class="page-btn" [disabled]="!hasNext()" (click)="nextPage()">
+          Next <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

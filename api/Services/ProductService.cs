@@ -5,6 +5,7 @@ using Vrindaya.Api.Constants;
 using Vrindaya.Api.DTOs.Products;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Audit;
 
 namespace Vrindaya.Api.Services;
 
@@ -12,19 +13,19 @@ public class ProductService : IProductService
 {
     private readonly IProductRepository _repository;
     private readonly IProductValidationService _validationService;
-    private readonly IInventoryService _inventoryService;
     private readonly IProductStorageService _storageService;
+    private readonly IAuditLogService _auditLogService;
 
     public ProductService(
         IProductRepository repository,
         IProductValidationService validationService,
-        IInventoryService inventoryService,
-        IProductStorageService storageService)
+        IProductStorageService storageService,
+        IAuditLogService auditLogService)
     {
         _repository = repository;
         _validationService = validationService;
-        _inventoryService = inventoryService;
         _storageService = storageService;
+        _auditLogService = auditLogService;
     }
 
     public string GenerateId() => _repository.GenerateId();
@@ -127,12 +128,13 @@ public class ProductService : IProductService
 
         await _repository.CreateAsync(request.Id, document, cancellationToken);
 
+        try { await _auditLogService.LogCreateAsync("Products", request.Id, document.Name, AuditLogService.SerializeJson(document), createdBy, null, null, $"Product '{document.Name}' created"); } catch { }
         return ToDetail(request.Id, document);
     }
 
     public async Task<ProductDetailResponse> UpdateProductAsync(string id, UpdateProductRequest request, string updatedBy, CancellationToken cancellationToken)
     {
-        _ = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        var existingBefore = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
 
         await EnsureUniqueAsync(request.Slug, request.Sku, excludeId: id, cancellationToken);
 
@@ -186,6 +188,7 @@ public class ProductService : IProductService
         }, cancellationToken);
 
         var updated = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        try { await _auditLogService.LogUpdateAsync("Products", id, updated.Name, AuditLogService.SerializeJson(existingBefore), AuditLogService.SerializeJson(updated), updatedBy, null, null, $"Product '{updated.Name}' updated"); } catch { }
         return ToDetail(id, updated);
     }
 
@@ -196,7 +199,8 @@ public class ProductService : IProductService
     /// </summary>
     public async Task DeleteProductAsync(string id, CancellationToken cancellationToken)
     {
-        _ = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        var beforeData = AuditLogService.SerializeJson(existing);
 
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
@@ -205,12 +209,14 @@ public class ProductService : IProductService
             ["deletedAt"] = DateTime.UtcNow,
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
+
+        try { await _auditLogService.LogUpdateAsync("Products", id, existing.Name, beforeData, null, existing.UpdatedBy, null, null, $"Product '{existing.Name}' deleted (soft)"); } catch { }
     }
 
     /// <summary>Clears the soft-delete flag. Active deliberately stays false — restoring never silently republishes a product; the admin must reactivate it explicitly.</summary>
     public async Task RestoreProductAsync(string id, string updatedBy, CancellationToken cancellationToken)
     {
-        _ = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
 
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
@@ -219,34 +225,44 @@ public class ProductService : IProductService
             ["updatedBy"] = updatedBy,
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
+
+        try { await _auditLogService.LogUpdateAsync("Products", id, existing.Name, AuditLogService.SerializeJson(existing), null, updatedBy, null, null, $"Product '{existing.Name}' restored"); } catch { }
     }
 
-    public Task BulkUpdateStatusAsync(List<string> ids, bool active, string updatedBy, CancellationToken cancellationToken)
+    public async Task BulkUpdateStatusAsync(List<string> ids, bool active, string updatedBy, CancellationToken cancellationToken)
     {
-        return _repository.BulkUpdateStatusAsync(ids, active, updatedBy, cancellationToken);
+        await _repository.BulkUpdateStatusAsync(ids, active, updatedBy, cancellationToken);
+        var action = active ? "activated" : "deactivated";
+        try { await _auditLogService.LogCustomAsync("BulkUpdate", "Products", null, null, $"Bulk status update: {ids.Count} products {action}", updatedBy, null, null); } catch { }
     }
 
-    public Task BulkRestoreAsync(List<string> ids, string updatedBy, CancellationToken cancellationToken)
+    public async Task BulkRestoreAsync(List<string> ids, string updatedBy, CancellationToken cancellationToken)
     {
-        return _repository.BulkRestoreAsync(ids, updatedBy, cancellationToken);
+        await _repository.BulkRestoreAsync(ids, updatedBy, cancellationToken);
+        try { await _auditLogService.LogCustomAsync("BulkRestore", "Products", null, null, $"Bulk restore: {ids.Count} products restored", updatedBy, null, null); } catch { }
     }
 
-    public Task BulkUpdateFlagAsync(List<string> ids, ProductFlag flag, bool value, string updatedBy, CancellationToken cancellationToken)
+    public async Task BulkUpdateFlagAsync(List<string> ids, ProductFlag flag, bool value, string updatedBy, CancellationToken cancellationToken)
     {
-        return _repository.BulkUpdateFlagAsync(ids, flag, value, updatedBy, cancellationToken);
+        await _repository.BulkUpdateFlagAsync(ids, flag, value, updatedBy, cancellationToken);
+        try { await _auditLogService.LogCustomAsync("BulkUpdate", "Products", null, null, $"Bulk flag update: {ids.Count} products flag '{flag}' set to {value}", updatedBy, null, null); } catch { }
     }
 
-    public Task BulkSoftDeleteAsync(List<string> ids, string updatedBy, CancellationToken cancellationToken)
+    public async Task BulkSoftDeleteAsync(List<string> ids, string updatedBy, CancellationToken cancellationToken)
     {
-        return _repository.BulkSoftDeleteAsync(ids, updatedBy, cancellationToken);
+        await _repository.BulkSoftDeleteAsync(ids, updatedBy, cancellationToken);
+        try { await _auditLogService.LogCustomAsync("BulkDelete", "Products", null, null, $"Bulk soft delete: {ids.Count} products deleted", updatedBy, null, null); } catch { }
     }
 
     public async Task PermanentlyDeleteProductAsync(string id, CancellationToken cancellationToken)
     {
         var doc = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        var beforeData = AuditLogService.SerializeJson(doc);
 
         await _repository.DeleteAsync(id, cancellationToken);
         await _storageService.DeleteAllImagesAsync(id, doc.Images.Select(i => i.PublicId).ToList(), cancellationToken);
+
+        try { await _auditLogService.LogDeleteAsync("Products", id, doc.Name, beforeData, doc.UpdatedBy, null, null, $"Product '{doc.Name}' permanently deleted"); } catch { }
     }
 
     public async Task<ProductDetailResponse> DuplicateProductAsync(string id, string createdBy, CancellationToken cancellationToken)
@@ -325,12 +341,13 @@ public class ProductService : IProductService
         };
 
         await _repository.CreateAsync(newId, document, cancellationToken);
+        try { await _auditLogService.LogCreateAsync("Products", newId, document.Name, AuditLogService.SerializeJson(document), createdBy, null, null, $"Product '{document.Name}' duplicated from '{id}'"); } catch { }
         return ToDetail(newId, document);
     }
 
     public async Task UpdateStatusAsync(string id, bool active, string updatedBy, CancellationToken cancellationToken)
     {
-        _ = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
 
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
@@ -338,11 +355,9 @@ public class ProductService : IProductService
             ["updatedBy"] = updatedBy,
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
-    }
 
-    public Task<long> UpdateStockAsync(string id, List<ProductSizeDto> sizes, string updatedBy, CancellationToken cancellationToken)
-    {
-        return _inventoryService.UpdateStockAsync(id, sizes.Select(ToSizeDocument).ToList(), updatedBy, cancellationToken);
+        var action = active ? "activated" : "deactivated";
+        try { await _auditLogService.LogUpdateAsync("Products", id, existing.Name, AuditLogService.SerializeJson(existing), null, updatedBy, null, null, $"Product '{existing.Name}' {action}"); } catch { }
     }
 
     /// <summary>Public-only (always active-only) — admin already has its own full-catalog client-side search from Phase 3.</summary>
@@ -382,7 +397,7 @@ public class ProductService : IProductService
 
     public async Task UpdateFlipkartOpsAsync(string id, UpdateFlipkartOpsRequest request, string updatedBy, CancellationToken cancellationToken)
     {
-        _ = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
 
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
@@ -400,16 +415,20 @@ public class ProductService : IProductService
             ["updatedBy"] = updatedBy,
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
+
+        try { await _auditLogService.LogUpdateAsync("Products", id, existing.Name, AuditLogService.SerializeJson(existing), null, updatedBy, null, null, $"Product '{existing.Name}' Flipkart ops updated"); } catch { }
     }
 
-    public Task BulkUpdateFlipkartUrlsAsync(List<BulkFlipkartUrlItem> items, string updatedBy, CancellationToken cancellationToken)
+    public async Task BulkUpdateFlipkartUrlsAsync(List<BulkFlipkartUrlItem> items, string updatedBy, CancellationToken cancellationToken)
     {
-        return _repository.BulkUpdateFlipkartUrlsAsync(items, updatedBy, cancellationToken);
+        await _repository.BulkUpdateFlipkartUrlsAsync(items, updatedBy, cancellationToken);
+        try { await _auditLogService.LogCustomAsync("BulkUpdate", "Products", null, null, $"Bulk Flipkart URL update: {items.Count} products", updatedBy, null, null); } catch { }
     }
 
-    public Task BulkLaunchAsync(List<string> ids, DateTime? launchDate, string updatedBy, CancellationToken cancellationToken)
+    public async Task BulkLaunchAsync(List<string> ids, DateTime? launchDate, string updatedBy, CancellationToken cancellationToken)
     {
-        return _repository.BulkLaunchAsync(ids, launchDate ?? DateTime.UtcNow, updatedBy, cancellationToken);
+        await _repository.BulkLaunchAsync(ids, launchDate ?? DateTime.UtcNow, updatedBy, cancellationToken);
+        try { await _auditLogService.LogCustomAsync("BulkLaunch", "Products", null, null, $"Bulk launch: {ids.Count} products launched", updatedBy, null, null); } catch { }
     }
 
     private async Task EnsureUniqueAsync(string slug, string sku, string? excludeId, CancellationToken cancellationToken)

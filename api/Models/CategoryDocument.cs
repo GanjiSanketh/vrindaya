@@ -14,6 +14,10 @@ public class CategoryDocument
     [FirestoreProperty("name")]
     public string Name { get; set; } = string.Empty;
 
+    /// <summary>Short code used in auto-generated SKUs (e.g. "LKT" for Long Kurtas). Unique across categories.</summary>
+    [FirestoreProperty("code")]
+    public string? Code { get; set; }
+
     [FirestoreProperty("subtitle")]
     public string? Subtitle { get; set; }
 

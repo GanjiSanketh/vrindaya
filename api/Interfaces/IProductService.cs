@@ -5,8 +5,8 @@ namespace Vrindaya.Api.Interfaces;
 
 /// <summary>
 /// Orchestrates product reads/writes — the only service ProductController
-/// talks to. Composes IProductValidationService and IInventoryService
-/// internally. Deliberately takes a plain `isAdmin` bool rather than a
+/// talks to. Composes IProductValidationService internally. Deliberately
+/// takes a plain `isAdmin` bool rather than a
 /// ClaimsPrincipal, keeping this interface decoupled from ASP.NET Core's
 /// HTTP/auth types — the controller is responsible for that translation.
 /// </summary>
@@ -62,8 +62,6 @@ public interface IProductService
     Task<ProductDetailResponse> DuplicateProductAsync(string id, string createdBy, CancellationToken cancellationToken);
 
     Task UpdateStatusAsync(string id, bool active, string updatedBy, CancellationToken cancellationToken);
-
-    Task<long> UpdateStockAsync(string id, List<ProductSizeDto> sizes, string updatedBy, CancellationToken cancellationToken);
 
     /// <summary>Public-only, always active-only — tokenizes the query and matches against each product's precomputed SearchKeywords.</summary>
     Task<PagedProductsResponse> SearchProductsAsync(string query, int pageSize, string? cursor, CancellationToken cancellationToken);

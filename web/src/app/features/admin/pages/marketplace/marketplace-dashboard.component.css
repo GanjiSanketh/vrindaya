@@ -1,0 +1,69 @@
+.dash-page { max-width: 1300px; }
+
+.dash-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.75rem; flex-wrap: wrap; }
+.dash-title   { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.25rem; }
+.dash-welcome { font-size: 0.85rem; color: #6b7280; margin: 0; }
+.dash-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+.btn-add {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #0f6f84; color: #fff;
+  border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s;
+}
+.btn-add:hover { background: #0c5c6e; color: #fff; }
+
+.dash-error {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1rem; margin-bottom: 1rem;
+  background: #fee2e2; color: #991b1b; border-radius: 8px; font-size: 0.85rem;
+}
+
+.dash-loading {
+  padding: 3rem; text-align: center; color: #6b7280;
+  display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+}
+
+.dash-spinner {
+  width: 20px; height: 20px; border: 2px solid #e0e4ea; border-top-color: #0f6f84;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.dash-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+
+.stat-card {
+  background: #fff; border-radius: 12px; padding: 1.25rem 1rem;
+  display: flex; align-items: center; gap: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e8ecf0;
+}
+
+.stat-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+.stat-icon--total       { background: #e6f4f7; color: #0f6f84; }
+.stat-icon--published   { background: #edf7ef; color: #22a34a; }
+.stat-icon--rejected    { background: #fef2f2; color: #dc2626; }
+.stat-icon--draft       { background: #fffbeb; color: #b45309; }
+.stat-icon--inventory   { background: #f4eef9; color: #9b4fe0; }
+.stat-icon--revenue     { background: #e6f1f3; color: #0c4a58; }
+.stat-icon--profit      { background: #f0fdf4; color: #16a34a; }
+.stat-icon--margin      { background: #fef9ec; color: #c9a54c; }
+.stat-icon--low-stock   { background: #fff1f2; color: #be123c; }
+.stat-icon--out-of-stock{ background: #fef2f2; color: #991b1b; }
+
+.stat-body  { display: flex; flex-direction: column; gap: 0.2rem; }
+.stat-value { font-size: 1.4rem; font-weight: 700; color: #1a1a2e; line-height: 1; }
+.stat-label { font-size: 0.68rem; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.75rem; }
+.chart-card {
+  background: #fff; border-radius: 12px; padding: 1.25rem;
+  border: 1px solid #e8ecf0; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.chart-card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 600; color: #0c4a58; margin: 0 0 1rem; }
+
+@media (max-width: 1024px) { .dash-stats { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px)  { .charts-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px)  { .dash-stats { grid-template-columns: repeat(2, 1fr); } }

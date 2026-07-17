@@ -1,0 +1,153 @@
+<div class="am-page">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="am-header">
+    <div>
+      <h1 class="am-title">Admin Users</h1>
+      <p class="am-sub">Manage who can access the Vrindaya Admin Portal and with which role.</p>
+    </div>
+    <a [routerLink]="BASE + '/new'" class="am-btn-add">
+      <i class="bi bi-plus-lg"></i> Add Admin User
+    </a>
+  </div>
+
+  <!-- ── Stats cards ────────────────────────────────────────────────────── -->
+  <div class="am-stats">
+    <div class="am-stat-card">
+      <div class="am-stat-icon am-stat-icon--total"><i class="bi bi-people-fill"></i></div>
+      <div class="am-stat-body">
+        <span class="am-stat-value">{{ totalUsers() }}</span>
+        <span class="am-stat-label">Total Users</span>
+      </div>
+    </div>
+    <div class="am-stat-card">
+      <div class="am-stat-icon am-stat-icon--super"><i class="bi bi-shield-fill-check"></i></div>
+      <div class="am-stat-body">
+        <span class="am-stat-value">{{ superAdmins() }}</span>
+        <span class="am-stat-label">Super Admins</span>
+      </div>
+    </div>
+    <div class="am-stat-card">
+      <div class="am-stat-icon am-stat-icon--admin"><i class="bi bi-person-badge-fill"></i></div>
+      <div class="am-stat-body">
+        <span class="am-stat-value">{{ admins() }}</span>
+        <span class="am-stat-label">Admins</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Action error ───────────────────────────────────────────────────── -->
+  @if (actionError()) {
+    <div class="am-alert am-alert--error">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      {{ actionError() }}
+      <button class="am-alert-close" (click)="actionError.set(null)">×</button>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="am-alert am-alert--error">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      {{ error() }}
+    </div>
+  }
+
+  <!-- ── Users table ────────────────────────────────────────────────────── -->
+  <div class="am-card">
+    <h2 class="am-section-title">
+      <i class="bi bi-people"></i> All Users
+    </h2>
+
+    @if (loading()) {
+      <div class="am-loading">
+        <span class="am-spinner am-spinner--sm"></span> Loading users…
+      </div>
+    } @else if (users().length === 0) {
+      <div class="am-empty">
+        <i class="bi bi-person-x"></i>
+        <p>No admin users found.</p>
+      </div>
+    } @else {
+      <div class="am-table-wrap">
+        <table class="am-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th class="d-none d-md-table-cell">Created Date</th>
+              <th class="am-th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.email) {
+              <tr [class.am-row--self]="isSelf(user)">
+
+                <td>
+                  <div class="am-user-cell">
+                    <div class="am-avatar">{{ (user.name || user.email).charAt(0).toUpperCase() }}</div>
+                    <div class="am-user-info">
+                      <span class="am-user-name">
+                        {{ user.name || '—' }}
+                        @if (isSelf(user)) {
+                          <span class="am-you-badge">You</span>
+                        }
+                      </span>
+                      <span class="am-user-email">{{ user.email }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="am-role-badge am-role-badge--{{ user.role }}">
+                    {{ ROLE_LABELS[user.role] }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="am-status-badge" [class.am-status-badge--active]="user.isActive">
+                    <span class="am-status-dot"></span>
+                    {{ user.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+
+                <td class="d-none d-md-table-cell am-date-cell">
+                  {{ formatDate(user.createdAt) }}
+                </td>
+
+                <td>
+                  <div class="am-row-actions">
+                    <a
+                      class="am-icon-btn am-icon-btn--edit"
+                      [routerLink]="BASE + '/' + encodeEmail(user.email) + '/edit'"
+                      title="Edit"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </a>
+
+                    <button
+                      class="am-icon-btn"
+                      [class.am-icon-btn--activate]="!user.isActive"
+                      [class.am-icon-btn--deactivate]="user.isActive"
+                      (click)="toggleActive(user)"
+                      [disabled]="!!busyEmail() || isSelf(user)"
+                      [title]="user.isActive ? 'Deactivate' : 'Activate'"
+                    >
+                      @if (busyEmail() === user.email) {
+                        <span class="am-spinner am-spinner--sm"></span>
+                      } @else {
+                        <i class="bi" [class.bi-toggle-on]="user.isActive" [class.bi-toggle-off]="!user.isActive"></i>
+                      }
+                    </button>
+                  </div>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>

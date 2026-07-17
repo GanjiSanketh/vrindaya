@@ -42,6 +42,7 @@ export interface PromotionalBannerInput {
 export interface CategoryInput {
   id?: string; // only sent on create
   name: string;
+  code?: string;
   subtitle?: string;
   description?: string;
   image: string;

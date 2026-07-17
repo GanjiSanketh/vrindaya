@@ -28,6 +28,7 @@ public class BrandConfigController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(BrandConfigResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<BrandConfigResponse>> Get(CancellationToken cancellationToken)
     {

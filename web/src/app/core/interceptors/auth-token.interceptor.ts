@@ -1,28 +1,22 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { from, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FirebaseTokenService } from '../services/firebase-token.service';
+import { AuthTokenStorageService } from '../services/auth-token-storage.service';
 
 /**
- * Attaches the signed-in admin's Firebase ID token as a Bearer header on
- * every request to the ASP.NET Core API — the same token Angular already
- * obtains from its existing Google Sign-In flow (AdminAuthService), just
- * forwarded here instead of a new login system. Gated on the API's base
- * URL so it never touches the one unrelated existing HttpClient call
- * (PopupService's static JSON fetch) or any Firebase SDK calls (those
- * aren't HttpClient requests at all).
+ * Attaches the app's own AppJwt (see JwtTokenService on the backend, minted
+ * by POST /auth/login) as a Bearer header on every other request to the API.
+ * Skips requests that already carry an explicit Authorization header — the
+ * one case is AdminAuthService's own login call, which must send the
+ * Firebase ID token instead (there's no AppJwt yet at that point).
  */
 export const authTokenInterceptor: HttpInterceptorFn = (req, next) => {
-  if (!req.url.startsWith(environment.apiBaseUrl)) {
+  if (!req.url.startsWith(environment.apiBaseUrl) || req.headers.has('Authorization')) {
     return next(req);
   }
 
-  const tokenService = inject(FirebaseTokenService);
+  const tokenStorage = inject(AuthTokenStorageService);
+  const session = tokenStorage.getSession();
 
-  return from(tokenService.getIdToken()).pipe(
-    switchMap(token =>
-      next(token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req),
-    ),
-  );
+  return next(session ? req.clone({ setHeaders: { Authorization: `Bearer ${session.token}` } }) : req);
 };

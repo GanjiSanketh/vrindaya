@@ -1,0 +1,91 @@
+<div class="rp-page">
+  <div class="rp-header">
+    <div>
+      <h1 class="rp-title">Inventory Reports</h1>
+      <p class="rp-count">Data-driven reports with filters, sorting, and export.</p>
+    </div>
+    <div class="rp-actions">
+      <button class="rp-action-btn" (click)="exportCsv()" title="Export CSV"><i class="bi bi-filetype-csv"></i> CSV</button>
+      <button class="rp-action-btn" (click)="exportExcel()" title="Export Excel"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+      <button class="rp-action-btn" (click)="exportPdf()" title="Print / PDF"><i class="bi bi-printer"></i> PDF</button>
+    </div>
+  </div>
+
+  <!-- Report type selector -->
+  <nav class="rp-tabs">
+    @for (rt of REPORT_TYPES; track rt.value) {
+      <button class="rp-tab" [class.rp-tab--active]="rt.value === reportType()" (click)="selectReport(rt.value)">
+        {{ rt.label }}
+      </button>
+    }
+  </nav>
+
+  <!-- Filters -->
+  <div class="rp-filters">
+    <div class="rp-filter-date">
+      <input class="rp-input" type="date" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event); onFilterChange()" />
+      <span>–</span>
+      <input class="rp-input" type="date" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event); onFilterChange()" />
+    </div>
+    <select class="rp-input" [ngModel]="categoryId()" (ngModelChange)="categoryId.set($event); onFilterChange()">
+      <option value="">All Categories</option>
+      @for (c of categories(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+    </select>
+    <select class="rp-input" [ngModel]="supplierId()" (ngModelChange)="supplierId.set($event); onFilterChange()">
+      <option value="">All Suppliers</option>
+      @for (s of suppliers(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+    </select>
+    <select class="rp-input" [ngModel]="collectionId()" (ngModelChange)="collectionId.set($event); onFilterChange()">
+      <option value="">All Collections</option>
+      @for (c of collections(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+    </select>
+    <input class="rp-input rp-input--search" type="text" placeholder="Search…" [ngModel]="search()" (ngModelChange)="search.set($event); onFilterChange()" />
+    @if (hasActiveFilters()) {
+      <button class="rp-link-btn" (click)="clearFilters()">Clear</button>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="rp-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+
+  <div class="rp-card">
+    @if (loading()) {
+      <div class="rp-loading"><span class="rp-spinner"></span> Loading…</div>
+    } @else if (!result() || result()!.items.length === 0) {
+      <div class="rp-empty"><i class="bi bi-file-earmark-bar-graph"></i><p>No data matches these filters.</p></div>
+    } @else {
+      <div class="rp-table-wrap">
+        <table class="rp-table">
+          <thead>
+            <tr>
+              @for (col of columns(); track col.key) {
+                <th (click)="col.sortable ? sort(col.key) : undefined" [class.rp-sortable]="col.sortable">
+                  {{ col.label }}
+                  @if (col.sortable) { <i class="bi {{ sortIcon(col.key) }}"></i> }
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of result()!.items; track row) {
+              <tr>
+                @for (col of columns(); track col.key) {
+                  <td [innerHTML]="col.render(row)"></td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="rp-pagination">
+        <span class="rp-total">{{ totalCount() }} row{{ totalCount() === 1 ? '' : 's' }}</span>
+        <div class="rp-page-btns">
+          <button class="rp-page-btn" [disabled]="!hasPrev()" (click)="goToPage(page() - 1)"><i class="bi bi-chevron-left"></i></button>
+          <span class="rp-page-info">Page {{ page() }} of {{ totalPages() }}</span>
+          <button class="rp-page-btn" [disabled]="!hasNext()" (click)="goToPage(page() + 1)"><i class="bi bi-chevron-right"></i></button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

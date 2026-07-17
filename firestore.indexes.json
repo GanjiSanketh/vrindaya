@@ -369,6 +369,45 @@
     { "collectionGroup": "heroBanners", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "active", "order": "ASCENDING" },
       { "fieldPath": "displayOrder", "order": "ASCENDING" }
+    ] },
+
+    { "collectionGroup": "stockMovements", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "productId", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" }
+    ] },
+    { "collectionGroup": "stockMovements", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "movementType", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" }
+    ] },
+
+    { "collectionGroup": "purchaseEntries", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "supplierId", "order": "ASCENDING" },
+      { "fieldPath": "purchaseDate", "order": "DESCENDING" }
+    ] },
+
+    { "collectionGroup": "suppliers", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isActive", "order": "ASCENDING" },
+      { "fieldPath": "companyName", "order": "ASCENDING" }
+    ] },
+    { "collectionGroup": "suppliers", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isActive", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "ASCENDING" }
+    ] },
+    { "collectionGroup": "suppliers", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isActive", "order": "ASCENDING" },
+      { "fieldPath": "supplierCode", "order": "ASCENDING" }
+    ] },
+    { "collectionGroup": "suppliers", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "searchKeywords", "arrayConfig": "CONTAINS" },
+      { "fieldPath": "companyName", "order": "ASCENDING" }
+    ] },
+    { "collectionGroup": "suppliers", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "searchKeywords", "arrayConfig": "CONTAINS" },
+      { "fieldPath": "createdAt", "order": "ASCENDING" }
+    ] },
+    { "collectionGroup": "suppliers", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "searchKeywords", "arrayConfig": "CONTAINS" },
+      { "fieldPath": "supplierCode", "order": "ASCENDING" }
     ] }
   ]
 }

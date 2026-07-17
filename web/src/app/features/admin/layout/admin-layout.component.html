@@ -13,89 +13,55 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="al-nav" (click)="closeSide()">
+    <nav class="al-nav">
 
-      <!-- Visible to all authenticated roles -->
-      <a [routerLink]="BASE + '/dashboard'" routerLinkActive="al-nav-item--active" class="al-nav-item">
+      <!-- Dashboard — standalone, top-level -->
+      <a [routerLink]="BASE + '/dashboard'" routerLinkActive="al-nav-item--active" class="al-nav-item" (click)="closeSide()">
         <i class="bi bi-grid-1x2"></i>
         <span>Dashboard</span>
       </a>
-      <a [routerLink]="BASE + '/products'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-bag-heart"></i>
-        <span>Products</span>
-      </a>
-      <a [routerLink]="BASE + '/flipkart-ops'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-shop"></i>
-        <span>Flipkart Operations</span>
-      </a>
-      <a [routerLink]="BASE + '/categories'" routerLinkActive="al-nav-item--active" [routerLinkActiveOptions]="{ exact: false }" class="al-nav-item">
-        <i class="bi bi-grid-3x3-gap"></i>
-        <span>Categories</span>
-      </a>
-      <a [routerLink]="BASE + '/collections'" routerLinkActive="al-nav-item--active" [routerLinkActiveOptions]="{ exact: false }" class="al-nav-item">
-        <i class="bi bi-collection"></i>
-        <span>Collections</span>
-      </a>
-      <a [routerLink]="BASE + '/homepage'" routerLinkActive="al-nav-item--active" [routerLinkActiveOptions]="{ exact: false }" class="al-nav-item">
-        <i class="bi bi-house-heart"></i>
-        <span>Homepage</span>
-      </a>
-      <a [routerLink]="BASE + '/brand'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-award"></i>
-        <span>Brand</span>
-      </a>
-      <a [routerLink]="BASE + '/marketing'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-envelope-heart"></i>
-        <span>Marketing</span>
-      </a>
-      <a [routerLink]="BASE + '/marketing-contacts'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-person-lines-fill"></i>
-        <span>Marketing Contacts</span>
-      </a>
-      <a [routerLink]="BASE + '/campaigns'" routerLinkActive="al-nav-item--active" [routerLinkActiveOptions]="{ exact: false }" class="al-nav-item">
-        <i class="bi bi-send"></i>
-        <span>Campaigns</span>
-      </a>
-      <a [routerLink]="BASE + '/campaign-queue'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-list-task"></i>
-        <span>Campaign Queue</span>
-      </a>
-      <a [routerLink]="BASE + '/delivery-dashboard'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-speedometer2"></i>
-        <span>Delivery Dashboard</span>
-      </a>
-      <a [routerLink]="BASE + '/campaign-templates'" routerLinkActive="al-nav-item--active" [routerLinkActiveOptions]="{ exact: false }" class="al-nav-item">
-        <i class="bi bi-file-text"></i>
-        <span>Templates</span>
-      </a>
-      <a [routerLink]="BASE + '/whatsapp-settings'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-        <i class="bi bi-whatsapp"></i>
-        <span>WhatsApp Settings</span>
-      </a>
 
-      <!-- super_admin + admin only -->
-      @if (auth.hasRole(['super_admin', 'admin'])) {
-        <a [routerLink]="BASE + '/popup-config'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-          <i class="bi bi-megaphone"></i>
-          <span>Popup Campaign</span>
-        </a>
-        <a [routerLink]="BASE + '/exit-intent'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-          <i class="bi bi-door-open"></i>
-          <span>Exit Intent</span>
-        </a>
-        <a [routerLink]="BASE + '/analytics'" routerLinkActive="al-nav-item--active" class="al-nav-item">
-          <i class="bi bi-bar-chart-line"></i>
-          <span>Analytics</span>
-        </a>
-      }
+      <!-- Collapsible sections -->
+      @for (section of sections; track section.key) {
+        <div class="al-section">
+          <button
+            type="button"
+            class="al-section-header"
+            [class.al-section-header--active]="isSectionActive(section)"
+            (click)="toggleSection(section.key)"
+          >
+            <i class="bi" [class]="section.icon"></i>
+            <span>{{ section.label }}</span>
+            <i class="bi bi-chevron-right al-section-chevron" [class.al-section-chevron--open]="isExpanded(section.key)"></i>
+          </button>
 
-      <!-- super_admin only -->
-      @if (auth.isSuperAdmin()) {
-        <hr class="al-divider" />
-        <a [routerLink]="BASE + '/admin-management'" routerLinkActive="al-nav-item--active" class="al-nav-item al-nav-item--management">
-          <i class="bi bi-shield-check"></i>
-          <span>Admin Management</span>
-        </a>
+          <div class="al-collapsible" [class.al-collapsible--open]="isExpanded(section.key)">
+            <div class="al-collapsible-inner">
+              @for (item of section.items; track item.label) {
+                @if (hasAccess(item)) {
+                  @if (item.comingSoon) {
+                    <span class="al-nav-item al-nav-item--child al-nav-item--soon">
+                      <i class="bi" [class]="item.icon"></i>
+                      <span>{{ item.label }}</span>
+                      <span class="al-soon-badge">Soon</span>
+                    </span>
+                  } @else {
+                    <a
+                      [routerLink]="BASE + '/' + item.path"
+                      routerLinkActive="al-nav-item--active"
+                      [routerLinkActiveOptions]="{ exact: item.exact ?? true }"
+                      class="al-nav-item al-nav-item--child"
+                      (click)="closeSide()"
+                    >
+                      <i class="bi" [class]="item.icon"></i>
+                      <span>{{ item.label }}</span>
+                    </a>
+                  }
+                }
+              }
+            </div>
+          </div>
+        </div>
       }
 
       <hr class="al-divider" />
@@ -110,14 +76,14 @@
     @if (auth.currentUser(); as user) {
       <div class="al-user">
         @if (user.photoURL) {
-          <img [src]="user.photoURL" [alt]="user.displayName ?? 'Admin'" class="al-avatar" referrerpolicy="no-referrer" />
+          <img [src]="user.photoURL" [alt]="user.name || 'Admin'" class="al-avatar" referrerpolicy="no-referrer" />
         } @else {
           <div class="al-avatar al-avatar--placeholder"><i class="bi bi-person-fill"></i></div>
         }
         <div class="al-user-info">
-          <span class="al-user-name">{{ user.displayName || 'Admin' }}</span>
+          <span class="al-user-name">{{ user.name || 'Admin' }}</span>
           <span class="al-user-role al-user-role--{{ user.role }}">
-            {{ user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'Editor' }}
+            {{ user.role === 'SuperAdmin' ? 'Super Admin' : 'Admin' }}
           </span>
         </div>
         <button class="al-signout" (click)="signOut()" title="Sign out">

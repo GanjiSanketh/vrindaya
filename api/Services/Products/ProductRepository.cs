@@ -29,6 +29,13 @@ public class ProductRepository : IProductRepository
         return db.Collection(Collection).Document().Id;
     }
 
+    public async Task<List<(string Id, ProductDocument Data)>> GetAllUnpagedAsync(CancellationToken cancellationToken)
+    {
+        var db = _firebaseService.GetFirestoreDb();
+        var snapshot = await db.Collection(Collection).GetSnapshotAsync(cancellationToken);
+        return snapshot.Documents.Select(d => (d.Id, d.ConvertTo<ProductDocument>())).ToList();
+    }
+
     public async Task<PagedResult<(string Id, ProductDocument Data)>> GetPagedAsync(ProductQuery query, CancellationToken cancellationToken)
     {
         var db = _firebaseService.GetFirestoreDb();

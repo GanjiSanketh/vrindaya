@@ -1,0 +1,109 @@
+.rec-page { max-width: 1400px; }
+
+.rec-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.rec-title   { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.25rem; }
+.rec-subtitle { font-size: 0.85rem; color: #6b7280; margin: 0; }
+
+.rec-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.period-filters { display: flex; gap: 0.4rem; }
+
+.btn-export { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1px solid #e0e4ea; background: #fff; color: #1a1a2e; text-decoration: none; transition: all 0.15s; }
+.btn-export:hover { border-color: #0f6f84; color: #0f6f84; }
+
+.rec-error { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1rem; background: #fee2e2; color: #991b1b; border-radius: 8px; font-size: 0.85rem; }
+
+.rec-loading { padding: 3rem; text-align: center; color: #6b7280; display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
+.rec-spinner { width: 20px; height: 20px; border: 2px solid #e0e4ea; border-top-color: #0f6f84; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.rec-empty { padding: 3rem; text-align: center; color: #6b7280; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+
+/* ── KPI Cards ─────────────────────────────────── */
+.rec-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.stat-card { background: #fff; border-radius: 10px; padding: 1rem; display: flex; align-items: center; gap: 0.75rem; border: 1px solid #e8ecf0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.stat-icon--teal  { background: #e0f2fe; color: #0f6f84; }
+.stat-icon--green { background: #d1fae5; color: #059669; }
+.stat-icon--red   { background: #fee2e2; color: #dc2626; }
+.stat-icon--blue  { background: #dbeafe; color: #2563eb; }
+.stat-icon--amber { background: #fef3c7; color: #d97706; }
+.stat-body .stat-label { font-size: 0.72rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.1rem; }
+.stat-body .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; }
+.stat-sub { font-size: 0.8rem; font-weight: 400; color: #9ca3af; }
+.text-green { color: #059669 !important; }
+.text-red   { color: #dc2626 !important; }
+
+/* ── Filters ────────────────────────────────────── */
+.rec-filters { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.filter-select { padding: 0.4rem 0.6rem; border: 1px solid #e0e4ea; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; background: #fff; cursor: pointer; outline: none; }
+.filter-clear { display: flex; align-items: center; gap: 0.25rem; padding: 0.4rem 0.65rem; background: transparent; border: 1px solid #e0e4ea; border-radius: 8px; font-size: 0.78rem; color: #6b7280; cursor: pointer; }
+.filter-clear:hover { border-color: #dc2626; color: #dc2626; }
+
+/* ── Discrepancy Group Cards ────────────────────── */
+.disc-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+.disc-group-card { background: #fff; border-radius: 10px; padding: 1rem; border: 1px solid #e8ecf0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: space-between; }
+.disc-group-header { display: flex; align-items: center; gap: 0.6rem; }
+.disc-group-header i { font-size: 1.3rem; }
+.disc-group-info .disc-group-label { font-size: 0.82rem; font-weight: 600; color: #1a1a2e; }
+.disc-group-info .disc-group-count { font-size: 0.72rem; color: #6b7280; }
+.disc-group-amount { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 700; }
+.dc-missing  { border-left: 3px solid #dc2626; }
+.dc-missing  i { color: #dc2626; }
+.dc-missing  .disc-group-amount { color: #dc2626; }
+.dc-commission { border-left: 3px solid #d97706; }
+.dc-commission i { color: #d97706; }
+.dc-commission .disc-group-amount { color: #d97706; }
+.dc-charges  { border-left: 3px solid #7c3aed; }
+.dc-charges  i { color: #7c3aed; }
+.dc-charges  .disc-group-amount { color: #7c3aed; }
+.dc-delay    { border-left: 3px solid #2563eb; }
+.dc-delay    i { color: #2563eb; }
+.dc-delay    .disc-group-amount { color: #2563eb; }
+
+/* ── Charts ─────────────────────────────────────── */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+.chart-card { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; }
+.chart-header { padding: 0.85rem 1rem 0; }
+.chart-title { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 0; }
+.chart-body { padding: 0.75rem; min-height: 200px; height: 240px; flex: 1; }
+.chart-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af; font-size: 0.85rem; }
+
+/* ── Table ──────────────────────────────────────── */
+.table-card { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); overflow: hidden; }
+.table-header { padding: 1rem 1rem 0; }
+.table-title { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 0 0 0.5rem; }
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.data-table th { text-align: left; padding: 0.65rem 0.75rem; background: #f9fafb; color: #374151; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #e8ecf0; white-space: nowrap; }
+.data-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+.data-table tbody tr:hover { background: #f9fafb; }
+.cell-id { font-family: 'Cormorant Garamond', serif; font-weight: 600; color: #0f6f84; white-space: nowrap; }
+.cell-num { font-family: 'Cormorant Garamond', serif; font-weight: 600; text-align: right; white-space: nowrap; }
+.cell-desc { color: #6b7280; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.disc-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.dc-missing .disc-badge,
+.disc-badge.dc-missing { background: #fee2e2; color: #991b1b; }
+.dc-commission .disc-badge,
+.disc-badge.dc-commission { background: #fef3c7; color: #92400e; }
+.dc-charges .disc-badge,
+.disc-badge.dc-charges { background: #ede9fe; color: #5b21b6; }
+.dc-delay .disc-badge,
+.disc-badge.dc-delay { background: #dbeafe; color: #1e40af; }
+
+.status-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+.st-paid    { background: #d1fae5; color: #065f46; }
+.st-pending { background: #fef3c7; color: #92400e; }
+.st-failed  { background: #fee2e2; color: #991b1b; }
+
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-top: 1px solid #e8ecf0; }
+.page-info { font-size: 0.8rem; color: #6b7280; }
+.page-btns { display: flex; gap: 0.4rem; }
+.page-btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border: 1px solid #e0e4ea; border-radius: 8px; background: #fff; color: #1a1a2e; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+.page-btn:hover:not(:disabled) { border-color: #0f6f84; color: #0f6f84; }
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+
+@media (max-width: 768px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .rec-stats { grid-template-columns: 1fr 1fr; }
+}

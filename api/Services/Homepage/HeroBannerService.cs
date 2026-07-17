@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Http;
 using Vrindaya.Api.Common.Exceptions;
 using Vrindaya.Api.DTOs.Homepage;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Audit;
+using System.Security.Claims;
 
 namespace Vrindaya.Api.Services.Homepage;
 
@@ -9,12 +12,20 @@ public class HeroBannerService : IHeroBannerService
 {
     private readonly IHeroBannerRepository _repository;
     private readonly IHomepageCacheService _cache;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public HeroBannerService(IHeroBannerRepository repository, IHomepageCacheService cache)
+    public HeroBannerService(IHeroBannerRepository repository, IHomepageCacheService cache, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
     {
         _repository = repository;
         _cache = cache;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
     }
+
+    private string? GetCurrentUserEmail() =>
+        _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email)
+        ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("email");
 
     public async Task<List<HeroBannerResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
@@ -53,12 +64,15 @@ public class HeroBannerService : IHeroBannerService
 
         await _repository.CreateAsync(id, document, cancellationToken);
         _cache.Invalidate();
+        try { await _auditLogService.LogCreateAsync("HeroBanners", id, document.Title, AuditLogService.SerializeJson(document), GetCurrentUserEmail(), null, null, $"Hero banner '{document.Title}' created"); } catch { }
         return ToResponse(id, document);
     }
 
     public async Task<HeroBannerResponse> UpdateAsync(string id, UpdateHeroBannerRequest request, CancellationToken cancellationToken)
     {
         var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Hero banner", id);
+
+        var beforeData = AuditLogService.SerializeJson(existing);
 
         var document = new HeroBannerDocument
         {
@@ -80,14 +94,17 @@ public class HeroBannerService : IHeroBannerService
 
         await _repository.UpdateAsync(id, document, cancellationToken);
         _cache.Invalidate();
+        try { await _auditLogService.LogUpdateAsync("HeroBanners", id, document.Title, beforeData, AuditLogService.SerializeJson(document), GetCurrentUserEmail(), null, null, $"Hero banner '{document.Title}' updated"); } catch { }
         return ToResponse(id, document);
     }
 
     public async Task DeleteAsync(string id, CancellationToken cancellationToken)
     {
-        _ = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Hero banner", id);
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Hero banner", id);
+        var beforeData = AuditLogService.SerializeJson(existing);
         await _repository.DeleteAsync(id, cancellationToken);
         _cache.Invalidate();
+        try { await _auditLogService.LogDeleteAsync("HeroBanners", id, existing.Title, beforeData, GetCurrentUserEmail(), null, null, $"Hero banner '{existing.Title}' deleted"); } catch { }
     }
 
     public async Task<HeroBannerResponse?> GetActiveBannerAsync(CancellationToken cancellationToken)

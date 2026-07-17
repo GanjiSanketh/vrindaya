@@ -174,26 +174,6 @@ export interface FlipkartOpsInput {
   marketplaceTags: string[];
 }
 
-/** Wire shape for GET/PATCH /inventory/{productId} — mirrors InventoryDetailResponse/UpdateInventoryRequest. */
-export interface ApiInventoryDetail {
-  productId: string;
-  sizes: ApiProductSize[];
-  availableSizes: ApiProductSize[];
-  stock: number;
-  reservedStock: number;
-  lowStockThreshold?: number;
-  isOutOfStock: boolean;
-  isLowStock: boolean;
-  autoHideWhenOutOfStock: boolean;
-  stockUpdatedAt?: string;
-}
-
-export interface UpdateInventoryInput {
-  sizes: ProductSize[];
-  lowStockThreshold?: number;
-  autoHideWhenOutOfStock: boolean;
-}
-
 function toProductImage(img: ApiProductImage): ProductImage {
   return { url: img.url, publicId: img.publicId, slot: img.slot, order: img.order };
 }

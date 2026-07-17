@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vrindaya.Api.DTOs;
 using Vrindaya.Api.Interfaces;
@@ -18,6 +19,7 @@ public class HealthController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(HealthStatusDto), StatusCodes.Status200OK)]
     public ActionResult<HealthStatusDto> Get()
     {

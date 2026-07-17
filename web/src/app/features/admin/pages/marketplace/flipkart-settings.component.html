@@ -1,0 +1,95 @@
+<div class="fs-page">
+
+  <div class="fs-header">
+    <div>
+      <h1 class="fs-title">Flipkart Marketplace Settings</h1>
+      <p class="fs-count">Configure default charges, commissions, and profit margins used for Flipkart marketplace pricing.</p>
+    </div>
+    <button type="button" class="btn-primary-sm" [disabled]="saving() || loading()" (click)="save()">
+      @if (saving()) { Saving… } @else { <i class="bi bi-check-lg"></i> Save Changes }
+    </button>
+  </div>
+
+  @if (saved()) {
+    <div class="fs-success"><i class="bi bi-check-circle-fill"></i> Flipkart settings saved.</div>
+  }
+  @if (error()) {
+    <div class="fs-error"><i class="bi bi-exclamation-circle-fill"></i> {{ error() }} <button type="button" (click)="error.set(null)">×</button></div>
+  }
+
+  @if (loading()) {
+    <div class="fs-loading"><span class="fs-spinner"></span> Loading settings…</div>
+  } @else {
+    <form [formGroup]="form" class="fs-section">
+
+      <h2 class="fs-section-title">General</h2>
+
+      <label class="fs-check">
+        <input type="checkbox" formControlName="marketplaceEnabled" />
+        <span class="fs-check-box"></span>
+        <span>Marketplace Enabled</span>
+      </label>
+
+      <div class="fs-field-row">
+        <div class="fs-field">
+          <label class="fs-label">Seller Display Name</label>
+          <input class="fs-input" formControlName="sellerDisplayName" type="text" placeholder="Vrindaya Ethnic Wear" />
+        </div>
+        <div class="fs-field">
+          <label class="fs-label">Seller ID</label>
+          <input class="fs-input" formControlName="sellerId" type="text" placeholder="FLPKT-SELLER-ID" />
+        </div>
+      </div>
+
+      <h2 class="fs-section-title fs-section-title--margin-top">Default Charges (₹)</h2>
+
+      <div class="fs-field-row">
+        <div class="fs-field">
+          <label class="fs-label">Shipping Charge</label>
+          <input class="fs-input" formControlName="defaultShippingCharge" type="number" step="0.01" min="0" />
+        </div>
+        <div class="fs-field">
+          <label class="fs-label">Packaging Charge</label>
+          <input class="fs-input" formControlName="defaultPackagingCharge" type="number" step="0.01" min="0" />
+        </div>
+      </div>
+
+      <h2 class="fs-section-title fs-section-title--margin-top">Percentages (%)</h2>
+
+      <div class="fs-field-row">
+        <div class="fs-field">
+          <label class="fs-label">Advertisement %</label>
+          <input class="fs-input" formControlName="defaultAdvertisementPercentage" type="number" step="0.01" min="0" max="100" />
+        </div>
+        <div class="fs-field">
+          <label class="fs-label">Flipkart Commission %</label>
+          <input class="fs-input" formControlName="defaultFlipkartCommissionPercentage" type="number" step="0.01" min="0" max="100" />
+        </div>
+      </div>
+
+      <div class="fs-field-row">
+        <div class="fs-field">
+          <label class="fs-label">Payment Gateway Charges</label>
+          <input class="fs-input" formControlName="defaultPaymentGatewayCharges" type="number" step="0.01" min="0" />
+        </div>
+        <div class="fs-field">
+          <label class="fs-label">Miscellaneous Charges</label>
+          <input class="fs-input" formControlName="defaultMiscellaneousCharges" type="number" step="0.01" min="0" />
+        </div>
+      </div>
+
+      <div class="fs-field-row">
+        <div class="fs-field">
+          <label class="fs-label">GST %</label>
+          <input class="fs-input" formControlName="gstPercentage" type="number" step="0.01" min="0" max="100" />
+        </div>
+        <div class="fs-field">
+          <label class="fs-label">Default Profit Margin %</label>
+          <input class="fs-input" formControlName="defaultProfitMargin" type="number" step="0.01" min="0" max="100" />
+        </div>
+      </div>
+
+    </form>
+  }
+
+</div>

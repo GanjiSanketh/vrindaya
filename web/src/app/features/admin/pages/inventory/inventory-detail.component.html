@@ -1,0 +1,171 @@
+<div class="hbf-page">
+
+  <div class="hbf-header">
+    <a [routerLink]="BASE + '/list'" class="hbf-back"><i class="bi bi-arrow-left"></i> Inventory</a>
+    <h1 class="hbf-title">{{ productName || productId }}</h1>
+  </div>
+
+  @if (error()) {
+    <div class="hbf-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="hbf-loading"><span class="hbf-spinner"></span> Loading…</div>
+  } @else {
+
+    <div class="hbf-main">
+
+        <!-- Variants grouped by color -->
+        <div class="hbf-section">
+          <div class="hbf-section-header-row">
+            <h2 class="hbf-section-title">Variants</h2>
+            <button type="button" class="hbf-view-all" (click)="startAddVariant()">
+              <i class="bi bi-plus-lg"></i> Add Variant
+            </button>
+          </div>
+
+          @if (variantFormError()) {
+            <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ variantFormError() }}</div>
+          }
+
+          @if (addingVariant()) {
+            <form [formGroup]="variantForm" (ngSubmit)="submitVariant()" novalidate class="hbf-variant-add-form">
+              <div class="hbf-field">
+                <label class="hbf-label">Color *</label>
+                <input class="hbf-input" [class.hbf-input--err]="isVariantInvalid('color')" formControlName="color" type="text" placeholder="Green" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Size *</label>
+                <input class="hbf-input" [class.hbf-input--err]="isVariantInvalid('size')" formControlName="size" type="text" placeholder="M" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Barcode</label>
+                <input class="hbf-input" formControlName="barcode" type="text" placeholder="Optional barcode number" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Low Stock Threshold</label>
+                <input class="hbf-input" formControlName="lowStockThreshold" type="number" min="0" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Critical Stock Threshold</label>
+                <input class="hbf-input" formControlName="criticalStockThreshold" type="number" min="0" />
+              </div>
+              <div class="hbf-variant-add-actions">
+                <button type="button" class="hbf-cancel" (click)="cancelAddVariant()">Cancel</button>
+                <button type="submit" class="hbf-submit">Save Variant</button>
+              </div>
+            </form>
+          }
+
+          @if (colorGroups().length === 0) {
+            <p class="hbf-empty-text">No variants yet — add one above, or record a purchase for a new color/size.</p>
+          }
+
+          @for (group of colorGroups(); track group.color) {
+            <div class="hbf-color-group">
+              <h3 class="hbf-color-heading">{{ group.color }}</h3>
+              <table class="hbf-mini-table">
+                  <thead>
+                    <tr>
+                      <th>Size</th>
+                      <th>SKU</th>
+                      <th>Barcode</th>
+                      <th>QR</th>
+                      <th>Stock</th>
+                      <th>Reserved</th>
+                      <th>Sold</th>
+                      <th>Damaged</th>
+                      <th>Avg Cost</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (v of group.variants; track v.id) {
+                      <tr>
+                        <td>{{ v.size }}</td>
+                        <td>{{ v.sku || '—' }}</td>
+                        <td>{{ v.barcode || '—' }}</td>
+                        <td>@if (v.qrCode) { <a [href]="v.qrCode" target="_blank" title="View QR"><i class="bi bi-qr-code"></i></a> } @else { <span class="hbf-dim">—</span> }</td>
+                        <td>{{ v.currentStock }}</td>
+                      <td>{{ v.reservedStock }}</td>
+                      <td>{{ v.soldStock }}</td>
+                      <td>{{ v.damagedStock }}</td>
+                      <td>{{ formatCurrency(v.averagePurchaseCost) }}</td>
+                      <td>
+                        <span class="hbf-status-badge"
+                              [class.hbf-status-badge--live]="v.status === 'Healthy'"
+                              [class.hbf-status-badge--low]="v.status === 'Low'"
+                              [class.hbf-status-badge--critical]="v.status === 'Critical'"
+                              [class.hbf-status-badge--off]="v.status === 'OutOfStock'">
+                          {{ v.status === 'OutOfStock' ? 'Out of Stock' : v.status }}
+                        </span>
+                      </td>
+                      <td>
+                        <button type="button" class="hbf-adjust-btn" (click)="startRecordMovement(v)">Record Movement</button>
+                        <a [routerLink]="BASE + '/variants/' + v.id + '/pricing'" class="hbf-adjust-btn">
+                          <i class="bi bi-calculator"></i> Pricing
+                        </a>
+                      </td>
+                    </tr>
+                      @if (recordingVariantId() === v.id) {
+                      <tr class="hbf-adjust-row">
+                        <td colspan="11">
+                          @if (recordError()) {
+                            <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ recordError() }}</div>
+                          }
+                          <div class="hbf-adjust-inline">
+                            <select class="hbf-input" [ngModel]="recordMovementType()" (ngModelChange)="recordMovementType.set($event)" [disabled]="recordBusy()">
+                              @for (type of RECORDABLE_MOVEMENT_TYPES; track type) {
+                                <option [value]="type">{{ MOVEMENT_TYPE_LABELS[type] }}</option>
+                              }
+                            </select>
+                            <input class="hbf-input" type="number" [placeholder]="quantityLabel()" [ngModel]="recordQuantity()" (ngModelChange)="recordQuantity.set($event)" [disabled]="recordBusy()" />
+                            <input class="hbf-input" type="text" placeholder="Reason" [ngModel]="recordReason()" (ngModelChange)="recordReason.set($event)" [disabled]="recordBusy()" />
+                            <button type="button" class="hbf-cancel" (click)="cancelRecordMovement()">Cancel</button>
+                            <button type="button" class="hbf-submit" (click)="submitRecordMovement(v.id)" [disabled]="recordBusy()">
+                              @if (recordBusy()) { Saving… } @else { Save }
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+
+        <!-- Movement history -->
+        <div class="hbf-section">
+          <div class="hbf-section-header-row">
+            <h2 class="hbf-section-title">Recent Stock Movements</h2>
+            <a [routerLink]="BASE + '/' + productId + '/timeline'" class="hbf-view-all">View timeline</a>
+          </div>
+          @if (movements().length === 0) {
+            <p class="hbf-empty-text">No movements recorded yet.</p>
+          } @else {
+            <table class="hbf-mini-table">
+              <thead><tr><th>Color</th><th>Size</th><th>Type</th><th>Qty</th><th>Reason</th><th>Date</th></tr></thead>
+              <tbody>
+                @for (m of movements(); track m.id) {
+                  <tr>
+                    <td>{{ m.color || '—' }}</td>
+                    <td>{{ m.size || '—' }}</td>
+                    <td>{{ MOVEMENT_TYPE_LABELS[m.movementType] }}</td>
+                    <td>{{ m.quantity }}</td>
+                    <td>{{ m.reason || '—' }}</td>
+                    <td>{{ formatDate(m.createdAt) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+    </div>
+
+  }
+
+</div>

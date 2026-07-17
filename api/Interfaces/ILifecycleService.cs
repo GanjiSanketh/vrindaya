@@ -2,9 +2,9 @@ namespace Vrindaya.Api.Interfaces;
 
 /// <summary>
 /// Owns Product Lifecycle stage transitions (Constants.LifecycleStage) —
-/// split out from IInventoryService since a lifecycle stage isn't an
-/// inventory-quantity concern, and out of the Flipkart Ops surface since
-/// it's no longer Flipkart-specific (Phase 8).
+/// a distinct concern from inventory quantity (owned by the Inventory
+/// Management module), and out of the Flipkart Ops surface since it's no
+/// longer Flipkart-specific (Phase 8).
 /// </summary>
 public interface ILifecycleService
 {

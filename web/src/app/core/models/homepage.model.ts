@@ -35,6 +35,7 @@ export interface ApiCategory {
   id: string;
   slug: string;
   name: string;
+  code?: string;
   subtitle?: string;
   description?: string;
   image: string;

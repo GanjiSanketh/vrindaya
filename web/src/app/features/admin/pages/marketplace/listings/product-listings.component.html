@@ -1,0 +1,126 @@
+<div class="hbl-page">
+
+  <div class="hbl-header">
+    <div>
+      <h1 class="hbl-title">Product Listings</h1>
+      <p class="hbl-count">Manage marketplace listings for every product. Manual only — API sync not yet wired.</p>
+    </div>
+  </div>
+
+  <div class="hbl-toolbar">
+    <div class="hbl-toolbar-row">
+      <input class="hbl-search" type="text" placeholder="Search by product name or ID…" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" (keydown.enter)="search()" />
+      <button type="button" class="btn-primary-sm" (click)="search()"><i class="bi bi-search"></i> Search</button>
+    </div>
+    <div class="hbl-toolbar-row">
+      <span class="hbl-toolbar-label">Marketplace</span>
+      <button type="button" class="hbl-filter" [class.hbl-filter--active]="marketplaceFilter() === ''" (click)="setMarketplaceFilter('')">All</button>
+      @for (m of marketplaces; track m) {
+        <button type="button" class="hbl-filter" [class.hbl-filter--active]="marketplaceFilter() === m" (click)="setMarketplaceFilter(m)">{{ m }}</button>
+      }
+    </div>
+    <div class="hbl-toolbar-row">
+      <span class="hbl-toolbar-label">Status</span>
+      <button type="button" class="hbl-filter" [class.hbl-filter--active]="statusFilter() === ''" (click)="setStatusFilter('')">All</button>
+      @for (s of statuses; track s) {
+        <button type="button" class="hbl-filter" [class.hbl-filter--active]="statusFilter() === s" (click)="setStatusFilter(s)">{{ s }}</button>
+      }
+    </div>
+    <div class="hbl-toolbar-row">
+      <span class="hbl-toolbar-label">Quality</span>
+      <button type="button" class="hbl-filter" [class.hbl-filter--active]="qualityFilter() === ''" (click)="setQualityFilter('')">All</button>
+      @for (q of qualities; track q) {
+        <button type="button" class="hbl-filter" [class.hbl-filter--active]="qualityFilter() === q" (click)="setQualityFilter(q)">{{ q }}</button>
+      }
+    </div>
+    <div class="hbl-toolbar-row">
+      <span class="hbl-toolbar-label">Sync</span>
+      <button type="button" class="hbl-filter" [class.hbl-filter--active]="syncFilter() === ''" (click)="setSyncFilter('')">All</button>
+      @for (s of syncStatuses; track s) {
+        <button type="button" class="hbl-filter" [class.hbl-filter--active]="syncFilter() === s" (click)="setSyncFilter(s)">{{ s }}</button>
+      }
+    </div>
+  </div>
+
+  @if (error()) { <div class="hbl-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error() }}</div> }
+  @if (success()) { <div class="hbl-success"><i class="bi bi-check-circle-fill"></i> {{ success() }}</div> }
+
+  @if (selectedIds().size > 0) {
+    <section class="hbl-bulk" aria-label="Bulk status update">
+      <div class="hbl-bulk-copy"><strong>{{ selectedIds().size }} selected</strong><span>Change listing status for all selected.</span></div>
+      <select class="hbl-bulk-select" [ngModel]="bulkStatus()" (ngModelChange)="bulkStatus.set($event)">
+        @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+      </select>
+      <button type="button" class="btn-primary-sm" [disabled]="bulkSaving()" (click)="applyBulkStatus()">{{ bulkSaving() ? 'Updating…' : 'Update Status' }}</button>
+    </section>
+  }
+
+  <div class="hbl-card">
+    @if (loading()) {
+      <div class="hbl-loading"><span class="hbl-spinner"></span> Loading listings…</div>
+    } @else if (listings().length === 0) {
+      <div class="hbl-empty"><i class="bi bi-shop"></i><p>No listings match your filters.</p></div>
+    } @else {
+      <div class="hbl-table-wrap"><table class="hbl-table">
+        <thead><tr>
+          <th><input type="checkbox" aria-label="Select all visible listings" [checked]="allVisibleSelected()" (change)="toggleAllVisible($any($event.target).checked)" /></th>
+          <th>Product</th><th>Marketplace</th><th>Status</th><th>Quality</th><th>Flipkart Listing ID</th><th>Price</th><th>Inventory</th><th>Sync Status</th><th>Last Updated</th><th></th>
+        </tr></thead>
+        <tbody>
+          @for (l of listings(); track l.id) {
+            <tr>
+              <td><input type="checkbox" [checked]="isSelected(l.id)" (change)="toggleListing(l.id, $any($event.target).checked)" /></td>
+              @if (editingId() === l.id) {
+                <td class="hbl-name">{{ l.productName || l.productId }}</td>
+                <td>{{ l.marketplace }}</td>
+                <td>
+                  <select class="hbl-inline-select" [ngModel]="editStatus()" (ngModelChange)="editStatus.set($event)">
+                    @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+                  </select>
+                </td>
+                <td>
+                  <select class="hbl-inline-select" [ngModel]="editQuality()" (ngModelChange)="editQuality.set($event)">
+                    <option value="">—</option>
+                    @for (q of qualities; track q) { <option [value]="q">{{ q }}</option> }
+                  </select>
+                </td>
+                <td><input class="hbl-inline-input" type="text" [ngModel]="editFlipkartId()" (ngModelChange)="editFlipkartId.set($event)" /></td>
+                <td><input class="hbl-inline-input" type="number" min="0" step="0.01" [ngModel]="editPrice()" (ngModelChange)="editPrice.set($event)" /></td>
+                <td><input class="hbl-inline-input" type="number" min="0" step="1" [ngModel]="editInventory()" (ngModelChange)="editInventory.set($event)" /></td>
+                <td>
+                  <select class="hbl-inline-select" [ngModel]="editSyncStatus()" (ngModelChange)="editSyncStatus.set($event)">
+                    <option value="">—</option>
+                    @for (s of syncStatuses; track s) { <option [value]="s">{{ s }}</option> }
+                  </select>
+                </td>
+                <td>{{ formatDate(l.updatedAt) }}</td>
+                <td class="hbl-action-cell">
+                  @if (editError()) { <span class="hbl-edit-error">{{ editError() }}</span> }
+                  <button type="button" class="hbl-action-btn" [disabled]="editSaving()" (click)="saveEdit(l)"><i class="bi bi-check-lg"></i></button>
+                  <button type="button" class="hbl-action-btn hbl-action-btn--cancel" (click)="cancelEdit()"><i class="bi bi-x-lg"></i></button>
+                </td>
+              } @else {
+                <td class="hbl-name">{{ l.productName || l.productId }}</td>
+                <td>{{ l.marketplace }}</td>
+                <td><span class="hbl-badge" [class.hbl-badge--live]="l.listingStatus === 'Published'" [class.hbl-badge--ready]="l.listingStatus === 'Ready'" [class.hbl-badge--low]="l.listingStatus === 'Draft'" [class.hbl-badge--critical]="l.listingStatus === 'Rejected'" [class.hbl-badge--off]="l.listingStatus === 'Inactive' || l.listingStatus === 'Archived'">{{ l.listingStatus }}</span></td>
+                <td>{{ l.listingQuality || '—' }}</td>
+                <td>{{ l.flipkartListingId || '—' }}</td>
+                <td>{{ formatCurrency(l.marketplacePrice) }}</td>
+                <td>{{ l.inventory }}</td>
+                <td>{{ l.syncStatus || '—' }}</td>
+                <td>{{ formatDate(l.updatedAt) }}</td>
+                <td><button type="button" class="hbl-action-btn" title="Edit listing" (click)="startEdit(l)"><i class="bi bi-pencil"></i></button></td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table></div>
+
+      <div class="hbl-pagination">
+        <button class="hbl-page-btn" (click)="previousPage()" [disabled]="!hasPrevious()"><i class="bi bi-chevron-left"></i> Previous</button>
+        <button class="hbl-page-btn" (click)="nextPage()" [disabled]="!hasNext()">Next <i class="bi bi-chevron-right"></i></button>
+      </div>
+    }
+  </div>
+
+</div>

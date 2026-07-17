@@ -29,6 +29,7 @@ public class CategoryController : ControllerBase
 
     /// <summary>Public — active/visible categories only, ordered.</summary>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<CategoryResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<CategoryResponse>>> GetActive(CancellationToken cancellationToken)
     {

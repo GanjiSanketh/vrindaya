@@ -33,6 +33,12 @@
           </div>
 
           <div class="hbf-field">
+            <label class="hbf-label">SKU Code</label>
+            <input class="hbf-input" [class.hbf-input--err]="isInvalid('code')" formControlName="code" type="text" placeholder="LKT" maxlength="10" />
+            @if (isInvalid('code')) { <span class="hbf-err">Uppercase letters &amp; numbers only (max 10)</span> }
+          </div>
+
+          <div class="hbf-field">
             <label class="hbf-label">Subtitle</label>
             <input class="hbf-input" formControlName="subtitle" type="text" placeholder="Elegant Everyday Styles" />
           </div>

@@ -1,6 +1,7 @@
 using Vrindaya.Api.DTOs.Homepage;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Audit;
 
 namespace Vrindaya.Api.Services.Homepage;
 
@@ -8,11 +9,13 @@ public class HomepageConfigService : IHomepageConfigService
 {
     private readonly IHomepageConfigRepository _repository;
     private readonly IHomepageCacheService _cache;
+    private readonly IAuditLogService _auditLogService;
 
-    public HomepageConfigService(IHomepageConfigRepository repository, IHomepageCacheService cache)
+    public HomepageConfigService(IHomepageConfigRepository repository, IHomepageCacheService cache, IAuditLogService auditLogService)
     {
         _repository = repository;
         _cache = cache;
+        _auditLogService = auditLogService;
     }
 
     public async Task<HomepageConfigResponse> GetAsync(CancellationToken cancellationToken)
@@ -67,6 +70,7 @@ public class HomepageConfigService : IHomepageConfigService
 
         await _repository.SetAsync(document, cancellationToken);
         _cache.Invalidate();
+        try { await _auditLogService.LogUpdateAsync("HomepageConfig", null, null, null, AuditLogService.SerializeJson(document), updatedBy, null, null, "Homepage configuration updated"); } catch { }
         return ToResponse(document);
     }
 

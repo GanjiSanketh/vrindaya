@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Http;
 using Vrindaya.Api.Common.Exceptions;
 using Vrindaya.Api.DTOs.Homepage;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Audit;
+using System.Security.Claims;
 
 namespace Vrindaya.Api.Services.Homepage;
 
@@ -9,12 +12,20 @@ public class PromotionalBannerService : IPromotionalBannerService
 {
     private readonly IPromotionalBannerRepository _repository;
     private readonly IHomepageCacheService _cache;
+    private readonly IAuditLogService _auditLogService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public PromotionalBannerService(IPromotionalBannerRepository repository, IHomepageCacheService cache)
+    public PromotionalBannerService(IPromotionalBannerRepository repository, IHomepageCacheService cache, IAuditLogService auditLogService, IHttpContextAccessor httpContextAccessor)
     {
         _repository = repository;
         _cache = cache;
+        _auditLogService = auditLogService;
+        _httpContextAccessor = httpContextAccessor;
     }
+
+    private string? GetCurrentUserEmail() =>
+        _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email)
+        ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("email");
 
     public async Task<List<PromotionalBannerResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
@@ -49,12 +60,15 @@ public class PromotionalBannerService : IPromotionalBannerService
 
         await _repository.CreateAsync(id, document, cancellationToken);
         _cache.Invalidate();
+        try { await _auditLogService.LogCreateAsync("PromotionalBanners", id, null, AuditLogService.SerializeJson(document), GetCurrentUserEmail(), null, null, $"Promotional banner created"); } catch { }
         return ToResponse(id, document);
     }
 
     public async Task<PromotionalBannerResponse> UpdateAsync(string id, UpdatePromotionalBannerRequest request, CancellationToken cancellationToken)
     {
         var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Promotional banner", id);
+
+        var beforeData = AuditLogService.SerializeJson(existing);
 
         var document = new PromotionalBannerDocument
         {
@@ -72,14 +86,17 @@ public class PromotionalBannerService : IPromotionalBannerService
 
         await _repository.UpdateAsync(id, document, cancellationToken);
         _cache.Invalidate();
+        try { await _auditLogService.LogUpdateAsync("PromotionalBanners", id, null, beforeData, AuditLogService.SerializeJson(document), GetCurrentUserEmail(), null, null, $"Promotional banner updated"); } catch { }
         return ToResponse(id, document);
     }
 
     public async Task DeleteAsync(string id, CancellationToken cancellationToken)
     {
-        _ = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Promotional banner", id);
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Promotional banner", id);
+        var beforeData = AuditLogService.SerializeJson(existing);
         await _repository.DeleteAsync(id, cancellationToken);
         _cache.Invalidate();
+        try { await _auditLogService.LogDeleteAsync("PromotionalBanners", id, null, beforeData, GetCurrentUserEmail(), null, null, $"Promotional banner deleted"); } catch { }
     }
 
     public async Task<List<PromotionalBannerResponse>> GetActiveAsync(CancellationToken cancellationToken)

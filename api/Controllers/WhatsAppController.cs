@@ -21,8 +21,9 @@ public class WhatsAppController : ControllerBase
         _whatsAppService = whatsAppService;
     }
 
-    /// <summary>Configuration presence only — no secrets, no live Meta call. Safe to poll from a dashboard.</summary>
+    /// <summary>Configuration presence only — no secrets, no live Meta call. Part of the admin WhatsApp Settings surface, not a public/storefront endpoint — no frontend caller uses this without being signed in as admin.</summary>
     [HttpGet("health")]
+    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
     [ProducesResponseType(typeof(WhatsAppHealthDto), StatusCodes.Status200OK)]
     public ActionResult<WhatsAppHealthDto> GetHealth()
     {

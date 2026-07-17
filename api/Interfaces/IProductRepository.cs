@@ -18,6 +18,9 @@ public interface IProductRepository
 
     Task<ProductDocument?> GetByIdAsync(string id, CancellationToken cancellationToken);
 
+    /// <summary>Unpaged — backs Inventory Dashboard aggregation (Category/Collection filter joins, Total Products), bounded by the catalog's realistic size, same accepted precedent as InventoryVariantRepository.GetAllUnpagedAsync.</summary>
+    Task<List<(string Id, ProductDocument Data)>> GetAllUnpagedAsync(CancellationToken cancellationToken);
+
     /// <summary>Firestore batch-get (db.GetAllAsync) — one round trip for N ids, not N calls. Used to resolve the homepage's curated Featured/Trending/New-Arrivals-override product-id lists. Missing/nonexistent ids are simply omitted, not an error.</summary>
     Task<List<(string Id, ProductDocument Data)>> GetByIdsAsync(List<string> ids, CancellationToken cancellationToken);
 

@@ -3,6 +3,7 @@ using Vrindaya.Api.Constants;
 using Vrindaya.Api.DTOs.Brand;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Audit;
 
 namespace Vrindaya.Api.Services.Brand;
 
@@ -18,11 +19,13 @@ public class BrandConfigService : IBrandConfigService
 
     private readonly IBrandConfigRepository _repository;
     private readonly IMemoryCache _cache;
+    private readonly IAuditLogService _auditLogService;
 
-    public BrandConfigService(IBrandConfigRepository repository, IMemoryCache cache)
+    public BrandConfigService(IBrandConfigRepository repository, IMemoryCache cache, IAuditLogService auditLogService)
     {
         _repository = repository;
         _cache = cache;
+        _auditLogService = auditLogService;
     }
 
     public async Task<BrandConfigResponse> GetAsync(CancellationToken cancellationToken)
@@ -98,6 +101,7 @@ public class BrandConfigService : IBrandConfigService
 
         await _repository.SetAsync(document, cancellationToken);
         _cache.Remove(AppConstants.BrandConfigCacheKey);
+        try { await _auditLogService.LogUpdateAsync("BrandConfig", null, null, null, AuditLogService.SerializeJson(document), updatedBy, null, null, "Brand configuration updated"); } catch { }
         return ToResponse(document);
     }
 
