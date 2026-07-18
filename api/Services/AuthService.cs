@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Vrindaya.Api.Common.Exceptions;
 using Vrindaya.Api.DTOs.Auth;
 using Vrindaya.Api.Interfaces;
@@ -10,39 +11,103 @@ public class AuthService : IAuthService
     private readonly IAdminUserService _adminUserService;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IAuditLogService _auditLogService;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IAdminUserService adminUserService, IJwtTokenService jwtTokenService, IAuditLogService auditLogService)
+    public AuthService(
+        IAdminUserService adminUserService,
+        IJwtTokenService jwtTokenService,
+        IAuditLogService auditLogService,
+        ILogger<AuthService> logger)
     {
         _adminUserService = adminUserService;
         _jwtTokenService = jwtTokenService;
         _auditLogService = auditLogService;
+        _logger = logger;
     }
 
     public async Task<LoginResponse> LoginAsync(string email, string googleUserId, string name, bool emailVerified, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("[AUTH] Starting login for {Email} (emailVerified: {EmailVerified})", email, emailVerified);
+
         if (!emailVerified)
         {
+            _logger.LogWarning("[AUTH] Login rejected — email not verified for {Email}", email);
             throw new ForbiddenException("Your Google account's email is not verified.");
         }
+        _logger.LogInformation("[AUTH] Email verified OK for {Email}", email);
 
-        var adminUser = await _adminUserService.FindByEmailAsync(email, cancellationToken);
-        if (adminUser == null)
+        AdminUserDocument adminUser;
+        try
         {
-            throw new ForbiddenException("You don't have access to the Admin Portal.");
+            adminUser = await _adminUserService.FindByEmailAsync(email, cancellationToken)
+                ?? throw new ForbiddenException("You don't have access to the Admin Portal.");
+            _logger.LogInformation("[AUTH] Admin found for {Email} — Role: {Role}, IsActive: {IsActive}",
+                email, adminUser.Role, adminUser.IsActive);
+        }
+        catch (ForbiddenException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AUTH] Admin lookup failed for {Email}", email);
+            throw;
         }
 
         if (!adminUser.IsActive)
         {
+            _logger.LogWarning("[AUTH] Login rejected — account deactivated for {Email}", email);
             throw new ForbiddenException("Your account has been deactivated. Contact a Super Admin.");
         }
 
-        await _adminUserService.SyncGoogleProfileAsync(email, googleUserId, name, cancellationToken);
+        try
+        {
+            await _adminUserService.SyncGoogleProfileAsync(email, googleUserId, name, cancellationToken);
+            _logger.LogInformation("[AUTH] Google profile synced for {Email}", email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AUTH] Google profile sync failed for {Email}", email);
+            throw;
+        }
 
         var displayName = string.IsNullOrWhiteSpace(name) ? adminUser.Name : name;
-        var (token, expiresAt) = _jwtTokenService.CreateToken(adminUser);
 
-        try { await _auditLogService.LogLoginAsync(email, displayName, true, "Admin login successful"); } catch { }
+        string token;
+        DateTime expiresAt;
+        try
+        {
+            (token, expiresAt) = _jwtTokenService.CreateToken(adminUser);
+            _logger.LogInformation("[AUTH] AppJwt created for {Email} — expires at {ExpiresAt}", email, expiresAt);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AUTH] JWT creation failed for {Email} — signing key may be misconfigured", email);
+            throw;
+        }
 
+        try
+        {
+            await _auditLogService.LogLoginAsync(email, displayName, true, "Admin login successful");
+            _logger.LogInformation("[AUTH] Audit log written for {Email}", email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[AUTH] Audit log failed for {Email} — login continues", email);
+        }
+
+        AdminUserRole parsedRole;
+        try
+        {
+            parsedRole = Enum.Parse<AdminUserRole>(adminUser.Role);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AUTH] Invalid role '{Role}' for {Email}", adminUser.Role, email);
+            throw;
+        }
+
+        _logger.LogInformation("[AUTH] Login completed successfully for {Email}", email);
         return new LoginResponse
         {
             Token = token,
@@ -52,7 +117,7 @@ public class AuthService : IAuthService
                 Id = adminUser.Id,
                 Name = displayName,
                 Email = adminUser.Email,
-                Role = Enum.Parse<AdminUserRole>(adminUser.Role),
+                Role = parsedRole,
             },
         };
     }

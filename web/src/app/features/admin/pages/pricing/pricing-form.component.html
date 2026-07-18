@@ -1,0 +1,157 @@
+<div class="pf-page">
+
+  <div class="pf-header">
+    <a [routerLink]="BASE" class="pf-back"><i class="bi bi-arrow-left"></i> Pricing</a>
+    <h1 class="pf-title">{{ isEdit() ? 'Edit Pricing' : 'Pricing Calculator' }}</h1>
+    <p class="pf-subtitle">{{ isEdit() ? 'Update pricing record.' : 'Calculate and create a new pricing record.' }}</p>
+  </div>
+
+  @if (saved()) {
+    <div class="pf-success"><i class="bi bi-check-circle-fill"></i> Pricing record {{ isEdit() ? 'updated' : 'created' }}! Redirecting…</div>
+  }
+  @if (formError()) {
+    <div class="pf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ formError() }} <button type="button" (click)="formError.set(null)">×</button></div>
+  }
+
+  @if (loading()) {
+    <div class="pf-loading"><span class="pf-spinner"></span> Loading…</div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+      <!-- Summary Card -->
+      <div class="pf-summary">
+        <div class="pf-summary-card">
+          <span class="pf-summary-label">Total Cost</span>
+          <span class="pf-summary-value">{{ formatCurrency(totalCost()) }}</span>
+          <span class="pf-summary-desc">Cost + all charges + GST</span>
+        </div>
+        <div class="pf-summary-card pf-summary-card--accent">
+          <span class="pf-summary-label">Suggested Price</span>
+          <span class="pf-summary-value">{{ formatCurrency(suggestedSellingPrice()) }}</span>
+          <span class="pf-summary-desc">Total Cost + Desired Profit</span>
+        </div>
+        <div class="pf-summary-card" [class.pf-summary-card--green]="profit() >= 0" [class.pf-summary-card--red]="profit() < 0">
+          <span class="pf-summary-label">Current Listing Price</span>
+          <span class="pf-summary-value">{{ formatCurrency(form.value.listingPrice ?? 0) }}</span>
+          <span class="pf-summary-desc">As entered below</span>
+        </div>
+        <div class="pf-summary-card" [class.pf-summary-card--green]="profit() >= 0" [class.pf-summary-card--red]="profit() < 0">
+          <span class="pf-summary-label">Current Profit</span>
+          <span class="pf-summary-value">{{ formatCurrency(profit()) }}</span>
+          <span class="pf-summary-desc">Listing Price − Total Cost</span>
+        </div>
+        <div class="pf-summary-card" [class.pf-summary-card--green]="marginPercent() >= 0" [class.pf-summary-card--red]="marginPercent() < 0">
+          <span class="pf-summary-label">Margin %</span>
+          <span class="pf-summary-value">{{ marginPercent() }}%</span>
+          <span class="pf-summary-desc">(Profit / Listing Price) × 100</span>
+        </div>
+      </div>
+
+      <!-- Marketplace & Variant -->
+      <div class="pf-section">
+        <h2 class="pf-section-title">Pricing Target</h2>
+        <div class="pf-row">
+          <div class="pf-field pf-field--grow">
+            <label class="pf-label">Inventory Variant ID *</label>
+            <input class="pf-input" [class.pf-input--err]="isInvalid('inventoryVariantId')" formControlName="inventoryVariantId" type="text" placeholder="Enter variant ID" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Marketplace *</label>
+            <select class="pf-input" formControlName="marketplace">
+              <option value="Website">Website</option>
+              <option value="Flipkart">Flipkart</option>
+              <option value="Amazon">Amazon</option>
+            </select>
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Status</label>
+            <select class="pf-input" formControlName="isActive">
+              <option [value]="true">Active</option>
+              <option [value]="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost Components -->
+      <div class="pf-section">
+        <h2 class="pf-section-title">Cost Components</h2>
+        <div class="pf-cost-grid">
+          <div class="pf-field">
+            <label class="pf-label">Cost Price *</label>
+            <input class="pf-input pf-input--currency" [class.pf-input--err]="isInvalid('costPrice')" formControlName="costPrice" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Packing Charge</label>
+            <input class="pf-input pf-input--currency" formControlName="packingCharge" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Shipping Charge</label>
+            <input class="pf-input pf-input--currency" formControlName="shippingCharge" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Advertising Charge</label>
+            <input class="pf-input pf-input--currency" formControlName="advertisingCharge" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Marketplace Commission</label>
+            <input class="pf-input pf-input--currency" formControlName="marketplaceCommission" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Fixed Marketplace Fee</label>
+            <input class="pf-input pf-input--currency" formControlName="fixedMarketplaceFee" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Payment Gateway Charge</label>
+            <input class="pf-input pf-input--currency" formControlName="paymentGatewayCharge" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Other Charges</label>
+            <input class="pf-input pf-input--currency" formControlName="otherCharges" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">GST %</label>
+            <input class="pf-input" formControlName="gstPercentage" type="number" step="0.01" min="0" max="100" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Tiers -->
+      <div class="pf-section">
+        <h2 class="pf-section-title">Price Tiers</h2>
+        <div class="pf-row">
+          <div class="pf-field">
+            <label class="pf-label">MRP *</label>
+            <input class="pf-input pf-input--currency" [class.pf-input--err]="isInvalid('mrp')" formControlName="mrp" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Listing Price *</label>
+            <input class="pf-input pf-input--currency" [class.pf-input--err]="isInvalid('listingPrice')" formControlName="listingPrice" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Offer Price</label>
+            <input class="pf-input pf-input--currency" formControlName="offerPrice" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Desired Profit *</label>
+            <input class="pf-input pf-input--currency" [class.pf-input--err]="isInvalid('desiredProfit')" formControlName="desiredProfit" type="number" step="0.01" min="0" />
+          </div>
+          <div class="pf-field">
+            <label class="pf-label">Currency</label>
+            <input class="pf-input" formControlName="currency" type="text" maxlength="3" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="pf-submit-row">
+        <a [routerLink]="BASE" class="pf-cancel">Cancel</a>
+        <button class="pf-submit" type="submit" [disabled]="saving() || form.invalid">
+          @if (saving()) { Saving… } @else { {{ isEdit() ? 'Save Changes' : 'Create Pricing Record' }} }
+        </button>
+      </div>
+
+    </form>
+  }
+
+</div>

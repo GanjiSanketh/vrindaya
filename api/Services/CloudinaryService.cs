@@ -27,11 +27,31 @@ public partial class CloudinaryService : ICloudinaryService
 
     public CloudinaryService(IOptions<CloudinaryOptions> options, ILogger<CloudinaryService> logger)
     {
+        _logger = logger;
         var opts = options.Value;
+
+        if (string.IsNullOrWhiteSpace(opts.CloudName) ||
+            string.IsNullOrWhiteSpace(opts.ApiKey) ||
+            string.IsNullOrWhiteSpace(opts.ApiSecret))
+        {
+            _logger.LogError(
+                "Cloudinary configuration is missing. CloudName Present: {CloudNamePresent}, ApiKey Present: {ApiKeyPresent}, ApiSecret Present: {ApiSecretPresent}",
+                !string.IsNullOrWhiteSpace(opts.CloudName),
+                !string.IsNullOrWhiteSpace(opts.ApiKey),
+                !string.IsNullOrWhiteSpace(opts.ApiSecret));
+            throw new InvalidOperationException(
+                "Cloudinary configuration is missing. Configure appsettings.Development.json for local development or Render Environment Variables for production.");
+        }
+
+        _logger.LogInformation(
+            "Cloudinary configuration loaded. Cloud Name: {CloudName}, API Key Present: {ApiKeyPresent}, API Secret Present: {ApiSecretPresent}",
+            opts.CloudName,
+            !string.IsNullOrWhiteSpace(opts.ApiKey),
+            !string.IsNullOrWhiteSpace(opts.ApiSecret));
+
         var account = new Account(opts.CloudName, opts.ApiKey, opts.ApiSecret);
         _cloudinary = new Cloudinary(account);
         _cloudinary.Api.Secure = true;
-        _logger = logger;
     }
 
     public async Task<ImageUploadResult> UploadImageAsync(

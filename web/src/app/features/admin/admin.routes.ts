@@ -89,6 +89,26 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/inventory/product-timeline.component').then(m => m.ProductTimelineComponent),
       },
       {
+        path:          'inventory/pricing',
+        loadComponent: () => import('./pages/pricing/pricing-list.component').then(m => m.PricingListComponent),
+      },
+      {
+        path:          'inventory/pricing/new',
+        loadComponent: () => import('./pages/pricing/pricing-form.component').then(m => m.PricingFormComponent),
+      },
+      {
+        path:          'inventory/pricing/:id/edit',
+        loadComponent: () => import('./pages/pricing/pricing-form.component').then(m => m.PricingFormComponent),
+      },
+      {
+        path:          'inventory/pricing/dashboard',
+        loadComponent: () => import('./pages/pricing/pricing-dashboard.component').then(m => m.PricingDashboardComponent),
+      },
+      {
+        path:          'inventory/pricing/:id',
+        loadComponent: () => import('./pages/pricing/pricing-detail.component').then(m => m.PricingDetailComponent),
+      },
+      {
         path:          'inventory/forecast',
         loadComponent: () => import('./pages/inventory/inventory-forecast.component').then(m => m.InventoryForecastComponent),
       },

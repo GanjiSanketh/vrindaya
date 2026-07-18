@@ -2,11 +2,18 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
+import { PricingService } from '../../services/pricing.service';
 import {
   InventoryVariant, StockMovement, MOVEMENT_TYPE_LABELS, MARKETPLACE_TYPES,
   StockMovementType, RECORDABLE_MOVEMENT_TYPES,
 } from '../../models/inventory.model';
+import {
+  ProductPricingSummaryRow, BulkPricingUpdateRequest,
+  BulkOperation, PricingPreviewItem,
+} from '../../models/pricing.model';
 import { APP_ROUTES } from '../../../../core/constants/routes.constants';
+
+type Tab = 'variants' | 'pricing';
 
 interface ColorGroup {
   color: string;
@@ -14,16 +21,17 @@ interface ColorGroup {
 }
 
 @Component({
-  selector:    'app-inventory-detail',
-  standalone:  true,
-  imports:     [ReactiveFormsModule, FormsModule, RouterLink],
+  selector: 'app-inventory-detail',
+  standalone: true,
+  imports: [ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './inventory-detail.component.html',
-  styleUrl:    './inventory-detail.component.css',
+  styleUrl: './inventory-detail.component.css',
 })
 export class InventoryDetailComponent implements OnInit {
   private readonly fb    = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly svc   = inject(InventoryService);
+  private readonly priceSvc = inject(PricingService);
 
   readonly BASE = `/${APP_ROUTES.ADMIN}/inventory`;
   readonly MOVEMENT_TYPE_LABELS = MOVEMENT_TYPE_LABELS;
@@ -31,6 +39,8 @@ export class InventoryDetailComponent implements OnInit {
 
   productId = '';
   productName: string | null = null;
+  readonly activeTab = signal<Tab>('variants');
+
   readonly variants  = signal<InventoryVariant[]>([]);
   readonly movements = signal<StockMovement[]>([]);
   readonly loading   = signal(true);
@@ -57,7 +67,7 @@ export class InventoryDetailComponent implements OnInit {
     criticalStockThreshold: [2, [Validators.required, Validators.min(0)]],
   });
 
-  // ── Inline "Record Movement" (any non-Purchase movement type) ─────────────
+  // ── Inline "Record Movement" ─────────────────────────────────────────────
   readonly recordingVariantId = signal<string | null>(null);
   readonly recordMovementType = signal<StockMovementType>('ManualAdjustment');
   readonly recordQuantity     = signal<number | null>(null);
@@ -65,10 +75,30 @@ export class InventoryDetailComponent implements OnInit {
   readonly recordBusy         = signal(false);
   readonly recordError        = signal<string | null>(null);
 
-  /** StockCorrection asks for the counted total, not a delta — every other type asks for a quantity (Sale/Return/Damage: positive count; ManualAdjustment/Transfer: signed delta). */
   readonly quantityLabel = computed(() =>
     this.recordMovementType() === 'StockCorrection' ? 'Corrected Count' : 'Quantity',
   );
+
+  // ── Pricing tab ──────────────────────────────────────────────────────────
+  readonly pricingData = signal<ProductPricingSummaryRow[]>([]);
+  readonly pricingLoading = signal(false);
+  readonly pricingRecalculating = signal<Set<string>>(new Set());
+
+  // ── Bulk update ──────────────────────────────────────────────────────────
+  readonly selectedPricingIds = signal<Set<string>>(new Set());
+  readonly showBulkUpdate = signal(false);
+  readonly bulkPackingEnabled = signal(false);
+  readonly bulkAdvEnabled = signal(false);
+  readonly bulkProfitEnabled = signal(false);
+  readonly bulkCommissionEnabled = signal(false);
+  readonly bulkOperation = signal<BulkOperation>('IncreasePercent');
+  readonly bulkValue = signal(0);
+  readonly bulkPreviewData = signal<PricingPreviewItem[] | null>(null);
+  readonly bulkPreviewLoading = signal(false);
+  readonly bulkApplying = signal(false);
+  readonly bulkError = signal<string | null>(null);
+
+  readonly selectedCount = computed(() => this.selectedPricingIds().size);
 
   async ngOnInit(): Promise<void> {
     this.productId = this.route.snapshot.paramMap.get('productId') ?? '';
@@ -85,12 +115,115 @@ export class InventoryDetailComponent implements OnInit {
       const page = await this.svc.getMovements(null, 10, { productId: this.productId });
       this.movements.set(page.items);
     } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Could not load this product’s inventory.');
+      this.error.set(err instanceof Error ? err.message : 'Could not load this product\u2019s inventory.');
     } finally {
       this.loading.set(false);
     }
   }
 
+  switchTab(tab: Tab): void {
+    this.activeTab.set(tab);
+    if (tab === 'pricing' && this.pricingData().length === 0 && !this.pricingLoading()) {
+      this.loadPricing();
+    }
+  }
+
+  private async loadPricing(): Promise<void> {
+    this.pricingLoading.set(true);
+    try {
+      this.pricingData.set(await this.priceSvc.getProductPricing(this.productId));
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Could not load pricing data.');
+    } finally {
+      this.pricingLoading.set(false);
+    }
+  }
+
+  async recalculate(pricingId: string): Promise<void> {
+    this.pricingRecalculating.update(s => new Set(s).add(pricingId));
+    try {
+      await this.priceSvc.recalculate(pricingId);
+      this.pricingData.update(rows =>
+        rows.map(r => r.pricingId === pricingId ? { ...r, isOutdated: false } : r),
+      );
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Failed to recalculate.');
+    } finally {
+      this.pricingRecalculating.update(s => { const next = new Set(s); next.delete(pricingId); return next; });
+    }
+  }
+
+  // ── Bulk update actions ──────────────────────────────────────────────────
+
+  toggleSelectPricing(pricingId: string): void {
+    this.selectedPricingIds.update(s => {
+      const next = new Set(s);
+      if (next.has(pricingId)) next.delete(pricingId); else next.add(pricingId);
+      return next;
+    });
+  }
+
+  toggleSelectAll(): void {
+    this.selectedPricingIds.update(s => {
+      if (s.size === this.pricingData().length) return new Set();
+      return new Set(this.pricingData().map(r => r.pricingId));
+    });
+  }
+
+  openBulkUpdate(): void {
+    this.showBulkUpdate.set(true);
+    this.bulkPreviewData.set(null);
+    this.bulkError.set(null);
+  }
+
+  closeBulkUpdate(): void {
+    this.showBulkUpdate.set(false);
+    this.bulkPreviewData.set(null);
+    this.bulkError.set(null);
+  }
+
+  private buildBulkRequest(): BulkPricingUpdateRequest {
+    const req: BulkPricingUpdateRequest = { pricingIds: [...this.selectedPricingIds()] };
+    const op = this.bulkOperation();
+    const val = this.bulkValue();
+    if (this.bulkPackingEnabled()) req.packingCharge = { operation: op, value: val };
+    if (this.bulkAdvEnabled()) req.advertisingCharge = { operation: op, value: val };
+    if (this.bulkProfitEnabled()) req.desiredProfit = { operation: op, value: val };
+    if (this.bulkCommissionEnabled()) req.marketplaceCommission = { operation: op, value: val };
+    return req;
+  }
+
+  async previewBulkUpdate(): Promise<void> {
+    if (this.selectedPricingIds().size === 0) return;
+    this.bulkError.set(null);
+    this.bulkPreviewLoading.set(true);
+    this.bulkPreviewData.set(null);
+    try {
+      const result = await this.priceSvc.bulkPreview(this.buildBulkRequest());
+      this.bulkPreviewData.set(result.items);
+    } catch (err) {
+      this.bulkError.set(err instanceof Error ? err.message : 'Preview failed.');
+    } finally {
+      this.bulkPreviewLoading.set(false);
+    }
+  }
+
+  async applyBulkUpdate(): Promise<void> {
+    this.bulkError.set(null);
+    this.bulkApplying.set(true);
+    try {
+      await this.priceSvc.bulkApply(this.buildBulkRequest());
+      this.closeBulkUpdate();
+      this.selectedPricingIds.set(new Set());
+      await this.loadPricing();
+    } catch (err) {
+      this.bulkError.set(err instanceof Error ? err.message : 'Apply failed.');
+    } finally {
+      this.bulkApplying.set(false);
+    }
+  }
+
+  // ── Form actions ─────────────────────────────────────────────────────────
   startAddVariant(): void {
     this.addingVariant.set(true);
     this.variantFormError.set(null);
@@ -123,8 +256,6 @@ export class InventoryDetailComponent implements OnInit {
         warehouse: null,
         lowStockThreshold: Number(v.lowStockThreshold) || 0,
         criticalStockThreshold: Number(v.criticalStockThreshold) || 0,
-        // Pricing starts blank — configured afterwards via the Pricing
-        // Engine screen (see the "Pricing" link added per variant row).
         purchaseCost: 0,
         transportationCost: 0,
         packagingCost: 0,
@@ -195,7 +326,7 @@ export class InventoryDetailComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+    return `\u20B9${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
   }
 
   formatDate(iso: string): string {

@@ -198,6 +198,13 @@ public static class ServiceCollectionExtensions
         // marketplaces, the primary pricing analysis tool for Vrindaya.
         services.AddScoped<IProfitabilityService, Services.Profitability.ProfitabilityService>();
 
+        // Pricing module — dedicated pricing collection with full CRUD,
+        // per-variant-per-marketplace pricing records, computed actual profit
+        // and margin percentage, and audit trail.
+        services.AddScoped<IPricingRepository, Services.Pricing.PricingRepository>();
+        services.AddScoped<IPricingService, Services.Pricing.PricingService>();
+        services.AddScoped<IPricingHistoryRepository, Services.Pricing.PricingHistoryRepository>();
+
         // Inventory Forecasting — pluggable architecture for future order
         // integration. Replace StockBasedSalesVelocityProvider with an
         // OrderBasedSalesVelocityProvider when Order Management is built.

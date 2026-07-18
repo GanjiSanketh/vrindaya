@@ -14,18 +14,22 @@
     <div class="hbf-loading"><span class="hbf-spinner"></span> Loading…</div>
   } @else {
 
-    @if (saved()) {
-      <div class="hbf-success"><i class="bi bi-check-circle-fill"></i> Pricing saved.</div>
+    @if (savedSignal()) {
+      <div class="hbf-success"><i class="bi bi-check-circle-fill"></i> Saved.</div>
     }
     @if (formError()) {
-      <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ formError() }} <button type="button" (click)="formError.set(null)">×</button></div>
+      <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ formError() }} <button type="button" (click)="formError.set(null)">&times;</button></div>
     }
 
-    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-
-      <div class="hbf-section">
+    <div class="hbf-section">
+      <div class="hbf-section-header">
         <h2 class="hbf-section-title">Shared Costs</h2>
-        <p class="hbf-hint">Base costs shared across every marketplace. Per-marketplace fields below can override Shipping, Packaging, Advertisement, and Misc.</p>
+        <button class="hbf-btn-sm" (click)="saveShared()" [disabled]="saving() || sharedForm.invalid">
+          @if (saving()) { Saving&hellip; } @else { Save }
+        </button>
+      </div>
+      <p class="hbf-hint">Base costs shared across every marketplace. Per-marketplace fields below are stored in the dedicated Pricing collection.</p>
+      <form [formGroup]="sharedForm">
         <div class="hbf-cost-grid">
           <div class="hbf-field">
             <label class="hbf-label">Purchase Cost</label>
@@ -64,106 +68,188 @@
             <input class="hbf-input" formControlName="desiredProfitPercent" type="number" min="0" max="100" step="0.1" />
           </div>
         </div>
+      </form>
+    </div>
+
+    <div class="hbf-section">
+      <h2 class="hbf-section-title">Marketplace Pricing</h2>
+
+      <div class="hbf-tabs">
+        @for (mkt of marketplaces; track mkt; let i = $index) {
+          <button class="hbf-tab" [class.hbf-tab--active]="activeTab() === i" (click)="setActiveTab(i)">
+            {{ mkt }}
+            @if (pricingRecordIds[mkt]) {
+              <span class="hbf-tab-badge hbf-tab-badge--saved">Saved</span>
+            } @else {
+              <span class="hbf-tab-badge hbf-tab-badge--new">New</span>
+            }
+          </button>
+        }
       </div>
 
-      <div class="hbf-section">
-        <h2 class="hbf-section-title">Marketplace Profiles</h2>
+      @if (marketplaceForms[marketplaces[activeTab()]]; as form) {
+        <form [formGroup]="form" class="hbf-tab-content">
+          <div class="hbf-mkt-header">
+            <h3 class="hbf-tab-title">{{ marketplaces[activeTab()] }}</h3>
+            <button class="hbf-btn-sm hbf-btn-primary" (click)="saveActiveMarketplace()" [disabled]="saving() || form.invalid">
+              @if (saving()) { Saving&hellip; } @else { Save {{ marketplaces[activeTab()] }} }
+            </button>
+          </div>
 
-        <div class="hbf-marketplace-grid" formArrayName="marketplaceProfiles">
-          @for (group of profilesArray.controls; track group.value.marketplaceType; let i = $index) {
-            <div class="hbf-marketplace-card" [formGroupName]="i">
-              <h3 class="hbf-marketplace-name">{{ group.value.marketplaceType }}</h3>
+          <div class="hbf-mkt-section">
+            <h4 class="hbf-mkt-subtitle">Cost Components</h4>
+            <div class="hbf-cost-grid">
+              <div class="hbf-field">
+                <label class="hbf-label">Cost Price</label>
+                <input class="hbf-input" formControlName="costPrice" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Packing Charge</label>
+                <input class="hbf-input" formControlName="packingCharge" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Shipping Charge</label>
+                <input class="hbf-input" formControlName="shippingCharge" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Advertising Charge</label>
+                <input class="hbf-input" formControlName="advertisingCharge" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Marketplace Commission</label>
+                <input class="hbf-input" formControlName="marketplaceCommission" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Fixed Marketplace Fee</label>
+                <input class="hbf-input" formControlName="fixedMarketplaceFee" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Payment Gateway Charge</label>
+                <input class="hbf-input" formControlName="paymentGatewayCharge" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Other Charges</label>
+                <input class="hbf-input" formControlName="otherCharges" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">GST (%)</label>
+                <input class="hbf-input" formControlName="gstPercentage" type="number" min="0" max="100" step="0.1" />
+              </div>
+            </div>
+          </div>
 
-              <div class="hbf-mkt-section">
-                <h4 class="hbf-mkt-subtitle">Pricing</h4>
-                <div class="hbf-mkt-row">
-                  <div class="hbf-field">
-                    <label class="hbf-label">MRP</label>
-                    <input class="hbf-input" formControlName="mrp" type="number" min="0" step="0.01" />
-                  </div>
-                  <div class="hbf-field">
-                    <label class="hbf-label">Selling Price</label>
-                    <input class="hbf-input" formControlName="sellingPrice" type="number" min="0" step="0.01" />
-                  </div>
-                </div>
+          <div class="hbf-mkt-section">
+            <h4 class="hbf-mkt-subtitle">Pricing</h4>
+            <div class="hbf-cost-grid">
+              <div class="hbf-field">
+                <label class="hbf-label">Desired Profit</label>
+                <input class="hbf-input" formControlName="desiredProfit" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">MRP</label>
+                <input class="hbf-input" formControlName="mrp" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Listing Price</label>
+                <input class="hbf-input" formControlName="listingPrice" type="number" min="0" step="0.01" />
+              </div>
+              <div class="hbf-field">
+                <label class="hbf-label">Offer Price</label>
+                <input class="hbf-input" formControlName="offerPrice" type="number" min="0" step="0.01" placeholder="Optional" />
+              </div>
+            </div>
+          </div>
+
+          <div class="hbf-summary">
+            <div class="hbf-summary-card">
+              <span class="hbf-summary-label">Total Cost</span>
+              <strong class="hbf-summary-value">{{ formatCurrency(activeComputed().totalCost) }}</strong>
+            </div>
+            <div class="hbf-summary-card">
+              <span class="hbf-summary-label">Suggested Price</span>
+              <strong class="hbf-summary-value">{{ formatCurrency(activeComputed().suggestedSellingPrice) }}</strong>
+            </div>
+            <div class="hbf-summary-card hbf-summary-card--profit">
+              <span class="hbf-summary-label">Profit</span>
+              <strong class="hbf-summary-value">{{ formatCurrency(activeComputed().profit) }}</strong>
+            </div>
+            <div class="hbf-summary-card hbf-summary-card--margin">
+              <span class="hbf-summary-label">Margin</span>
+              <strong class="hbf-summary-value">{{ formatPercent(activeComputed().marginPercent) }}</strong>
+            </div>
+          </div>
+
+          @if (pricingRecordIds[marketplaces[activeTab()]]) {
+            <div class="hbf-mkt-section">
+              <h4 class="hbf-mkt-subtitle">Change Reason</h4>
+              <textarea class="hbf-textarea" formControlName="reason" rows="2" placeholder="Optional reason for this change..."></textarea>
+            </div>
+          }
+
+          <div class="hbf-history-bar">
+            @if (pricingRecordIds[marketplaces[activeTab()]]) {
+              <button type="button" class="hbf-history-toggle" (click)="toggleHistory()">
+                @if (showHistory()) { Hide } @else { View } Pricing History
+              </button>
+            }
+          </div>
+
+          @if (showHistory()) {
+            <div class="hbf-history">
+              <div class="hbf-history-filters">
+                <label class="hbf-history-filter">
+                  <span>From</span>
+                  <input class="hbf-input hbf-input--sm" type="date" [value]="historyFromDate()" (change)="historyFromDate.set($any($event.target).value); filterHistory()" />
+                </label>
+                <label class="hbf-history-filter">
+                  <span>To</span>
+                  <input class="hbf-input hbf-input--sm" type="date" [value]="historyToDate()" (change)="historyToDate.set($any($event.target).value); filterHistory()" />
+                </label>
               </div>
 
-              <div class="hbf-mkt-section">
-                <h4 class="hbf-mkt-subtitle">Marketplace Fees</h4>
-                <div class="hbf-mkt-row">
-                  <div class="hbf-field">
-                    <label class="hbf-label">Commission (%)</label>
-                    <input class="hbf-input" formControlName="commissionPercent" type="number" min="0" max="100" step="0.1" />
-                  </div>
-                  <div class="hbf-field">
-                    <label class="hbf-label">Closing Fee</label>
-                    <input class="hbf-input" formControlName="closingFee" type="number" min="0" step="0.01" />
-                  </div>
+              @if (loadingHistory()) {
+                <div class="hbf-loading"><span class="hbf-spinner"></span> Loading history&hellip;</div>
+              } @else if (historyData().length === 0) {
+                <p class="hbf-history-empty">No pricing history found.</p>
+              } @else {
+                <div class="hbf-timeline">
+                  @for (item of historyData(); track item.id) {
+                    <div class="hbf-timeline-item">
+                      <div class="hbf-timeline-dot"></div>
+                      <div class="hbf-timeline-content">
+                        <div class="hbf-timeline-header">
+                          <span class="hbf-timeline-time">{{ formatDateTime(item.timestamp) }}</span>
+                          <span class="hbf-timeline-user">{{ item.changedBy }}</span>
+                        </div>
+                        <div class="hbf-timeline-changes">
+                          <div class="hbf-timeline-change">
+                            <span class="hbf-change-label">Listing Price</span>
+                            <span class="hbf-change-old">{{ formatCurrency(item.oldListingPrice) }}</span>
+                            <span class="hbf-change-arrow">&rarr;</span>
+                            <span class="hbf-change-new">{{ formatCurrency(item.newListingPrice) }}</span>
+                          </div>
+                          <div class="hbf-timeline-change">
+                            <span class="hbf-change-label">Profit</span>
+                            <span class="hbf-change-old">{{ formatCurrency(item.oldProfit) }}</span>
+                            <span class="hbf-change-arrow">&rarr;</span>
+                            <span class="hbf-change-new">{{ formatCurrency(item.newProfit) }}</span>
+                          </div>
+                        </div>
+                        @if (item.reason && item.reason !== 'No reason provided') {
+                          <div class="hbf-timeline-reason">{{ item.reason }}</div>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
-              </div>
-
-              <div class="hbf-mkt-section">
-                <h4 class="hbf-mkt-subtitle">Cost Overrides <span class="hbf-mkt-hint">(leave blank to use Shared Costs above)</span></h4>
-                <div class="hbf-mkt-row">
-                  <div class="hbf-field">
-                    <label class="hbf-label">Shipping Charge</label>
-                    <input class="hbf-input" formControlName="shippingCharge" type="number" min="0" step="0.01" placeholder="Shared" />
-                  </div>
-                  <div class="hbf-field">
-                    <label class="hbf-label">Packaging Charge</label>
-                    <input class="hbf-input" formControlName="packagingCharge" type="number" min="0" step="0.01" placeholder="Shared" />
-                  </div>
-                </div>
-                <div class="hbf-mkt-row">
-                  <div class="hbf-field">
-                    <label class="hbf-label">Advertisement Cost</label>
-                    <input class="hbf-input" formControlName="advertisementCost" type="number" min="0" step="0.01" placeholder="Shared" />
-                  </div>
-                  <div class="hbf-field">
-                    <label class="hbf-label">Miscellaneous Charges</label>
-                    <input class="hbf-input" formControlName="miscellaneousCharges" type="number" min="0" step="0.01" placeholder="Shared" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="hbf-mkt-section">
-                <h4 class="hbf-mkt-subtitle">Manual Override (Legacy)</h4>
-                <div class="hbf-field">
-                  <label class="hbf-label">Manual Selling Price Override</label>
-                  <input class="hbf-input" formControlName="manualSellingPriceOverride" type="number" min="0" step="0.01" placeholder="Auto (suggested)" />
-                </div>
-              </div>
-
-              @if (computedProfiles()[i]; as c) {
-                <div class="hbf-mkt-section">
-                  <h4 class="hbf-mkt-subtitle">Legacy Computed</h4>
-                  <div class="hbf-result-row"><span>Suggested Price</span><strong>{{ formatCurrency(c.suggestedSellingPrice) }}</strong></div>
-                  <div class="hbf-result-row hbf-result-row--highlight"><span>Selling Price</span><strong>{{ formatCurrency(c.effectiveSellingPrice) }}</strong></div>
-                  <div class="hbf-result-row"><span>Total Cost</span><strong>{{ formatCurrency(c.totalCost) }}</strong></div>
-                  <div class="hbf-result-row"><span>Profit</span><strong>{{ formatCurrency(c.profitAmount) }}</strong></div>
-                  <div class="hbf-result-row"><span>Profit % (Markup)</span><strong>{{ formatPercent(c.profitPercentage) }}</strong></div>
-                  <div class="hbf-result-row"><span>Margin</span><strong>{{ formatPercent(c.margin) }}</strong></div>
-                </div>
-
-                <div class="hbf-mkt-section">
-                  <h4 class="hbf-mkt-subtitle">Extended Pricing</h4>
-                  <div class="hbf-result-row"><span>Expected Settlement</span><strong>{{ formatCurrency(c.expectedSettlement) }}</strong></div>
-                  <div class="hbf-result-row"><span>Net Profit</span><strong>{{ formatCurrency(c.netProfit) }}</strong></div>
-                  <div class="hbf-result-row hbf-result-row--highlight"><span>Margin %</span><strong>{{ formatPercent(c.marginPercentage) }}</strong></div>
-                </div>
+                @if (historyHasMore()) {
+                  <button type="button" class="hbf-btn-sm" (click)="loadMoreHistory()" [disabled]="loadingHistory()">Load More</button>
+                }
               }
             </div>
           }
-        </div>
-      </div>
-
-      <div class="hbf-submit-row">
-        <button class="hbf-submit" type="submit" [disabled]="saving() || form.invalid">
-          @if (saving()) { Saving… } @else { Save Pricing }
-        </button>
-      </div>
-    </form>
-
+        </form>
+      }
+    </div>
   }
-
 </div>

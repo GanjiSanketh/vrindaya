@@ -1,4 +1,5 @@
 using Google.Cloud.Firestore;
+using Vrindaya.Api.Common;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
 
@@ -38,8 +39,8 @@ public class StockMovementRepository : IStockMovementRepository
     {
         var db = _firebaseService.GetFirestoreDb();
         var snapshot = await db.Collection(Collection)
-            .WhereGreaterThanOrEqualTo("createdAt", from)
-            .WhereLessThanOrEqualTo("createdAt", to)
+            .WhereGreaterThanOrEqualTo("createdAt", from.EnsureUtc())
+            .WhereLessThanOrEqualTo("createdAt", to.EnsureUtc())
             .GetSnapshotAsync(cancellationToken);
 
         return snapshot.Documents.Select(d => (d.Id, d.ConvertTo<StockMovementDocument>())).ToList();

@@ -25,11 +25,13 @@ public class GlobalExceptionMiddleware
 
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionMiddleware> _logger;
+    private readonly IWebHostEnvironment _environment;
 
-    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
+    public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger, IWebHostEnvironment environment)
     {
         _next = next;
         _logger = logger;
+        _environment = environment;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -51,22 +53,46 @@ public class GlobalExceptionMiddleware
         }
     }
 
-    private static async Task WriteErrorResponseAsync(HttpContext context, Exception ex)
+    private async Task WriteErrorResponseAsync(HttpContext context, Exception ex)
     {
-        var (statusCode, message) = ex is IHasStatusCode hasStatusCode
-            ? (hasStatusCode.StatusCode, ex.Message)
-            : ((int)HttpStatusCode.InternalServerError, "Unexpected error occurred.");
+        if (ex is IHasStatusCode hasStatusCode)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = hasStatusCode.StatusCode;
+            var response = new ApiErrorResponse
+            {
+                Success = false,
+                Message = ex.Message,
+                TraceId = context.TraceIdentifier,
+            };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, SerializerOptions));
+            return;
+        }
 
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = statusCode;
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-        var response = new ApiErrorResponse
+        if (_environment.IsDevelopment())
         {
-            Success = false,
-            Message = message,
-            TraceId = context.TraceIdentifier,
-        };
-
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response, SerializerOptions));
+            var detail = new
+            {
+                Success = false,
+                Message = ex.Message,
+                ExceptionType = ex.GetType().FullName,
+                StackTrace = ex.ToString(),
+                TraceId = context.TraceIdentifier,
+            };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(detail, SerializerOptions));
+        }
+        else
+        {
+            var response = new ApiErrorResponse
+            {
+                Success = false,
+                Message = "Unexpected error occurred.",
+                TraceId = context.TraceIdentifier,
+            };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, SerializerOptions));
+        }
     }
 }

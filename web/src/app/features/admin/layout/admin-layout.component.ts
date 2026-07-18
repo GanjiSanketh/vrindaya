@@ -36,6 +36,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Categories', path: 'categories', icon: 'bi-grid-3x3-gap', exact: false },
       { label: 'Collections', path: 'collections', icon: 'bi-collection', exact: false },
       { label: 'Inventory', path: 'inventory', icon: 'bi-boxes', exact: false },
+      { label: 'Pricing Dashboard', path: 'inventory/pricing/dashboard', icon: 'bi-speedometer2', exact: true },
+      { label: 'Pricing', path: 'inventory/pricing', icon: 'bi-tags' },
       { label: 'Forecast', path: 'inventory/forecast', icon: 'bi-graph-up' },
       { label: 'Suppliers', path: 'suppliers', icon: 'bi-truck', exact: false },
       { label: 'Flipkart Operations', path: 'flipkart-ops', icon: 'bi-shop' },

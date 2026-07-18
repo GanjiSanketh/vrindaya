@@ -13,9 +13,14 @@
     <div class="hbf-loading"><span class="hbf-spinner"></span> Loading…</div>
   } @else {
 
-    <div class="hbf-main">
+    <div class="hbf-tabs">
+      <button class="hbf-tab" [class.hbf-tab--active]="activeTab() === 'variants'" (click)="switchTab('variants')">Variants</button>
+      <button class="hbf-tab" [class.hbf-tab--active]="activeTab() === 'pricing'" (click)="switchTab('pricing')">Pricing</button>
+    </div>
 
-        <!-- Variants grouped by color -->
+    @if (activeTab() === 'variants') {
+      <div class="hbf-main">
+
         <div class="hbf-section">
           <div class="hbf-section-header-row">
             <h2 class="hbf-section-title">Variants</h2>
@@ -137,7 +142,6 @@
           }
         </div>
 
-        <!-- Movement history -->
         <div class="hbf-section">
           <div class="hbf-section-header-row">
             <h2 class="hbf-section-title">Recent Stock Movements</h2>
@@ -164,8 +168,172 @@
           }
         </div>
 
-    </div>
+      </div>
+    }
 
+    @if (activeTab() === 'pricing') {
+      @if (!showBulkUpdate()) {
+        <div class="hbf-section">
+          <div class="hbf-section-header-row">
+            <h2 class="hbf-section-title">Pricing Summary</h2>
+            @if (selectedCount() > 0) {
+              <button type="button" class="hbf-view-all" (click)="openBulkUpdate()">
+                Bulk Update ({{ selectedCount() }})
+              </button>
+            }
+          </div>
+
+          @if (pricingLoading()) {
+            <div class="hbf-loading"><span class="hbf-spinner"></span> Loading pricing…</div>
+          } @else if (pricingData().length === 0) {
+            <p class="hbf-empty-text">No pricing records found for this product. Configure pricing from the Variants tab.</p>
+          } @else {
+            <table class="hbf-mini-table">
+              <thead>
+                <tr>
+                  <th><input type="checkbox" [checked]="selectedPricingIds().size === pricingData().length && pricingData().length > 0" (change)="toggleSelectAll()" /></th>
+                  <th>Variant</th>
+                  <th>Marketplace</th>
+                  <th>Cost Price</th>
+                  <th>Total Cost</th>
+                  <th>Listing Price</th>
+                  <th>Profit</th>
+                  <th>Margin %</th>
+                  <th>Suggested Price</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of pricingData(); track row.pricingId) {
+                  <tr [class.hbf-row--outdated]="row.isOutdated" [class.hbf-row--selected]="selectedPricingIds().has(row.pricingId)">
+                    <td><input type="checkbox" [checked]="selectedPricingIds().has(row.pricingId)" (change)="toggleSelectPricing(row.pricingId)" /></td>
+                    <td>
+                      <a [routerLink]="BASE + '/variants/' + row.inventoryVariantId + '/pricing'">
+                        {{ row.color }} / {{ row.size }}
+                      </a>
+                      <span class="hbf-dim">({{ row.sku }})</span>
+                    </td>
+                    <td>{{ row.marketplace }}</td>
+                    <td>{{ formatCurrency(row.costPrice) }}</td>
+                    <td>{{ formatCurrency(row.totalCost) }}</td>
+                    <td><strong>{{ formatCurrency(row.listingPrice) }}</strong></td>
+                    <td>{{ formatCurrency(row.actualProfit) }}</td>
+                    <td>{{ row.marginPercentage.toFixed(2) }}%</td>
+                    <td>{{ formatCurrency(row.suggestedSellingPrice) }}</td>
+                    <td>
+                      @if (row.isOutdated) {
+                        <div class="hbf-outdated-warning">
+                          <span class="hbf-outdated-label">Outdated</span>
+                          <button class="hbf-btn-xs" (click)="recalculate(row.pricingId)" [disabled]="pricingRecalculating().has(row.pricingId)">
+                            @if (pricingRecalculating().has(row.pricingId)) { Recalculating… } @else { Recalculate }
+                          </button>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      }
+
+      @if (showBulkUpdate()) {
+        <div class="hbf-section">
+          <div class="hbf-section-header-row">
+            <h2 class="hbf-section-title">Bulk Update Pricing</h2>
+            <button type="button" class="hbf-view-all" (click)="closeBulkUpdate()">Cancel</button>
+          </div>
+          <p class="hbf-hint">{{ selectedCount() }} pricing record(s) selected.</p>
+
+          @if (bulkError()) {
+            <div class="hbf-error"><i class="bi bi-exclamation-circle-fill"></i> {{ bulkError() }} <button type="button" (click)="bulkError.set(null)">&times;</button></div>
+          }
+
+          <div class="hbf-bulk-fields">
+            <div class="hbf-bulk-field">
+              <label class="hbf-bulk-toggle">
+                <input type="checkbox" [checked]="bulkPackingEnabled()" (change)="bulkPackingEnabled.set($any($event.target).checked)" />
+                Packing Charge
+              </label>
+            </div>
+            <div class="hbf-bulk-field">
+              <label class="hbf-bulk-toggle">
+                <input type="checkbox" [checked]="bulkAdvEnabled()" (change)="bulkAdvEnabled.set($any($event.target).checked)" />
+                Advertising Charge
+              </label>
+            </div>
+            <div class="hbf-bulk-field">
+              <label class="hbf-bulk-toggle">
+                <input type="checkbox" [checked]="bulkProfitEnabled()" (change)="bulkProfitEnabled.set($any($event.target).checked)" />
+                Desired Profit
+              </label>
+            </div>
+            <div class="hbf-bulk-field">
+              <label class="hbf-bulk-toggle">
+                <input type="checkbox" [checked]="bulkCommissionEnabled()" (change)="bulkCommissionEnabled.set($any($event.target).checked)" />
+                Commission
+              </label>
+            </div>
+          </div>
+
+          <div class="hbf-bulk-controls">
+            <select class="hbf-input hbf-input--inline" [value]="bulkOperation()" (change)="bulkOperation.set($any($event.target).value)">
+              <option value="IncreasePercent">Increase by %</option>
+              <option value="DecreasePercent">Decrease by %</option>
+              <option value="FixedAmount">Set Fixed Amount</option>
+            </select>
+            <input class="hbf-input hbf-input--inline" type="number" min="0" step="0.01" [value]="bulkValue()" (change)="bulkValue.set(+($any($event.target).value))" placeholder="Value" />
+            <button class="hbf-submit" (click)="previewBulkUpdate()" [disabled]="bulkPreviewLoading() || selectedCount() === 0">
+              @if (bulkPreviewLoading()) { Computing… } @else { Preview }
+            </button>
+          </div>
+
+          @if (bulkPreviewData(); as preview) {
+            <div class="hbf-bulk-preview">
+              <h3 class="hbf-bulk-preview-title">Preview Changes</h3>
+              <table class="hbf-mini-table">
+                <thead>
+                  <tr>
+                    <th>Marketplace</th>
+                    @if (bulkPackingEnabled()) { <th>Packing (curr &rarr; new)</th> }
+                    @if (bulkAdvEnabled()) { <th>Adv (curr &rarr; new)</th> }
+                    @if (bulkProfitEnabled()) { <th>Profit (curr &rarr; new)</th> }
+                    @if (bulkCommissionEnabled()) { <th>Comm (curr &rarr; new)</th> }
+                    <th>Total Cost</th>
+                    <th>Listing Price</th>
+                    <th>Profit</th>
+                    <th>Profit &Delta;</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of preview; track item.pricingId) {
+                    <tr>
+                      <td>{{ item.marketplace }}</td>
+                      @if (bulkPackingEnabled()) { <td class="hbf-cell-diff">{{ formatCurrency(item.currentPackingCharge) }} &rarr; {{ formatCurrency(item.newPackingCharge!) }}</td> }
+                      @if (bulkAdvEnabled()) { <td class="hbf-cell-diff">{{ formatCurrency(item.currentAdvertisingCharge) }} &rarr; {{ formatCurrency(item.newAdvertisingCharge!) }}</td> }
+                      @if (bulkProfitEnabled()) { <td class="hbf-cell-diff">{{ formatCurrency(item.currentDesiredProfit) }} &rarr; {{ formatCurrency(item.newDesiredProfit!) }}</td> }
+                      @if (bulkCommissionEnabled()) { <td class="hbf-cell-diff">{{ formatCurrency(item.currentMarketplaceCommission) }} &rarr; {{ formatCurrency(item.newMarketplaceCommission!) }}</td> }
+                      <td>{{ formatCurrency(item.currentTotalCost) }} &rarr; {{ formatCurrency(item.newTotalCost) }}</td>
+                      <td class="hbf-cell--same">{{ formatCurrency(item.newListingPrice) }}</td>
+                      <td>{{ formatCurrency(item.currentProfit) }} &rarr; {{ formatCurrency(item.newProfit) }}</td>
+                      <td [class.hbf-cell--positive]="item.profitDifference >= 0" [class.hbf-cell--negative]="item.profitDifference < 0">
+                        {{ item.profitDifference >= 0 ? '+' : '' }}{{ formatCurrency(item.profitDifference) }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              <div class="hbf-bulk-confirm">
+                <p class="hbf-bulk-confirm-text">This will update {{ preview.length }} pricing record(s). Listing price is never overwritten.</p>
+                <button class="hbf-submit" (click)="applyBulkUpdate()" [disabled]="bulkApplying()">
+                  @if (bulkApplying()) { Applying… } @else { Confirm &amp; Apply }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
   }
-
 </div>

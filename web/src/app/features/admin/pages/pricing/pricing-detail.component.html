@@ -1,0 +1,164 @@
+<div class="pd-page">
+
+  <div class="pd-header">
+    <a [routerLink]="BASE" class="pd-back"><i class="bi bi-arrow-left"></i> Pricing</a>
+    @if (row(); as r) {
+      <div class="pd-title-row">
+        <div>
+          <h1 class="pd-title">{{ r.marketplace }} Pricing</h1>
+          <p class="pd-subtitle">Variant: {{ r.inventoryVariantId }}</p>
+        </div>
+        <div class="pd-header-actions">
+          <button class="btn-outline-sm" (click)="print()" title="Print"><i class="bi bi-printer"></i></button>
+          <button class="btn-outline-sm" (click)="copyId()" title="Copy ID"><i class="bi bi-clipboard"></i></button>
+          <a [routerLink]="BASE + '/' + r.id + '/edit'" class="btn-primary-sm"><i class="bi bi-pencil"></i> Edit</a>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="pd-skeleton">
+      <div class="pd-skel-grid">
+        <div class="pd-skel-section">
+          <div class="pd-skel-title shimmer"></div>
+          @for (_ of [1,2,3,4,5,6,7,8,9]; track $index) {
+            <div class="pd-skel-row"><div class="shimmer" style="width:60%;height:12px"></div><div class="shimmer" style="width:30%;height:12px"></div></div>
+          }
+        </div>
+        <div class="pd-skel-section">
+          <div class="pd-skel-title shimmer"></div>
+          @for (_ of [1,2,3,4,5,6]; track $index) {
+            <div class="pd-skel-row"><div class="shimmer" style="width:50%;height:12px"></div><div class="shimmer" style="width:25%;height:12px"></div></div>
+          }
+        </div>
+      </div>
+    </div>
+  } @else if (error(); as e) {
+    <app-empty-state type="error" [message]="e ?? undefined" (retry)="ngOnInit()" />
+  } @else if (row(); as r) {
+
+    <div class="pd-status-bar">
+      <span class="pd-badge" [class.pd-badge--live]="r.isActive" [class.pd-badge--off]="!r.isActive">
+        {{ r.isActive ? 'Active' : 'Inactive' }}
+      </span>
+      <span class="pd-currency">{{ r.currency }}</span>
+    </div>
+
+    <div class="pd-grid">
+      <div class="pd-section">
+        <h2 class="pd-section-title">Cost Components</h2>
+        <div class="pd-info-row"><span>Cost Price</span><strong>{{ formatCurrency(r.costPrice) }}</strong></div>
+        <div class="pd-info-row"><span>Packing Charge</span><strong>{{ formatCurrency(r.packingCharge) }}</strong></div>
+        <div class="pd-info-row"><span>Shipping Charge</span><strong>{{ formatCurrency(r.shippingCharge) }}</strong></div>
+        <div class="pd-info-row"><span>Advertising Charge</span><strong>{{ formatCurrency(r.advertisingCharge) }}</strong></div>
+        <div class="pd-info-row"><span>Marketplace Commission</span><strong>{{ formatCurrency(r.marketplaceCommission) }}</strong></div>
+        <div class="pd-info-row"><span>Fixed Marketplace Fee</span><strong>{{ formatCurrency(r.fixedMarketplaceFee) }}</strong></div>
+        <div class="pd-info-row"><span>Payment Gateway Charge</span><strong>{{ formatCurrency(r.paymentGatewayCharge) }}</strong></div>
+        <div class="pd-info-row"><span>Other Charges</span><strong>{{ formatCurrency(r.otherCharges) }}</strong></div>
+        <div class="pd-info-row"><span>GST %</span><strong>{{ r.gstPercentage }}%</strong></div>
+      </div>
+
+      <div class="pd-section">
+        <h2 class="pd-section-title">Price Tiers</h2>
+        <div class="pd-info-row"><span>MRP</span><strong>{{ formatCurrency(r.mrp) }}</strong></div>
+        <div class="pd-info-row"><span>Listing Price</span><strong>{{ formatCurrency(r.listingPrice) }}</strong></div>
+        <div class="pd-info-row"><span>Offer Price</span><strong>{{ r.offerPrice ? formatCurrency(r.offerPrice) : '\u2014' }}</strong></div>
+        <div class="pd-info-row"><span>Suggested Selling Price</span><strong>{{ formatCurrency(r.suggestedSellingPrice) }}</strong></div>
+
+        <h2 class="pd-section-title pd-section-title--alt">Profitability</h2>
+        <div class="pd-info-row"><span>Desired Profit</span><strong>{{ formatCurrency(r.desiredProfit) }}</strong></div>
+        <div class="pd-info-row">
+          <span>Actual Profit</span>
+          <strong [class.pd-positive]="r.actualProfit > 0" [class.pd-negative]="r.actualProfit < 0">{{ formatCurrency(r.actualProfit) }}</strong>
+        </div>
+        <div class="pd-info-row">
+          <span>Margin %</span>
+          <strong [class.pd-positive]="r.marginPercentage > 0" [class.pd-negative]="r.marginPercentage < 0">{{ r.marginPercentage }}%</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Recommendations ── -->
+    @if (recsLoading()) {
+      <div class="pd-loading pd-recs-loading"><span class="pd-spinner"></span> Analysing\u2026</div>
+    } @else if (recsError(); as e) {
+      <div class="pd-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ e }}</div>
+    } @else if (recs(); as rec) {
+      <div class="rec-section">
+        <div class="rec-header">
+          <h2 class="pd-section-title">Intelligent Recommendations</h2>
+          <span class="rec-health rec-health--{{ rec.overallHealth }}">
+            @switch (rec.overallHealth) {
+              @case ('Healthy')     { <i class="bi bi-check-circle-fill"></i> Healthy }
+              @case ('Review')      { <i class="bi bi-exclamation-circle-fill"></i> Review }
+              @case ('ActionRequired') { <i class="bi bi-x-circle-fill"></i> Action Required }
+            }
+          </span>
+        </div>
+
+        <div class="rec-summary">
+          <div class="rec-summary-row">
+            <span class="rec-summary-label">Total Cost</span>
+            <span class="rec-summary-value">{{ formatCurrency(rec.summary.totalCost) }}</span>
+          </div>
+          <div class="rec-summary-row">
+            <span class="rec-summary-label">Listing Price</span>
+            <span class="rec-summary-value">{{ formatCurrency(rec.summary.listingPrice) }}</span>
+          </div>
+          <div class="rec-summary-row">
+            <span class="rec-summary-label">Actual Profit</span>
+            <span class="rec-summary-value" [class.rec-positive]="rec.summary.actualProfit > 0" [class.rec-negative]="rec.summary.actualProfit < 0">{{ formatCurrency(rec.summary.actualProfit) }}</span>
+          </div>
+          <div class="rec-summary-row">
+            <span class="rec-summary-label">Margin</span>
+            <span class="rec-summary-value" [class.rec-positive]="rec.summary.marginPercentage > 0" [class.rec-negative]="rec.summary.marginPercentage < 0">{{ rec.summary.marginPercentage }}%</span>
+          </div>
+          <div class="rec-summary-row">
+            <span class="rec-summary-label">Profit Target</span>
+            <span class="rec-summary-value">{{ formatCurrency(rec.summary.targetProfitMin) }} \u2013 {{ formatCurrency(rec.summary.targetProfitMax) }}</span>
+          </div>
+          <div class="rec-summary-row">
+            <span class="rec-summary-label">Suggested Price</span>
+            <span class="rec-summary-value rec-suggested">{{ formatCurrency(rec.summary.suggestedListingPrice) }}</span>
+          </div>
+          <div class="rec-summary-row">
+            <span class="rec-summary-label">Gap to Target</span>
+            <span class="rec-summary-value" [class.rec-negative]="rec.summary.profitToTarget < 0">{{ formatCurrency(rec.summary.profitToTarget) }}</span>
+          </div>
+        </div>
+
+        @for (r of rec.recommendations; track r.type) {
+          <div class="rec-card rec-card--{{ r.severity }}">
+            <div class="rec-card-icon">
+              @switch (r.severity) {
+                @case ('Critical') { <i class="bi bi-x-circle-fill"></i> }
+                @case ('Warning')  { <i class="bi bi-exclamation-triangle-fill"></i> }
+                @case ('Info')     { <i class="bi bi-info-circle-fill"></i> }
+              }
+            </div>
+            <div class="rec-card-body">
+              <span class="rec-card-title">{{ r.title }}</span>
+              <p class="rec-card-msg">{{ r.message }}</p>
+              @if (r.suggestedAction) {
+                <p class="rec-card-action"><i class="bi bi-lightbulb"></i> {{ r.suggestedAction }}</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="pd-section pd-section--full">
+      <h2 class="pd-section-title">Metadata</h2>
+      <div class="pd-meta">
+        <div class="pd-info-row"><span>Created By</span><strong>{{ r.createdBy }}</strong></div>
+        <div class="pd-info-row"><span>Updated By</span><strong>{{ r.updatedBy }}</strong></div>
+        <div class="pd-info-row"><span>Created At</span><strong>{{ formatDateTime(r.createdAt) }}</strong></div>
+        <div class="pd-info-row"><span>Updated At</span><strong>{{ formatDateTime(r.updatedAt) }}</strong></div>
+      </div>
+    </div>
+
+  }
+
+</div>

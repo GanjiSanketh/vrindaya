@@ -30,8 +30,8 @@ public class AuditLogRepository : IAuditLogRepository
     {
         var db = _firebaseService.GetFirestoreDb();
         var snapshot = await db.Collection(Collection)
-            .WhereGreaterThanOrEqualTo("performedAt", from)
-            .WhereLessThanOrEqualTo("performedAt", to)
+            .WhereGreaterThanOrEqualTo("performedAt", from.EnsureUtc())
+            .WhereLessThanOrEqualTo("performedAt", to.EnsureUtc())
             .OrderByDescending("performedAt")
             .GetSnapshotAsync(cancellationToken);
 
@@ -53,8 +53,8 @@ public class AuditLogRepository : IAuditLogRepository
     {
         var db = _firebaseService.GetFirestoreDb();
         var snapshot = await db.Collection(Collection)
-            .WhereGreaterThanOrEqualTo("performedAt", from)
-            .WhereLessThanOrEqualTo("performedAt", to)
+            .WhereGreaterThanOrEqualTo("performedAt", from.EnsureUtc())
+            .WhereLessThanOrEqualTo("performedAt", to.EnsureUtc())
             .Count()
             .GetSnapshotAsync(cancellationToken);
 

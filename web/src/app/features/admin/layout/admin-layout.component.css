@@ -278,7 +278,9 @@
 .al-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: auto;
   padding: 1.75rem 2rem;
+  min-width: 0;
 }
 
 /* ── Overlay ── */

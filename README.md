@@ -265,6 +265,37 @@ guide, including a non-Firebase-configured smoke test and troubleshooting:
    for the full accounting of what's implemented versus what this implies
    for real campaigns.
 
+## Cloudinary Setup
+
+Image uploads (product images, homepage banners, marketing assets) use
+[Cloudinary](https://cloudinary.com) for storage and delivery.
+
+1. Create a Cloudinary account and note your **Cloud Name**, **API Key**,
+   and **API Secret** from the Cloudinary Dashboard.
+2. **Local development**: set the values in
+   `api/appsettings.Development.json` (git-ignored):
+   ```json
+   "Cloudinary": {
+     "CloudName": "your_cloud_name",
+     "ApiKey": "your_api_key",
+     "ApiSecret": "your_api_secret"
+   }
+   ```
+3. **Production (Render)**: set the following environment variables in the
+   Render dashboard — they automatically override the empty defaults in
+   `appsettings.json`:
+   - `Cloudinary__CloudName`
+   - `Cloudinary__ApiKey`
+   - `Cloudinary__ApiSecret`
+
+   No code changes are needed between environments; ASP.NET Core's
+   configuration pipeline reads environment variables (double-underscore
+   convention) with higher priority than `appsettings.json`.
+
+The API validates these values at service construction time and throws a
+clear `InvalidOperationException` if any are missing, preventing opaque
+SDK errors.
+
 ## Deployment Overview
 
 | App | Platform | Notes |
@@ -284,6 +315,7 @@ convention (these override the matching JSON section automatically).
 | Section | Variables | Consumed by |
 | --- | --- | --- |
 | Firebase | `FIREBASE_SERVICE_ACCOUNT_JSON` (production; the service account key's full JSON) or `Firebase__ServiceAccountPath` (optional, local dev only — see [Firebase Setup](#firebase-setup)) | `FirebaseService` → `CampaignDeliveryWorker` |
+| Cloudinary | `Cloudinary__CloudName`, `Cloudinary__ApiKey`, `Cloudinary__ApiSecret` | `CloudinaryService` (image upload/replace/delete) |
 | WhatsApp | `WhatsApp__AccessToken`, `WhatsApp__PhoneNumberId`, `WhatsApp__BusinessAccountId`, `WhatsApp__VerifyToken`, `WhatsApp__ApiVersion` | `MetaWhatsAppProvider`, `WhatsAppService` |
 | CampaignDelivery | `CampaignDelivery__BatchSize` (default 20), `CampaignDelivery__PollingIntervalSeconds` (default 5) | `CampaignDeliveryWorker` |
 | Cors | `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, ... | `AddCorsPolicy()` |

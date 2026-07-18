@@ -16,9 +16,9 @@ export const MOVEMENT_TYPE_LABELS: Record<StockMovementType, string> = {
 /** Every RecordStockMovementRequest-eligible type — Purchase is excluded, it stays exclusively driven by the Purchase Register. */
 export const RECORDABLE_MOVEMENT_TYPES: StockMovementType[] = ['Sale', 'Return', 'Damage', 'ManualAdjustment', 'StockCorrection', 'Transfer'];
 
-export type MarketplaceType = 'Website' | 'Flipkart' | 'Amazon';
+export type MarketplaceType = 'Website' | 'Flipkart' | 'Amazon' | 'Myntra' | 'Ajio';
 
-export const MARKETPLACE_TYPES: MarketplaceType[] = ['Website', 'Flipkart', 'Amazon'];
+export const MARKETPLACE_TYPES: MarketplaceType[] = ['Website', 'Flipkart', 'Amazon', 'Myntra', 'Ajio'];
 
 /** Mirrors the backend's MarketplaceProfileResponse — one per marketplace, nested inside InventoryVariant. */
 export interface MarketplaceProfile {

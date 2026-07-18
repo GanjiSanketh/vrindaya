@@ -1,0 +1,170 @@
+<div class="dash-page">
+
+  <div class="dash-header">
+    <div>
+      <h1 class="dash-title">Pricing Dashboard</h1>
+      <p class="dash-welcome">Profit, margin, and pricing health across all marketplaces.</p>
+    </div>
+    <div class="dash-actions">
+      <a [routerLink]="BASE" class="btn-add">
+        <i class="bi bi-tags"></i> All Pricing Records
+      </a>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="dash-skeleton">
+      <div class="dash-skel-stats">
+        @for (_ of [1,2,3,4,5,6]; track $index) {
+          <div class="dash-skel-card"><div class="shimmer" style="width:48px;height:48px;border-radius:10px"></div><div style="flex:1"><div class="shimmer" style="width:60%;height:20px;margin-bottom:6px"></div><div class="shimmer" style="width:40%;height:12px"></div></div></div>
+        }
+      </div>
+      <div class="dash-skel-extreme">
+        <div class="dash-skel-card"><div class="shimmer" style="width:100%;height:60px;border-radius:8px"></div></div>
+        <div class="dash-skel-card"><div class="shimmer" style="width:100%;height:60px;border-radius:8px"></div></div>
+      </div>
+      <div class="dash-skel-charts">
+        @for (_ of [1,2,3,4]; track $index) {
+          <div class="dash-skel-card dash-skel-chart"><div class="shimmer" style="width:50%;height:18px;margin-bottom:1rem"></div><div class="shimmer" style="width:100%;height:200px;border-radius:4px"></div></div>
+        }
+      </div>
+    </div>
+  } @else if (error()) {
+    <app-empty-state type="error" [message]="error() ?? undefined" (retry)="load()" />
+  } @else if (data(); as d) {
+
+    <div class="dash-stats">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--profit"><i class="bi bi-cash-stack"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatCurrency1(d.averageProfit) }}</span>
+          <span class="stat-label">Average Profit</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--trend"><i class="bi bi-percent"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ formatPct(d.averageMargin) }}</span>
+          <span class="stat-label">Average Margin</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--low-stock"><i class="bi bi-arrow-down-short"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.productsBelowTargetProfit }}</span>
+          <span class="stat-label">Below Target Profit</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--missing"><i class="bi bi-exclamation-diamond"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.productsWithNegativeProfit }}</span>
+          <span class="stat-label">Negative Profit</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--critical"><i class="bi bi-x-circle"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.productsWithoutPricing }}</span>
+          <span class="stat-label">Without Pricing</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--archived"><i class="bi bi-clock-history"></i></div>
+        <div class="stat-body">
+          <span class="stat-value">{{ d.productsWithOutdatedPricing }}</span>
+          <span class="stat-label">Outdated Pricing</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="extreme-grid">
+      @if (d.highestProfitProduct; as hp) {
+        <div class="extreme-card extreme-card--high">
+          <div class="extreme-icon"><i class="bi bi-arrow-up-circle-fill"></i></div>
+          <div class="extreme-body">
+            <span class="extreme-label">Highest Profit</span>
+            <span class="extreme-value">{{ formatCurrency1(hp.actualProfit) }}</span>
+            <span class="extreme-detail">{{ hp.marketplace }} &#8212; {{ hp.color }} / {{ hp.size }} ({{ hp.sku }})</span>
+            <span class="extreme-sub">Margin {{ formatPct(hp.marginPercentage) }} &#183; Listing {{ formatCurrency(hp.listingPrice) }}</span>
+          </div>
+        </div>
+      }
+      @if (d.lowestProfitProduct; as lp) {
+        <div class="extreme-card extreme-card--low">
+          <div class="extreme-icon"><i class="bi bi-arrow-down-circle-fill"></i></div>
+          <div class="extreme-body">
+            <span class="extreme-label">Lowest Profit</span>
+            <span class="extreme-value">{{ formatCurrency1(lp.actualProfit) }}</span>
+            <span class="extreme-detail">{{ lp.marketplace }} &#8212; {{ lp.color }} / {{ lp.size }} ({{ lp.sku }})</span>
+            <span class="extreme-sub">Margin {{ formatPct(lp.marginPercentage) }} &#183; Listing {{ formatCurrency(lp.listingPrice) }}</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3 class="chart-card-title">Profit Distribution</h3>
+        <app-chart type="bar" datasetLabel="Products" color="#0f6f84" [labels]="bucketLabels(d.profitDistribution)" [data]="bucketValues(d.profitDistribution)" />
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title">Margin Distribution</h3>
+        <app-chart type="bar" datasetLabel="Products" color="#9b4fe0" [labels]="bucketLabels(d.marginDistribution)" [data]="bucketValues(d.marginDistribution)" />
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title">Marketplace Count</h3>
+        <app-chart type="doughnut" datasetLabel="Products" [labels]="mkLabels(d.marketplaceComparison)" [data]="mkCounts(d.marketplaceComparison)" />
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title">Avg Margin by Marketplace</h3>
+        <app-chart type="bar" datasetLabel="Avg Margin %" color="#22a34a" [labels]="mkLabels(d.marketplaceComparison)" [data]="mkAvgMargins(d.marketplaceComparison)" />
+      </div>
+    </div>
+
+    @if (d.marketplaceComparison.length > 0) {
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <h2 class="dash-section-title">Marketplace Breakdown</h2>
+        </div>
+        <div class="recent-table-wrap">
+          <table class="recent-table">
+            <thead>
+              <tr>
+                <th>Marketplace</th>
+                <th>Products</th>
+                <th>Total Profit</th>
+                <th>Avg Profit</th>
+                <th>Avg Margin</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of d.marketplaceComparison; track m.marketplace) {
+                <tr>
+                  <td><span class="mk-badge">{{ m.marketplace }}</span></td>
+                  <td>{{ m.count }}</td>
+                  <td>{{ formatCurrency1(m.totalProfit) }}</td>
+                  <td>{{ formatCurrency1(m.averageProfit) }}</td>
+                  <td>{{ formatPct(m.averageMargin) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (d.top20ProfitableProducts.length > 0) {
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <h2 class="dash-section-title">Top 20 Profitable Products</h2>
+        </div>
+        <div class="top20-chart">
+          <app-chart type="horizontalBar" datasetLabel="Profit (\u20B9)" color="#22a34a" [labels]="top20Labels(d.top20ProfitableProducts)" [data]="top20Values(d.top20ProfitableProducts)" />
+        </div>
+      </div>
+    }
+
+  }
+
+</div>
