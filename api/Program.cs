@@ -1,15 +1,13 @@
 using Serilog;
 using Vrindaya.Api.Constants;
 using Vrindaya.Api.Extensions;
+using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Scripts;
 using Vrindaya.Api.Services.Admin;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Logging ──────────────────────────────────────────────────────────────────
-// Serilog replaces the default provider entirely and reads its configuration
-// from appsettings.*.json ("Serilog" section), so log levels and sinks are
-// environment-specific without touching this file.
 builder.Host.UseSerilog((context, services, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
@@ -52,9 +50,16 @@ if (args.Length > 0 && args[0] == "migrate-legacy-images")
     return;
 }
 
-// ── RBAC bootstrap — idempotent; a no-op on every boot after the first
-// (see AdminUserSeeder). Guarantees there's always at least one SuperAdmin
-// who can sign in, even against a brand-new Firestore database. ───────────
+// ── Startup validation — fail fast if required env vars are missing ───────────
+ValidateRequiredConfiguration(app.Services);
+
+// ── Eagerly initialize singletons that touch the network, so the first
+// real request doesn't pay for cold-start + JWKS download + Firestore init
+// all in the same response. Non-fatal if any fails — the first request will
+// retry naturally. ─────────────────────────────────────────────────────────────
+EagerInitialize(app.Services);
+
+// ── RBAC bootstrap — idempotent; a no-op on every boot after the first ───
 await AdminUserSeeder.SeedInitialSuperAdminAsync(app.Services);
 
 // ── Request pipeline ──────────────────────────────────────────────────────────
@@ -89,3 +94,82 @@ app.MapControllers();
 app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();
+
+// ── Startup helpers ────────────────────────────────────────────────────────────
+
+// Validates every required configuration value at startup. Throws on the
+// first missing value so the app crashes immediately with a clear message
+// instead of producing a 504 at runtime.
+static void ValidateRequiredConfiguration(IServiceProvider services)
+{
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var errors = new List<string>();
+
+    // Firebase
+    var firebaseOptions = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Vrindaya.Api.Configuration.FirebaseOptions>>();
+    if (string.IsNullOrWhiteSpace(firebaseOptions.Value.ProjectId))
+        errors.Add("Firebase:ProjectId is missing. Set Firebase__ProjectId or FIREBASE_SERVICE_ACCOUNT_JSON.");
+    if (string.IsNullOrWhiteSpace(firebaseOptions.Value.ServiceAccountJson) && string.IsNullOrWhiteSpace(firebaseOptions.Value.ServiceAccountPath))
+        errors.Add("Firebase credentials are missing. Set FIREBASE_SERVICE_ACCOUNT_JSON or Firebase:ServiceAccountPath.");
+
+    // JWT
+    var jwtOptions = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Vrindaya.Api.Configuration.JwtOptions>>();
+    if (string.IsNullOrWhiteSpace(jwtOptions.Value.SigningKey))
+        errors.Add("Jwt:SigningKey is missing. Set Jwt__SigningKey (minimum 32 characters).");
+    else if (jwtOptions.Value.SigningKey.Length < 32)
+        errors.Add($"Jwt:SigningKey is too short ({jwtOptions.Value.SigningKey.Length} chars). Minimum 32 characters required for HMAC-SHA256.");
+    if (string.IsNullOrWhiteSpace(jwtOptions.Value.Issuer))
+        errors.Add("Jwt:Issuer is missing. Set Jwt__Issuer.");
+    if (string.IsNullOrWhiteSpace(jwtOptions.Value.Audience))
+        errors.Add("Jwt:Audience is missing. Set Jwt__Audience.");
+
+    // Cloudinary
+    var cloudinaryOptions = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Vrindaya.Api.Configuration.CloudinaryOptions>>();
+    if (string.IsNullOrWhiteSpace(cloudinaryOptions.Value.CloudName))
+        errors.Add("Cloudinary:CloudName is missing. Set Cloudinary__CloudName.");
+    if (string.IsNullOrWhiteSpace(cloudinaryOptions.Value.ApiKey))
+        errors.Add("Cloudinary:ApiKey is missing. Set Cloudinary__ApiKey.");
+    if (string.IsNullOrWhiteSpace(cloudinaryOptions.Value.ApiSecret))
+        errors.Add("Cloudinary:ApiSecret is missing. Set Cloudinary__ApiSecret.");
+
+    if (errors.Count > 0)
+    {
+        foreach (var err in errors)
+            logger.LogCritical("[STARTUP] {Error}", err);
+        throw new InvalidOperationException(
+            $"Required configuration values are missing. Details have been logged.{Environment.NewLine}{string.Join(Environment.NewLine, errors)}");
+    }
+
+    logger.LogInformation("[STARTUP] All required configuration values present.");
+}
+
+// Eagerly initializes network-bound singletons (FirestoreDb, Cloudinary
+// client) so the first real request doesn't pay for cold-start initialization.
+// FirestoreDb creation triggers credential validation and a gRPC handshake.
+static void EagerInitialize(IServiceProvider services)
+{
+    var logger = services.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var firebase = services.GetRequiredService<IFirebaseService>();
+        _ = firebase.GetFirestoreDb();
+        logger.LogInformation("[STARTUP] FirestoreDb initialized successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "[STARTUP] Firestore eager initialization failed — will retry on first request.");
+    }
+
+    try
+    {
+        _ = services.GetRequiredService<ICloudinaryService>();
+        logger.LogInformation("[STARTUP] Cloudinary service initialized successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "[STARTUP] Cloudinary eager initialization failed — will retry on first request.");
+    }
+
+    logger.LogInformation("[STARTUP] Eager initialization complete.");
+}

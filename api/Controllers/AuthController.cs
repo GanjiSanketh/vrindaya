@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Claims;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -14,33 +15,40 @@ namespace Vrindaya.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
     {
         _authService = authService;
+        _logger = logger;
     }
 
-    /// <summary>
-    /// Called once, right after Angular's Firebase Google Sign-In popup
-    /// resolves. The caller must present a valid, Google-signed Firebase ID
-    /// token (the "Firebase" scheme — signature/issuer/audience/expiry
-    /// already verified by the JwtBearer handler before this action ever
-    /// runs) — not the app's own AppJwt, which doesn't exist yet at this
-    /// point. Looks the token's email up in AdminUsers; only an existing,
-    /// active record gets an AppJwt back. Never creates an AdminUsers
-    /// record itself — that's SuperAdmin-only, via AdminUsersController.
-    /// </summary>
     [HttpPost("login")]
     [Authorize(AuthenticationSchemes = "Firebase")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<LoginResponse>> Login(CancellationToken cancellationToken)
     {
+        var sw = Stopwatch.StartNew();
+        _logger.LogInformation("[AUTH] === Login request received at {Timestamp}", DateTime.UtcNow);
+
         var email = User.FindFirstEmail();
         var googleUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("user_id") ?? string.Empty;
         var name = User.FindFirstValue(ClaimTypes.Name) ?? User.FindFirstValue("name") ?? string.Empty;
 
-        var response = await _authService.LoginAsync(email, googleUserId, name, User.IsEmailVerified(), cancellationToken);
-        return Ok(response);
+        _logger.LogInformation("[AUTH] Firebase token validated — email={Email}, elapsed={Elapsed}ms", email, sw.ElapsedMilliseconds);
+
+        try
+        {
+            var response = await _authService.LoginAsync(email, googleUserId, name, User.IsEmailVerified(), cancellationToken);
+            _logger.LogInformation("[AUTH] Login completed for {Email} — total={Elapsed}ms", email, sw.ElapsedMilliseconds);
+            return Ok(response);
+        }
+        catch (Exception ex) when (ex is not Vrindaya.Api.Common.Exceptions.ForbiddenException)
+        {
+            _logger.LogError(ex, "[AUTH] Login failed for {Email} after {Elapsed}ms", email, sw.ElapsedMilliseconds);
+            throw;
+        }
     }
 }
