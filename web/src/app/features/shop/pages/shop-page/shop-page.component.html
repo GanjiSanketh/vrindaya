@@ -35,12 +35,7 @@
           }
         </select>
 
-        <form class="sp-price-form" (submit)="$event.preventDefault(); applyPriceRange(minInput.value, maxInput.value)">
-          <input #minInput class="sp-price-input" type="number" min="0" placeholder="Min ₹" [value]="minPrice() ?? ''" />
-          <span class="sp-price-sep">–</span>
-          <input #maxInput class="sp-price-input" type="number" min="0" placeholder="Max ₹" [value]="maxPrice() ?? ''" />
-          <button type="submit" class="sp-price-apply">Go</button>
-        </form>
+
       </div>
     }
 

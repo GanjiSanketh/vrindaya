@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { catchError, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Revenue, CreateRevenueRequest, UpdateRevenueRequest, RevenueSummary } from '../models/revenue.model';
-import { PagedResult } from '../models/inventory.model';
+import { PagedResult } from '../models/paged-result.model';
 
 const URL = `${environment.apiBaseUrl}/revenues`;
 

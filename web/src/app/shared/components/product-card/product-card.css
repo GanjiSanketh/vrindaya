@@ -56,6 +56,9 @@
 @media (hover: hover) {
   .pc-card:hover .pc-img--primary { opacity: 0; transform: scale(1.03); }
   .pc-card:hover .pc-img--hover   { opacity: 1; transform: scale(1.05); }
+  /* Keep primary visible when no hover image exists */
+  .pc-img-wrap:not(.has-hover) .pc-img--primary,
+  .pc-card:hover .pc-img-wrap:not(.has-hover) .pc-img--primary { opacity: 1; }
 }
 
 /* Placeholder */

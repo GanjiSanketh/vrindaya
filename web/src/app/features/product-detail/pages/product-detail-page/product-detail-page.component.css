@@ -250,6 +250,44 @@
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
+/* ── Colour swatches ── */
+.pd-colours { display: flex; gap: 0.625rem; flex-wrap: wrap; }
+.pd-colour-swatch {
+  position: relative;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border, #eaeaea);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+.pd-colour-swatch:hover {
+  transform: scale(1.12);
+  border-color: var(--maroon, #0f6f84);
+  box-shadow: 0 0 0 2px rgba(15, 111, 132, 0.2);
+}
+.pd-colour-swatch.active {
+  border-color: var(--maroon, #0f6f84);
+  box-shadow: 0 0 0 2px var(--maroon, #0f6f84);
+}
+.pd-colour-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: #222;
+  color: #fff;
+  font-size: 0.68rem;
+  padding: 3px 7px;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.pd-colour-swatch:hover .pd-colour-tooltip { opacity: 1; }
+
 @keyframes shimmer {
   0%   { background-position: 200% center; }
   100% { background-position: -200% center; }

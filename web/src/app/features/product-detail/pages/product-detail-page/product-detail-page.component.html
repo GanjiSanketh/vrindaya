@@ -6,7 +6,7 @@
         <div class="pd-skel-gallery shimmer"></div>
         <div class="pd-skel-details">
           <div class="pd-skel-line pd-skel-line--title shimmer"></div>
-          <div class="pd-skel-line pd-skel-line--price shimmer"></div>
+          <div class="pd-skel-line shimmer"></div>
           <div class="pd-skel-line pd-skel-line--text shimmer"></div>
           <div class="pd-skel-line pd-skel-line--text shimmer"></div>
           <div class="pd-skel-line pd-skel-line--btn shimmer"></div>
@@ -79,12 +79,32 @@
           <h1 class="pd-name">{{ p.name }}</h1>
 
           <div class="pd-price-row">
-            <span class="pd-price">₹{{ p.price }}</span>
-            @if (p.mrp > p.price) { <span class="pd-mrp">₹{{ p.mrp }}</span> }
-            @if (p.discount > 0)  { <span class="pd-discount">{{ p.discount }}% off</span> }
+            <span class="pd-collection-badge">★★★★★ Premium Collection</span>
           </div>
 
-          <p class="pd-sku">SKU: {{ p.sku }}</p>
+          <ul class="pd-trust-list">
+            <li><i class="bi bi-check-lg"></i> Available on Flipkart</li>
+            <li><i class="bi bi-check-lg"></i> Secure Checkout</li>
+            <li><i class="bi bi-check-lg"></i> Fast Delivery</li>
+            <li><i class="bi bi-check-lg"></i> Easy Returns</li>
+          </ul>
+
+          @if (variants().length > 1) {
+            <div class="pd-block">
+              <h3 class="pd-block-title">Colour</h3>
+              <div class="pd-colours">
+                @for (v of variants(); track v.id) {
+                  <button type="button" class="pd-colour-swatch"
+                          [class.active]="selectedVariantId() === v.id"
+                          [style.background]="v.colourHex || '#ccc'"
+                          [title]="v.colourName"
+                          (click)="selectVariant(v.id)">
+                    <span class="pd-colour-tooltip">{{ v.colourName }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
 
           <div class="pd-rule"></div>
 
@@ -95,11 +115,11 @@
             </div>
           }
 
-          @if (p.sizes.length) {
+          @if (sizes.length) {
             <div class="pd-block">
               <h3 class="pd-block-title">Available Sizes</h3>
               <div class="pd-sizes">
-                @for (s of p.sizes; track s.size) {
+                @for (s of sizes; track s.size) {
                   <span class="pd-size-chip" [class.pd-size-chip--out]="s.stock <= 0">
                     {{ s.size }} @if (s.stock <= 0) { <small>(Out of stock)</small> }
                   </span>
@@ -121,9 +141,9 @@
           <div class="pd-rule"></div>
 
           <div class="pd-actions">
-            @if (p.flipkartUrl) {
+            @if (flipkartUrl) {
               <button type="button" class="pd-cta" (click)="shopOnFlipkart()">
-                Buy on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
+                View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
               </button>
             } @else {
               <button type="button" class="pd-cta pd-cta--soon" disabled>Coming Soon</button>

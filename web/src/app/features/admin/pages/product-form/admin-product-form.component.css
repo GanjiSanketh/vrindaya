@@ -27,14 +27,6 @@
 .pf-field-row--3 { grid-template-columns: 1fr 1fr 1fr; }
 .pf-field-row .pf-field { margin-bottom: 0; }
 
-/* ── Grid layout ── */
-.pf-grid {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 1.25rem;
-  margin-bottom: 1.25rem;
-}
-
 /* ── Section ── */
 .pf-section {
   background: #fff; border-radius: 12px;
@@ -42,7 +34,6 @@
   padding: 1.25rem 1.5rem;
   margin-bottom: 1rem;
 }
-
 .pf-section:last-child { margin-bottom: 0; }
 
 .pf-section-title {
@@ -51,12 +42,20 @@
   margin: 0 0 1rem;
   padding-bottom: 0.625rem;
   border-bottom: 1px solid #f0f4f7;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+
+/* ── Variant count badge ── */
+.pf-variant-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem; font-weight: 600;
+  color: #0f6f84; background: #e6f4f7;
+  padding: 2px 8px; border-radius: 10px;
 }
 
 /* ── Fields ── */
 .pf-field { margin-bottom: 0.875rem; }
 .pf-field:last-child { margin-bottom: 0; }
-.pf-field--half { max-width: 200px; }
 
 .pf-label {
   display: block;
@@ -89,8 +88,6 @@
   padding: 0.625rem 0.75rem; background: #f8fbfc; border-radius: 6px; border: 1px solid #e8ecf0;
 }
 
-.pf-hint-block code { font-size: 0.72rem; color: #0f6f84; font-family: monospace; }
-
 /* ── Checkboxes ── */
 .pf-checkboxes { display: flex; gap: 1.25rem; flex-wrap: wrap; }
 
@@ -120,6 +117,153 @@
 
 .pf-check-label { font-size: 0.85rem; font-weight: 500; color: #374151; user-select: none; }
 
+/* ── Variant accordion cards ── */
+.pf-empty-variants { text-align: center; padding: 1.5rem; color: #6b7280; font-size: 0.85rem; }
+
+.pf-variants-accordion { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+
+.pf-variant-card {
+  border: 1px solid #e0e4ea; border-radius: 10px;
+  overflow: hidden; background: #fff;
+}
+
+.pf-variant-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #f8fafb; border-bottom: 1px solid #e8ecf0;
+  cursor: pointer; user-select: none;
+  transition: background 0.15s;
+}
+.pf-variant-header:hover { background: #f0f4f7; }
+
+.pf-variant-header-left {
+  display: flex; align-items: center; gap: 0.625rem;
+}
+
+.pf-variant-swatch {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.12); flex-shrink: 0;
+}
+
+.pf-variant-name { font-size: 0.88rem; font-weight: 600; color: #1a1a2e; }
+
+.pf-variant-arrow {
+  transition: transform 0.2s ease; display: inline-flex;
+  color: #6b7280;
+}
+.pf-variant-arrow.open { transform: rotate(180deg); }
+
+.pf-variant-body {
+  padding: 1rem;
+}
+
+/* ── Colour picker ── */
+.pf-colour-row { display: flex; gap: 0.5rem; align-items: center; }
+.pf-colour-picker { width: 44px; height: 38px; border: 1px solid #e0e4ea; border-radius: 6px; padding: 2px; cursor: pointer; }
+
+/* ── Variant subsection ── */
+.pf-variant-subsection {
+  margin-top: 1rem; padding-top: 1rem;
+  border-top: 1px solid #f0f4f7;
+}
+
+.pf-subsection-title {
+  font-size: 0.82rem; font-weight: 700; color: #374151;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* ── Variant image grid ── */
+.pf-var-img-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.pf-var-img-slot {
+  border: 1px dashed #d0d5dd; border-radius: 8px;
+  padding: 0.75rem; text-align: center;
+  position: relative;
+}
+
+.pf-var-img-slot .pf-label {
+  text-align: center; margin-bottom: 0.5rem;
+}
+
+.pf-var-img-preview-wrap {
+  position: relative; display: inline-block;
+  width: 100%; aspect-ratio: 1; overflow: hidden;
+  border-radius: 6px; margin-bottom: 0.35rem;
+}
+
+.pf-var-img-preview {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.pf-var-img-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.pf-var-img-remove {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: none; background: rgba(0,0,0,0.6); color: #fff;
+  font-size: 0.85rem; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.pf-var-img-input {
+  font-size: 0.72rem; width: 100%;
+}
+
+/* ── Variant sizes table ── */
+.pf-var-sizes-table { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.5rem; }
+.pf-var-sizes-header { display: flex; gap: 0.5rem; font-size: 0.72rem; font-weight: 700; color: #64748b; padding: 0 0.25rem; }
+.pf-var-sizes-th { flex: 1; }
+.pf-var-sizes-row { display: flex; gap: 0.5rem; align-items: center; }
+.pf-var-size-input { width: 120px; flex: none; }
+.pf-var-stock-input { width: 100px; flex: none; text-align: center; }
+
+.pf-size-remove {
+  flex-shrink: 0; width: 34px; height: 34px;
+  border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #dc2626;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.pf-size-remove:hover { background: #dc2626; color: #fff; }
+
+.pf-add-size-btn { font-size: 0.82rem; }
+
+/* ── Variant footer actions ── */
+.pf-variant-footer-actions {
+  margin-top: 1rem; padding-top: 0.75rem;
+  border-top: 1px solid #f0f4f7;
+  display: flex; justify-content: flex-end;
+}
+
+.pf-delete-variant-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #fecaca; border-radius: 6px;
+  background: #fef2f2; color: #dc2626;
+  font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+}
+.pf-delete-variant-btn:hover { background: #dc2626; color: #fff; }
+
+/* ── Add variant button ── */
+.pf-add-variant-btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: 2px dashed #0f6f84; border-radius: 10px;
+  background: #f0f8fa; color: #0f6f84;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+  width: 100%; justify-content: center;
+}
+.pf-add-variant-btn:hover { background: #e0f2f5; }
+
 /* ── Submit ── */
 .pf-submit-row {
   display: flex; align-items: center; justify-content: flex-end; gap: 0.875rem;
@@ -134,7 +278,6 @@
   color: #374151; text-decoration: none;
   transition: background 0.15s;
 }
-
 .pf-cancel:hover { background: #f0f4f7; }
 
 .pf-submit {
@@ -145,7 +288,6 @@
   font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600;
   cursor: pointer; transition: background 0.18s;
 }
-
 .pf-submit:hover:not(:disabled) { background: #0c5c6e; }
 .pf-submit:disabled { opacity: 0.7; cursor: not-allowed; }
 
@@ -157,24 +299,16 @@
   animation: spin 0.7s linear infinite;
 }
 
-/* ── Sizes sub-form ── */
-.pf-sizes { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; }
-
-.pf-size-row { display: flex; gap: 0.5rem; align-items: center; }
-.pf-size-input { flex: 1; }
-
-.pf-size-remove {
-  flex-shrink: 0; width: 34px; height: 34px;
-  border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #dc2626;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s;
-}
-.pf-size-remove:hover { background: #dc2626; color: #fff; }
-
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .pf-grid { grid-template-columns: 1fr; }
   .pf-field-row, .pf-field-row--3 { grid-template-columns: 1fr; }
+  .pf-var-img-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
+  .pf-var-img-grid { grid-template-columns: 1fr; }
+  .pf-var-size-input { width: 80px; }
+  .pf-var-stock-input { width: 70px; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }

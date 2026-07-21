@@ -2,28 +2,57 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import {
   FormBuilder, FormArray, FormGroup, ReactiveFormsModule, Validators, AbstractControl,
 } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import { ProductApiService }                  from '../../../../core/services/product-api.service';
+import { VariantApiService }                  from '../../../../core/services/variant-api.service';
 import { AdminProductInput }                  from '../../../../core/models/product-api.model';
-import {
-  ProductImageGalleryComponent, GalleryImageState,
-} from '../../components/product-image-gallery/product-image-gallery.component';
+import { ProductImageGalleryComponent, GalleryImageState } from '../../components/product-image-gallery/product-image-gallery.component';
 import { APP_ROUTES }                         from '../../../../core/constants/routes.constants';
 import { Product, ProductImage, ProductSize } from '../../../../core/models/product.model';
+import type { ProductVariant }               from '../../../../core/models/product-variant.model';
 import { slugify }                            from '../../../../shared/utils/slugify.util';
 import {
   validateImageFile, processImageForUpload, CorruptImageError,
 } from '../../../../shared/utils/image-processing.util';
 
 interface CategoryOption { id: string; label: string; }
+interface SizeRow { size: string; stock: number; }
+interface VariantImageSlot { key: string; label: string; }
+
+interface VariantFormData {
+  id: string;
+  colourName: string;
+  colourHex: string;
+  sku: string;
+  sellingPrice: number | null;
+  mrp: number | null;
+  flipkartUrl: string;
+  isActive: boolean;
+  sizes: SizeRow[];
+  images: Record<string, { url: string | null; publicId: string | null; file: File | null; preview: string | null; uploading: boolean; error: string | null }>;
+  isExisting: boolean;
+  isDeleted: boolean;
+}
 
 const MAX_IMAGES = 10;
+const VARIANT_IMAGE_SLOTS: VariantImageSlot[] = [
+  { key: 'primary', label: 'Primary Image' },
+  { key: 'front', label: 'Front' },
+  { key: 'back', label: 'Back' },
+  { key: 'left', label: 'Left' },
+  { key: 'right', label: 'Right' },
+  { key: 'closeup', label: 'Detail Closeup' },
+];
+const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
 
 @Component({
   selector:    'app-admin-product-form',
   standalone:  true,
-  imports:     [ReactiveFormsModule, RouterLink, ProductImageGalleryComponent],
+  imports:     [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, ProductImageGalleryComponent],
   templateUrl: './admin-product-form.component.html',
   styleUrl:    './admin-product-form.component.css',
 })
@@ -32,6 +61,7 @@ export class AdminProductFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route  = inject(ActivatedRoute);
   readonly api             = inject(ProductApiService);
+  readonly variantApi      = inject(VariantApiService);
 
   readonly BASE       = `/${APP_ROUTES.ADMIN}`;
   readonly isEdit     = signal(false);
@@ -40,9 +70,11 @@ export class AdminProductFormComponent implements OnInit {
   readonly formError  = signal<string | null>(null);
   readonly slugError  = signal<string | null>(null);
   readonly skuError   = signal<string | null>(null);
-  private productId   = '';
+  readonly productId  = signal<string>('');
+  readonly maxImages  = MAX_IMAGES;
+  readonly imageSlots = VARIANT_IMAGE_SLOTS;
 
-  readonly maxImages = MAX_IMAGES;
+  readonly expandedVariantIds = signal<Set<string>>(new Set());
 
   readonly categories: CategoryOption[] = [
     { id: 'long-kurtas',   label: 'Long Kurtas' },
@@ -62,18 +94,9 @@ export class AdminProductFormComponent implements OnInit {
     brand:              ['Vrindaya'],
     description:        [''],
     shortDescription:   [''],
-    price:              [0, [Validators.required, Validators.min(0)]],
-    mrp:                [0, [Validators.required, Validators.min(0)]],
-    discount:           [0, [Validators.min(0), Validators.max(100)]],
     fabric:             [''],
-    pattern:            [''],
-    fit:                [''],
-    sleeve:             [''],
-    neck:               [''],
-    occasion:           [''],
-    color:              [''],
     washCare:           [''],
-    sku:                ['', Validators.required],
+    sizeChart:          [''],
     tags:               [''],
     featured:           [false],
     newArrival:         [false],
@@ -82,28 +105,38 @@ export class AdminProductFormComponent implements OnInit {
     displayOrder:       [0],
     lowStockThreshold:  [null as number | null],
     autoHideWhenOutOfStock: [false],
-    flipkartProductUrl: [''],
-    flipkartProductId:  [''],
     seoTitle:           [''],
     seoDescription:     [''],
     seoKeywords:        [''],
-    sizes:              this.fb.array([] as FormGroup[]),
   });
 
   readonly images = signal<GalleryImageState[]>([]);
   readonly filledImageCount = computed(() => this.images().filter(i => i.status === 'uploaded').length);
 
+  readonly variants = signal<VariantFormData[]>([]);
+
+  readonly totalStock = computed(() => {
+    let total = 0;
+    for (const v of this.variants()) {
+      if (v.isDeleted) continue;
+      for (const s of v.sizes) total += s.stock;
+    }
+    return total;
+  });
+
+  readonly activeVariantCount = computed(() => this.variants().filter(v => !v.isDeleted).length);
+
   get f(): { [key: string]: AbstractControl } { return this.form.controls; }
-  get sizesArray(): FormArray { return this.form.get('sizes') as FormArray; }
 
   constructor() {
     this.form.get('name')!.valueChanges.subscribe(name => {
       if (this.slugTouched) return;
       this.form.get('slug')!.setValue(slugify(name ?? ''), { emitEvent: false });
     });
+  }
 
-    this.form.get('price')!.valueChanges.subscribe(() => this.recomputeDiscount());
-    this.form.get('mrp')!.valueChanges.subscribe(() => this.recomputeDiscount());
+  onSlugInput(): void {
+    this.slugTouched = true;
   }
 
   async ngOnInit(): Promise<void> {
@@ -113,55 +146,166 @@ export class AdminProductFormComponent implements OnInit {
 
     if (idParam && idParam !== 'new') {
       this.isEdit.set(true);
-      this.productId = idParam;
-
+      this.productId.set(idParam);
       const p = await this.api.getById(idParam);
-
       if (p) {
         this.populateForm(p);
+        await this.loadVariants(idParam);
       } else {
         this.formError.set('Product not found.');
       }
     } else {
-      this.productId = await this.api.generateId();
-      this.addSize();
+      this.productId.set(await this.api.generateId());
     }
   }
 
-  private recomputeDiscount(): void {
-    if (this.discountTouched) return;
-    const price = Number(this.form.value.price) || 0;
-    const mrp   = Number(this.form.value.mrp)   || 0;
-    if (mrp > 0) {
-      const pct = Math.round(((mrp - price) / mrp) * 100);
-      this.form.get('discount')!.setValue(Math.max(0, Math.min(100, pct)), { emitEvent: false });
+  private async loadVariants(productId: string): Promise<void> {
+    try {
+      const variants = await firstValueFrom(this.variantApi.getVariants(productId));
+      if (!variants?.length) return;
+      this.variants.set(variants.map(v => ({
+        id: v.id,
+        colourName: v.colourName,
+        colourHex: v.colourHex || '#000000',
+        sku: v.sku,
+        sellingPrice: v.sellingPrice,
+        mrp: v.mrp,
+        flipkartUrl: v.flipkartUrl || '',
+        isActive: v.isActive,
+        sizes: v.sizes.map(s => ({ size: s.size, stock: s.stock })),
+        images: Object.fromEntries(VARIANT_IMAGE_SLOTS.map(slot => [
+          slot.key,
+          {
+            url: (v.images as any)[slot.key] || null,
+            publicId: null,
+            file: null,
+            preview: (v.images as any)[slot.key] || null,
+            uploading: false,
+            error: null,
+          },
+        ])),
+        isExisting: true,
+        isDeleted: false,
+      })));
+      // Expand all by default
+      this.expandedVariantIds.set(new Set(variants.map(v => v.id)));
+    } catch {
+      // silent
     }
   }
 
-  onDiscountInput(): void { this.discountTouched = true; }
-  onSlugInput():     void { this.slugTouched = true; }
+  /* ── Image helpers ── */
 
-  /* ── Sizes ── */
+  private createEmptyImageState(): Record<string, { url: string | null; publicId: string | null; file: File | null; preview: string | null; uploading: boolean; error: string | null }> {
+    return Object.fromEntries(VARIANT_IMAGE_SLOTS.map(slot => [
+      slot.key,
+      { url: null, publicId: null, file: null, preview: null, uploading: false, error: null },
+    ]));
+  }
 
-  addSize(): void {
-    this.sizesArray.push(this.fb.group({
-      size:  ['', Validators.required],
-      stock: [0, [Validators.required, Validators.min(0)]],
+  createVariant(): void {
+    const id = crypto.randomUUID();
+    this.variants.update(list => [...list, {
+      id,
+      colourName: '',
+      colourHex: '#000000',
+      sku: '',
+      sellingPrice: null,
+      mrp: null,
+      flipkartUrl: '',
+      isActive: true,
+      sizes: DEFAULT_SIZES.map(s => ({ size: s, stock: 0 })),
+      images: this.createEmptyImageState(),
+      isExisting: false,
+      isDeleted: false,
+    }]);
+    this.expandedVariantIds.update(s => new Set(s).add(id));
+  }
+
+  removeVariant(id: string): void {
+    this.variants.update(list => list.map(v => v.id === id ? { ...v, isDeleted: true } : v));
+    this.expandedVariantIds.update(s => { const n = new Set(s); n.delete(id); return n; });
+  }
+
+  toggleVariant(id: string): void {
+    this.expandedVariantIds.update(s => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  }
+
+  trackByVariantId(_: number, v: VariantFormData): string { return v.id; }
+  trackBySize(_: number, s: SizeRow): string { return s.size; }
+
+  addSize(variantId: string): void {
+    this.variants.update(list => list.map(v => {
+      if (v.id !== variantId) return v;
+      const nextNum = v.sizes.length + 1;
+      return { ...v, sizes: [...v.sizes, { size: `Size ${nextNum}`, stock: 0 }] };
     }));
   }
 
-  removeSize(index: number): void {
-    this.sizesArray.removeAt(index);
+  removeSize(variantId: string, sizeIdx: number): void {
+    this.variants.update(list => list.map(v => {
+      if (v.id !== variantId) return v;
+      return { ...v, sizes: v.sizes.filter((_, i) => i !== sizeIdx) };
+    }));
   }
 
-  /* ── Images ──────────────────────────────────────────────────────────────
-   * Pipeline per file: validate (fast, sync) → process client-side (resize/
-   * WebP-convert/compress, see image-processing.util.ts) → upload the
-   * processed blob under a position-based name ("cover", "image-2", ...).
-   * Every file is handled independently (its own try/catch, its own
-   * fire-and-forget async chain) so one failure — a corrupt file, a dropped
-   * connection — never stops the rest of the batch from processing/uploading.
-   * ── */
+  /* ── Variant Image Upload ── */
+
+  async onVariantImageSelected(event: Event, variantId: string, slotKey: string): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    const error = validateImageFile(file);
+    if (error) { this.formError.set(error); return; }
+
+    // Show local preview
+    const preview = URL.createObjectURL(file);
+    this.updateVariantImage(variantId, slotKey, { file, preview, uploading: true, error: null });
+
+    try {
+      const processed = await processImageForUpload(file);
+      // Need a temp variant ID for the folder path if this is a new variant
+      const folderVariantId = variantId;
+      const res = await firstValueFrom(
+        this.variantApi.uploadVariantImage(this.productId(), folderVariantId, slotKey, new File([processed.blob], file.name, { type: 'image/webp' }))
+      );
+      this.updateVariantImage(variantId, slotKey, {
+        url: res.url,
+        publicId: res.publicId,
+        uploading: false,
+        error: null,
+      });
+    } catch (err: unknown) {
+      this.updateVariantImage(variantId, slotKey, {
+        uploading: false,
+        error: err instanceof Error ? err.message : 'Upload failed',
+      });
+    }
+  }
+
+  removeVariantImage(variantId: string, slotKey: string): void {
+    const v = this.variants().find(x => x.id === variantId);
+    const img = v?.images[slotKey];
+    if (img?.publicId && v) {
+      this.variantApi.deleteVariantImage(this.productId(), variantId, img.publicId).subscribe({ error: () => {} });
+    }
+    if (img?.preview?.startsWith('blob:')) URL.revokeObjectURL(img.preview);
+    this.updateVariantImage(variantId, slotKey, { url: null, publicId: null, file: null, preview: null, uploading: false, error: null });
+  }
+
+  private updateVariantImage(variantId: string, slotKey: string, patch: Partial<{ url: string | null; publicId: string | null; file: File | null; preview: string | null; uploading: boolean; error: string | null }>): void {
+    this.variants.update(list => list.map(v => {
+      if (v.id !== variantId) return v;
+      const images = { ...v.images, [slotKey]: { ...v.images[slotKey], ...patch } };
+      return { ...v, images };
+    }));
+  }
+
+  /* ── Product Image Gallery (same as before) ── */
 
   addFiles(files: File[]): void {
     const remaining = MAX_IMAGES - this.images().length;
@@ -181,7 +325,6 @@ export class AdminProductFormComponent implements OnInit {
     });
   }
 
-  /** "cover" for the first image, then "image-2", "image-3", ... — skipping any name already taken by another entry currently in the gallery (including ones loaded from the server — see populateForm). */
   private nextAvailableFileName(): string {
     const used = new Set(this.images().map(i => i.fileName).filter((n): n is string => !!n));
     if (!used.has('cover')) return 'cover';
@@ -193,7 +336,6 @@ export class AdminProductFormComponent implements OnInit {
   private async processAndUpload(localId: string): Promise<void> {
     const entry = this.images().find(i => i.localId === localId);
     if (!entry?.file) return;
-
     try {
       const processed = await processImageForUpload(entry.file);
       this.applyProcessedPreview(localId, processed);
@@ -202,15 +344,12 @@ export class AdminProductFormComponent implements OnInit {
       this.updateImage(localId, { status: 'error', error: message });
       return;
     }
-
     await this.uploadOne(localId);
   }
 
-  /** Swaps the raw-file preview for the processed (resized + WebP) one and records dimensions/size for the gallery's meta line — runs after processing, before the upload request goes out. */
   private applyProcessedPreview(localId: string, processed: { blob: Blob; previewUrl: string; width: number; height: number; sizeBytes: number }): void {
     const entry = this.images().find(i => i.localId === localId);
     if (entry?.previewUrl.startsWith('blob:')) URL.revokeObjectURL(entry.previewUrl);
-
     this.updateImage(localId, {
       processedBlob: processed.blob,
       previewUrl:    processed.previewUrl,
@@ -223,11 +362,9 @@ export class AdminProductFormComponent implements OnInit {
   private async uploadOne(localId: string): Promise<void> {
     const entry = this.images().find(i => i.localId === localId);
     if (!entry?.processedBlob) return;
-
     this.updateImage(localId, { status: 'uploading', progress: 0, error: undefined });
-
     try {
-      const result = await this.api.uploadImage(this.productId, entry.processedBlob, entry.fileName, percent => {
+      const result = await this.api.uploadImage(this.productId(), entry.processedBlob, entry.fileName, percent => {
         this.updateImage(localId, { progress: percent });
       });
       this.updateImage(localId, {
@@ -238,45 +375,34 @@ export class AdminProductFormComponent implements OnInit {
     }
   }
 
-  /** Re-attempts from wherever the pipeline last stopped — reprocesses from the original file if that's what failed, or just re-uploads the already-processed blob if only the network call failed (no need to redo the resize/compress work). */
   retryImage(localId: string): void {
     const entry = this.images().find(i => i.localId === localId);
-    if (entry?.processedBlob) {
-      void this.uploadOne(localId);
-    } else if (entry?.file) {
-      void this.processAndUpload(localId);
-    }
+    if (entry?.processedBlob) { void this.uploadOne(localId); }
+    else if (entry?.file) { void this.processAndUpload(localId); }
   }
 
   async removeImage(localId: string): Promise<void> {
     const entry = this.images().find(i => i.localId === localId);
     if (entry?.publicId) {
-      try { await this.api.deleteImage(this.productId, entry.publicId); } catch { /* best-effort — the save is the source of truth */ }
+      try { await this.api.deleteImage(this.productId(), entry.publicId); } catch { /* best-effort */ }
     }
     if (entry?.previewUrl.startsWith('blob:')) URL.revokeObjectURL(entry.previewUrl);
     this.images.update(list => list.filter(i => i.localId !== localId));
   }
 
-  /** Replaces one gallery slot's file in place — same fileName/position as before, so the re-upload overwrites the same Storage object. */
   async replaceImage(event: { localId: string; file: File }): Promise<void> {
     const { localId, file } = event;
     const error = validateImageFile(file);
-    if (error) {
-      this.formError.set(error);
-      return;
-    }
-
+    if (error) { this.formError.set(error); return; }
     const previous = this.images().find(i => i.localId === localId);
     this.updateImage(localId, { file, processedBlob: undefined, status: 'pending', error: undefined });
-
     try {
       const processed = await processImageForUpload(file);
       this.applyProcessedPreview(localId, processed);
       await this.uploadOne(localId);
-
       const current = this.images().find(i => i.localId === localId);
       if (previous?.publicId && current?.publicId && previous.publicId !== current.publicId) {
-        try { await this.api.deleteImage(this.productId, previous.publicId); } catch { /* best-effort cleanup of the now-orphaned object */ }
+        try { await this.api.deleteImage(this.productId(), previous.publicId); } catch { /* best-effort */ }
       }
     } catch (err: unknown) {
       const message = err instanceof CorruptImageError ? err.message : 'Could not process this image. Please try a different file.';
@@ -299,18 +425,9 @@ export class AdminProductFormComponent implements OnInit {
       brand:              p.brand || 'Vrindaya',
       description:        p.description ?? '',
       shortDescription:   p.shortDescription ?? '',
-      price:              p.price,
-      mrp:                p.mrp,
-      discount:           p.discount,
       fabric:             p.fabric ?? '',
-      pattern:            p.pattern ?? '',
-      fit:                p.fit ?? '',
-      sleeve:             p.sleeve ?? '',
-      neck:               p.neck ?? '',
-      occasion:           p.occasion ?? '',
-      color:              p.color ?? '',
       washCare:           p.washCare ?? '',
-      sku:                p.sku,
+      sizeChart:          (p as any).sizeChart ?? '',
       tags:               p.tags.join(', '),
       featured:           p.featured,
       newArrival:         p.newArrival,
@@ -319,8 +436,6 @@ export class AdminProductFormComponent implements OnInit {
       displayOrder:       p.displayOrder,
       lowStockThreshold:  p.lowStockThreshold ?? null,
       autoHideWhenOutOfStock: p.autoHideWhenOutOfStock,
-      flipkartProductUrl: p.flipkartProductUrl ?? '',
-      flipkartProductId:  p.flipkartProductId ?? '',
       seoTitle:           p.seoTitle ?? '',
       seoDescription:     p.seoDescription ?? '',
       seoKeywords:        (p.seoKeywords ?? []).join(', '),
@@ -329,25 +444,12 @@ export class AdminProductFormComponent implements OnInit {
     this.slugTouched     = true;
     this.discountTouched = true;
 
-    this.sizesArray.clear();
-    for (const s of p.sizes) {
-      this.sizesArray.push(this.fb.group({
-        size:  [s.size, Validators.required],
-        stock: [s.stock, [Validators.required, Validators.min(0)]],
-      }));
-    }
-    if (this.sizesArray.length === 0) this.addSize();
-
-    // fileName here is a *virtual* position label, not necessarily this
-    // image's real Storage filename (older uploads may still be GUID-named)
-    // — it only exists so nextAvailableFileName() can avoid colliding with
-    // these slots when new images are added in this editing session.
     this.images.set([...p.images].sort((a, b) => a.order - b.order).map((img, index) => ({
       localId:    crypto.randomUUID(),
       fileName:   index === 0 ? 'cover' : `image-${index + 1}`,
       previewUrl: img.url,
       serverUrl:  img.url,
-      publicId:       img.publicId,
+      publicId:   img.publicId,
       status:     'uploaded' as const,
       progress:   100,
     })));
@@ -360,7 +462,6 @@ export class AdminProductFormComponent implements OnInit {
     return !!(c?.invalid && c?.touched);
   }
 
-  /** Used by unsavedChangesGuard — true once the user has edited a field and not yet successfully saved. */
   hasUnsavedChanges(): boolean {
     return this.form.dirty && !this.saved();
   }
@@ -373,89 +474,150 @@ export class AdminProductFormComponent implements OnInit {
 
   async submit(): Promise<void> {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    if (this.sizesArray.length === 0) { this.formError.set('Add at least one size.'); return; }
 
+    // Check product images
     if (this.images().some(i => i.status === 'uploading')) {
-      this.formError.set('Wait for image uploads to finish before saving.');
+      this.formError.set('Wait for product image uploads to finish before saving.');
       return;
     }
     if (this.images().some(i => i.status === 'error')) {
-      this.formError.set('Remove or retry the failed image before saving.');
+      this.formError.set('Remove or retry the failed product image before saving.');
       return;
+    }
+
+    // Check variant images
+    for (const v of this.variants()) {
+      if (v.isDeleted) continue;
+      for (const slot of VARIANT_IMAGE_SLOTS) {
+        const img = v.images[slot.key];
+        if (img?.uploading) {
+          this.formError.set(`Wait for "${v.colourName || 'a variant'}" — ${slot.label} upload to finish.`);
+          return;
+        }
+        if (img?.error && !img.url) {
+          this.formError.set(`Fix or remove the failed image for "${v.colourName || 'a variant'}" — ${slot.label}.`);
+          return;
+        }
+      }
     }
 
     this.formError.set(null);
     this.slugError.set(null);
-    this.skuError.set(null);
     this.saving.set(true);
 
-    const v    = this.form.getRawValue();
-    const slug = slugify(v.slug ?? '');
-    const sku  = (v.sku ?? '').trim().toUpperCase();
+    const formVals      = this.form.getRawValue();
+    const slug          = slugify(formVals.slug ?? '');
+    const excludeId     = this.isEdit() ? this.productId() : undefined;
 
-    const excludeId = this.isEdit() ? this.productId : undefined;
     if (this.api.existsBySlug(slug, excludeId)) {
       this.slugError.set('This slug is already used by another product.');
       this.saving.set(false);
       return;
     }
-    if (this.api.existsBySku(sku, excludeId)) {
-      this.skuError.set('This SKU is already used by another product.');
-      this.saving.set(false);
-      return;
-    }
 
     const images = this.buildImages();
-    if (v.active && images.length === 0) {
-      this.formError.set('Add at least one image before publishing an active product, or uncheck "Active" to save as a draft.');
+    if (formVals.active && images.length === 0) {
+      this.formError.set('Add at least one product image before publishing, or uncheck "Active" to save as a draft.');
       this.saving.set(false);
       return;
     }
 
     const input: AdminProductInput = {
-      ...(this.isEdit() ? {} : { id: this.productId }),
-      name:             v.name!.trim(),
+      ...(this.isEdit() ? {} : { id: this.productId() }),
+      name:             formVals.name!.trim(),
       slug,
-      category:         v.category!,
-      subCategory:      v.subCategory?.trim() || undefined,
-      description:      v.description?.trim() || undefined,
-      shortDescription: v.shortDescription?.trim() || undefined,
-      price:            Number(v.price) || 0,
-      mrp:              Number(v.mrp) || 0,
-      discount:         Number(v.discount) || 0,
-      fabric:           v.fabric?.trim() || undefined,
-      pattern:          v.pattern?.trim() || undefined,
-      fit:              v.fit?.trim() || undefined,
-      sleeve:           v.sleeve?.trim() || undefined,
-      neck:             v.neck?.trim() || undefined,
-      occasion:         v.occasion?.trim() || undefined,
-      color:            v.color?.trim() || undefined,
-      washCare:         v.washCare?.trim() || undefined,
-      sizes:            this.sizesArray.getRawValue() as ProductSize[],
-      sku,
-      tags:             (v.tags ?? '').split(',').map(t => t.trim()).filter(Boolean),
-      featured:         !!v.featured,
-      newArrival:       !!v.newArrival,
-      bestSeller:       !!v.bestSeller,
-      active:           !!v.active,
-      displayOrder:     Number(v.displayOrder) || 0,
-      lowStockThreshold: v.lowStockThreshold ?? undefined,
-      autoHideWhenOutOfStock: !!v.autoHideWhenOutOfStock,
+      category:         formVals.category!,
+      subCategory:      formVals.subCategory?.trim() || undefined,
+      description:      formVals.description?.trim() || undefined,
+      shortDescription: formVals.shortDescription?.trim() || undefined,
+      price:            0,
+      mrp:              0,
+      discount:         0,
+      fabric:           formVals.fabric?.trim() || undefined,
+      washCare:         formVals.washCare?.trim() || undefined,
+      sizes:            [],
+      sku:              '',
+      tags:             (formVals.tags ?? '').split(',').map(t => t.trim()).filter(Boolean),
+      featured:         !!formVals.featured,
+      newArrival:       !!formVals.newArrival,
+      bestSeller:       !!formVals.bestSeller,
+      active:           !!formVals.active,
+      displayOrder:     Number(formVals.displayOrder) || 0,
+      lowStockThreshold: formVals.lowStockThreshold ?? undefined,
+      autoHideWhenOutOfStock: !!formVals.autoHideWhenOutOfStock,
       images,
-      brand:              v.brand?.trim() || undefined,
-      flipkartProductUrl: v.flipkartProductUrl?.trim() || undefined,
-      flipkartProductId:  v.flipkartProductId?.trim() || undefined,
-      seoTitle:           v.seoTitle?.trim() || undefined,
-      seoDescription:     v.seoDescription?.trim() || undefined,
-      seoKeywords:        (v.seoKeywords ?? '').split(',').map(t => t.trim()).filter(Boolean),
+      brand:              formVals.brand?.trim() || undefined,
+      seoTitle:           formVals.seoTitle?.trim() || undefined,
+      seoDescription:     formVals.seoDescription?.trim() || undefined,
+      seoKeywords:        (formVals.seoKeywords ?? '').split(',').map(t => t.trim()).filter(Boolean),
+      color:              undefined,
+      flipkartProductUrl: undefined,
+      flipkartProductId:  undefined,
     };
 
     try {
+      // Step 1: Save product
       if (this.isEdit()) {
-        await this.api.update(this.productId, input);
+        await this.api.update(this.productId(), input);
       } else {
         await this.api.create(input);
       }
+
+      // Step 2: Save variants
+      const activeVariants = this.variants().filter(v => !v.isDeleted);
+      for (const v of activeVariants) {
+        if (v.isExisting) {
+          // Update existing variant
+          const updatePayload = {
+            colourName: v.colourName,
+            colourHex: v.colourHex || null,
+            sku: v.sku,
+            sellingPrice: v.sellingPrice,
+            mrp: v.mrp,
+            flipkartUrl: v.flipkartUrl || null,
+            displayOrder: 0,
+            isActive: v.isActive,
+            isFeatured: false,
+            isBestSeller: false,
+            isNewArrival: false,
+            sizes: v.sizes.filter(s => s.stock > 0).map(s => ({ size: s.size, stock: s.stock })),
+            images: {
+              primary: v.images['primary']?.url || null,
+              front: v.images['front']?.url || null,
+              back: v.images['back']?.url || null,
+              left: v.images['left']?.url || null,
+              right: v.images['right']?.url || null,
+              closeup: v.images['closeup']?.url || null,
+              gallery: [] as string[],
+            },
+          };
+          await firstValueFrom(this.variantApi.updateVariant(v.id, updatePayload));
+        } else {
+          // Create new variant
+          const createPayload = {
+            colourName: v.colourName,
+            colourHex: v.colourHex || null,
+            sku: v.sku,
+            sellingPrice: v.sellingPrice,
+            mrp: v.mrp,
+            flipkartUrl: v.flipkartUrl || null,
+            displayOrder: 0,
+            isActive: v.isActive,
+            isFeatured: false,
+            isBestSeller: false,
+            isNewArrival: false,
+            sizes: v.sizes.filter(s => s.stock > 0).map(s => ({ size: s.size, stock: s.stock })),
+          };
+          await firstValueFrom(this.variantApi.createVariant(this.productId(), createPayload));
+        }
+      }
+
+      // Step 3: Handle deleted variants
+      for (const v of this.variants()) {
+        if (!v.isDeleted || !v.isExisting) continue;
+        await firstValueFrom(this.variantApi.deleteVariant(v.id));
+      }
+
       this.saved.set(true);
       this.saving.set(false);
       setTimeout(() => this.router.navigate([this.BASE + '/products']), 800);

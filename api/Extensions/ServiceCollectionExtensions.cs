@@ -18,13 +18,10 @@ using Vrindaya.Api.Services.Admin;
 using Vrindaya.Api.Services.Audit;
 using Vrindaya.Api.Services.Brand;
 using Vrindaya.Api.Services.CampaignDelivery;
-using Vrindaya.Api.Services.ListingManagement;
 using Vrindaya.Api.Services.Marketplace;
 using Vrindaya.Api.Services.Homepage;
-using Vrindaya.Api.Services.InventoryManagement;
 using Vrindaya.Api.Services.Marketing;
 using Vrindaya.Api.Services.Products;
-using Vrindaya.Api.Services.Suppliers;
 using Vrindaya.Api.Services.WhatsApp;
 
 namespace Vrindaya.Api.Extensions;
@@ -78,6 +75,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILifecycleService, LifecycleService>();
         services.AddScoped<IImageCompressionService, ImageCompressionService>();
         services.AddScoped<IProductStorageService, ProductStorageService>();
+        services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
+        services.AddScoped<IProductVariantService, ProductVariantService>();
+        services.AddScoped<IVariantImageService, VariantImageService>();
 
         // Homepage CMS module — HomepageService aggregates every section
         // below into the single GET /homepage response; IHomepageCacheService
@@ -111,14 +111,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMarketplaceSettingsRepository, MarketplaceSettingsRepository>();
         services.AddScoped<IMarketplaceSettingsService, MarketplaceSettingsService>();
 
-        // Listing Management — per-(Product, Marketplace) records in the
-        // productListings collection. Manual management only for now; swap
-        // StubListingSyncService for a real IListingSyncService when the
-        // Flipkart API integration goes live.
-        services.AddScoped<IProductListingRepository, ProductListingRepository>();
-        services.AddScoped<IProductListingService, ProductListingService>();
-        services.AddScoped<IListingSyncService, StubListingSyncService>();
-
         // Marketing/Campaign media — image uploads only (see MarketingAssetsController).
         services.AddScoped<IMarketingStorageService, MarketingStorageService>();
 
@@ -129,45 +121,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
 
-        // Inventory Management module — dedicated inventory/purchaseEntries/
-        // stockMovements collections (cost tracking, purchase history, stock
-        // movement ledger) — the sole owner of stock quantity now that the
-        // legacy ProductDocument.Sizes[].Stock write path has been removed.
-        services.AddScoped<IInventoryVariantRepository, InventoryVariantRepository>();
-        services.AddScoped<IPurchaseEntryRepository, PurchaseEntryRepository>();
-        services.AddScoped<IPurchaseItemRepository, PurchaseItemRepository>();
-        services.AddScoped<IStockMovementRepository, StockMovementRepository>();
-        services.AddScoped<IInventoryManagementService, InventoryManagementService>();
-
         // Audit Log — append-only ledger for every important admin action.
         // Reusable across all modules via IAuditLogService.
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAuditLogService, AuditLogService>();
-
-        // Inventory Core — primitive stock operations (Reserve/Release/
-        // Decrease/Return/Adjust/GetAvailable) that every feature (Order
-        // Management, Purchase Register, manual adjustments) uses. Every
-        // method writes an append-only StockMovementDocument automatically.
-        services.AddScoped<IInventoryCoreService, InventoryCoreService>();
-
-        // Reports module — 7 report types + CSV export
-        services.AddScoped<IReportsService, Services.Reports.ReportsService>();
-
-        // SKU generation — auto-generates VRD-{categoryCode}-{color}-{size}
-        // with Firestore-backed uniqueness and never-reuse via skuRegistry.
-        services.AddScoped<ISkuGenerationService, SkuGenerationService>();
-
-        // Stock alert notifications — stub until real email/SMS is wired.
-        // Replace the registration with a real IStockAlertNotificationService
-        // implementation (e.g. EmailStockAlertNotificationService) when
-        // notifications go live.
-        services.AddScoped<IStockAlertNotificationService, StubStockAlertNotificationService>();
-
-        // Supplier Management — dedicated suppliers collection, sequential
-        // SupplierCode generation, GSTIN uniqueness, and stats/purchase-history
-        // aggregated from purchaseEntries (via the optional SupplierId link).
-        services.AddScoped<ISupplierRepository, SupplierRepository>();
-        services.AddScoped<ISupplierService, SupplierService>();
 
         // Expense Management — expenses collection with CRUD, search, filters,
         // pagination, monthly/yearly summaries, and audit trail.
@@ -179,11 +136,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRevenueRepository, Services.Revenues.RevenueRepository>();
         services.AddScoped<IRevenueService, Services.Revenues.RevenueService>();
 
-        // Profit & Loss Dashboard — aggregates revenues, expenses, inventory,
-        // and profitability data into a single P&L view with chart series,
-        // category/supplier/marketplace breakdowns.
-        services.AddScoped<IPnLService, Services.ProfitLoss.PnLService>();
-
         // Cash Flow — aggregates paid revenues (money in) and paid expenses
         // (money out) into a cash flow dashboard with pending settlements,
         // pending expenses, monthly/yearly series.
@@ -193,24 +145,6 @@ public static class ServiceCollectionExtensions
         // detects missing payments, commission mismatches, unexpected charges,
         // and settlement delays. Future-ready for Flipkart API data source.
         services.AddScoped<ISettlementReconciliationService, Services.Settlement.SettlementReconciliationService>();
-
-        // Profitability module — per-product pricing analysis across all
-        // marketplaces, the primary pricing analysis tool for Vrindaya.
-        services.AddScoped<IProfitabilityService, Services.Profitability.ProfitabilityService>();
-
-        // Pricing module — dedicated pricing collection with full CRUD,
-        // per-variant-per-marketplace pricing records, computed actual profit
-        // and margin percentage, and audit trail.
-        services.AddScoped<IPricingRepository, Services.Pricing.PricingRepository>();
-        services.AddScoped<IPricingService, Services.Pricing.PricingService>();
-        services.AddScoped<IPricingHistoryRepository, Services.Pricing.PricingHistoryRepository>();
-
-        // Inventory Forecasting — pluggable architecture for future order
-        // integration. Replace StockBasedSalesVelocityProvider with an
-        // OrderBasedSalesVelocityProvider when Order Management is built.
-        services.AddScoped<ISalesVelocityProvider, Services.Forecasting.StockBasedSalesVelocityProvider>();
-        services.AddScoped<ILeadTimeProvider, Services.Forecasting.ConfigLeadTimeProvider>();
-        services.AddScoped<IInventoryForecastService, Services.Forecasting.InventoryForecastService>();
 
         return services;
     }

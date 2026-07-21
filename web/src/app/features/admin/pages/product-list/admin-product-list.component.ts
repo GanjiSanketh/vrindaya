@@ -1,10 +1,13 @@
 import { Component, inject, signal, computed, OnDestroy } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProductApiService } from '../../../../core/services/product-api.service';
+import { VariantApiService } from '../../../../core/services/variant-api.service';
 import { AdminAuthService } from '../../services/admin-auth.service';
 import { APP_ROUTES } from '../../../../core/constants/routes.constants';
 import { Product } from '../../../../core/models/product.model';
+import type { ProductVariant } from '../../../../core/models/product-variant.model';
 import { ProductSortField, ProductFlagName, AdminProductListQuery } from '../../../../core/models/product-api.model';
 import { ProductPreviewDrawerComponent } from '../../components/product-preview-drawer/product-preview-drawer.component';
 import { timestampMillis } from '../../../../shared/utils/timestamp.util';
@@ -38,6 +41,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 })
 export class AdminProductListComponent implements OnDestroy {
   private readonly api = inject(ProductApiService);
+  private readonly variantApi = inject(VariantApiService);
   readonly auth = inject(AdminAuthService);
   readonly BASE = `/${APP_ROUTES.ADMIN}`;
 
@@ -77,6 +81,28 @@ export class AdminProductListComponent implements OnDestroy {
   readonly deleteId          = signal<string | null>(null);
   readonly permanentDeleteId = signal<string | null>(null);
   readonly previewId         = signal<string | null>(null);
+
+  readonly expandedProductId    = signal<string | null>(null);
+  readonly variantsByProduct    = signal<Record<string, ProductVariant[]>>({});
+  readonly loadingVariants      = signal<Set<string>>(new Set());
+
+  async toggleExpand(productId: string): Promise<void> {
+    if (this.expandedProductId() === productId) {
+      this.expandedProductId.set(null);
+      return;
+    }
+    this.expandedProductId.set(productId);
+    if (this.variantsByProduct()[productId]) return;
+    this.loadingVariants.update(s => new Set(s).add(productId));
+    try {
+      const variants = await firstValueFrom(this.variantApi.getVariants(productId));
+      this.variantsByProduct.update(m => ({ ...m, [productId]: variants ?? [] }));
+    } catch {
+      this.variantsByProduct.update(m => ({ ...m, [productId]: [] }));
+    } finally {
+      this.loadingVariants.update(s => { const n = new Set(s); n.delete(productId); return n; });
+    }
+  }
 
   readonly hasAnyFilter = computed(() =>
     !!this.searchQuery() || this.categoryFilter() !== 'all' || this.statusFilter() !== 'all'

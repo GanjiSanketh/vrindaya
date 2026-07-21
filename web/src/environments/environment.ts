@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  maintenanceMode: true,
   adminEmail: 'gsanketh7121@gmail.com',
   /** ASP.NET Core Web API — run `dotnet run` in api/ locally to match this URL. */
   apiBaseUrl: 'https://localhost:5001/api/v1',

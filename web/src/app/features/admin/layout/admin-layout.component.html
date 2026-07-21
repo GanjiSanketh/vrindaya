@@ -13,46 +13,57 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="al-nav">
+    <nav class="al-nav" role="tree" aria-label="Admin navigation">
 
-      <!-- Dashboard — standalone, top-level -->
-      <a [routerLink]="BASE + '/dashboard'" routerLinkActive="al-nav-item--active" class="al-nav-item" (click)="closeSide()">
+      <!-- Dashboard — standalone top-level link -->
+      <a [routerLink]="BASE + '/dashboard'"
+         routerLinkActive="al-nav-item--active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         class="al-nav-item"
+         role="treeitem"
+         (click)="closeSide()">
         <i class="bi bi-grid-1x2"></i>
         <span>Dashboard</span>
       </a>
 
-      <!-- Collapsible sections -->
+      <!-- Collapsible tree sections -->
       @for (section of sections; track section.key) {
-        <div class="al-section">
-          <button
-            type="button"
-            class="al-section-header"
-            [class.al-section-header--active]="isSectionActive(section)"
-            (click)="toggleSection(section.key)"
-          >
+        <div class="al-tree-branch" role="treeitem" [attr.aria-expanded]="isExpanded(section.key)">
+
+          <button type="button"
+                  class="al-tree-toggle"
+                  [class.al-tree-toggle--active]="isSectionActive(section)"
+                  [class.al-tree-toggle--open]="isExpanded(section.key)"
+                  (click)="toggleSection(section.key)"
+                  (keydown)="handleKeydown($event, section.key)"
+                  attr.aria-controls="section-{{ section.key }}-panel">
             <i class="bi" [class]="section.icon"></i>
             <span>{{ section.label }}</span>
-            <i class="bi bi-chevron-right al-section-chevron" [class.al-section-chevron--open]="isExpanded(section.key)"></i>
+            <i class="bi bi-chevron-right al-tree-chevron"></i>
           </button>
 
-          <div class="al-collapsible" [class.al-collapsible--open]="isExpanded(section.key)">
-            <div class="al-collapsible-inner">
+          <div id="section-{{ section.key }}-panel"
+               class="al-tree-panel"
+               [class.al-tree-panel--open]="isExpanded(section.key)"
+               role="group">
+
+            <div class="al-tree-panel-inner">
               @for (item of section.items; track item.label) {
                 @if (hasAccess(item)) {
                   @if (item.comingSoon) {
-                    <span class="al-nav-item al-nav-item--child al-nav-item--soon">
+                    <span class="al-nav-item al-nav-item--soon" role="treeitem">
                       <i class="bi" [class]="item.icon"></i>
                       <span>{{ item.label }}</span>
                       <span class="al-soon-badge">Soon</span>
                     </span>
                   } @else {
-                    <a
-                      [routerLink]="BASE + '/' + item.path"
-                      routerLinkActive="al-nav-item--active"
-                      [routerLinkActiveOptions]="{ exact: item.exact ?? true }"
-                      class="al-nav-item al-nav-item--child"
-                      (click)="closeSide()"
-                    >
+                    <a [routerLink]="BASE + '/' + item.path"
+                       routerLinkActive="al-nav-item--active"
+                       [routerLinkActiveOptions]="{ exact: item.exact ?? true }"
+                       class="al-nav-item"
+                       [class.al-nav-item--indent]="true"
+                       role="treeitem"
+                       (click)="closeSide()">
                       <i class="bi" [class]="item.icon"></i>
                       <span>{{ item.label }}</span>
                     </a>
@@ -60,16 +71,17 @@
                 }
               }
             </div>
+
           </div>
         </div>
       }
 
       <hr class="al-divider" />
-      <a href="/" target="_blank" rel="noopener noreferrer" class="al-nav-item al-nav-item--ghost">
+
+      <a href="/" target="_blank" rel="noopener noreferrer" class="al-nav-item al-nav-item--ghost" role="treeitem">
         <i class="bi bi-eye"></i>
         <span>View Site</span>
       </a>
-
     </nav>
 
     <!-- User footer -->
@@ -96,7 +108,7 @@
 
   <!-- ── Overlay (mobile) ── -->
   @if (sideOpen()) {
-    <div class="al-overlay" (click)="closeSide()"></div>
+    <div class="al-overlay" (click)="closeSide()" (keydown)="closeSide()" tabindex="-1"></div>
   }
 
   <!-- ── Main ── -->

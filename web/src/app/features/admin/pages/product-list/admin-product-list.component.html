@@ -146,12 +146,12 @@
               <th class="pl-th-check">
                 <input type="checkbox" [checked]="allVisibleSelected()" (change)="toggleSelectAllVisible()" />
               </th>
-              <th class="pl-th-img"></th>
+              <th class="pl-th-img">Image</th>
               <th>Name</th>
+              <th>Colours</th>
               <th class="d-none d-md-table-cell">SKU</th>
-              <th class="d-none d-md-table-cell">Category</th>
               <th class="pl-th-sort" (click)="setSort('price')">
-                Price <i class="bi" [class.bi-chevron-up]="sortField() === 'price' && !sortDescending()"
+                Listing Price <i class="bi" [class.bi-chevron-up]="sortField() === 'price' && !sortDescending()"
                              [class.bi-chevron-down]="sortField() === 'price' && sortDescending()"
                              [class.bi-chevron-expand]="sortField() !== 'price'"></i>
               </th>
@@ -180,21 +180,40 @@
                   <input type="checkbox" [checked]="selectedIds().has(p.id)" (change)="toggleSelect(p.id)" />
                 </td>
                 <td>
-                  <img [src]="p.image" [alt]="p.name" class="pl-thumb" loading="lazy" draggable="false"
-                       (click)="openPreview(p.id)" />
+                  <div class="pl-thumb-wrap" title="Click to preview">
+                    @if (p.image) {
+                      <img [src]="p.image" [alt]="p.name" class="pl-thumb" loading="lazy" draggable="false"
+                           (click)="openPreview(p.id)" />
+                    } @else {
+                      <div class="pl-thumb-placeholder" (click)="openPreview(p.id)">
+                        <i class="bi bi-image"></i>
+                      </div>
+                    }
+                  </div>
                 </td>
                 <td>
                   <div class="pl-product-name pl-link" (click)="openPreview(p.id)">{{ p.name }}</div>
-                  <div class="pl-product-id d-md-none">{{ p.sku }}</div>
+                  <span class="pl-cat-badge">{{ p.category }}</span>
+                </td>
+                <td>
+                  <span class="pl-colours-badge" (click)="toggleExpand(p.id)" title="Click to view colour variants">
+                    <i class="bi bi-palette"></i>
+                    @if (loadingVariants().has(p.id)) {
+                      <span class="pl-colours-loading"></span>
+                    } @else {
+                      {{ (variantsByProduct()[p.id]?.length ?? 0) > 0 ? variantsByProduct()[p.id]!.length + ' colours' : '—' }}
+                    }
+                  </span>
                 </td>
                 <td class="d-none d-md-table-cell"><span class="pl-cat">{{ p.sku }}</span></td>
-                <td class="d-none d-md-table-cell"><span class="pl-cat">{{ p.category }}</span></td>
                 <td>₹{{ p.price }}</td>
                 <td class="d-none d-lg-table-cell">
-                  @if (p.stock > 0) {
-                    <span class="pl-badge pl-badge--best">{{ p.stock }}</span>
+                  @if (p.stock <= 0) {
+                    <span class="pl-badge-stock pl-stock-out">Out of Stock</span>
+                  } @else if (p.isLowStock) {
+                    <span class="pl-badge-stock pl-stock-low">{{ p.stock }} left</span>
                   } @else {
-                    <span class="pl-badge pl-badge--del">Out</span>
+                    <span class="pl-badge-stock pl-stock-in">In Stock</span>
                   }
                 </td>
                 <td class="d-none d-lg-table-cell">
@@ -238,6 +257,32 @@
                   </div>
                 </td>
               </tr>
+              @if (expandedProductId() === p.id && variantsByProduct()[p.id]) {
+                <tr class="pl-variant-row">
+                  <td colspan="13" class="pl-variant-cell">
+                    <div class="pl-variant-grid">
+                      @if (variantsByProduct()[p.id]!.length === 0) {
+                        <div class="pl-variant-empty">No colour variants — <a [routerLink]="BASE + '/products/' + p.id + '/edit'" class="btn-link">add one</a></div>
+                      } @else {
+                        @for (v of variantsByProduct()[p.id]!; track v.id) {
+                          <div class="pl-variant-card">
+                            <div class="pl-variant-swatch" [style.background]="v.colourHex || '#eee'"></div>
+                            <div class="pl-variant-info">
+                              <div class="pl-variant-name">{{ v.colourName }}</div>
+                              <div class="pl-variant-meta">{{ v.sku }}</div>
+                              <div class="pl-variant-meta">{{ v.sizes.length }} size{{ v.sizes.length !== 1 ? 's' : '' }}</div>
+                            </div>
+                            <div class="pl-variant-status">
+                              @if (v.isActive) { <span class="pl-badge-stock pl-stock-in">Active</span> }
+                              @else { <span class="pl-badge-stock pl-stock-out">Inactive</span> }
+                            </div>
+                          </div>
+                        }
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>

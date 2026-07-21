@@ -2,9 +2,9 @@
      (keydown.enter)="openFlipart($event)" [attr.aria-label]="product().name">
 
   <!-- Image -->
-  <div class="pc-img-wrap">
+  <div class="pc-img-wrap" [class.has-hover]="!noHover()">
     @if (!imgError()) {
-      <img [src]="product().image" [alt]="product().name"
+      <img [src]="product().image || ''" [alt]="product().name"
            class="pc-img pc-img--primary" loading="lazy"
            draggable="false" (error)="onImgError()" />
       <!-- Hover image: derived from gallery[0] when hoverImage field is absent.
@@ -70,7 +70,7 @@
     <div class="pc-rule"></div>
     @if (product().flipkartUrl) {
       <button class="pc-link" (click)="openFlipart($event)">
-        Shop on Flipkart <i class="bi bi-arrow-right"></i>
+        View on Flipkart <i class="bi bi-arrow-right"></i>
       </button>
     } @else {
       <button class="pc-link pc-link--soon" disabled>

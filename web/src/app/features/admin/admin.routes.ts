@@ -42,100 +42,7 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/flipkart-ops/flipkart-ops-list.component').then(m => m.FlipkartOpsListComponent),
       },
 
-      /* Inventory Management — dedicated inventory/purchaseEntries/
-         stockMovements collections (api/v1/inventory-management), entirely
-         separate from the older per-product stock fields still edited
-         inside the Product Form. Literal-path routes ('list',
-         'purchase-entries', 'movements', 'low-stock') declared before the
-         ':productId' param routes below them. */
-      {
-        path:          'inventory',
-        loadComponent: () => import('./pages/inventory/inventory-dashboard.component').then(m => m.InventoryDashboardComponent),
-      },
-      {
-        path:          'inventory/list',
-        loadComponent: () => import('./pages/inventory/inventory-list.component').then(m => m.InventoryListComponent),
-      },
-      {
-        path:          'inventory/purchase-entries',
-        loadComponent: () => import('./pages/inventory/purchase-entry-list.component').then(m => m.PurchaseEntryListComponent),
-      },
-      {
-        path:          'inventory/purchase-entries/new',
-        loadComponent: () => import('./pages/inventory/purchase-entry-form.component').then(m => m.PurchaseEntryFormComponent),
-      },
-      {
-        path:          'inventory/purchase-entries/:id/edit',
-        loadComponent: () => import('./pages/inventory/purchase-entry-form.component').then(m => m.PurchaseEntryFormComponent),
-      },
-      {
-        path:          'inventory/purchase-entries/:id',
-        loadComponent: () => import('./pages/inventory/purchase-entry-detail.component').then(m => m.PurchaseEntryDetailComponent),
-      },
-      {
-        path:          'inventory/movements',
-        loadComponent: () => import('./pages/inventory/stock-movement-history.component').then(m => m.StockMovementHistoryComponent),
-      },
-      {
-        path:          'inventory/low-stock',
-        loadComponent: () => import('./pages/inventory/low-stock-report.component').then(m => m.LowStockReportComponent),
-      },
-      {
-        path:          'inventory/variants/:variantId/pricing',
-        loadComponent: () => import('./pages/inventory/variant-pricing.component').then(m => m.VariantPricingComponent),
-      },
-      {
-        path:          'inventory/:productId/timeline',
-        loadComponent: () => import('./pages/inventory/product-timeline.component').then(m => m.ProductTimelineComponent),
-      },
-      {
-        path:          'inventory/pricing',
-        loadComponent: () => import('./pages/pricing/pricing-list.component').then(m => m.PricingListComponent),
-      },
-      {
-        path:          'inventory/pricing/new',
-        loadComponent: () => import('./pages/pricing/pricing-form.component').then(m => m.PricingFormComponent),
-      },
-      {
-        path:          'inventory/pricing/:id/edit',
-        loadComponent: () => import('./pages/pricing/pricing-form.component').then(m => m.PricingFormComponent),
-      },
-      {
-        path:          'inventory/pricing/dashboard',
-        loadComponent: () => import('./pages/pricing/pricing-dashboard.component').then(m => m.PricingDashboardComponent),
-      },
-      {
-        path:          'inventory/pricing/:id',
-        loadComponent: () => import('./pages/pricing/pricing-detail.component').then(m => m.PricingDetailComponent),
-      },
-      {
-        path:          'inventory/forecast',
-        loadComponent: () => import('./pages/inventory/inventory-forecast.component').then(m => m.InventoryForecastComponent),
-      },
-      {
-        path:          'inventory/:productId',
-        loadComponent: () => import('./pages/inventory/inventory-detail.component').then(m => m.InventoryDetailComponent),
-      },
 
-      /* Supplier Management — dedicated suppliers collection
-         (api/v1/suppliers). Literal-path route ('new') declared before the
-         ':id' param routes below it. */
-      {
-        path:          'suppliers',
-        loadComponent: () => import('./pages/suppliers/supplier-list.component').then(m => m.SupplierListComponent),
-      },
-      {
-        path:          'suppliers/new',
-        loadComponent: () => import('./pages/suppliers/supplier-form.component').then(m => m.SupplierFormComponent),
-      },
-      {
-        path:          'suppliers/:id/edit',
-        loadComponent: () => import('./pages/suppliers/supplier-form.component').then(m => m.SupplierFormComponent),
-      },
-      {
-        path:          'suppliers/:id',
-        loadComponent: () => import('./pages/suppliers/supplier-detail.component').then(m => m.SupplierDetailComponent),
-      },
       /* Homepage CMS — literal-path routes ('new') must be declared before
          the ':id' param routes, or they'd be swallowed as an id. */
       {
@@ -285,13 +192,6 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/cash-flow/cash-flow-dashboard.component').then(m => m.CashFlowDashboardComponent),
       },
 
-      /* P&L Dashboard */
-      {
-        path:          'pnl',
-        canActivate:   [roleGuard(['SuperAdmin', 'Admin'])],
-        loadComponent: () => import('./pages/pnl/pnl-dashboard.component').then(m => m.PnLDashboardComponent),
-      },
-
       /* Revenue Management */
       {
         path:          'revenues',
@@ -326,28 +226,6 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/expenses/expense-form.component').then(m => m.ExpenseFormComponent),
       },
 
-      /* Marketplace Management — Flipkart settings (SuperAdmin only) */
-      {
-        path:          'marketplace/dashboard',
-        canActivate:   [roleGuard(['SuperAdmin', 'Admin'])],
-        loadComponent: () => import('./pages/marketplace/marketplace-dashboard.component').then(m => m.MarketplaceDashboardComponent),
-      },
-      {
-        path:          'marketplace/profitability',
-        canActivate:   [roleGuard(['SuperAdmin', 'Admin'])],
-        loadComponent: () => import('./pages/marketplace/profitability.component').then(m => m.ProfitabilityComponent),
-      },
-      {
-        path:          'marketplace/flipkart',
-        canActivate:   [roleGuard(['SuperAdmin'])],
-        loadComponent: () => import('./pages/marketplace/flipkart-settings.component').then(m => m.FlipkartSettingsComponent),
-      },
-      {
-        path:          'marketplace/listings',
-        canActivate:   [roleGuard(['SuperAdmin', 'Admin'])],
-        loadComponent: () => import('./pages/marketplace/listings/product-listings.component').then(m => m.ProductListingsComponent),
-      },
-
       /* SuperAdmin + Admin only */
       {
         path:          'popup-config',
@@ -363,18 +241,6 @@ export const ADMIN_ROUTES: Routes = [
         path:          'analytics',
         canActivate:   [roleGuard(['SuperAdmin', 'Admin'])],
         loadComponent: () => import('./pages/analytics/admin-analytics.component').then(m => m.AdminAnalyticsComponent),
-      },
-      {
-        path:          'reports',
-        canActivate:   [roleGuard(['SuperAdmin', 'Admin'])],
-        loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent),
-      },
-
-      /* SuperAdmin only — who may access the Admin Portal at all (RBAC). */
-      {
-        path:          'audit-logs',
-        canActivate:   [roleGuard(['SuperAdmin'])],
-        loadComponent: () => import('./pages/audit-logs/audit-log-list.component').then(m => m.AuditLogListComponent),
       },
       {
         path:          'admin-users',

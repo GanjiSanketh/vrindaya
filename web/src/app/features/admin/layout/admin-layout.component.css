@@ -1,7 +1,3 @@
-/* ══════════════════════════════════════════
-   ADMIN LAYOUT — Vrindaya design system
-   ══════════════════════════════════════════ */
-
 :host { display: block; height: 100dvh; overflow: hidden; }
 
 .al-shell {
@@ -11,20 +7,25 @@
   background: #f0f4f7;
 }
 
-/* ── Sidebar ── */
+/* ══════════════════════════════════════════
+   SIDEBAR
+   ══════════════════════════════════════════ */
+
 .al-sidebar {
-  width: 240px;
+  width: 260px;
   flex-shrink: 0;
   background: #0c4a58;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 200;
 }
 
-.al-sidebar::-webkit-scrollbar { display: none; }
+.al-sidebar::-webkit-scrollbar { width: 4px; }
+.al-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
 /* ── Logo ── */
 .al-logo {
@@ -44,123 +45,187 @@
 }
 
 .al-logo-text { display: flex; flex-direction: column; }
-.al-brand     { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.1em; color: #fff; line-height: 1.1; }
-.al-subtitle  { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
-
-/* ── Nav ── */
-.al-nav {
-  flex: 1;
-  padding: 1rem 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+.al-brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #fff;
+  line-height: 1.1;
+}
+.al-subtitle {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
 }
 
+/* ══════════════════════════════════════════
+   TREE NAVIGATION
+   ══════════════════════════════════════════ */
+
+.al-nav {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+/* ── Base nav item (shared between Dashboard link and children) ── */
 .al-nav-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.875rem;
-  border-radius: 8px;
+  gap: 0.7rem;
+  padding: 0.5rem 0.75rem 0.5rem 0.75rem;
+  border-radius: 6px;
   text-decoration: none;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  transition: background 0.18s, color 0.18s;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+  transition: background 0.15s, color 0.15s, padding-left 0.15s;
+  cursor: pointer;
+  position: relative;
 }
 
-.al-nav-item i { font-size: 1rem; flex-shrink: 0; }
+.al-nav-item i {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  width: 1.25rem;
+  text-align: center;
+  opacity: 0.7;
+}
 
 .al-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   color: #fff;
 }
+.al-nav-item:hover i { opacity: 1; }
 
 .al-nav-item--active {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
   color: #fff !important;
-  font-weight: 600;
+  font-weight: 500;
+}
+.al-nav-item--active i { opacity: 1; }
+.al-nav-item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: #f5d57a;
+  border-radius: 0 3px 3px 0;
 }
 
-.al-nav-item--ghost { color: rgba(255, 255, 255, 0.45); }
-
-.al-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 0.375rem 0; }
-
-/* ── Collapsible sections ── */
-.al-section { display: flex; flex-direction: column; }
-
-.al-section-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border: none;
-  border-radius: 8px;
-  background: none;
-  text-align: left;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  cursor: pointer;
-  transition: background 0.18s, color 0.18s;
+/* ── Indented child items ── */
+.al-nav-item--indent {
+  padding-left: 2.25rem;
 }
-
-.al-section-header i:first-child { font-size: 1rem; flex-shrink: 0; }
-.al-section-header span { flex: 1; }
-
-.al-section-header:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-.al-section-header--active { color: #f5d57a; }
-
-.al-section-chevron {
-  font-size: 0.7rem !important;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.al-section-chevron--open { transform: rotate(90deg); }
-
-/* CSS-only expand/collapse — no JS height measurement, no animations lib. */
-.al-collapsible {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.25s ease;
-}
-
-.al-collapsible--open { grid-template-rows: 1fr; }
-
-.al-collapsible-inner {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding-top: 0.125rem;
-}
-
-.al-nav-item--child { padding-left: 2.25rem; font-size: 0.82rem; }
 
 .al-nav-item--soon {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
-  justify-content: flex-start;
 }
 
 .al-soon-badge {
   margin-left: auto;
-  font-size: 0.58rem;
+  font-size: 0.55rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.45);
   padding: 0.1rem 0.4rem;
   border-radius: 10px;
   flex-shrink: 0;
 }
 
-/* ── User footer ── */
+.al-nav-item--ghost { color: rgba(255, 255, 255, 0.4); font-size: 0.78rem; }
+.al-nav-item--ghost i { opacity: 0.5; }
+
+.al-divider {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin: 0.375rem 0;
+}
+
+/* ── Tree branch — section header ── */
+.al-tree-branch {
+  display: flex;
+  flex-direction: column;
+}
+
+.al-tree-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+
+.al-tree-toggle i:first-child {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  width: 1.25rem;
+  text-align: center;
+  opacity: 0.7;
+}
+.al-tree-toggle span { flex: 1; }
+.al-tree-toggle:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+.al-tree-toggle:hover i:first-child { opacity: 1; }
+.al-tree-toggle:focus-visible { outline: 2px solid rgba(245, 213, 122, 0.6); outline-offset: -2px; }
+
+.al-tree-toggle--active { color: #f5d57a; }
+.al-tree-toggle--active i:first-child { opacity: 1; color: #f5d57a; }
+
+/* ── Chevron ── */
+.al-tree-chevron {
+  font-size: 0.65rem !important;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+  opacity: 0.5 !important;
+}
+
+.al-tree-toggle--open .al-tree-chevron { transform: rotate(90deg); opacity: 0.8 !important; }
+
+/* ── Tree panel — collapsible container ── */
+.al-tree-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.al-tree-panel--open { grid-template-rows: 1fr; }
+
+.al-tree-panel-inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding-left: 0.5rem;
+  padding-top: 0.125rem;
+}
+
+/* ══════════════════════════════════════════
+   USER FOOTER
+   ══════════════════════════════════════════ */
+
 .al-user {
   display: flex;
   align-items: center;
@@ -176,13 +241,13 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.15);
 }
 
 .al-avatar--placeholder {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.08);
   display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.6); font-size: 1rem;
+  color: rgba(255,255,255,0.5); font-size: 1rem;
 }
 
 .al-user-info {
@@ -193,7 +258,14 @@
   min-width: 0;
 }
 
-.al-user-name { font-size: 0.78rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.al-user-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .al-user-role {
   font-size: 0.6rem;
@@ -206,25 +278,28 @@
   display: inline-block;
 }
 
-.al-user-role--SuperAdmin { background: rgba(201,169,89,0.25); color: #f5d57a; }
-.al-user-role--Admin      { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.7); }
+.al-user-role--SuperAdmin { background: rgba(201,169,89,0.2); color: #f5d57a; }
+.al-user-role--Admin { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
 
 .al-signout {
   width: 28px; height: 28px;
   border: none;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.06);
   border-radius: 50%;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.5);
   font-size: 0.85rem;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.18s, color 0.18s;
+  transition: background 0.15s, color 0.15s;
 }
 
-.al-signout:hover { background: rgba(255,255,255,0.18); color: #fff; }
+.al-signout:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
-/* ── Main ── */
+/* ══════════════════════════════════════════
+   MAIN CONTENT
+   ══════════════════════════════════════════ */
+
 .al-main {
   flex: 1;
   display: flex;
@@ -254,6 +329,7 @@
 }
 
 .al-menu-btn:hover { background: #f0f4f7; }
+.al-menu-btn:focus-visible { outline: 2px solid #0c4a58; outline-offset: 2px; }
 
 .al-topbar-title {
   flex: 1;
@@ -292,7 +368,10 @@
   z-index: 190;
 }
 
-/* ── Responsive ── */
+/* ══════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════ */
+
 @media (max-width: 1024px) {
   .al-sidebar {
     position: fixed;
@@ -305,7 +384,7 @@
     box-shadow: 4px 0 32px rgba(0,0,0,0.25);
   }
 
-  .al-topbar  { display: flex; }
+  .al-topbar { display: flex; }
   .al-overlay { display: block; }
   .al-content { padding: 1.25rem 1rem; }
 }

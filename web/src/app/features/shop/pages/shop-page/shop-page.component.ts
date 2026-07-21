@@ -11,7 +11,7 @@ import { SkeletonGridComponent } from '../../../../shared/components/skeleton/sk
 
 const PAGE_SIZE = 24;
 
-export type ShopFilterKind = 'none' | 'category' | 'price' | 'availability' | 'featured' | 'bestSeller' | 'newArrival';
+export type ShopFilterKind = 'none' | 'category' | 'availability' | 'featured' | 'bestSeller' | 'newArrival';
 const SORT_OPTIONS = PUBLIC_SORT_OPTIONS;
 
 @Component({
@@ -37,8 +37,6 @@ export class ShopPageComponent implements OnInit, OnDestroy {
   readonly searchTerm  = signal<string | null>(null);
   readonly filterKind  = signal<ShopFilterKind>('none');
   readonly categoryId  = signal('');
-  readonly minPrice    = signal<number | null>(null);
-  readonly maxPrice    = signal<number | null>(null);
   readonly sortKey     = signal<keyof typeof SORT_OPTIONS>('displayOrder');
 
   readonly items       = signal<Product[]>([]);
@@ -84,7 +82,7 @@ export class ShopPageComponent implements OnInit, OnDestroy {
       title,
       description: q
         ? `Search results for "${q}" at Vrindaya — premium Indian ethnic wear.`
-        : 'Browse the full Vrindaya catalogue — kurtas, kurta sets and more, filterable by price, category and availability.',
+        : 'Browse the full Vrindaya catalogue — kurtas, kurta sets and more, filterable by category and availability.',
       url: '/shop',
     });
   }
@@ -93,20 +91,12 @@ export class ShopPageComponent implements OnInit, OnDestroy {
     if (this.searchTerm()) void this.clearSearch();
     this.filterKind.set(kind);
     if (kind !== 'category') this.categoryId.set('');
-    if (kind !== 'price') { this.minPrice.set(null); this.maxPrice.set(null); }
     void this.resetAndLoad();
   }
 
   setCategory(id: string): void {
     this.filterKind.set(id ? 'category' : 'none');
     this.categoryId.set(id);
-    void this.resetAndLoad();
-  }
-
-  applyPriceRange(min: string, max: string): void {
-    this.filterKind.set('price');
-    this.minPrice.set(min ? Number(min) : null);
-    this.maxPrice.set(max ? Number(max) : null);
     void this.resetAndLoad();
   }
 
@@ -166,8 +156,6 @@ export class ShopPageComponent implements OnInit, OnDestroy {
     switch (this.filterKind()) {
       case 'category':
         return this.query.browse({ category: this.categoryId() }, sort.sortBy, sort.sortDescending, PAGE_SIZE, cursor);
-      case 'price':
-        return this.query.browse({ minPrice: this.minPrice() ?? undefined, maxPrice: this.maxPrice() ?? undefined }, sort.sortBy, sort.sortDescending, PAGE_SIZE, cursor);
       case 'availability':
         return this.query.browse({ inStockOnly: true }, sort.sortBy, sort.sortDescending, PAGE_SIZE, cursor);
       case 'featured':

@@ -2,13 +2,15 @@ import {
   ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal,
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 
 import { ProductQueryService, ProductNotFoundError } from '../../../../core/services/product-query.service';
 import { ProductService } from '../../../../core/services/product.service';
+import { VariantApiService } from '../../../../core/services/variant-api.service';
 import { LightboxService } from '../../../../core/services/lightbox.service';
 import { SeoService } from '../../../../core/services/seo.service';
 import { Product } from '../../../../core/models/product.model';
+import type { ProductVariant } from '../../../../core/models/product-variant.model';
 import { ProductCard } from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent } from '../../../../shared/components/skeleton/skeleton-grid.component';
 
@@ -26,6 +28,7 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly query = inject(ProductQueryService);
   private readonly productService = inject(ProductService);
+  private readonly variantApi = inject(VariantApiService);
   private readonly lightbox = inject(LightboxService);
   private readonly seo = inject(SeoService);
   private paramSub!: Subscription;
@@ -38,11 +41,31 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
   readonly relatedProducts = signal<Product[]>([]);
   readonly relatedLoading  = signal(false);
 
+  readonly variants         = signal<ProductVariant[]>([]);
+  readonly selectedVariantId = signal<string | null>(null);
+  readonly variantLoading   = signal(false);
+
+  readonly selectedVariant = computed(() => {
+    const id = this.selectedVariantId();
+    return this.variants().find(v => v.id === id) ?? this.variants()[0] ?? null;
+  });
+
   readonly selectedIndex   = signal(0);
   readonly isZoomed        = signal(false);
   readonly transformOrigin = signal('50% 50%');
 
   readonly allImages = computed(() => {
+    const v = this.selectedVariant();
+    if (v) {
+      const imgs: string[] = [];
+      if (v.images.primary) imgs.push(v.images.primary);
+      if (v.images.front)   imgs.push(v.images.front);
+      if (v.images.back)    imgs.push(v.images.back);
+      if (v.images.left)    imgs.push(v.images.left);
+      if (v.images.right)   imgs.push(v.images.right);
+      imgs.push(...v.images.gallery);
+      if (imgs.length) return imgs;
+    }
     const p = this.product();
     return p ? [p.image, ...(p.gallery ?? [])] : [];
   });
@@ -74,6 +97,7 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
       this.loading.set(false);
       this.applySeo(product);
       void this.loadRelated(product);
+      void this.loadVariants(id);
     } catch (err) {
       this.loading.set(false);
       if (err instanceof ProductNotFoundError) {
@@ -82,6 +106,35 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
         this.error.set(err instanceof Error ? err.message : 'Could not load this product.');
       }
     }
+  }
+
+  private async loadVariants(productId: string): Promise<void> {
+    this.variantLoading.set(true);
+    try {
+      const variants = await firstValueFrom(this.variantApi.getVariants(productId));
+      this.variants.set(variants ?? []);
+      if (variants?.length) {
+        const first = variants.find(v => v.isActive) ?? variants[0];
+        this.selectedVariantId.set(first.id);
+      }
+    } catch {
+      this.variants.set([]);
+    } finally {
+      this.variantLoading.set(false);
+    }
+  }
+
+  selectVariant(id: string): void {
+    this.selectedVariantId.set(id);
+    this.selectedIndex.set(0);
+  }
+
+  get sizes(): ProductVariant['sizes'] {
+    return this.selectedVariant()?.sizes ?? this.product()?.sizes ?? [];
+  }
+
+  get flipkartUrl(): string | null {
+    return this.selectedVariant()?.flipkartUrl ?? this.product()?.flipkartUrl ?? null;
   }
 
   private async loadRelated(product: Product): Promise<void> {
@@ -123,6 +176,8 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
   }
 
   shopOnFlipkart(): void {
+    const url = this.flipkartUrl;
+    if (url) { window.open(url, '_blank'); return; }
     const p = this.product();
     if (p) this.productService.openProduct(p);
   }

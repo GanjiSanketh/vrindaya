@@ -3,11 +3,9 @@ import { RouterLink }                          from '@angular/router';
 import { CurrencyPipe }                        from '@angular/common';
 import { ProductApiService }                   from '../../../../core/services/product-api.service';
 import { AdminAuthService }                    from '../../services/admin-auth.service';
-import { InventoryService }                    from '../../services/inventory.service';
 import { APP_ROUTES }                          from '../../../../core/constants/routes.constants';
 import { timestampMillis }                     from '../../../../shared/utils/timestamp.util';
 import { LIFECYCLE_STAGES }                    from '../../../../core/constants/lifecycle-stage.constants';
-import { InventoryDashboard }                  from '../../models/inventory.model';
 
 @Component({
   selector:    'app-admin-dashboard',
@@ -19,12 +17,7 @@ import { InventoryDashboard }                  from '../../models/inventory.mode
 export class AdminDashboardComponent {
   readonly productApi = inject(ProductApiService);
   readonly authSvc     = inject(AdminAuthService);
-  readonly inventorySvc = inject(InventoryService);
   readonly BASE        = `/${APP_ROUTES.ADMIN}`;
-
-  readonly inventoryHealth = signal<InventoryDashboard | null>(null);
-  readonly inventoryHealthLoading = signal(true);
-  readonly inventoryHealthError = signal<string | null>(null);
 
   private readonly notDeleted = computed(() => this.productApi.products().filter(p => !p.deleted));
 
@@ -58,17 +51,6 @@ export class AdminDashboardComponent {
 
   constructor() {
     this.productApi.ensureLoaded();
-    void this.loadInventoryHealth();
-  }
-
-  private async loadInventoryHealth(): Promise<void> {
-    try {
-      this.inventoryHealth.set(await this.inventorySvc.getDashboard());
-    } catch {
-      this.inventoryHealthError.set('Could not load inventory health data.');
-    } finally {
-      this.inventoryHealthLoading.set(false);
-    }
   }
 
   export(): void {

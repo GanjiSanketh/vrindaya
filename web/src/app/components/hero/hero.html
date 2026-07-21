@@ -1,51 +1,8 @@
-<section class="hero" id="hero">
+<section class="hero" id="hero" #heroSection
+         [class.hero-cinematic]="!reducedMotion()"
+         [class.hero-static]="reducedMotion()">
 
-  <!-- LEFT: text content -->
-  <div class="hero-content">
-
-    <span class="hero-badge">New Season Collection</span>
-
-    <span class="hero-label">Vrindaya</span>
-
-    <h1 class="hero-title">{{ banner()?.title || 'Wear the Grace' }}</h1>
-
-    <div class="hero-divider" aria-hidden="true">
-      <span class="hero-divider-line"></span>
-      <span class="hero-divider-ornament">✦</span>
-      <span class="hero-divider-line"></span>
-    </div>
-
-    <p class="hero-desc">
-      {{ banner()?.subtitle || 'Elegant ethnic wear designed for modern women who appreciate timeless style, comfort and effortless sophistication.' }}
-    </p>
-
-    <div class="hero-trust">
-      <div class="trust-pill">
-        <i class="bi bi-stars"></i>
-        <span>Premium Fabrics</span>
-      </div>
-
-      <div class="trust-pill">
-        <i class="bi bi-patch-check"></i>
-        <span>Quality Assured</span>
-      </div>
-
-      <div class="trust-pill">
-        <i class="bi bi-truck"></i>
-        <span>Pan India Delivery</span>
-      </div>
-    </div>
-
-    @if (banner()?.buttonText) {
-      <a class="btn-primary hero-cta" [href]="banner()!.buttonUrl || '#'">
-        {{ banner()!.buttonText }} <i class="bi bi-arrow-right"></i>
-      </a>
-    }
-
-  </div>
-
-  <!-- RIGHT: model photo -->
-  <div class="hero-visual">
+  <div class="hero-backdrop">
     <picture>
       @if (banner()?.mobileImageUrl) {
         <source media="(max-width: 767px)" [srcset]="banner()!.mobileImageUrl!" />
@@ -54,6 +11,29 @@
            [alt]="banner()?.title || 'Vrindaya — Wear the Grace'"
            class="hero-img" draggable="false" />
     </picture>
+  </div>
+
+  <app-hero-sequence />
+
+  <div class="hero-cinematic-content"
+       [class.hero-content-visible]="reducedMotion()">
+    <div class="hero-cinematic-inner">
+      <span class="hero-badge">New Season Collection</span>
+      <h1 class="hero-title">{{ banner()?.title || 'Wear the Grace' }}</h1>
+      <div class="hero-divider" aria-hidden="true">
+        <span class="hero-divider-line"></span>
+        <span class="hero-divider-ornament">✦</span>
+        <span class="hero-divider-line"></span>
+      </div>
+      <p class="hero-desc">
+        {{ banner()?.subtitle || 'Elegant ethnic wear designed for modern women who appreciate timeless style, comfort and effortless sophistication.' }}
+      </p>
+      @if (banner()?.buttonText) {
+        <a class="btn-primary hero-cta" [href]="banner()!.buttonUrl || '#'">
+          {{ banner()!.buttonText }} <i class="bi bi-arrow-right"></i>
+        </a>
+      }
+    </div>
   </div>
 
 </section>

@@ -38,7 +38,23 @@ export class ProductCard {
     return p.hoverImage ?? p.gallery?.[0] ?? null;
   });
 
+  /** True when no second image exists or the hover image failed to load. */
+  readonly noHover = computed(() => {
+    if (this.hoverImgError()) return true;
+    return !this.hoverImage();
+  });
+
   constructor() {
+    effect(() => {
+      const p = this.product();
+      if (isDevMode()) {
+        console.log('[IMAGE] Product images:', p.images);
+        console.log('[IMAGE] Primary image URL:', p.image);
+        console.log('[IMAGE] Hover image URL:', this.hoverImage());
+        console.log('[IMAGE] Gallery:', p.gallery);
+      }
+    });
+
     // Preload hover image as soon as the product input resolves so the
     // first hover never flashes blank while the browser fetches the image.
     effect(() => {

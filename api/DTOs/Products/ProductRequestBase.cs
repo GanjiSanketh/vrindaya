@@ -58,7 +58,6 @@ public abstract class ProductRequestBase
 
     public List<ProductSizeDto> Sizes { get; set; } = [];
 
-    [Required]
     public string Sku { get; set; } = string.Empty;
 
     public List<string> Tags { get; set; } = [];
