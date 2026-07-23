@@ -1,7 +1,6 @@
 import { HttpClient }                       from '@angular/common/http';
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser }               from '@angular/common';
-import { BehaviorSubject }                 from 'rxjs';
 import { catchError, of }                  from 'rxjs';
 
 import { PopupConfig, CampaignType } from '../models/popup.model';
@@ -17,14 +16,10 @@ export class PopupService {
   private readonly platformId    = inject(PLATFORM_ID);
   private readonly productService = inject(ProductService);
 
-  private readonly _floatingCard = new BehaviorSubject<boolean>(false);
-  private readonly _fullPopup    = new BehaviorSubject<boolean>(false);
+  readonly floatingCard = signal(false);
+  readonly fullPopup    = signal(false);
+  readonly visible      = this.fullPopup.asReadonly();
 
-  readonly floatingCard$ = this._floatingCard.asObservable();
-  readonly fullPopup$    = this._fullPopup.asObservable();
-  readonly visible$      = this._fullPopup.asObservable();
-
-  /** Live, active-products-only list — was a static products.json snapshot before the Firestore migration. */
   get allProducts(): Product[] { return this.productService.allProducts; }
 
   private config:         PopupConfig | null = null;
@@ -36,7 +31,6 @@ export class PopupService {
   loadAndSchedule(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // Config already in memory (subsequent home visits after deactivate)
     if (this.config) {
       this.setupTriggers();
       return;
@@ -61,8 +55,8 @@ export class PopupService {
   }
 
   openFullPopup(): void {
-    this._floatingCard.next(false);
-    this._fullPopup.next(true);
+    this.floatingCard.set(false);
+    this.fullPopup.set(true);
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = 'hidden';
     }
@@ -70,12 +64,12 @@ export class PopupService {
   }
 
   dismissFloatingCard(): void {
-    this._floatingCard.next(false);
+    this.floatingCard.set(false);
     this.markShown();
   }
 
   closeFullPopup(): void {
-    this._fullPopup.next(false);
+    this.fullPopup.set(false);
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';
     }
@@ -84,17 +78,11 @@ export class PopupService {
 
   close(): void { this.closeFullPopup(); }
 
-  /**
-   * Called when navigating away from home ('/').
-   * Clears pending triggers, hides any visible popup, and resets the
-   * triggered flag so the popup can re-arm when the user returns home.
-   * Session-storage frequency controls are intentionally left intact.
-   */
   deactivate(): void {
     this.clearTriggers();
     this.triggered = false;
-    this._floatingCard.next(false);
-    this._fullPopup.next(false);
+    this.floatingCard.set(false);
+    this.fullPopup.set(false);
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';
     }
@@ -156,7 +144,7 @@ export class PopupService {
     if (this.triggered) return;
     this.triggered = true;
     this.clearTriggers();
-    this._floatingCard.next(true);
+    this.floatingCard.set(true);
   }
 
   private clearTriggers(): void {

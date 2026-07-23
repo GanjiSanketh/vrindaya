@@ -1,17 +1,11 @@
 export const APP_ROUTES = {
   HOME:         '',
   CATEGORY:     'category',
-  COLLECTION:   'collection',
   PRODUCT:      'product',
   SHOP:         'shop',
   NEW_ARRIVALS: 'new-arrivals',
   TRENDING:     'trending',
-  ABOUT:        'about',
-  CONTACT:      'contact',
-  FAQ:          'faq',
-  POLICIES:     'policies',
   ADMIN:        'admin',
-  POPUP_CONFIG: 'admin/popup-config',
   NOT_FOUND:    'not-found',
 } as const;
 

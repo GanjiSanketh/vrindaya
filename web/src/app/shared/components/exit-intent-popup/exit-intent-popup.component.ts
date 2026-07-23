@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Router }              from '@angular/router';
 import { ExitIntentService }   from '../../../core/services/exit-intent.service';
 import { APP_ROUTES }          from '../../../core/constants/routes.constants';
@@ -8,6 +8,7 @@ import { APP_ROUTES }          from '../../../core/constants/routes.constants';
   standalone: true,
   templateUrl: './exit-intent-popup.component.html',
   styleUrl:    './exit-intent-popup.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExitIntentPopupComponent {
   readonly svc   = inject(ExitIntentService);

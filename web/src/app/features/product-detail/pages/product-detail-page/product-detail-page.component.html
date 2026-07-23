@@ -30,15 +30,6 @@
 
     <div class="container-vr pd-wrap">
 
-      <!-- Breadcrumb -->
-      <nav class="pd-breadcrumb" aria-label="Breadcrumb">
-        <a routerLink="/" class="pd-bc-link">Home</a>
-        <i class="bi bi-chevron-right pd-bc-sep" aria-hidden="true"></i>
-        <a [routerLink]="['/category', p.category]" class="pd-bc-link">{{ p.category }}</a>
-        <i class="bi bi-chevron-right pd-bc-sep" aria-hidden="true"></i>
-        <span class="pd-bc-current">{{ p.name }}</span>
-      </nav>
-
       <div class="pd-main">
 
         <!-- Gallery -->
@@ -69,25 +60,7 @@
         <!-- Details -->
         <div class="pd-details">
 
-          <div class="pd-badge-row">
-            @if (p.isOutOfStock)      { <span class="pd-badge pd-badge--oos">OUT OF STOCK</span> }
-            @else if (p.isBestSeller) { <span class="pd-badge">BESTSELLER</span> }
-            @else if (p.isTrending)   { <span class="pd-badge">FEATURED</span> }
-            @else if (p.isNew)        { <span class="pd-badge pd-badge--new">NEW ARRIVAL</span> }
-          </div>
-
           <h1 class="pd-name">{{ p.name }}</h1>
-
-          <div class="pd-price-row">
-            <span class="pd-collection-badge">★★★★★ Premium Collection</span>
-          </div>
-
-          <ul class="pd-trust-list">
-            <li><i class="bi bi-check-lg"></i> Available on Flipkart</li>
-            <li><i class="bi bi-check-lg"></i> Secure Checkout</li>
-            <li><i class="bi bi-check-lg"></i> Fast Delivery</li>
-            <li><i class="bi bi-check-lg"></i> Easy Returns</li>
-          </ul>
 
           @if (variants().length > 1) {
             <div class="pd-block">
@@ -143,7 +116,7 @@
           <div class="pd-actions">
             @if (flipkartUrl) {
               <button type="button" class="pd-cta" (click)="shopOnFlipkart()">
-                View on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
+                Buy on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
               </button>
             } @else {
               <button type="button" class="pd-cta pd-cta--soon" disabled>Coming Soon</button>

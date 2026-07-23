@@ -1,6 +1,6 @@
 import {
   Component, computed, effect, HostListener,
-  inject, PLATFORM_ID, signal, untracked,
+  inject, PLATFORM_ID, signal, untracked, ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -15,6 +15,7 @@ import { ProductService }    from '../../../core/services/product.service';
   imports: [CommonModule],
   templateUrl: './quick-view.component.html',
   styleUrl:    './quick-view.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductQuickViewComponent {
   readonly svc          = inject(QuickViewService);

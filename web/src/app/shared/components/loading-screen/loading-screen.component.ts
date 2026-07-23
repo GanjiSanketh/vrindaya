@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, signal, output, inject, PLATFORM_ID,
+  Component, OnInit, signal, output, inject, PLATFORM_ID, ChangeDetectionStrategy,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -10,6 +10,7 @@ const STORAGE_KEY = 'vrindaya_visited';
   standalone: true,
   templateUrl: './loading-screen.component.html',
   styleUrl: './loading-screen.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadingScreenComponent implements OnInit {
   private readonly pid = inject(PLATFORM_ID);

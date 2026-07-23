@@ -87,11 +87,7 @@ public partial class CloudinaryService : ICloudinaryService
 
             return Map(result);
         }
-        catch (ImageStorageException)
-        {
-            throw;
-        }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not ImageStorageException)
         {
             _logger.LogError(ex, "Failed to upload image to Cloudinary. Folder: {Folder}, FileName: {FileName}, DurationMs: {DurationMs}", folder, displayName, stopwatch.ElapsedMilliseconds);
             throw new ImageStorageException("Failed to upload image.", ex);
@@ -138,11 +134,7 @@ public partial class CloudinaryService : ICloudinaryService
 
             _logger.LogInformation("Deleted image from Cloudinary. PublicId: {PublicId}, DurationMs: {DurationMs}", publicId, stopwatch.ElapsedMilliseconds);
         }
-        catch (ImageStorageException)
-        {
-            throw;
-        }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not ImageStorageException)
         {
             _logger.LogError(ex, "Failed to delete image from Cloudinary. PublicId: {PublicId}, DurationMs: {DurationMs}", publicId, stopwatch.ElapsedMilliseconds);
             throw new ImageStorageException("Failed to delete image.", ex);
@@ -191,11 +183,7 @@ public partial class CloudinaryService : ICloudinaryService
 
             return Map(result);
         }
-        catch (ImageStorageException)
-        {
-            throw;
-        }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not ImageStorageException)
         {
             _logger.LogError(ex, "Failed to upload image to Cloudinary from remote URL. Folder: {Folder}, DurationMs: {DurationMs}", folder, stopwatch.ElapsedMilliseconds);
             throw new ImageStorageException("Failed to duplicate image.", ex);
@@ -223,11 +211,7 @@ public partial class CloudinaryService : ICloudinaryService
             }
             while (!string.IsNullOrEmpty(nextCursor));
         }
-        catch (ImageStorageException)
-        {
-            throw;
-        }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not ImageStorageException)
         {
             _logger.LogError(ex, "Failed to list Cloudinary assets. Folder: {Folder}", folder);
             throw new ImageStorageException("Failed to list images.", ex);

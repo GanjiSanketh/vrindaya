@@ -1,6 +1,6 @@
 import {
   Component, effect, HostListener, inject,
-  OnDestroy, OnInit, PLATFORM_ID, signal,
+  OnDestroy, OnInit, PLATFORM_ID, signal, ChangeDetectionStrategy,
 } from '@angular/core';
 import { isPlatformBrowser }               from '@angular/common';
 import { FormsModule }                     from '@angular/forms';
@@ -11,17 +11,13 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { SearchService }       from '../../core/services/search.service';
 import { ProductQueryService } from '../../core/services/product-query.service';
 import { CategoryService }     from '../../core/services/category.service';
-import { CollectionService }   from '../../core/services/collection.service';
 import { Product, Category }   from '../../core/models/product.model';
-import { Collection }          from '../../core/models/collection.model';
 
 export type SearchResultItem =
   | { kind: 'product'; product: Product }
-  | { kind: 'category'; category: Category }
-  | { kind: 'collection'; collection: Collection };
+  | { kind: 'category'; category: Category };
 
 const MAX_CATEGORY_MATCHES = 3;
-const MAX_COLLECTION_MATCHES = 3;
 const MAX_PRODUCT_MATCHES = 8;
 
 @Component({
@@ -30,12 +26,12 @@ const MAX_PRODUCT_MATCHES = 8;
   imports: [FormsModule],
   templateUrl: './search-overlay.component.html',
   styleUrl:    './search-overlay.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchOverlayComponent implements OnInit, OnDestroy {
   readonly svc     = inject(SearchService);
   private readonly productQuery    = inject(ProductQueryService);
   private readonly categoryQuery   = inject(CategoryService);
-  private readonly collectionQuery = inject(CollectionService);
   private readonly router  = inject(Router);
   private readonly pid     = inject(PLATFORM_ID);
 
@@ -89,10 +85,9 @@ export class SearchOverlayComponent implements OnInit, OnDestroy {
     this.error.set(null);
     try {
       const lower = trimmed.toLowerCase();
-      const [productPage, categories, collections] = await Promise.all([
+      const [productPage, categories] = await Promise.all([
         this.productQuery.search(trimmed, MAX_PRODUCT_MATCHES),
         this.categoryQuery.getAll().catch(() => [] as Category[]),
-        this.collectionQuery.getAll().catch(() => [] as Collection[]),
       ]);
 
       const categoryMatches: SearchResultItem[] = categories
@@ -100,15 +95,9 @@ export class SearchOverlayComponent implements OnInit, OnDestroy {
         .slice(0, MAX_CATEGORY_MATCHES)
         .map(category => ({ kind: 'category', category }));
 
-      const collectionMatches: SearchResultItem[] = collections
-        .filter(c => c.name.toLowerCase().includes(lower))
-        .slice(0, MAX_COLLECTION_MATCHES)
-        .map(collection => ({ kind: 'collection', collection }));
-
       const productMatches: SearchResultItem[] = productPage.items.map(product => ({ kind: 'product', product }));
 
-      // Categories/collections surface first — they're exact-ish name matches over a tiny list, more likely to be "the" intended destination than a fuzzy product match.
-      this.results.set([...categoryMatches, ...collectionMatches, ...productMatches]);
+      this.results.set([...categoryMatches, ...productMatches]);
     } catch (err) {
       this.results.set([]);
       this.error.set(err instanceof Error ? err.message : 'Search unavailable.');
@@ -125,7 +114,6 @@ export class SearchOverlayComponent implements OnInit, OnDestroy {
     switch (item.kind) {
       case 'product':    return `product:${item.product.id}`;
       case 'category':   return `category:${item.category.id}`;
-      case 'collection': return `collection:${item.collection.id}`;
     }
   }
 
@@ -133,7 +121,6 @@ export class SearchOverlayComponent implements OnInit, OnDestroy {
     switch (item.kind) {
       case 'product':    return item.product.name;
       case 'category':   return item.category.name;
-      case 'collection': return item.collection.name;
     }
   }
 
@@ -141,7 +128,6 @@ export class SearchOverlayComponent implements OnInit, OnDestroy {
     switch (item.kind) {
       case 'product':    return item.product.category;
       case 'category':   return 'Category';
-      case 'collection': return 'Collection';
     }
   }
 
@@ -149,7 +135,6 @@ export class SearchOverlayComponent implements OnInit, OnDestroy {
     switch (item.kind) {
       case 'product':    this.router.navigate(['/product', item.product.id]); break;
       case 'category':   this.router.navigate(['/category', item.category.id]); break;
-      case 'collection': this.router.navigate(['/collection', item.collection.slug]); break;
     }
     this.close();
   }

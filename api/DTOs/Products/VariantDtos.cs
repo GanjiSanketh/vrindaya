@@ -25,13 +25,22 @@ public class VariantResponse
 
 public class VariantImagesResponse
 {
-    public string? Primary { get; set; }
-    public string? Front { get; set; }
-    public string? Back { get; set; }
-    public string? Left { get; set; }
-    public string? Right { get; set; }
-    public string? Closeup { get; set; }
-    public List<string> Gallery { get; set; } = [];
+    public VariantImageSlotResponse? Primary { get; set; }
+    public VariantImageSlotResponse? Front { get; set; }
+    public VariantImageSlotResponse? Back { get; set; }
+    public VariantImageSlotResponse? Left { get; set; }
+    public VariantImageSlotResponse? Right { get; set; }
+    public VariantImageSlotResponse? Closeup { get; set; }
+    public List<VariantImageSlotResponse> Gallery { get; set; } = [];
+}
+
+public class VariantImageSlotResponse
+{
+    public string Url { get; set; } = string.Empty;
+    public string PublicId { get; set; } = string.Empty;
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public string? Alt { get; set; }
 }
 
 public class VariantSizeResponse
@@ -107,16 +116,56 @@ public class UpsertVariantSize
 
 public class VariantImagesInput
 {
-    public string? Primary { get; set; }
-    public string? Front { get; set; }
-    public string? Back { get; set; }
-    public string? Left { get; set; }
-    public string? Right { get; set; }
-    public string? Closeup { get; set; }
-    public List<string> Gallery { get; set; } = [];
+    public VariantImageSlotInput? Primary { get; set; }
+    public VariantImageSlotInput? Front { get; set; }
+    public VariantImageSlotInput? Back { get; set; }
+    public VariantImageSlotInput? Left { get; set; }
+    public VariantImageSlotInput? Right { get; set; }
+    public VariantImageSlotInput? Closeup { get; set; }
+    public List<VariantImageSlotInput> Gallery { get; set; } = [];
 }
 
-public class VariantListResponse
+public class VariantImageSlotInput
 {
-    public List<VariantResponse> Variants { get; set; } = [];
+    public string Url { get; set; } = string.Empty;
+    public string? PublicId { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public string? Alt { get; set; }
 }
+
+
+
+/// <summary>Embedded within product create/update requests — carries variant data inline.
+/// Id is null for new variants and set for existing ones.</summary>
+public class EmbeddedVariantRequest
+{
+    public string? Id { get; set; }
+
+    [Required, MaxLength(100)]
+    public string ColourName { get; set; } = string.Empty;
+
+    [MaxLength(7)]
+    public string? ColourHex { get; set; }
+
+    [Required, MaxLength(100)]
+    public string Sku { get; set; } = string.Empty;
+
+    public double? SellingPrice { get; set; }
+    public double? Mrp { get; set; }
+
+    [Url, MaxLength(500)]
+    public string? FlipkartUrl { get; set; }
+
+    public int DisplayOrder { get; set; }
+    public bool IsActive { get; set; } = true;
+    public bool IsFeatured { get; set; }
+    public bool IsBestSeller { get; set; }
+    public bool IsNewArrival { get; set; }
+
+    [Required, MinLength(1)]
+    public List<UpsertVariantSize> Sizes { get; set; } = [];
+
+    public VariantImagesInput? Images { get; set; }
+}
+

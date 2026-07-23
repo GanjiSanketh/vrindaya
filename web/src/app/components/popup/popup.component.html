@@ -3,7 +3,7 @@
      Appears after scroll/time trigger — never blocks first load.
      Desktop: bottom-right · Mobile: bottom-center
      ══════════════════════════════════════════════════════════════ -->
-@if (cardVisible && product && config) {
+@if (cardVisible() && product && config) {
   <div class="fc-wrapper" role="complementary"
        [attr.aria-label]="'New promotion: ' + product.name">
 
@@ -41,7 +41,7 @@
      FULL PREMIUM POPUP MODAL
      Opened only when user clicks "Shop Now" on the floating card.
      ══════════════════════════════════════════════════════════════ -->
-@if (modalVisible && product && config) {
+@if (modalVisible() && product && config) {
   <div class="pu-backdrop" (click)="onBackdropClick($event)" role="presentation">
 
     <div class="pu-panel" role="dialog" aria-modal="true"

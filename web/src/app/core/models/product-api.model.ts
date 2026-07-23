@@ -31,6 +31,7 @@ export interface ApiProductSummary {
   displayOrder: number;
   createdAt: string;
   updatedAt: string;
+  costPrice?: number;
   brand: string;
   flipkartProductUrl?: string;
   flipkartProductId?: string;
@@ -57,6 +58,11 @@ export interface ApiProductSummary {
   stockUpdatedAt?: string;
   isOutOfStock: boolean;
   isLowStock: boolean;
+
+  variantCount: number;
+  totalStock: number;
+  lowestPrice?: number;
+  highestPrice?: number;
 }
 
 export interface ApiProductDetail extends ApiProductSummary {
@@ -79,6 +85,7 @@ export interface ApiProductDetail extends ApiProductSummary {
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords: string[];
+  variants: ApiVariant[];
 }
 
 export interface ApiPagedProducts {
@@ -120,28 +127,83 @@ export interface ApiUploadedImage {
   publicId: string;
 }
 
+export interface VariantImageInput {
+  primary?: string;
+  front?: string;
+  back?: string;
+  left?: string;
+  right?: string;
+  closeup?: string;
+  gallery: string[];
+}
+
+export interface VariantSizeInput {
+  size: string;
+  stock: number;
+}
+
+export interface VariantRequest {
+  id?: string;
+  colourName: string;
+  colourHex?: string;
+  sku: string;
+  sellingPrice?: number;
+  mrp?: number;
+  flipkartUrl?: string;
+  displayOrder: number;
+  isActive: boolean;
+  images: VariantImageInput;
+  sizes: VariantSizeInput[];
+}
+
+export interface ApiVariantImage {
+  primary?: string;
+  front?: string;
+  back?: string;
+  left?: string;
+  right?: string;
+  closeup?: string;
+  gallery: string[];
+}
+
+export interface ApiVariantSize {
+  size: string;
+  stock: number;
+}
+
+export interface ApiVariant {
+  id: string;
+  productId: string;
+  colourName: string;
+  colourHex?: string;
+  sku: string;
+  sellingPrice?: number;
+  mrp?: number;
+  flipkartUrl?: string;
+  displayOrder: number;
+  isActive: boolean;
+  images: ApiVariantImage;
+  sizes: ApiVariantSize[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Wire body for POST /products and PUT /products/{id} — mirrors CreateProductRequest/UpdateProductRequest. */
 export interface AdminProductInput {
-  id?: string; // only set on create — the pre-issued id from POST /products/ids
+  id?: string;
   name: string;
   slug: string;
   category: string;
   subCategory?: string;
   description?: string;
   shortDescription?: string;
-  price: number;
-  mrp: number;
-  discount: number;
   fabric?: string;
   pattern?: string;
   fit?: string;
   sleeve?: string;
   neck?: string;
   occasion?: string;
-  color?: string;
   washCare?: string;
-  sizes: ProductSize[];
-  sku: string;
   tags: string[];
   featured: boolean;
   newArrival: boolean;
@@ -149,14 +211,14 @@ export interface AdminProductInput {
   active: boolean;
   displayOrder: number;
   images: ProductImage[];
+  costPrice?: number;
   brand?: string;
-  flipkartProductUrl?: string;
-  flipkartProductId?: string;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords: string[];
   lowStockThreshold?: number;
   autoHideWhenOutOfStock: boolean;
+  variants?: VariantRequest[];
 }
 
 /** Wire body for PATCH /products/{id}/flipkart-ops — mirrors UpdateFlipkartOpsRequest. Also carries the pre-existing flipkartProductUrl/flipkartProductId (editable here too). Lifecycle stage moved to InventoryController/LifecycleService (Phase 8) — see LifecycleStageInput. */
@@ -204,6 +266,7 @@ export function apiSummaryToProduct(dto: ApiProductSummary): Product {
     updatedBy: '',
     updatedAt: dto.updatedAt,
     images,
+    costPrice: dto.costPrice,
     brand: dto.brand,
     flipkartProductUrl: dto.flipkartProductUrl,
     flipkartProductId: dto.flipkartProductId,
@@ -236,6 +299,11 @@ export function apiSummaryToProduct(dto: ApiProductSummary): Product {
     isBestSeller: dto.bestSeller,
     rating: 4.5,
     flipkartUrl: dto.flipkartProductUrl ?? '',
+
+    variantCount: dto.variantCount,
+    totalStock: dto.totalStock,
+    lowestPrice: dto.lowestPrice,
+    highestPrice: dto.highestPrice,
   };
 }
 
@@ -275,8 +343,8 @@ export function apiDetailToProduct(dto: ApiProductDetail): Product {
     updatedBy: dto.updatedBy,
     updatedAt: dto.updatedAt,
     images,
+    costPrice: dto.costPrice,
     brand: dto.brand,
-    flipkartProductUrl: dto.flipkartProductUrl,
     flipkartProductId: dto.flipkartProductId,
     seoTitle: dto.seoTitle,
     seoDescription: dto.seoDescription,
@@ -312,5 +380,10 @@ export function apiDetailToProduct(dto: ApiProductDetail): Product {
     isBestSeller: dto.bestSeller,
     rating: 4.5,
     flipkartUrl: dto.flipkartProductUrl ?? '',
+
+    variantCount: dto.variantCount,
+    totalStock: dto.totalStock,
+    lowestPrice: dto.lowestPrice,
+    highestPrice: dto.highestPrice,
   };
 }

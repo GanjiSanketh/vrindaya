@@ -28,11 +28,6 @@ export const routes: Routes = [
           import('./features/products/products.routes').then(m => m.PRODUCTS_ROUTES),
       },
       {
-        path: APP_ROUTES.COLLECTION,
-        loadChildren: () =>
-          import('./features/collections/collections.routes').then(m => m.COLLECTIONS_ROUTES),
-      },
-      {
         path: APP_ROUTES.PRODUCT,
         loadChildren: () =>
           import('./features/product-detail/product-detail.routes').then(m => m.PRODUCT_DETAIL_ROUTES),
@@ -56,26 +51,6 @@ export const routes: Routes = [
         path: 'wishlist',
         loadComponent: () =>
           import('./features/wishlist/wishlist-page.component').then(m => m.WishlistPageComponent),
-      },
-      {
-        path: APP_ROUTES.ABOUT,
-        loadChildren: () =>
-          import('./features/brand/brand.routes').then(m => m.ABOUT_ROUTES),
-      },
-      {
-        path: APP_ROUTES.CONTACT,
-        loadChildren: () =>
-          import('./features/brand/brand.routes').then(m => m.CONTACT_ROUTES),
-      },
-      {
-        path: APP_ROUTES.FAQ,
-        loadChildren: () =>
-          import('./features/brand/brand.routes').then(m => m.FAQ_ROUTES),
-      },
-      {
-        path: APP_ROUTES.POLICIES,
-        loadChildren: () =>
-          import('./features/brand/brand.routes').then(m => m.POLICIES_ROUTES),
       },
       {
         path: APP_ROUTES.NOT_FOUND,

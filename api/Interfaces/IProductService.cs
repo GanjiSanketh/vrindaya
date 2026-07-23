@@ -42,14 +42,12 @@ public interface IProductService
     Task BulkSoftDeleteAsync(List<string> ids, string updatedBy, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Irreversible: deletes the Firestore document AND every Storage image
-    /// it references, then sweeps the product's Storage folder for any
-    /// orphaned files (uploads never attached to the product, or left behind
-    /// by a best-effort delete elsewhere) and removes those too. Only ever
-    /// reachable from the admin "Deleted" tab — never call this in place of
-    /// DeleteProductAsync.
+    /// Irreversible: deletes the Firestore document AND every variant plus
+    /// every image (product gallery + variant images) from Cloudinary, then
+    /// sweeps the product's Cloudinary folder for orphaned uploads. Returns a
+    /// structured response (not 204) so the caller can show a success message.
     /// </summary>
-    Task PermanentlyDeleteProductAsync(string id, CancellationToken cancellationToken);
+    Task<DeleteProductResponse> PermanentlyDeleteProductAsync(string id, string deletedBy, CancellationToken cancellationToken);
 
     /// <summary>
     /// Copies a product end-to-end — every field except CreatedAt/UpdatedAt/

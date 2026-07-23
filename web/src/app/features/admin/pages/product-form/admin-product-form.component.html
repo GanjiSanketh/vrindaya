@@ -53,9 +53,23 @@
         </div>
       </div>
 
-      <div class="pf-field">
-        <label class="pf-label">Brand</label>
-        <input class="pf-input" formControlName="brand" placeholder="Vrindaya" />
+      <div class="pf-field-row pf-field-row--3">
+        <div class="pf-field">
+          <label class="pf-label">Brand</label>
+          <input class="pf-input" formControlName="brand" placeholder="Vrindaya" />
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">Display Order</label>
+          <input class="pf-input" type="number" min="0" formControlName="displayOrder" />
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">Size Chart</label>
+          <input class="pf-input" formControlName="sizeChart" placeholder="URL or size guide text" />
+        </div>
+        <div class="pf-field">
+          <label class="pf-label">Cost Price</label>
+          <input class="pf-input" type="number" min="0" step="0.01" formControlName="costPrice" placeholder="0.00" />
+        </div>
       </div>
 
       <div class="pf-field">
@@ -80,17 +94,10 @@
           <input class="pf-input" formControlName="washCare" placeholder="Hand wash cold, do not bleach" />
         </div>
         <div class="pf-field">
-          <label class="pf-label">Size Chart</label>
-          <input class="pf-input" formControlName="sizeChart" placeholder="URL or size guide text" />
+          <label class="pf-label">Low Stock Threshold</label>
+          <input class="pf-input" type="number" min="0" formControlName="lowStockThreshold" placeholder="e.g. 5" />
         </div>
       </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════
-         FLAGS & TAGS
-         ════════════════════════════════════════════════ -->
-    <div class="pf-section">
-      <h2 class="pf-section-title">Flags &amp; Tags</h2>
 
       <div class="pf-checkboxes">
         <label class="pf-check">
@@ -108,29 +115,16 @@
           <span class="pf-check-box"></span>
           <span class="pf-check-label">New Arrival</span>
         </label>
+        <label class="pf-check">
+          <input type="checkbox" formControlName="autoHideWhenOutOfStock" />
+          <span class="pf-check-box"></span>
+          <span class="pf-check-label">Auto-hide OOS</span>
+        </label>
       </div>
 
       <div class="pf-field" style="margin-top: 0.875rem;">
         <label class="pf-label">Product Tags (comma separated)</label>
         <input class="pf-input" formControlName="tags" placeholder="ethnic, cotton, summer" />
-      </div>
-
-      <div class="pf-field-row pf-field-row--3" style="margin-top: 0.875rem;">
-        <div class="pf-field">
-          <label class="pf-label">Display Order</label>
-          <input class="pf-input" type="number" min="0" formControlName="displayOrder" />
-        </div>
-        <div class="pf-field">
-          <label class="pf-label">Low Stock Threshold</label>
-          <input class="pf-input" type="number" min="0" formControlName="lowStockThreshold" placeholder="e.g. 5" />
-        </div>
-        <div class="pf-field">
-          <label class="pf-check" style="margin-top: 1.6rem;">
-            <input type="checkbox" formControlName="autoHideWhenOutOfStock" />
-            <span class="pf-check-box"></span>
-            <span class="pf-check-label">Auto-hide when out of stock</span>
-          </label>
-        </div>
       </div>
     </div>
 
@@ -147,37 +141,55 @@
     </div>
 
     <!-- ════════════════════════════════════════════════
-         COLOUR VARIANTS — accordion
+         COLOR VARIANTS
          ════════════════════════════════════════════════ -->
-    <div class="pf-section">
-      <h2 class="pf-section-title">
-        Colour Variants
-        <span class="pf-variant-count">{{ activeVariantCount() }} variant{{ activeVariantCount() !== 1 ? 's' : '' }}</span>
-      </h2>
-
-      <div class="pf-hint-block">
-        Each colour variant has its own SKU, prices, images, and per-size stock.
-        Add at least one variant with a primary image and stock to make the product visible on the storefront.
+    <div class="pf-section pf-variants-section">
+      <div class="pf-variants-section-header">
+        <h2 class="pf-section-title" style="border:none;margin:0;padding:0;">
+          Color Variants
+          <span class="pf-variant-badge">{{ activeVariantCount() }} color{{ activeVariantCount() !== 1 ? 's' : '' }}</span>
+        </h2>
+        <button type="button" class="pf-add-variant-btn" (click)="createVariant()">
+          <i class="bi bi-plus-lg"></i> Add Color Variant
+        </button>
       </div>
 
       @if (variants().length === 0) {
         <div class="pf-empty-variants">
-          <p>No colour variants yet.</p>
+          <div class="pf-empty-icon"><i class="bi bi-palette2"></i></div>
+          <p>No color variants yet. Click above to add your first variant.</p>
         </div>
       }
 
       <div class="pf-variants-accordion">
         @for (v of variants(); track trackByVariantId($index, v); let i = $index) {
           @if (!v.isDeleted) {
-            <div class="pf-variant-card">
+            <div class="pf-variant-card" [class.pf-variant-card--expanded]="expandedVariantIds().has(v.id)">
+
               <!-- Accordion header -->
               <div class="pf-variant-header" (click)="toggleVariant(v.id)">
                 <div class="pf-variant-header-left">
-                  <span class="pf-variant-swatch" [style.background]="v.colourHex || '#ccc'"></span>
-                  <span class="pf-variant-name">{{ v.colourName || 'Untitled Variant' }}</span>
-                  @if (!v.isActive) { <span class="badge bg-secondary">Inactive</span> }
+                  <span class="pf-variant-swatch" [style.background]="v.colourHex || '#e8ecf0'">
+                    @if (!v.colourHex || v.colourHex === '#000000') {
+                      <span class="pf-swatch-empty"></span>
+                    }
+                  </span>
+                  <div class="pf-variant-header-info">
+                    <span class="pf-variant-name">{{ v.colourName || 'New Color' }}</span>
+                    <span class="pf-variant-sku">{{ v.sku || 'SKU not set' }}</span>
+                  </div>
+                  @if (!v.isActive) {
+                    <span class="pf-status-tag pf-status-tag--inactive">Inactive</span>
+                  }
+                  @if (v.isActive) {
+                    <span class="pf-status-tag pf-status-tag--active">Active</span>
+                  }
                 </div>
                 <div class="pf-variant-header-right">
+                  <button type="button" class="pf-icon-btn pf-duplicate-btn" title="Duplicate variant"
+                          (click)="duplicateVariant(v.id); $event.stopPropagation()">
+                    <i class="bi bi-copy"></i>
+                  </button>
                   <span class="pf-variant-arrow" [class.open]="expandedVariantIds().has(v.id)">
                     <i class="bi bi-chevron-down"></i>
                   </span>
@@ -188,17 +200,18 @@
               @if (expandedVariantIds().has(v.id)) {
                 <div class="pf-variant-body">
 
+                  <!-- Row 1: Color Name, Color Picker, SKU -->
                   <div class="pf-field-row pf-field-row--3">
                     <div class="pf-field">
-                      <label class="pf-label">Colour Name *</label>
+                      <label class="pf-label">Color Name *</label>
                       <input class="pf-input" [(ngModel)]="v.colourName" [ngModelOptions]="{standalone: true}"
                              placeholder="e.g. Teal Blue" />
                     </div>
                     <div class="pf-field">
-                      <label class="pf-label">Colour Code</label>
+                      <label class="pf-label">Color</label>
                       <div class="pf-colour-row">
                         <input type="color" class="pf-colour-picker" [(ngModel)]="v.colourHex" [ngModelOptions]="{standalone: true}" />
-                        <input class="pf-input" [(ngModel)]="v.colourHex" [ngModelOptions]="{standalone: true}" maxlength="7" />
+                        <input class="pf-input pf-hex-input" [(ngModel)]="v.colourHex" [ngModelOptions]="{standalone: true}" maxlength="7" placeholder="#000000" />
                       </div>
                     </div>
                     <div class="pf-field">
@@ -207,16 +220,22 @@
                     </div>
                   </div>
 
-                  <div class="pf-field-row pf-field-row--3">
+                  <!-- Row 2: Selling Price, MRP, Flipkart URL, Status -->
+                  <div class="pf-field-row pf-field-row--4">
                     <div class="pf-field">
                       <label class="pf-label">Selling Price (&#8377;)</label>
                       <input class="pf-input" type="number" min="0" step="0.01"
-                             [(ngModel)]="v.sellingPrice" [ngModelOptions]="{standalone: true}" />
+                             [(ngModel)]="v.sellingPrice" [ngModelOptions]="{standalone: true}" placeholder="0" />
                     </div>
                     <div class="pf-field">
                       <label class="pf-label">MRP (&#8377;)</label>
                       <input class="pf-input" type="number" min="0" step="0.01"
-                             [(ngModel)]="v.mrp" [ngModelOptions]="{standalone: true}" />
+                             [(ngModel)]="v.mrp" [ngModelOptions]="{standalone: true}" placeholder="0" />
+                    </div>
+                    <div class="pf-field">
+                      <label class="pf-label">Flipkart URL</label>
+                      <input class="pf-input" [(ngModel)]="v.flipkartUrl" [ngModelOptions]="{standalone: true}"
+                             placeholder="https://flipkart.com/..." />
                     </div>
                     <div class="pf-field">
                       <label class="pf-label">Status</label>
@@ -227,29 +246,42 @@
                     </div>
                   </div>
 
-                  <div class="pf-field">
-                    <label class="pf-label">Flipkart Product URL</label>
-                    <input class="pf-input" [(ngModel)]="v.flipkartUrl" [ngModelOptions]="{standalone: true}"
-                           placeholder="https://flipkart.com/..." />
-                  </div>
-
-                  <!-- Variant Images -->
+                  <!-- Images -->
                   <div class="pf-variant-subsection">
-                    <h4 class="pf-subsection-title">Variant Images</h4>
+                    <h4 class="pf-subsection-title">Images</h4>
                     <div class="pf-var-img-grid">
                       @for (slot of imageSlots; track slot.key) {
-                        <div class="pf-var-img-slot">
-                          <label class="pf-label">{{ slot.label }}</label>
+                        <div class="pf-var-img-slot"
+                             (dragover)="onDragOver($event)"
+                             (drop)="onDrop($event, v.id, slot.key)">
+                          <label class="pf-img-slot-label">{{ slot.label }}</label>
                           @if (v.images[slot.key]?.preview) {
                             <div class="pf-var-img-preview-wrap">
                               <img [src]="v.images[slot.key]?.preview" class="pf-var-img-preview" />
                               @if (v.images[slot.key]?.uploading) {
-                                <div class="pf-var-img-overlay"><div class="spinner-border spinner-border-sm"></div></div>
+                                <div class="pf-var-img-overlay"><div class="pf-spinner"></div></div>
                               }
-                              <button type="button" class="pf-var-img-remove" (click)="removeVariantImage(v.id, slot.key)">&times;</button>
+                              <div class="pf-var-img-actions">
+                                <button type="button" class="pf-var-img-action-btn" title="Replace"
+                                        (click)="triggerFileInput(slot.key, v.id)">
+                                  <i class="bi bi-arrow-repeat"></i>
+                                </button>
+                                <button type="button" class="pf-var-img-action-btn pf-var-img-action-btn--danger" title="Remove"
+                                        (click)="removeVariantImage(v.id, slot.key)">
+                                  <i class="bi bi-trash3"></i>
+                                </button>
+                              </div>
+                            </div>
+                          } @else {
+                            <div class="pf-var-img-empty" (click)="triggerFileInput(slot.key, v.id)">
+                              <i class="bi bi-cloud-arrow-up"></i>
+                              <span>Upload</span>
                             </div>
                           }
-                          <input type="file" accept="image/*" (change)="onVariantImageSelected($event, v.id, slot.key)"
+                          <input type="file" accept="image/*"
+                                 #fileInput
+                                 [id]="'img-' + v.id + '-' + slot.key"
+                                 (change)="onVariantImageSelected($event, v.id, slot.key)"
                                  class="pf-var-img-input" />
                           @if (v.images[slot.key]?.error) {
                             <span class="pf-err">{{ v.images[slot.key]?.error }}</span>
@@ -259,33 +291,24 @@
                     </div>
                   </div>
 
-                  <!-- Variant Sizes -->
+                  <!-- Sizes -->
                   <div class="pf-variant-subsection">
-                    <h4 class="pf-subsection-title">Size &amp; Stock</h4>
-                    <div class="pf-var-sizes-table">
-                      <div class="pf-var-sizes-header">
-                        <span class="pf-var-sizes-th">Size</span>
-                        <span class="pf-var-sizes-th">Quantity</span>
-                        <span class="pf-var-sizes-th" style="width: 40px;"></span>
-                      </div>
+                    <h4 class="pf-subsection-title">Sizes &amp; Stock</h4>
+                    <div class="pf-var-sizes-grid">
                       @for (s of v.sizes; track s.size; let si = $index) {
-                        <div class="pf-var-sizes-row">
-                          <input class="pf-input pf-var-size-input" [(ngModel)]="s.size" [ngModelOptions]="{standalone: true}" />
-                          <input class="pf-input pf-var-stock-input" type="number" min="0"
-                                 [(ngModel)]="s.stock" [ngModelOptions]="{standalone: true}" />
-                          <button type="button" class="pf-size-remove" (click)="removeSize(v.id, si)" title="Remove size">&times;</button>
+                        <div class="pf-var-size-cell">
+                          <label class="pf-size-label">{{ s.size }}</label>
+                          <input class="pf-input pf-stock-input" type="number" min="0"
+                                 [(ngModel)]="s.stock" [ngModelOptions]="{standalone: true}" placeholder="0" />
                         </div>
                       }
                     </div>
-                    <button type="button" class="btn-link pf-add-size-btn" (click)="addSize(v.id)">
-                      <i class="bi bi-plus-lg"></i> Add Size
-                    </button>
                   </div>
 
-                  <!-- Delete variant -->
+                  <!-- Footer actions -->
                   <div class="pf-variant-footer-actions">
                     <button type="button" class="pf-delete-variant-btn" (click)="removeVariant(v.id)">
-                      <i class="bi bi-trash3"></i> Delete Variant
+                      <i class="bi bi-trash3"></i> Remove Variant
                     </button>
                   </div>
                 </div>
@@ -294,10 +317,6 @@
           }
         }
       </div>
-
-      <button type="button" class="pf-add-variant-btn" (click)="createVariant()">
-        <i class="bi bi-plus-lg"></i> Add Colour Variant
-      </button>
     </div>
 
     <!-- ════════════════════════════════════════════════

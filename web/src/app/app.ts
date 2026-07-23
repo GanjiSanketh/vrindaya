@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd }  from '@angular/router';
 import { filter }                               from 'rxjs/operators';
 import { Subscription }                         from 'rxjs';
@@ -20,6 +20,7 @@ import { ToastComponent }          from './shared/components/toast/toast.compone
       <app-toast />
     }
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App implements OnDestroy {
   private readonly popupService = inject(PopupService);

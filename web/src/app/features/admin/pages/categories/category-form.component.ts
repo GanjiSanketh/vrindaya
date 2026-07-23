@@ -1,22 +1,22 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { HomepageAdminService } from '../../../../core/services/homepage-admin.service';
-import { SingleImageUploadComponent } from '../../components/single-image-upload/single-image-upload.component';
+import { CategoryAdminService } from '../../services/category-admin.service';
 import { APP_ROUTES } from '../../../../core/constants/routes.constants';
 
 @Component({
   selector:    'app-category-form',
   standalone:  true,
-  imports:     [ReactiveFormsModule, RouterLink, SingleImageUploadComponent],
+  imports:     [ReactiveFormsModule, RouterLink],
   templateUrl: './category-form.component.html',
   styleUrl:    './category-form.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoryFormComponent implements OnInit {
   private readonly fb     = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route  = inject(ActivatedRoute);
-  private readonly admin  = inject(HomepageAdminService);
+  private readonly admin  = inject(CategoryAdminService);
 
   readonly BASE      = `/${APP_ROUTES.ADMIN}/categories`;
   readonly isEdit     = signal(false);
@@ -25,8 +25,8 @@ export class CategoryFormComponent implements OnInit {
   readonly formError  = signal<string | null>(null);
   private categoryId  = '';
 
-  readonly image       = signal<{ url: string; publicId: string } | null>(null);
-  readonly bannerImage = signal<{ url: string; publicId: string } | null>(null);
+  readonly imageUrl       = signal('');
+  readonly bannerImageUrl = signal('');
 
   readonly form = this.fb.group({
     id:              ['', [Validators.required, Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)]],
@@ -40,6 +40,8 @@ export class CategoryFormComponent implements OnInit {
     seoTitle:        [''],
     seoDescription:  [''],
     seoKeywords:     [''],
+    imageUrl:        ['', Validators.required],
+    bannerImageUrl:  [''],
   });
 
   async ngOnInit(): Promise<void> {
@@ -48,7 +50,7 @@ export class CategoryFormComponent implements OnInit {
       this.isEdit.set(true);
       this.categoryId = idParam;
 
-      const all = await this.admin.getAllCategories();
+      const all = await this.admin.getAll();
       const cat = all.find(c => c.id === idParam);
       if (!cat) { this.formError.set('Category not found.'); return; }
 
@@ -57,33 +59,29 @@ export class CategoryFormComponent implements OnInit {
         displayOrder: cat.displayOrder, featured: cat.featured ?? false, active: cat.active,
         seoTitle: cat.seoTitle ?? '', seoDescription: cat.seoDescription ?? '',
         seoKeywords: (cat.seoKeywords ?? []).join(', '),
+        imageUrl: cat.image, bannerImageUrl: cat.bannerImage ?? '',
       });
       this.form.get('id')!.disable();
-      this.image.set({ url: cat.image, publicId: cat.imagePublicId ?? '' });
-      if (cat.bannerImage) this.bannerImage.set({ url: cat.bannerImage, publicId: cat.bannerImagePublicId ?? '' });
     }
   }
 
   async submit(): Promise<void> {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    if (!this.image()) { this.formError.set('Upload an image before saving.'); return; }
 
     this.formError.set(null);
     this.saving.set(true);
 
     const v = this.form.getRawValue();
-    const img = this.image()!;
-    const banner = this.bannerImage();
 
     const payload = {
       name: v.name!.trim(),
       code: v.code?.trim().toUpperCase() || undefined,
       subtitle: v.subtitle?.trim() || undefined,
       description: v.description?.trim() || undefined,
-      image: img.url,
-      imagePublicId: img.publicId,
-      bannerImage: banner?.url,
-      bannerImagePublicId: banner?.publicId,
+      image: v.imageUrl!.trim(),
+      imagePublicId: undefined,
+      bannerImage: v.bannerImageUrl?.trim() || undefined,
+      bannerImagePublicId: undefined,
       displayOrder: Number(v.displayOrder) || 0,
       featured: !!v.featured,
       active: !!v.active,
@@ -94,9 +92,9 @@ export class CategoryFormComponent implements OnInit {
 
     try {
       if (this.isEdit()) {
-        await this.admin.updateCategory(this.categoryId, payload);
+        await this.admin.update(this.categoryId, payload);
       } else {
-        await this.admin.createCategory({ id: v.id!.trim(), ...payload });
+        await this.admin.create({ id: v.id!.trim(), ...payload });
       }
       this.saved.set(true);
       this.saving.set(false);
@@ -106,12 +104,6 @@ export class CategoryFormComponent implements OnInit {
       this.saving.set(false);
     }
   }
-
-  onImageUploaded(result: { url: string; publicId: string }): void { this.image.set(result); }
-  onImageRemoved(): void { this.image.set(null); }
-
-  onBannerUploaded(result: { url: string; publicId: string }): void { this.bannerImage.set(result); }
-  onBannerRemoved(): void { this.bannerImage.set(null); }
 
   isInvalid(ctrl: string): boolean {
     const c = this.form.get(ctrl);

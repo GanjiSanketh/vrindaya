@@ -5,7 +5,6 @@ using Vrindaya.Api.Constants;
 using Vrindaya.Api.DTOs.Products;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
-using Vrindaya.Api.Services.Audit;
 
 namespace Vrindaya.Api.Services;
 
@@ -14,18 +13,24 @@ public class ProductService : IProductService
     private readonly IProductRepository _repository;
     private readonly IProductValidationService _validationService;
     private readonly IProductStorageService _storageService;
-    private readonly IAuditLogService _auditLogService;
+    private readonly IProductVariantRepository _variantRepository;
+    private readonly ICloudinaryService _cloudinary;
+    private readonly ILogger<ProductService> _logger;
 
     public ProductService(
         IProductRepository repository,
         IProductValidationService validationService,
         IProductStorageService storageService,
-        IAuditLogService auditLogService)
+        IProductVariantRepository variantRepository,
+        ICloudinaryService cloudinary,
+        ILogger<ProductService> logger)
     {
         _repository = repository;
         _validationService = validationService;
         _storageService = storageService;
-        _auditLogService = auditLogService;
+        _variantRepository = variantRepository;
+        _cloudinary = cloudinary;
+        _logger = logger;
     }
 
     public string GenerateId() => _repository.GenerateId();
@@ -72,15 +77,14 @@ public class ProductService : IProductService
             throw new ProductNotFoundException(id);
         }
 
-        return ToDetail(id, doc);
+        return await ToDetailWithVariants(id, doc, cancellationToken);
     }
 
     public async Task<ProductDetailResponse> CreateProductAsync(CreateProductRequest request, string createdBy, CancellationToken cancellationToken)
     {
-        await EnsureUniqueAsync(request.Slug, request.Sku, excludeId: null, cancellationToken);
+        await EnsureUniqueAsync(request.Slug, null, excludeId: null, cancellationToken);
 
         var now = DateTime.UtcNow;
-        var sizes = request.Sizes.Select(ToSizeDocument).ToList();
 
         var document = new ProductDocument
         {
@@ -90,20 +94,13 @@ public class ProductService : IProductService
             SubCategory = request.SubCategory,
             Description = request.Description,
             ShortDescription = request.ShortDescription,
-            Price = request.Price,
-            Mrp = request.Mrp,
-            Discount = request.Discount,
             Fabric = request.Fabric,
             Pattern = request.Pattern,
             Fit = request.Fit,
             Sleeve = request.Sleeve,
             Neck = request.Neck,
             Occasion = request.Occasion,
-            Color = request.Color,
             WashCare = request.WashCare,
-            Sizes = sizes,
-            Stock = sizes.Sum(s => s.Stock),
-            Sku = request.Sku,
             Tags = request.Tags,
             Featured = request.Featured,
             NewArrival = request.NewArrival,
@@ -116,35 +113,25 @@ public class ProductService : IProductService
             UpdatedAt = now,
             Images = request.Images.Select(ToImageDocument).ToList(),
             Brand = request.Brand ?? string.Empty,
-            FlipkartProductUrl = request.FlipkartProductUrl,
-            FlipkartProductId = request.FlipkartProductId,
             SeoTitle = request.SeoTitle,
             SeoDescription = request.SeoDescription,
             SeoKeywords = request.SeoKeywords,
-            SearchKeywords = BuildSearchKeywords(request.Name, request.Brand, request.Category, request.Sku, request.Tags),
+            SearchKeywords = BuildSearchKeywords(request.Name, request.Brand, request.Category, null, request.Tags),
+            CostPrice = request.CostPrice,
             LowStockThreshold = request.LowStockThreshold,
             AutoHideWhenOutOfStock = request.AutoHideWhenOutOfStock,
         };
 
         await _repository.CreateAsync(request.Id, document, cancellationToken);
+        await SyncVariantsAsync(request.Id, request.Variants, cancellationToken);
 
-        try { await _auditLogService.LogCreateAsync("Products", request.Id, document.Name, AuditLogService.SerializeJson(document), createdBy, null, null, $"Product '{document.Name}' created"); } catch { }
-        return ToDetail(request.Id, document);
+        return await ToDetailWithVariants(request.Id, document, cancellationToken);
     }
 
     public async Task<ProductDetailResponse> UpdateProductAsync(string id, UpdateProductRequest request, string updatedBy, CancellationToken cancellationToken)
     {
-        var existingBefore = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
+        await EnsureUniqueAsync(request.Slug, null, excludeId: id, cancellationToken);
 
-        await EnsureUniqueAsync(request.Slug, request.Sku, excludeId: id, cancellationToken);
-
-        var sizes = request.Sizes.Select(ToSizeDocument).ToList();
-
-        // Optional string fields: FieldValue.Delete clears the field entirely
-        // when the admin emptied it, rather than leaving a stale value —
-        // mirrors the prior Angular ProductRepository's `|| deleteField()`
-        // idiom. FieldValue.Delete is a non-null sentinel, so it passes
-        // through ProductRepository.UpdateAsync's null-filter untouched.
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
             ["name"] = request.Name,
@@ -153,20 +140,14 @@ public class ProductService : IProductService
             ["subCategory"] = OptionalField(request.SubCategory),
             ["description"] = OptionalField(request.Description),
             ["shortDescription"] = OptionalField(request.ShortDescription),
-            ["price"] = request.Price,
-            ["mrp"] = request.Mrp,
-            ["discount"] = request.Discount,
             ["fabric"] = OptionalField(request.Fabric),
             ["pattern"] = OptionalField(request.Pattern),
             ["fit"] = OptionalField(request.Fit),
             ["sleeve"] = OptionalField(request.Sleeve),
             ["neck"] = OptionalField(request.Neck),
             ["occasion"] = OptionalField(request.Occasion),
-            ["color"] = OptionalField(request.Color),
             ["washCare"] = OptionalField(request.WashCare),
-            ["sizes"] = sizes,
-            ["stock"] = sizes.Sum(s => s.Stock),
-            ["sku"] = request.Sku,
+            ["costPrice"] = request.CostPrice.HasValue ? request.CostPrice.Value : FieldValue.Delete,
             ["tags"] = request.Tags,
             ["featured"] = request.Featured,
             ["newArrival"] = request.NewArrival,
@@ -175,21 +156,20 @@ public class ProductService : IProductService
             ["displayOrder"] = request.DisplayOrder,
             ["images"] = request.Images.Select(ToImageDocument).ToList(),
             ["brand"] = request.Brand ?? string.Empty,
-            ["flipkartProductUrl"] = OptionalField(request.FlipkartProductUrl),
-            ["flipkartProductId"] = OptionalField(request.FlipkartProductId),
             ["seoTitle"] = OptionalField(request.SeoTitle),
             ["seoDescription"] = OptionalField(request.SeoDescription),
             ["seoKeywords"] = request.SeoKeywords,
-            ["searchKeywords"] = BuildSearchKeywords(request.Name, request.Brand, request.Category, request.Sku, request.Tags),
+            ["searchKeywords"] = BuildSearchKeywords(request.Name, request.Brand, request.Category, null, request.Tags),
             ["lowStockThreshold"] = request.LowStockThreshold.HasValue ? request.LowStockThreshold.Value : FieldValue.Delete,
             ["autoHideWhenOutOfStock"] = request.AutoHideWhenOutOfStock,
             ["updatedBy"] = updatedBy,
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
 
+        await SyncVariantsAsync(id, request.Variants, cancellationToken);
+
         var updated = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
-        try { await _auditLogService.LogUpdateAsync("Products", id, updated.Name, AuditLogService.SerializeJson(existingBefore), AuditLogService.SerializeJson(updated), updatedBy, null, null, $"Product '{updated.Name}' updated"); } catch { }
-        return ToDetail(id, updated);
+        return await ToDetailWithVariants(id, updated, cancellationToken);
     }
 
     /// <summary>
@@ -199,9 +179,6 @@ public class ProductService : IProductService
     /// </summary>
     public async Task DeleteProductAsync(string id, CancellationToken cancellationToken)
     {
-        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
-        var beforeData = AuditLogService.SerializeJson(existing);
-
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
             ["deleted"] = true,
@@ -210,14 +187,12 @@ public class ProductService : IProductService
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
 
-        try { await _auditLogService.LogUpdateAsync("Products", id, existing.Name, beforeData, null, existing.UpdatedBy, null, null, $"Product '{existing.Name}' deleted (soft)"); } catch { }
+        await _variantRepository.DeleteAllVariantsAsync(id, cancellationToken);
     }
 
     /// <summary>Clears the soft-delete flag. Active deliberately stays false — restoring never silently republishes a product; the admin must reactivate it explicitly.</summary>
     public async Task RestoreProductAsync(string id, string updatedBy, CancellationToken cancellationToken)
     {
-        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
-
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
             ["deleted"] = false,
@@ -225,44 +200,80 @@ public class ProductService : IProductService
             ["updatedBy"] = updatedBy,
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
-
-        try { await _auditLogService.LogUpdateAsync("Products", id, existing.Name, AuditLogService.SerializeJson(existing), null, updatedBy, null, null, $"Product '{existing.Name}' restored"); } catch { }
     }
 
     public async Task BulkUpdateStatusAsync(List<string> ids, bool active, string updatedBy, CancellationToken cancellationToken)
     {
         await _repository.BulkUpdateStatusAsync(ids, active, updatedBy, cancellationToken);
-        var action = active ? "activated" : "deactivated";
-        try { await _auditLogService.LogCustomAsync("BulkUpdate", "Products", null, null, $"Bulk status update: {ids.Count} products {action}", updatedBy, null, null); } catch { }
     }
 
     public async Task BulkRestoreAsync(List<string> ids, string updatedBy, CancellationToken cancellationToken)
     {
         await _repository.BulkRestoreAsync(ids, updatedBy, cancellationToken);
-        try { await _auditLogService.LogCustomAsync("BulkRestore", "Products", null, null, $"Bulk restore: {ids.Count} products restored", updatedBy, null, null); } catch { }
     }
 
     public async Task BulkUpdateFlagAsync(List<string> ids, ProductFlag flag, bool value, string updatedBy, CancellationToken cancellationToken)
     {
         await _repository.BulkUpdateFlagAsync(ids, flag, value, updatedBy, cancellationToken);
-        try { await _auditLogService.LogCustomAsync("BulkUpdate", "Products", null, null, $"Bulk flag update: {ids.Count} products flag '{flag}' set to {value}", updatedBy, null, null); } catch { }
     }
 
     public async Task BulkSoftDeleteAsync(List<string> ids, string updatedBy, CancellationToken cancellationToken)
     {
         await _repository.BulkSoftDeleteAsync(ids, updatedBy, cancellationToken);
-        try { await _auditLogService.LogCustomAsync("BulkDelete", "Products", null, null, $"Bulk soft delete: {ids.Count} products deleted", updatedBy, null, null); } catch { }
     }
 
-    public async Task PermanentlyDeleteProductAsync(string id, CancellationToken cancellationToken)
+    public async Task<DeleteProductResponse> PermanentlyDeleteProductAsync(string id, string deletedBy, CancellationToken cancellationToken)
     {
         var doc = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
-        var beforeData = AuditLogService.SerializeJson(doc);
+        var productName = doc.Name;
 
+        // Step 1: Read all variants
+        var variants = await _variantRepository.GetVariantsAsync(id, cancellationToken);
+
+        // Step 2: Collect every Cloudinary publicId (product gallery + variant images)
+        var productImageIds = doc.Images.Select(i => i.PublicId).Where(pid => pid.Length > 0).ToList();
+        var variantPublicIds = new List<string>();
+        foreach (var (_, variant) in variants)
+        {
+            variantPublicIds.AddRange(GetImagePublicIds(variant.Images));
+        }
+        var allPublicIds = productImageIds.Concat(variantPublicIds).ToList();
+        var variantCount = variants.Count;
+        var imageCount = allPublicIds.Count;
+        var cloudinaryFailures = 0;
+
+        // Step 3: Delete every Cloudinary image (best-effort — never block
+        // Firestore cleanup because one image failed)
+        foreach (var publicId in allPublicIds)
+        {
+            try
+            {
+                await _cloudinary.DeleteImageAsync(publicId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete Cloudinary image {PublicId} for product {ProductId}", publicId, id);
+                cloudinaryFailures++;
+            }
+        }
+
+        // Step 4: Delete every variant document
+        await _variantRepository.DeleteAllVariantsAsync(id, cancellationToken);
+
+        // Step 5: Delete product document
         await _repository.DeleteAsync(id, cancellationToken);
-        await _storageService.DeleteAllImagesAsync(id, doc.Images.Select(i => i.PublicId).ToList(), cancellationToken);
 
-        try { await _auditLogService.LogDeleteAsync("Products", id, doc.Name, beforeData, doc.UpdatedBy, null, null, $"Product '{doc.Name}' permanently deleted"); } catch { }
+        // Logging — complete audit trail
+        _logger.LogInformation(
+            "Product permanently deleted: ProductId={ProductId}, ProductName={ProductName}, DeletedBy={DeletedBy}, " +
+            "DeletedAt={DeletedAt}, VariantsDeleted={VariantCount}, ImagesDeleted={ImageCount}, CloudinaryFailures={CloudinaryFailures}",
+            id, productName, deletedBy, DateTime.UtcNow, variantCount, imageCount, cloudinaryFailures);
+
+        return new DeleteProductResponse
+        {
+            Success = true,
+            Message = "Product deleted successfully.",
+        };
     }
 
     public async Task<ProductDetailResponse> DuplicateProductAsync(string id, string createdBy, CancellationToken cancellationToken)
@@ -341,23 +352,17 @@ public class ProductService : IProductService
         };
 
         await _repository.CreateAsync(newId, document, cancellationToken);
-        try { await _auditLogService.LogCreateAsync("Products", newId, document.Name, AuditLogService.SerializeJson(document), createdBy, null, null, $"Product '{document.Name}' duplicated from '{id}'"); } catch { }
         return ToDetail(newId, document);
     }
 
     public async Task UpdateStatusAsync(string id, bool active, string updatedBy, CancellationToken cancellationToken)
     {
-        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
-
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
             ["active"] = active,
             ["updatedBy"] = updatedBy,
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
-
-        var action = active ? "activated" : "deactivated";
-        try { await _auditLogService.LogUpdateAsync("Products", id, existing.Name, AuditLogService.SerializeJson(existing), null, updatedBy, null, null, $"Product '{existing.Name}' {action}"); } catch { }
     }
 
     /// <summary>Public-only (always active-only) — admin already has its own full-catalog client-side search from Phase 3.</summary>
@@ -397,8 +402,6 @@ public class ProductService : IProductService
 
     public async Task UpdateFlipkartOpsAsync(string id, UpdateFlipkartOpsRequest request, string updatedBy, CancellationToken cancellationToken)
     {
-        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new ProductNotFoundException(id);
-
         await _repository.UpdateAsync(id, new Dictionary<string, object?>
         {
             ["flipkartProductUrl"] = OptionalField(request.FlipkartProductUrl),
@@ -416,29 +419,28 @@ public class ProductService : IProductService
             ["updatedAt"] = DateTime.UtcNow,
         }, cancellationToken);
 
-        try { await _auditLogService.LogUpdateAsync("Products", id, existing.Name, AuditLogService.SerializeJson(existing), null, updatedBy, null, null, $"Product '{existing.Name}' Flipkart ops updated"); } catch { }
     }
 
     public async Task BulkUpdateFlipkartUrlsAsync(List<BulkFlipkartUrlItem> items, string updatedBy, CancellationToken cancellationToken)
     {
         await _repository.BulkUpdateFlipkartUrlsAsync(items, updatedBy, cancellationToken);
-        try { await _auditLogService.LogCustomAsync("BulkUpdate", "Products", null, null, $"Bulk Flipkart URL update: {items.Count} products", updatedBy, null, null); } catch { }
     }
 
     public async Task BulkLaunchAsync(List<string> ids, DateTime? launchDate, string updatedBy, CancellationToken cancellationToken)
     {
         await _repository.BulkLaunchAsync(ids, launchDate ?? DateTime.UtcNow, updatedBy, cancellationToken);
-        try { await _auditLogService.LogCustomAsync("BulkLaunch", "Products", null, null, $"Bulk launch: {ids.Count} products launched", updatedBy, null, null); } catch { }
     }
 
-    private async Task EnsureUniqueAsync(string slug, string sku, string? excludeId, CancellationToken cancellationToken)
+    private async Task EnsureUniqueAsync(string slug, string? sku, string? excludeId, CancellationToken cancellationToken)
     {
         if (await _validationService.SlugExistsAsync(slug, excludeId, cancellationToken))
         {
             throw new DuplicateSlugException(slug);
         }
 
-        if (await _validationService.SkuExistsAsync(sku, excludeId, cancellationToken))
+        // Product-level SKU is legacy — new products store SKU per-variant.
+        // Only check uniqueness if a non-empty SKU is provided.
+        if (!string.IsNullOrWhiteSpace(sku) && await _validationService.SkuExistsAsync(sku, excludeId, cancellationToken))
         {
             throw new DuplicateSkuException(sku);
         }
@@ -447,7 +449,7 @@ public class ProductService : IProductService
     private static object? OptionalField(string? value) => string.IsNullOrWhiteSpace(value) ? FieldValue.Delete : value;
 
     /// <summary>Lowercased, deduped word bag from name/brand/category/sku/tags — powers GET /products/search's array-contains-any query.</summary>
-    private static List<string> BuildSearchKeywords(string name, string? brand, string category, string sku, List<string> tags)
+    private static List<string> BuildSearchKeywords(string name, string? brand, string category, string? sku, List<string> tags)
     {
         var text = string.Join(' ', new[] { name, brand, category, sku }.Concat(tags).Where(s => !string.IsNullOrWhiteSpace(s)));
         return SearchTokenizer.Tokenize(text);
@@ -476,6 +478,7 @@ public class ProductService : IProductService
         Price = doc.Price,
         Mrp = doc.Mrp,
         Discount = doc.Discount,
+        CostPrice = doc.CostPrice,
         Stock = doc.Stock,
         Featured = doc.Featured,
         NewArrival = doc.NewArrival,
@@ -490,6 +493,76 @@ public class ProductService : IProductService
         Deleted = doc.Deleted,
         DeletedAt = doc.DeletedAt,
         Thumbnail = DeriveThumbnail(doc.Images),
+        FlipkartSellerSku = doc.FlipkartSellerSku,
+        FlipkartFsn = doc.FlipkartFsn,
+        LaunchDate = doc.LaunchDate,
+        LastSyncDate = doc.LastSyncDate,
+        MarketplacePrice = doc.MarketplacePrice,
+        MarketplaceMrp = doc.MarketplaceMrp,
+        MarketplaceDiscount = doc.MarketplaceDiscount,
+        MarketplaceCategory = doc.MarketplaceCategory,
+        MarketplaceTags = doc.MarketplaceTags,
+        WebsiteClickCount = doc.WebsiteClickCount,
+        LastClickAt = doc.LastClickAt,
+        LifecycleStage = doc.LifecycleStage,
+        LowStockThreshold = doc.LowStockThreshold,
+        ReservedStock = doc.ReservedStock,
+        AutoHideWhenOutOfStock = doc.AutoHideWhenOutOfStock,
+        StockUpdatedAt = doc.StockUpdatedAt,
+        IsOutOfStock = doc.Stock <= 0,
+        IsLowStock = doc.Stock > 0 && doc.LowStockThreshold.HasValue && doc.Stock <= doc.LowStockThreshold.Value,
+        VariantCount = doc.VariantCount,
+        TotalStock = doc.TotalStock,
+        LowestPrice = doc.LowestPrice,
+        HighestPrice = doc.HighestPrice,
+    };
+
+    private static ProductDetailResponse ToDetail(string id, ProductDocument doc, List<VariantResponse>? variants = null) => new()
+    {
+        Id = id,
+        Name = doc.Name,
+        Slug = doc.Slug,
+        Category = doc.Category,
+        SubCategory = doc.SubCategory,
+        Description = doc.Description,
+        ShortDescription = doc.ShortDescription,
+        Fabric = doc.Fabric,
+        Pattern = doc.Pattern,
+        Fit = doc.Fit,
+        Sleeve = doc.Sleeve,
+        Neck = doc.Neck,
+        Occasion = doc.Occasion,
+        WashCare = doc.WashCare,
+        Tags = doc.Tags,
+        Featured = doc.Featured,
+        NewArrival = doc.NewArrival,
+        BestSeller = doc.BestSeller,
+        Active = doc.Active,
+        DisplayOrder = doc.DisplayOrder,
+        CreatedBy = doc.CreatedBy,
+        CreatedAt = doc.CreatedAt,
+        UpdatedBy = doc.UpdatedBy,
+        UpdatedAt = doc.UpdatedAt,
+        Images = doc.Images.Select(ToImageDto).ToList(),
+        CostPrice = doc.CostPrice,
+        Brand = doc.Brand,
+        SeoTitle = doc.SeoTitle,
+        SeoDescription = doc.SeoDescription,
+        SeoKeywords = doc.SeoKeywords,
+        Deleted = doc.Deleted,
+        DeletedAt = doc.DeletedAt,
+        Thumbnail = DeriveThumbnail(doc.Images),
+        Variants = variants ?? [],
+        // Legacy backward‑compat fields — may be 0 / empty for new products
+        Price = doc.Price,
+        Mrp = doc.Mrp,
+        Discount = doc.Discount,
+        Sizes = doc.Sizes.Select(s => new ProductSizeDto { Size = s.Size, Stock = s.Stock }).ToList(),
+        Stock = doc.Stock,
+        Sku = doc.Sku,
+        Color = doc.Color,
+        FlipkartProductUrl = doc.FlipkartProductUrl,
+        FlipkartProductId = doc.FlipkartProductId,
         FlipkartSellerSku = doc.FlipkartSellerSku,
         FlipkartFsn = doc.FlipkartFsn,
         LaunchDate = doc.LaunchDate,
@@ -510,66 +583,179 @@ public class ProductService : IProductService
         IsLowStock = doc.Stock > 0 && doc.LowStockThreshold.HasValue && doc.Stock <= doc.LowStockThreshold.Value,
     };
 
-    private static ProductDetailResponse ToDetail(string id, ProductDocument doc) => new()
+    private async Task<ProductDetailResponse> ToDetailWithVariants(string id, ProductDocument doc, CancellationToken ct)
     {
-        Id = id,
-        Name = doc.Name,
-        Slug = doc.Slug,
-        Category = doc.Category,
-        SubCategory = doc.SubCategory,
-        Description = doc.Description,
-        ShortDescription = doc.ShortDescription,
-        Price = doc.Price,
-        Mrp = doc.Mrp,
-        Discount = doc.Discount,
-        Fabric = doc.Fabric,
-        Pattern = doc.Pattern,
-        Fit = doc.Fit,
-        Sleeve = doc.Sleeve,
-        Neck = doc.Neck,
-        Occasion = doc.Occasion,
-        Color = doc.Color,
-        WashCare = doc.WashCare,
-        Sizes = doc.Sizes.Select(s => new ProductSizeDto { Size = s.Size, Stock = s.Stock }).ToList(),
-        Stock = doc.Stock,
+        var variantTuples = await _variantRepository.GetVariantsAsync(id, ct);
+        var variantResponses = variantTuples.Select(t => ToVariantResponse(t.Id, t.Data)).ToList();
+        return ToDetail(id, doc, variantResponses);
+    }
+
+    private static VariantResponse ToVariantResponse(string variantId, ProductVariantDocument doc) => new()
+    {
+        Id = variantId,
+        ColourName = doc.ColourName,
+        ColourHex = doc.ColourHex,
         Sku = doc.Sku,
-        Tags = doc.Tags,
-        Featured = doc.Featured,
-        NewArrival = doc.NewArrival,
-        BestSeller = doc.BestSeller,
-        Active = doc.Active,
+        SellingPrice = doc.SellingPrice,
+        Mrp = doc.Mrp,
+        IsActive = doc.IsActive,
+        FlipkartUrl = doc.FlipkartUrl,
         DisplayOrder = doc.DisplayOrder,
-        CreatedBy = doc.CreatedBy,
+        IsFeatured = doc.IsFeatured,
+        IsBestSeller = doc.IsBestSeller,
+        IsNewArrival = doc.IsNewArrival,
         CreatedAt = doc.CreatedAt,
-        UpdatedBy = doc.UpdatedBy,
         UpdatedAt = doc.UpdatedAt,
-        Images = doc.Images.Select(ToImageDto).ToList(),
-        Brand = doc.Brand,
-        FlipkartProductUrl = doc.FlipkartProductUrl,
-        FlipkartProductId = doc.FlipkartProductId,
-        SeoTitle = doc.SeoTitle,
-        SeoDescription = doc.SeoDescription,
-        SeoKeywords = doc.SeoKeywords,
-        Deleted = doc.Deleted,
-        DeletedAt = doc.DeletedAt,
-        Thumbnail = DeriveThumbnail(doc.Images),
-        FlipkartSellerSku = doc.FlipkartSellerSku,
-        FlipkartFsn = doc.FlipkartFsn,
-        LaunchDate = doc.LaunchDate,
-        LastSyncDate = doc.LastSyncDate,
-        MarketplacePrice = doc.MarketplacePrice,
-        MarketplaceMrp = doc.MarketplaceMrp,
-        MarketplaceDiscount = doc.MarketplaceDiscount,
-        MarketplaceCategory = doc.MarketplaceCategory,
-        MarketplaceTags = doc.MarketplaceTags,
-        WebsiteClickCount = doc.WebsiteClickCount,
-        LastClickAt = doc.LastClickAt,
-        LifecycleStage = doc.LifecycleStage,
-        LowStockThreshold = doc.LowStockThreshold,
-        ReservedStock = doc.ReservedStock,
-        AutoHideWhenOutOfStock = doc.AutoHideWhenOutOfStock,
-        StockUpdatedAt = doc.StockUpdatedAt,
-        IsOutOfStock = doc.Stock <= 0,
-        IsLowStock = doc.Stock > 0 && doc.LowStockThreshold.HasValue && doc.Stock <= doc.LowStockThreshold.Value,
+        Sizes = (doc.Sizes ?? []).Select(s => new VariantSizeResponse { Size = s.Size, Stock = s.Stock }).ToList(),
+        Images = ToVariantImageResponse(doc.Images),
     };
+
+    private static VariantImagesResponse ToVariantImageResponse(VariantImagesDocument? doc)
+    {
+        if (doc == null) return new();
+        return new()
+        {
+            Primary = ToSlotResponse(doc.Primary),
+            Front = ToSlotResponse(doc.Front),
+            Back = ToSlotResponse(doc.Back),
+            Left = ToSlotResponse(doc.Left),
+            Right = ToSlotResponse(doc.Right),
+            Closeup = ToSlotResponse(doc.Closeup),
+            Gallery = (doc.Gallery ?? []).Select(ToSlotResponse).ToList(),
+        };
+    }
+
+    private static VariantImageSlotResponse ToSlotResponse(VariantImageSlotDocument? slot) =>
+        slot == null ? null! : new()
+        {
+            Url = slot.Url,
+            PublicId = slot.PublicId,
+            Width = slot.Width,
+            Height = slot.Height,
+            Alt = slot.Alt,
+        };
+
+    private static VariantImageSlotDocument? ToSlotDocument(VariantImageSlotInput? input)
+    {
+        if (input == null || string.IsNullOrEmpty(input.Url)) return null;
+        return new VariantImageSlotDocument
+        {
+            Url = input.Url,
+            PublicId = input.PublicId ?? string.Empty,
+            Width = input.Width,
+            Height = input.Height,
+            Alt = input.Alt,
+        };
+    }
+
+    private async Task SyncVariantsAsync(string productId, List<EmbeddedVariantRequest>? variants, CancellationToken ct)
+    {
+        if (variants == null) return; // null means "don't touch variants"
+
+        var existingIds = await _variantRepository.GetVariantIdsAsync(productId, ct);
+        var requestedIds = variants.Where(v => v.Id != null).Select(v => v.Id!).ToHashSet();
+
+        // Delete variants not in the request, cleaning up their Cloudinary images
+        var docPathPrefix = $"products/{productId}/variants/";
+        foreach (var id in existingIds.Where(id => !requestedIds.Contains(id)))
+        {
+            var variantPath = $"{docPathPrefix}{id}";
+            var variantDoc = await _variantRepository.GetVariantAsync(variantPath, ct);
+            if (variantDoc != null)
+            {
+                var publicIds = GetImagePublicIds(variantDoc.Images);
+                foreach (var pid in publicIds)
+                {
+                    try { await _cloudinary.DeleteImageAsync(pid, ct); }
+                    catch (Exception ex) { _logger.LogWarning(ex, "Failed to delete variant image {PublicId} during sync", pid); }
+                }
+            }
+            await _variantRepository.DeleteVariantAsync(variantPath, ct);
+        }
+
+        // Track computed denormalized values
+        var activeVariantCount = 0;
+        long totalStock = 0;
+        double? lowestPrice = null;
+        double? highestPrice = null;
+
+        // Create or update each variant in the request
+        foreach (var v in variants)
+        {
+            var images = v.Images;
+            var sizes = (v.Sizes ?? []).Select(s => new VariantSizeDocument { Size = s.Size, Stock = s.Stock }).ToList();
+            var variantStock = sizes.Sum(s => s.Stock);
+
+            if (v.IsActive)
+            {
+                activeVariantCount++;
+                totalStock += variantStock;
+                if (v.SellingPrice.HasValue)
+                {
+                    if (lowestPrice is null || v.SellingPrice.Value < lowestPrice) lowestPrice = v.SellingPrice;
+                    if (highestPrice is null || v.SellingPrice.Value > highestPrice) highestPrice = v.SellingPrice;
+                }
+            }
+
+            var doc = new ProductVariantDocument
+            {
+                ColourName = v.ColourName,
+                ColourHex = v.ColourHex,
+                Sku = v.Sku,
+                SellingPrice = v.SellingPrice,
+                Mrp = v.Mrp,
+                IsActive = v.IsActive,
+                FlipkartUrl = v.FlipkartUrl,
+                DisplayOrder = v.DisplayOrder,
+                IsFeatured = v.IsFeatured,
+                IsBestSeller = v.IsBestSeller,
+                IsNewArrival = v.IsNewArrival,
+                Sizes = sizes,
+                Images = new VariantImagesDocument
+                {
+                    Primary = ToSlotDocument(images?.Primary),
+                    Front = ToSlotDocument(images?.Front),
+                    Back = ToSlotDocument(images?.Back),
+                    Left = ToSlotDocument(images?.Left),
+                    Right = ToSlotDocument(images?.Right),
+                    Closeup = ToSlotDocument(images?.Closeup),
+                    Gallery = (images?.Gallery ?? []).Select(g => ToSlotDocument(g)).Where(s => s != null).ToList()!,
+                },
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
+
+            if (v.Id != null && existingIds.Contains(v.Id))
+            {
+                await _variantRepository.UpdateVariantAsync($"{docPathPrefix}{v.Id}", doc, ct);
+            }
+            else
+            {
+                var newId = v.Id ?? Guid.NewGuid().ToString("N");
+                await _variantRepository.CreateVariantWithIdAsync(productId, newId, doc, ct);
+            }
+        }
+
+        // Write denormalized variant summary onto the product document
+        await _repository.UpdateAsync(productId, new Dictionary<string, object?>
+        {
+            ["variantCount"] = activeVariantCount,
+            ["totalStock"] = totalStock,
+            ["lowestPrice"] = lowestPrice.HasValue ? lowestPrice.Value : FieldValue.Delete,
+            ["highestPrice"] = highestPrice.HasValue ? highestPrice.Value : FieldValue.Delete,
+        }, ct);
+    }
+
+    private static List<string> GetImagePublicIds(VariantImagesDocument images)
+    {
+        var ids = new List<string>();
+        if (images.Primary is { PublicId.Length: > 0 }) ids.Add(images.Primary.PublicId);
+        if (images.Front is { PublicId.Length: > 0 }) ids.Add(images.Front.PublicId);
+        if (images.Back is { PublicId.Length: > 0 }) ids.Add(images.Back.PublicId);
+        if (images.Left is { PublicId.Length: > 0 }) ids.Add(images.Left.PublicId);
+        if (images.Right is { PublicId.Length: > 0 }) ids.Add(images.Right.PublicId);
+        if (images.Closeup is { PublicId.Length: > 0 }) ids.Add(images.Closeup.PublicId);
+        ids.AddRange((images.Gallery ?? []).Where(g => g.PublicId.Length > 0).Select(g => g.PublicId));
+        return ids;
+    }
 }

@@ -1,4 +1,4 @@
-import { Component, ElementRef, viewChild, input, effect, OnDestroy } from '@angular/core';
+import { Component, ElementRef, viewChild, input, effect, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -26,6 +26,7 @@ const PALETTE = ['#0f6f84', '#c9a54c', '#22a34a', '#9b4fe0', '#dc2626', '#b45309
     </div>
   `,
   styleUrl: './chart.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChartComponent implements OnDestroy {
   readonly type          = input<ChartKind>('bar');

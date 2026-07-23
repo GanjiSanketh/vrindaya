@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule }                        from '@angular/forms';
 import { ExitIntentService, ExitIntentConfig } from '../../../../core/services/exit-intent.service';
 
@@ -8,6 +8,7 @@ import { ExitIntentService, ExitIntentConfig } from '../../../../core/services/e
   imports: [FormsModule],
   templateUrl: './exit-intent-config.component.html',
   styleUrl:    './exit-intent-config.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExitIntentConfigComponent implements OnInit {
   private readonly exitSvc = inject(ExitIntentService);

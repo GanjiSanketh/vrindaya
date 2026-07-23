@@ -3,7 +3,10 @@ using Vrindaya.Api.Validators;
 
 namespace Vrindaya.Api.DTOs.Products;
 
-/// <summary>Shared editable fields between create and update — see CreateProductRequest/UpdateProductRequest.</summary>
+/// <summary>Shared editable fields between create and update — see CreateProductRequest/UpdateProductRequest.
+/// Variant-specific fields (price, mrp, sku, sizes, color, flipkart links) are now managed per-variant
+/// via the Variants list. Product-level legacy fields remain on the document for backward compatibility
+/// but are no longer settable through this DTO.</summary>
 public abstract class ProductRequestBase
 {
     [Required, StringLength(200, MinimumLength = 3)]
@@ -23,15 +26,6 @@ public abstract class ProductRequestBase
     [MaxLength(500)]
     public string? ShortDescription { get; set; }
 
-    [Range(0, double.MaxValue)]
-    public double Price { get; set; }
-
-    [Range(0, double.MaxValue)]
-    public double Mrp { get; set; }
-
-    [Range(0, 100)]
-    public double Discount { get; set; }
-
     [MaxLength(100)]
     public string? Fabric { get; set; }
 
@@ -50,15 +44,10 @@ public abstract class ProductRequestBase
     [MaxLength(100)]
     public string? Occasion { get; set; }
 
-    [MaxLength(100)]
-    public string? Color { get; set; }
-
     [MaxLength(300)]
     public string? WashCare { get; set; }
 
-    public List<ProductSizeDto> Sizes { get; set; } = [];
-
-    public string Sku { get; set; } = string.Empty;
+    public double? CostPrice { get; set; }
 
     public List<string> Tags { get; set; } = [];
 
@@ -73,11 +62,6 @@ public abstract class ProductRequestBase
 
     public string? Brand { get; set; }
 
-    [Url]
-    public string? FlipkartProductUrl { get; set; }
-
-    public string? FlipkartProductId { get; set; }
-
     [MaxLength(200)]
     public string? SeoTitle { get; set; }
 
@@ -90,6 +74,10 @@ public abstract class ProductRequestBase
     public int? LowStockThreshold { get; set; }
 
     public bool AutoHideWhenOutOfStock { get; set; }
+
+    /// <summary>Variants to create/update — null means "don't touch variants" (backward compatible).
+    /// New variants have Id=null, existing variants carry their Id, omitted variants are deleted.</summary>
+    public List<EmbeddedVariantRequest>? Variants { get; set; }
 }
 
 /// <summary>Id is pre-issued from POST /products/ids and used for the Storage upload path before this call.</summary>

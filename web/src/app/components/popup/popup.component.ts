@@ -1,6 +1,5 @@
-import { Component, inject, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser }                                 from '@angular/common';
-import { Subscription }                                      from 'rxjs';
+import { Component, effect, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 import { PopupService }   from '../../core/services/popup.service';
 import { PopupConfig }    from '../../core/models/popup.model';
@@ -12,39 +11,32 @@ import { ProductService } from '../../core/services/product.service';
   standalone:  true,
   templateUrl: './popup.component.html',
   styleUrl:    './popup.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PopupComponent implements OnInit, OnDestroy {
+export class PopupComponent {
   private readonly svc            = inject(PopupService);
   private readonly platformId     = inject(PLATFORM_ID);
   private readonly productService = inject(ProductService);
 
-  cardVisible  = false;
-  modalVisible = false;
+  readonly cardVisible  = this.svc.floatingCard.asReadonly();
+  readonly modalVisible = this.svc.fullPopup.asReadonly();
   product: Product | undefined;
   config:  PopupConfig | null = null;
 
-  private subs: Subscription[] = [];
-
-  ngOnInit(): void {
-    this.subs.push(
-      this.svc.floatingCard$.subscribe(v => {
-        if (v) {
-          this.product = this.svc.getProduct();
-          this.config  = this.svc.getConfig();
-        }
-        this.cardVisible = v;
-      }),
-      this.svc.fullPopup$.subscribe(v => {
-        if (v) {
-          this.product = this.svc.getProduct();
-          this.config  = this.svc.getConfig();
-        }
-        this.modalVisible = v;
-      }),
-    );
+  constructor() {
+    effect(() => {
+      if (this.svc.floatingCard()) {
+        this.product = this.svc.getProduct();
+        this.config  = this.svc.getConfig();
+      }
+    });
+    effect(() => {
+      if (this.svc.fullPopup()) {
+        this.product = this.svc.getProduct();
+        this.config  = this.svc.getConfig();
+      }
+    });
   }
-
-  ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
 
   openModal():   void { this.svc.openFullPopup(); }
   dismissCard(): void { this.svc.dismissFloatingCard(); }

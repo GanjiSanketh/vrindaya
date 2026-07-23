@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser }               from '@angular/common';
 import { RouterLink }                      from '@angular/router';
 
@@ -8,6 +8,7 @@ import { RouterLink }                      from '@angular/router';
   imports: [RouterLink],
   templateUrl: './offline.component.html',
   styleUrl:    './offline.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OfflineComponent {
   private readonly pid = inject(PLATFORM_ID);

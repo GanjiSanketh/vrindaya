@@ -20,6 +20,7 @@ public class ProductSummaryResponse
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
+    public double? CostPrice { get; set; }
     public string Brand { get; set; } = string.Empty;
     public string? FlipkartProductUrl { get; set; }
     public string? FlipkartProductId { get; set; }
@@ -63,4 +64,18 @@ public class ProductSummaryResponse
 
     /// <summary>Derived: LowStockThreshold set, and 0 &lt; Stock &lt;= LowStockThreshold. Mutually exclusive with IsOutOfStock.</summary>
     public bool IsLowStock { get; set; }
+
+    /* ─── Variant summary (denormalized, updated on every variant sync) ─── */
+
+    /// <summary>Number of active (non-deleted) colour variants.</summary>
+    public int VariantCount { get; set; }
+
+    /// <summary>Sum of stock across all variant sizes.</summary>
+    public long TotalStock { get; set; }
+
+    /// <summary>Lowest SellingPrice among variants (null if no variants).</summary>
+    public double? LowestPrice { get; set; }
+
+    /// <summary>Highest SellingPrice among variants (null if no variants).</summary>
+    public double? HighestPrice { get; set; }
 }

@@ -1,0 +1,143 @@
+<div class="pdash-page">
+
+  <header class="pdash-header">
+    <h1 class="pdash-title">Pricing Dashboard</h1>
+    <button type="button" class="pdash-refresh" (click)="load()" [disabled]="loading()">
+      <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+  </header>
+
+  @if (loading()) {
+    <div class="pdash-loading">Loading pricing data…</div>
+  } @else if (error(); as msg) {
+    <div class="pdash-error">
+      <p>{{ msg }}</p>
+      <button type="button" class="pdash-btn" (click)="load()">Retry</button>
+    </div>
+  } @else if (data(); as d) {
+
+    <!-- KPI Cards -->
+    <div class="pdash-stats">
+      <div class="pdash-stat">
+        <div class="pdash-stat-icon pdash-stat-icon--total"><i class="bi bi-box-seam"></i></div>
+        <div class="pdash-stat-body">
+          <span class="pdash-stat-value">{{ d.summary.totalProducts }}</span>
+          <span class="pdash-stat-label">Products Analysed</span>
+        </div>
+      </div>
+      <div class="pdash-stat">
+        <div class="pdash-stat-icon pdash-stat-icon--profit"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="pdash-stat-body">
+          <span class="pdash-stat-value">{{ d.summary.profitableCount }}</span>
+          <span class="pdash-stat-label">Profitable</span>
+        </div>
+      </div>
+      <div class="pdash-stat">
+        <div class="pdash-stat-icon pdash-stat-icon--loss"><i class="bi bi-graph-down-arrow"></i></div>
+        <div class="pdash-stat-body">
+          <span class="pdash-stat-value">{{ d.summary.lossCount }}</span>
+          <span class="pdash-stat-label">Selling at Loss</span>
+        </div>
+      </div>
+      <div class="pdash-stat">
+        <div class="pdash-stat-icon pdash-stat-icon--avg"><i class="bi bi-percent"></i></div>
+        <div class="pdash-stat-body">
+          <span class="pdash-stat-value">{{ d.summary.averageProfitPercent }}%</span>
+          <span class="pdash-stat-label">Avg Profit %</span>
+        </div>
+      </div>
+      <div class="pdash-stat">
+        <div class="pdash-stat-icon pdash-stat-icon--total-profit"><i class="bi bi-cash-stack"></i></div>
+        <div class="pdash-stat-body">
+          <span class="pdash-stat-value">{{ d.summary.totalProfit | number:'1.0-0' }}</span>
+          <span class="pdash-stat-label">Total Profit (₹)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="pdash-charts">
+      <div class="pdash-chart-card">
+        <h3 class="pdash-chart-title">Top Profitable Products</h3>
+        <div class="pdash-chart-body">
+          <app-chart type="horizontalBar" [labels]="topLabels" [data]="topProfits"
+                     datasetLabel="Profit (₹)" color="#22a34a" />
+        </div>
+      </div>
+      <div class="pdash-chart-card">
+        <h3 class="pdash-chart-title">Least Profitable Products</h3>
+        <div class="pdash-chart-body">
+          <app-chart type="horizontalBar" [labels]="leastLabels" [data]="leastProfits"
+                     datasetLabel="Profit (₹)" color="#b45309" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Loss Chart -->
+    <div class="pdash-charts">
+      <div class="pdash-chart-card pdash-chart-card--full">
+        <h3 class="pdash-chart-title">Products Selling at Loss</h3>
+        <div class="pdash-chart-body">
+          <app-chart type="horizontalBar" [labels]="lossLabels" [data]="lossValues"
+                     datasetLabel="Loss (₹)" color="#dc2626" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Table -->
+    <div class="pdash-table-wrap">
+      <h3 class="pdash-table-title">All Products — Pricing Breakdown</h3>
+      <div class="pdash-table-scroll">
+        <table class="pdash-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Selling Price</th>
+              <th>Cost Price</th>
+              <th>Packaging</th>
+              <th>Shipping</th>
+              <th>Commission</th>
+              <th>GST</th>
+              <th>Total Cost</th>
+              <th>Profit</th>
+              <th>Profit %</th>
+              <th>Margin %</th>
+              <th>Rec. Price</th>
+              <th>Min Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of d.allProducts; track p.productId) {
+              <tr [class.pdash-row-loss]="p.isLoss">
+                <td class="pdash-cell-name">
+                  @if (p.productImage) {
+                    <img [src]="p.productImage" alt="" class="pdash-tbl-thumb" />
+                  }
+                  <span>{{ p.productName }}</span>
+                </td>
+                <td class="pdash-cell-num">₹{{ p.sellingPrice }}</td>
+                <td class="pdash-cell-num">{{ p.costPrice != null ? '₹' + p.costPrice : '—' }}</td>
+                <td class="pdash-cell-num">₹{{ p.packagingCost }}</td>
+                <td class="pdash-cell-num">₹{{ p.shippingCost }}</td>
+                <td class="pdash-cell-num">₹{{ p.commissionAmount }} ({{ p.commissionPercent }}%)</td>
+                <td class="pdash-cell-num">₹{{ p.gstAmount }} ({{ p.gstPercent }}%)</td>
+                <td class="pdash-cell-num">₹{{ p.totalCost }}</td>
+                <td class="pdash-cell-num" [class.pdash-profit]="!p.isLoss" [class.pdash-loss]="p.isLoss">
+                  ₹{{ p.profit }}
+                </td>
+                <td class="pdash-cell-num" [class.pdash-profit]="!p.isLoss" [class.pdash-loss]="p.isLoss">
+                  {{ p.profitPercent }}%
+                </td>
+                <td class="pdash-cell-num">{{ p.marginPercent }}%</td>
+                <td class="pdash-cell-num">₹{{ p.recommendedSellingPrice }}</td>
+                <td class="pdash-cell-num">₹{{ p.minimumSellingPrice }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  }
+
+</div>

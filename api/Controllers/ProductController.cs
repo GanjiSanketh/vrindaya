@@ -102,26 +102,21 @@ public class ProductController : ControllerBase
         return Ok(response);
     }
 
-    /// <summary>Soft delete — the product moves to the admin's "Deleted" tab and disappears from the public storefront, but the document and its images are kept and can be restored.</summary>
+    /// <summary>
+    /// Permanently deletes the product — removes the Firestore document,
+    /// every variant, every product gallery image, and every variant image
+    /// from Cloudinary. Returns a structured JSON response so the admin UI
+    /// can show a success message without re-fetching.
+    /// </summary>
     [HttpDelete("{id}")]
     [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(DeleteProductResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteProduct(string id, CancellationToken cancellationToken)
+    public async Task<ActionResult<DeleteProductResponse>> DeleteProduct(string id, CancellationToken cancellationToken)
     {
-        await _productService.DeleteProductAsync(id, cancellationToken);
-        return NoContent();
-    }
-
-    /// <summary>Irreversible — deletes the Firestore document and every Storage image it references (plus any orphaned files left in its folder). Only meant to be called from the admin "Deleted" tab, on a product that's already soft-deleted — but doesn't strictly require Deleted=true, since an admin may want to purge a mistake immediately.</summary>
-    [HttpDelete("{id}/permanent")]
-    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PermanentlyDeleteProduct(string id, CancellationToken cancellationToken)
-    {
-        await _productService.PermanentlyDeleteProductAsync(id, cancellationToken);
-        return NoContent();
+        var deletedBy = User.FindFirstEmail();
+        var response = await _productService.PermanentlyDeleteProductAsync(id, deletedBy, cancellationToken);
+        return Ok(response);
     }
 
     [HttpPost("{id}/restore")]

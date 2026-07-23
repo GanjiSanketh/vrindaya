@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, input, viewChild, afterNextRender, type OnDestroy } from '@angular/core';
+import { Component, ElementRef, inject, input, viewChild, afterNextRender, type OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { HeroPreloadService } from '../../services/hero-preload.service';
 
 @Component({
@@ -17,6 +17,7 @@ import { HeroPreloadService } from '../../services/hero-preload.service';
   `,
   styleUrl: './hero-sequence.component.css',
   host: { class: 'hero-sequence-container' },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeroSequenceComponent implements OnDestroy {
   private readonly preload = inject(HeroPreloadService);

@@ -1,16 +1,13 @@
-import { Component, inject, signal, computed, OnDestroy } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProductApiService } from '../../../../core/services/product-api.service';
-import { VariantApiService } from '../../../../core/services/variant-api.service';
 import { AdminAuthService } from '../../services/admin-auth.service';
+import { ToastService } from '../../../../shared/services/toast.service';
 import { APP_ROUTES } from '../../../../core/constants/routes.constants';
 import { Product } from '../../../../core/models/product.model';
-import type { ProductVariant } from '../../../../core/models/product-variant.model';
 import { ProductSortField, ProductFlagName, AdminProductListQuery } from '../../../../core/models/product-api.model';
 import { ProductPreviewDrawerComponent } from '../../components/product-preview-drawer/product-preview-drawer.component';
-import { timestampMillis } from '../../../../shared/utils/timestamp.util';
 
 type Tab = 'active' | 'deleted';
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -20,28 +17,17 @@ type PageSize = 20 | 50 | 100;
 const PAGE_SIZE_OPTIONS: PageSize[] = [20, 50, 100];
 const SEARCH_DEBOUNCE_MS = 300;
 
-/**
- * Server-side paginated/filtered/sorted admin product list (Phase 13) —
- * every interaction (search, filter, sort, page) re-queries the API via
- * ProductApiService.queryPaged() rather than slicing a full-catalog cache.
- * See that service's doc comment for why it's kept fully separate from
- * `products()`/ensureLoaded() (still used only by the product form).
- *
- * Filters are mutually exclusive by design, matching exactly what the
- * backend's ProductQuery/ProductRepository actually applies (see that
- * type's doc comment) — picking one clears the others so the UI never
- * implies a combination the server would silently ignore.
- */
 @Component({
   selector:    'app-admin-product-list',
   standalone:  true,
   imports:     [RouterLink, CommonModule, ProductPreviewDrawerComponent],
   templateUrl: './admin-product-list.component.html',
   styleUrl:    './admin-product-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminProductListComponent implements OnDestroy {
+export class AdminProductListComponent {
   private readonly api = inject(ProductApiService);
-  private readonly variantApi = inject(VariantApiService);
+  private readonly toast = inject(ToastService);
   readonly auth = inject(AdminAuthService);
   readonly BASE = `/${APP_ROUTES.ADMIN}`;
 
@@ -78,31 +64,10 @@ export class AdminProductListComponent implements OnDestroy {
   readonly selectedIds = signal<Set<string>>(new Set());
   readonly bulkBusy    = signal(false);
 
-  readonly deleteId          = signal<string | null>(null);
-  readonly permanentDeleteId = signal<string | null>(null);
-  readonly previewId         = signal<string | null>(null);
-
-  readonly expandedProductId    = signal<string | null>(null);
-  readonly variantsByProduct    = signal<Record<string, ProductVariant[]>>({});
-  readonly loadingVariants      = signal<Set<string>>(new Set());
-
-  async toggleExpand(productId: string): Promise<void> {
-    if (this.expandedProductId() === productId) {
-      this.expandedProductId.set(null);
-      return;
-    }
-    this.expandedProductId.set(productId);
-    if (this.variantsByProduct()[productId]) return;
-    this.loadingVariants.update(s => new Set(s).add(productId));
-    try {
-      const variants = await firstValueFrom(this.variantApi.getVariants(productId));
-      this.variantsByProduct.update(m => ({ ...m, [productId]: variants ?? [] }));
-    } catch {
-      this.variantsByProduct.update(m => ({ ...m, [productId]: [] }));
-    } finally {
-      this.loadingVariants.update(s => { const n = new Set(s); n.delete(productId); return n; });
-    }
-  }
+  readonly deleteId       = signal<string | null>(null);
+  readonly deleting       = signal(false);
+  readonly deleteError    = signal<string | null>(null);
+  readonly previewId      = signal<string | null>(null);
 
   readonly hasAnyFilter = computed(() =>
     !!this.searchQuery() || this.categoryFilter() !== 'all' || this.statusFilter() !== 'all'
@@ -123,10 +88,6 @@ export class AdminProductListComponent implements OnDestroy {
 
   constructor() {
     void this.load();
-  }
-
-  ngOnDestroy(): void {
-    clearTimeout(this.searchDebounceTimer);
   }
 
   private buildQuery(): AdminProductListQuery {
@@ -274,11 +235,6 @@ export class AdminProductListComponent implements OnDestroy {
     this.setPageSize(Number(value) as PageSize);
   }
 
-  /** Firestore Timestamp | ISO string | null → epoch millis, for the DatePipe (which can't consume a Timestamp directly). */
-  updatedAtMillis(p: Product): number {
-    return timestampMillis(p.updatedAt);
-  }
-
   nextPage(): void {
     const cursor = this.nextCursor();
     if (!cursor) return;
@@ -350,44 +306,25 @@ export class AdminProductListComponent implements OnDestroy {
 
   /* ── Single-row actions ── */
 
-  confirmDelete(id: string): void { this.deleteId.set(id); }
-  cancelDelete():            void { this.deleteId.set(null); }
+  confirmDelete(id: string): void { this.deleteId.set(id); this.deleteError.set(null); }
+  cancelDelete():            void { this.deleteId.set(null); this.deleteError.set(null); }
 
-  /** Optimistic — the row disappears the instant the admin confirms, rolled back if the request fails. */
   async doDelete(): Promise<void> {
     const id = this.deleteId();
     if (id === null) return;
-    this.deleteId.set(null);
-
-    const previous = this.items();
-    this.items.set(previous.filter(p => p.id !== id));
+    this.deleting.set(true);
+    this.deleteError.set(null);
 
     try {
-      await this.api.softDelete(id);
-      await this.load();
-    } catch {
-      this.items.set(previous);
-      this.loadError.set('Could not delete this product. Please try again.');
-    }
-  }
-
-  confirmPermanentDelete(id: string): void { this.permanentDeleteId.set(id); }
-  cancelPermanentDelete():            void { this.permanentDeleteId.set(null); }
-
-  async doPermanentDelete(): Promise<void> {
-    const id = this.permanentDeleteId();
-    if (id === null) return;
-    this.permanentDeleteId.set(null);
-
-    const previous = this.items();
-    this.items.set(previous.filter(p => p.id !== id));
-
-    try {
-      await this.api.permanentlyDelete(id);
-      await this.load();
-    } catch {
-      this.items.set(previous);
-      this.loadError.set('Could not permanently delete this product. Please try again.');
+      const result = await this.api.delete(id);
+      this.toast.success(result.message);
+      this.deleteId.set(null);
+      this.items.update(list => list.filter(p => p.id !== id));
+      this.totalCount.update(c => Math.max(0, c - 1));
+    } catch (err: unknown) {
+      this.deleteError.set(err instanceof Error ? err.message : 'Could not delete this product. Please try again.');
+    } finally {
+      this.deleting.set(false);
     }
   }
 

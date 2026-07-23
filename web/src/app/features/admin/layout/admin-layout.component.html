@@ -49,7 +49,6 @@
 
             <div class="al-tree-panel-inner">
               @for (item of section.items; track item.label) {
-                @if (hasAccess(item)) {
                   @if (item.comingSoon) {
                     <span class="al-nav-item al-nav-item--soon" role="treeitem">
                       <i class="bi" [class]="item.icon"></i>
@@ -68,7 +67,6 @@
                       <span>{{ item.label }}</span>
                     </a>
                   }
-                }
               }
             </div>
 

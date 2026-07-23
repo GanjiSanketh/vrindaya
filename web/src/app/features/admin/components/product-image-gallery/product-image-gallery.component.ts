@@ -1,4 +1,4 @@
-import { Component, model, input, output, computed } from '@angular/core';
+import { Component, model, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { formatFileSize } from '../../../../shared/utils/image-processing.util';
 
@@ -40,6 +40,7 @@ export interface GalleryImageState {
   imports:     [CommonModule],
   templateUrl: './product-image-gallery.component.html',
   styleUrl:    './product-image-gallery.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductImageGalleryComponent {
   readonly images    = model.required<GalleryImageState[]>();

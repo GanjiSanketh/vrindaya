@@ -5,7 +5,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, firstValueFrom } from 'rxjs';
 
 import { ProductQueryService, ProductNotFoundError } from '../../../../core/services/product-query.service';
-import { ProductService } from '../../../../core/services/product.service';
 import { VariantApiService } from '../../../../core/services/variant-api.service';
 import { LightboxService } from '../../../../core/services/lightbox.service';
 import { SeoService } from '../../../../core/services/seo.service';
@@ -27,7 +26,6 @@ const RELATED_LIMIT = 8;
 export class ProductDetailPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly query = inject(ProductQueryService);
-  private readonly productService = inject(ProductService);
   private readonly variantApi = inject(VariantApiService);
   private readonly lightbox = inject(LightboxService);
   private readonly seo = inject(SeoService);
@@ -177,9 +175,7 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
 
   shopOnFlipkart(): void {
     const url = this.flipkartUrl;
-    if (url) { window.open(url, '_blank'); return; }
-    const p = this.product();
-    if (p) this.productService.openProduct(p);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   private applySeo(product: Product): void {

@@ -1,4 +1,4 @@
-import { Component, inject, model, computed, signal } from '@angular/core';
+import { Component, inject, model, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ProductApiService } from '../../../../core/services/product-api.service';
 import { Product } from '../../../../core/models/product.model';
 
@@ -14,6 +14,7 @@ import { Product } from '../../../../core/models/product.model';
   standalone:  true,
   templateUrl: './product-picker.component.html',
   styleUrl:    './product-picker.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductPickerComponent {
   private readonly productApi = inject(ProductApiService);

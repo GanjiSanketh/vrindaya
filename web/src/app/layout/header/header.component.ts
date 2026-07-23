@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Component, HostListener, inject, signal, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, isPlatformBrowser }                       from '@angular/common';
 import { RouterLink, RouterLinkActive }                          from '@angular/router';
 import { ProductService }                                        from '../../core/services/product.service';
@@ -12,6 +12,7 @@ import { SCROLL_THRESHOLDS }                                     from '../../cor
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderComponent {
   private readonly platformId = inject(PLATFORM_ID);

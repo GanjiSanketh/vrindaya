@@ -1,4 +1,4 @@
-import { Component, inject, effect, isDevMode, PLATFORM_ID } from '@angular/core';
+import { Component, inject, effect, isDevMode, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser }                       from '@angular/common';
 import { Router }                                  from '@angular/router';
 import { AdminAuthService }                        from '../../services/admin-auth.service';
@@ -9,6 +9,7 @@ import { APP_ROUTES }                              from '../../../../core/consta
   standalone:  true,
   templateUrl: './admin-login.component.html',
   styleUrl:    './admin-login.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminLoginComponent {
   readonly auth           = inject(AdminAuthService);

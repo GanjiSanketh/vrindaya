@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink }                             from '@angular/router';
 import { Subscription }                                           from 'rxjs';
 import { ProductQueryService, PUBLIC_SORT_OPTIONS }               from '../../../../core/services/product-query.service';
@@ -17,6 +17,7 @@ const SORT_OPTIONS = PUBLIC_SORT_OPTIONS;
   imports: [RouterLink, ProductCard, SkeletonGridComponent],
   templateUrl: './product-listing.component.html',
   styleUrl: './product-listing.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductListingComponent implements OnInit, OnDestroy {
   private readonly route  = inject(ActivatedRoute);

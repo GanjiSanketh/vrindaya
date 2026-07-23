@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductApiService } from '../../../../core/services/product-api.service';
 import { Product } from '../../../../core/models/product.model';
@@ -15,6 +15,7 @@ type LifecycleStageFilter = 'all' | LifecycleStageValue;
   imports:     [CommonModule, FlipkartOpsEditModalComponent, BulkFlipkartUrlModalComponent],
   templateUrl: './flipkart-ops-list.component.html',
   styleUrl:    './flipkart-ops-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FlipkartOpsListComponent {
   private readonly _sortField = signal<SortField>('name');

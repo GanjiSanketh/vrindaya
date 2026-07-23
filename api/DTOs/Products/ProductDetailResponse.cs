@@ -1,6 +1,9 @@
 namespace Vrindaya.Api.DTOs.Products;
 
-/// <summary>Full product shape — GET /products/{id}, and the response to POST/PUT.</summary>
+/// <summary>Full product shape — GET /products/{id}, and the response to POST/PUT.
+/// Variant-specific fields (price, mrp, sku, sizes, color, flipkart links) are now managed
+/// per-variant. The legacy fields remain on the response for backward compatibility but will
+/// be 0/empty for new products; consumers should read from Variants instead.</summary>
 public class ProductDetailResponse
 {
     public string Id { get; set; } = string.Empty;
@@ -36,6 +39,7 @@ public class ProductDetailResponse
     public DateTime UpdatedAt { get; set; }
     public List<ProductImageDto> Images { get; set; } = [];
 
+    public double? CostPrice { get; set; }
     public string Brand { get; set; } = string.Empty;
     public string? FlipkartProductUrl { get; set; }
     public string? FlipkartProductId { get; set; }
@@ -46,10 +50,9 @@ public class ProductDetailResponse
     public bool Deleted { get; set; }
     public DateTime? DeletedAt { get; set; }
 
-    /// <summary>Derived — see ProductSummaryResponse.Thumbnail.</summary>
     public ProductImageDto? Thumbnail { get; set; }
 
-    /* ─── Flipkart Operations (Phase 7) — see ProductSummaryResponse ─── */
+    /* ─── Flipkart Operations (Phase 7) ─── */
     public string? FlipkartSellerSku { get; set; }
     public string? FlipkartFsn { get; set; }
     public DateTime? LaunchDate { get; set; }
@@ -62,7 +65,7 @@ public class ProductDetailResponse
     public long WebsiteClickCount { get; set; }
     public DateTime? LastClickAt { get; set; }
 
-    /* ─── Product Lifecycle & Inventory (Phase 8) — see ProductSummaryResponse ─── */
+    /* ─── Product Lifecycle & Inventory (Phase 8) ─── */
     public string LifecycleStage { get; set; } = string.Empty;
     public int? LowStockThreshold { get; set; }
     public long ReservedStock { get; set; }
@@ -70,4 +73,7 @@ public class ProductDetailResponse
     public DateTime? StockUpdatedAt { get; set; }
     public bool IsOutOfStock { get; set; }
     public bool IsLowStock { get; set; }
+
+    /* ─── Variants (inline) ─── */
+    public List<VariantResponse> Variants { get; set; } = [];
 }

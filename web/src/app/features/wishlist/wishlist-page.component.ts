@@ -1,4 +1,4 @@
-import { Component, inject, computed, effect, untracked, signal, OnInit } from '@angular/core';
+import { Component, inject, computed, effect, untracked, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule }              from '@angular/common';
 import { RouterLink }                from '@angular/router';
 import { WishlistService }           from '../../core/services/wishlist.service';
@@ -15,6 +15,7 @@ import { SeoService }                from '../../core/services/seo.service';
   imports: [CommonModule, RouterLink, ProductCard, SkeletonGridComponent, ScrollRevealDirective],
   templateUrl: './wishlist-page.component.html',
   styleUrl: './wishlist-page.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WishlistPageComponent implements OnInit {
   private readonly wishlist    = inject(WishlistService);

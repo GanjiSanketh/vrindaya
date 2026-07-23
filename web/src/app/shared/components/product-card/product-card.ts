@@ -1,5 +1,5 @@
 import {
-  Component, input, inject, signal, computed, effect, isDevMode, PLATFORM_ID,
+  Component, input, inject, signal, computed, effect, isDevMode, PLATFORM_ID, ChangeDetectionStrategy,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule }           from '@angular/common';
@@ -15,6 +15,7 @@ import { RecentlyViewedService }  from '../../../core/services/recently-viewed.s
   imports: [CommonModule],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductCard {
   private readonly productService  = inject(ProductService);
@@ -45,30 +46,21 @@ export class ProductCard {
   });
 
   constructor() {
-    effect(() => {
-      const p = this.product();
-      if (isDevMode()) {
+    if (isDevMode()) {
+      effect(() => {
+        const p = this.product();
         console.log('[IMAGE] Product images:', p.images);
         console.log('[IMAGE] Primary image URL:', p.image);
         console.log('[IMAGE] Hover image URL:', this.hoverImage());
         console.log('[IMAGE] Gallery:', p.gallery);
-      }
-    });
+      });
+    }
 
-    // Preload hover image as soon as the product input resolves so the
-    // first hover never flashes blank while the browser fetches the image.
     effect(() => {
       const src = this.hoverImage();
       if (!isPlatformBrowser(this.platformId) || !src) return;
-
-      if (isDevMode()) {
-        console.log('[IMAGE] Preloading hover image:', src);
-      }
-
-      const preload       = new Image();
-      preload.onload  = () => isDevMode() && console.log('[IMAGE] Hover image preloaded:', src);
-      preload.onerror = () => isDevMode() && console.warn('[IMAGE] Hover image preload failed:', src);
-      preload.src         = src;
+      const preload = new Image();
+      preload.src = src;
     });
   }
 

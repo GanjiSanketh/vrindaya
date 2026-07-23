@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, signal, OnInit, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser }                               from '@angular/common';
 import { SwUpdate }                                        from '@angular/service-worker';
 import { filter, interval }                                from 'rxjs';
@@ -8,6 +8,7 @@ import { filter, interval }                                from 'rxjs';
   standalone: true,
   templateUrl: './update-notification.component.html',
   styleUrl:    './update-notification.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateNotificationComponent implements OnInit {
   private readonly swUpdate = inject(SwUpdate);

@@ -1,5 +1,5 @@
 import {
-  Component, effect, HostListener, inject, PLATFORM_ID,
+  Component, effect, HostListener, inject, PLATFORM_ID, ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LightboxService } from '../../../core/services/lightbox.service';
@@ -10,6 +10,7 @@ import { LightboxService } from '../../../core/services/lightbox.service';
   imports: [CommonModule],
   templateUrl: './image-lightbox.component.html',
   styleUrl:    './image-lightbox.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImageLightboxComponent {
   readonly svc = inject(LightboxService);

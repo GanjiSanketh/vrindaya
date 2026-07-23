@@ -4,7 +4,7 @@
   <div class="pl-header">
     <div>
       <h1 class="pl-title">Products</h1>
-      <p class="pl-count">{{ items().length }} of {{ totalCount() }} products</p>
+      <p class="pl-count">{{ totalCount() }} product{{ totalCount() !== 1 ? 's' : '' }}</p>
     </div>
     <div class="pl-header-actions">
       <a [routerLink]="BASE + '/products/new'" class="btn-primary-sm">
@@ -27,7 +27,7 @@
   <div class="pl-filters">
     <div class="pl-search-wrap">
       <i class="bi bi-search pl-search-icon"></i>
-      <input class="pl-search" type="search" placeholder="Search name, SKU, or category…"
+      <input class="pl-search" type="search" placeholder="Search name or category…"
              [value]="searchInput()"
              (input)="onSearchInput($any($event.target).value)" />
     </div>
@@ -49,15 +49,6 @@
     <label class="pl-flag-check">
       <input type="checkbox" [checked]="bestSellerOnly()" (change)="toggleBestSeller()" /> Best Seller
     </label>
-    <div class="pl-price-range">
-      <input class="pl-price-input" type="number" min="0" placeholder="Min ₹"
-             [value]="priceMinInput() ?? ''"
-             (change)="applyPriceRange($any($event.target).value, priceMaxInput()?.toString() ?? '')" />
-      <span>–</span>
-      <input class="pl-price-input" type="number" min="0" placeholder="Max ₹"
-             [value]="priceMaxInput() ?? ''"
-             (change)="applyPriceRange(priceMinInput()?.toString() ?? '', $any($event.target).value)" />
-    </div>
     @if (hasAnyFilter()) {
       <button class="btn-link" (click)="clearAllFilters()">Clear filters</button>
     }
@@ -108,7 +99,6 @@
   <!-- Table -->
   <div class="pl-card">
     @if (loading()) {
-      <!-- Skeleton loading -->
       <div class="pl-skeleton">
         @for (i of [1,2,3,4,5,6]; track i) {
           <div class="pl-skeleton-row">
@@ -121,7 +111,6 @@
         }
       </div>
     } @else if (items().length === 0) {
-      <!-- Empty states -->
       <div class="pl-empty">
         @if (activeTab() === 'deleted') {
           <i class="bi bi-trash3"></i>
@@ -146,41 +135,28 @@
               <th class="pl-th-check">
                 <input type="checkbox" [checked]="allVisibleSelected()" (change)="toggleSelectAllVisible()" />
               </th>
-              <th class="pl-th-img">Image</th>
-              <th>Name</th>
-              <th>Colours</th>
-              <th class="d-none d-md-table-cell">SKU</th>
-              <th class="pl-th-sort" (click)="setSort('price')">
-                Listing Price <i class="bi" [class.bi-chevron-up]="sortField() === 'price' && !sortDescending()"
-                             [class.bi-chevron-down]="sortField() === 'price' && sortDescending()"
-                             [class.bi-chevron-expand]="sortField() !== 'price'"></i>
+              <th class="pl-th-img"></th>
+              <th>Product</th>
+              <th class="pl-th-sort" (click)="setSort('stock')">
+                <span class="pl-th-label">Stock</span>
+                <i class="bi" [class.bi-chevron-up]="sortField() === 'stock' && !sortDescending()"
+                     [class.bi-chevron-down]="sortField() === 'stock' && sortDescending()"
+                     [class.bi-chevron-expand]="sortField() !== 'stock'"></i>
               </th>
-              <th class="pl-th-sort d-none d-lg-table-cell" (click)="setSort('stock')">
-                Stock <i class="bi" [class.bi-chevron-up]="sortField() === 'stock' && !sortDescending()"
-                             [class.bi-chevron-down]="sortField() === 'stock' && sortDescending()"
-                             [class.bi-chevron-expand]="sortField() !== 'stock'"></i>
-              </th>
-              <th class="d-none d-lg-table-cell">Status</th>
-              <th class="d-none d-xl-table-cell">Featured</th>
-              <th class="d-none d-xl-table-cell">Best Seller</th>
-              <th class="d-none d-xl-table-cell">New Arrival</th>
-              <th class="pl-th-sort d-none d-lg-table-cell" (click)="setSort('displayOrder')">
-                Order <i class="bi" [class.bi-chevron-up]="sortField() === 'displayOrder' && !sortDescending()"
-                             [class.bi-chevron-down]="sortField() === 'displayOrder' && sortDescending()"
-                             [class.bi-chevron-expand]="sortField() !== 'displayOrder'"></i>
-              </th>
-              <th class="d-none d-xl-table-cell">Last Updated</th>
+              <th>Price Range</th>
+              <th class="d-none d-lg-table-cell">Category</th>
+              <th class="d-none d-xl-table-cell">Status</th>
               <th class="pl-th-actions">Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (p of items(); track p.id) {
-              <tr>
+              <tr [class.pl-row--inactive]="!p.active" [class.pl-row--deleted]="p.deleted">
                 <td>
                   <input type="checkbox" [checked]="selectedIds().has(p.id)" (change)="toggleSelect(p.id)" />
                 </td>
                 <td>
-                  <div class="pl-thumb-wrap" title="Click to preview">
+                  <div class="pl-thumb-wrap">
                     @if (p.image) {
                       <img [src]="p.image" [alt]="p.name" class="pl-thumb" loading="lazy" draggable="false"
                            (click)="openPreview(p.id)" />
@@ -193,54 +169,59 @@
                 </td>
                 <td>
                   <div class="pl-product-name pl-link" (click)="openPreview(p.id)">{{ p.name }}</div>
-                  <span class="pl-cat-badge">{{ p.category }}</span>
+                  <div class="pl-product-meta">
+                    <span class="pl-variant-meta">{{ p.variantCount ?? 0 }} color{{ (p.variantCount ?? 0) !== 1 ? 's' : '' }}</span>
+                    <span class="pl-meta-dot"></span>
+                    <span>{{ p.totalStock ?? 0 }} total stock</span>
+                  </div>
                 </td>
                 <td>
-                  <span class="pl-colours-badge" (click)="toggleExpand(p.id)" title="Click to view colour variants">
-                    <i class="bi bi-palette"></i>
-                    @if (loadingVariants().has(p.id)) {
-                      <span class="pl-colours-loading"></span>
-                    } @else {
-                      {{ (variantsByProduct()[p.id]?.length ?? 0) > 0 ? variantsByProduct()[p.id]!.length + ' colours' : '—' }}
-                    }
-                  </span>
-                </td>
-                <td class="d-none d-md-table-cell"><span class="pl-cat">{{ p.sku }}</span></td>
-                <td>₹{{ p.price }}</td>
-                <td class="d-none d-lg-table-cell">
-                  @if (p.stock <= 0) {
-                    <span class="pl-badge-stock pl-stock-out">Out of Stock</span>
+                  <span class="pl-stock-value">{{ p.totalStock ?? 0 }}</span>
+                  @if (p.totalStock <= 0) {
+                    <span class="pl-badge-stock pl-stock-out">Out</span>
                   } @else if (p.isLowStock) {
-                    <span class="pl-badge-stock pl-stock-low">{{ p.stock }} left</span>
+                    <span class="pl-badge-stock pl-stock-low">Low</span>
+                  }
+                </td>
+                <td>
+                  @if (p.lowestPrice != null && p.highestPrice != null) {
+                    @if (p.lowestPrice === p.highestPrice) {
+                      <span class="pl-price">₹{{ p.lowestPrice }}</span>
+                    } @else {
+                      <span class="pl-price">₹{{ p.lowestPrice }} – ₹{{ p.highestPrice }}</span>
+                    }
                   } @else {
-                    <span class="pl-badge-stock pl-stock-in">In Stock</span>
+                    <span class="pl-price pl-price--na">—</span>
                   }
                 </td>
                 <td class="d-none d-lg-table-cell">
-                  @if (p.deleted) {
-                    <span class="pl-badge pl-badge--del">Deleted</span>
-                  } @else if (p.active) {
-                    <span class="pl-badge pl-badge--best">Active</span>
-                  } @else {
-                    <span class="pl-badge pl-badge--del">Inactive</span>
-                  }
+                  <span class="pl-cat-badge">{{ p.category }}</span>
                 </td>
-                <td class="d-none d-xl-table-cell">@if (p.featured)   { <i class="bi bi-check-lg pl-flag-yes"></i> }</td>
-                <td class="d-none d-xl-table-cell">@if (p.bestSeller) { <i class="bi bi-check-lg pl-flag-yes"></i> }</td>
-                <td class="d-none d-xl-table-cell">@if (p.newArrival) { <i class="bi bi-check-lg pl-flag-yes"></i> }</td>
-                <td class="d-none d-lg-table-cell">{{ p.displayOrder }}</td>
-                <td class="d-none d-xl-table-cell pl-updated">{{ updatedAtMillis(p) | date:'mediumDate' }}</td>
+                <td class="d-none d-xl-table-cell">
+                  <div class="pl-status-row">
+                    @if (p.deleted) {
+                      <span class="pl-badge pl-badge--del">Deleted</span>
+                    } @else if (p.active) {
+                      <span class="pl-badge pl-badge--active">Active</span>
+                    } @else {
+                      <span class="pl-badge pl-badge--inactive">Inactive</span>
+                    }
+                    <div class="pl-flags">
+                      @if (p.featured)   { <span class="pl-flag" title="Featured">F</span> }
+                      @if (p.bestSeller) { <span class="pl-flag pl-flag--gold" title="Best Seller">B</span> }
+                      @if (p.newArrival) { <span class="pl-flag pl-flag--green" title="New Arrival">N</span> }
+                    </div>
+                  </div>
+                </td>
                 <td>
                   <div class="pl-row-actions">
                     @if (activeTab() === 'deleted') {
-                      <button class="action-btn action-btn--edit" (click)="restore(p.id)" title="Restore">
+                      <button class="action-btn action-btn--restore" (click)="restore(p.id)" title="Restore">
                         <i class="bi bi-arrow-counterclockwise"></i>
                       </button>
-                      @if (canDelete()) {
-                        <button class="action-btn action-btn--del" (click)="confirmPermanentDelete(p.id)" title="Delete permanently">
-                          <i class="bi bi-trash3-fill"></i>
-                        </button>
-                      }
+                      <button class="action-btn action-btn--del" (click)="confirmDelete(p.id)" title="Delete Product">
+                        <i class="bi bi-trash3"></i>
+                      </button>
                     } @else {
                       <a [routerLink]="BASE + '/products/' + p.id + '/edit'" class="action-btn action-btn--edit" title="Edit">
                         <i class="bi bi-pencil"></i>
@@ -248,41 +229,13 @@
                       <button class="action-btn action-btn--dup" (click)="duplicate(p.id)" title="Duplicate">
                         <i class="bi bi-copy"></i>
                       </button>
-                      @if (canDelete()) {
-                        <button class="action-btn action-btn--del" (click)="confirmDelete(p.id)" title="Delete">
-                          <i class="bi bi-trash3"></i>
-                        </button>
-                      }
+                      <button class="action-btn action-btn--del" (click)="confirmDelete(p.id)" title="Delete Product">
+                        <i class="bi bi-trash3"></i>
+                      </button>
                     }
                   </div>
                 </td>
               </tr>
-              @if (expandedProductId() === p.id && variantsByProduct()[p.id]) {
-                <tr class="pl-variant-row">
-                  <td colspan="13" class="pl-variant-cell">
-                    <div class="pl-variant-grid">
-                      @if (variantsByProduct()[p.id]!.length === 0) {
-                        <div class="pl-variant-empty">No colour variants — <a [routerLink]="BASE + '/products/' + p.id + '/edit'" class="btn-link">add one</a></div>
-                      } @else {
-                        @for (v of variantsByProduct()[p.id]!; track v.id) {
-                          <div class="pl-variant-card">
-                            <div class="pl-variant-swatch" [style.background]="v.colourHex || '#eee'"></div>
-                            <div class="pl-variant-info">
-                              <div class="pl-variant-name">{{ v.colourName }}</div>
-                              <div class="pl-variant-meta">{{ v.sku }}</div>
-                              <div class="pl-variant-meta">{{ v.sizes.length }} size{{ v.sizes.length !== 1 ? 's' : '' }}</div>
-                            </div>
-                            <div class="pl-variant-status">
-                              @if (v.isActive) { <span class="pl-badge-stock pl-stock-in">Active</span> }
-                              @else { <span class="pl-badge-stock pl-stock-out">Inactive</span> }
-                            </div>
-                          </div>
-                        }
-                      }
-                    </div>
-                  </td>
-                </tr>
-              }
             }
           </tbody>
         </table>
@@ -297,7 +250,7 @@
         <button class="btn-outline" [disabled]="pageNumber() === 1" (click)="prevPage()">
           <i class="bi bi-chevron-left"></i> Prev
         </button>
-        <span>Page {{ pageNumber() }} of {{ totalPages() }}</span>
+        <span class="pl-page-info">Page {{ pageNumber() }} of {{ totalPages() }}</span>
         <button class="btn-outline" [disabled]="!hasNextPage()" (click)="nextPage()">
           Next <i class="bi bi-chevron-right"></i>
         </button>
@@ -310,31 +263,35 @@
 <!-- Preview drawer -->
 <app-product-preview-drawer [productId]="previewId()" (closed)="closePreview()" />
 
-<!-- Delete confirmation modal (soft delete) -->
+<!-- Delete confirmation dialog -->
 @if (canDelete() && deleteId() !== null) {
-  <div class="modal-backdrop" (click)="cancelDelete()">
+  <div class="modal-backdrop" (click)="deleting() ? null : cancelDelete()">
     <div class="modal-box" (click)="$event.stopPropagation()">
-      <div class="modal-icon"><i class="bi bi-trash3-fill"></i></div>
-      <h3 class="modal-title">Delete Product?</h3>
-      <p class="modal-body">The product will be moved to the Deleted tab and hidden from the storefront — it can be restored at any time.</p>
+      <div class="modal-icon modal-icon--danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <h3 class="modal-title">Delete Product</h3>
+      <p class="modal-body">Are you sure you want to permanently delete</p>
+      <p class="modal-product-name">"{{ items().find(p => p.id === deleteId())?.name }}"</p>
+      <p class="modal-body">This action cannot be undone.</p>
+      <p class="modal-body modal-body--label">The following will be deleted:</p>
+      <ul class="modal-checklist">
+        <li><i class="bi bi-check-lg"></i> Product</li>
+        <li><i class="bi bi-check-lg"></i> All Color Variants</li>
+        <li><i class="bi bi-check-lg"></i> Variant Images</li>
+        <li><i class="bi bi-check-lg"></i> Gallery Images</li>
+        <li><i class="bi bi-check-lg"></i> Cloudinary Images</li>
+      </ul>
+      @if (deleteError()) {
+        <div class="modal-error"><i class="bi bi-exclamation-circle"></i> {{ deleteError() }}</div>
+      }
       <div class="modal-actions">
-        <button class="modal-cancel" (click)="cancelDelete()">Cancel</button>
-        <button class="modal-confirm" (click)="doDelete()">Yes, Delete</button>
-      </div>
-    </div>
-  </div>
-}
-
-<!-- Permanent delete confirmation modal (hard delete) -->
-@if (canDelete() && permanentDeleteId() !== null) {
-  <div class="modal-backdrop" (click)="cancelPermanentDelete()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
-      <div class="modal-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
-      <h3 class="modal-title">Permanently Delete?</h3>
-      <p class="modal-body">This cannot be undone. The product and every one of its images will be permanently deleted from Firestore and Storage.</p>
-      <div class="modal-actions">
-        <button class="modal-cancel" (click)="cancelPermanentDelete()">Cancel</button>
-        <button class="modal-confirm" (click)="doPermanentDelete()">Yes, Delete Forever</button>
+        <button class="modal-cancel" (click)="cancelDelete()" [disabled]="deleting()">Cancel</button>
+        <button class="modal-confirm modal-confirm--danger" (click)="doDelete()" [disabled]="deleting()">
+          @if (deleting()) {
+            <i class="bi bi-arrow-clockwise modal-spin"></i> Deleting…
+          } @else {
+            Delete Permanently
+          }
+        </button>
       </div>
     </div>
   </div>

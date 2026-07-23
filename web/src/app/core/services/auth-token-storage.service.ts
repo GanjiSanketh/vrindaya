@@ -6,7 +6,7 @@ export interface StoredAdminUser {
   id:    string;
   name:  string;
   email: string;
-  role:  'SuperAdmin' | 'Admin';
+  role:  string;
 }
 
 export interface AdminSession {

@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, OnInit } from '@angular/core';
+import { Component, inject, input, output, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ProductApiService } from '../../../../core/services/product-api.service';
 
 interface UrlRow {
@@ -20,6 +20,7 @@ interface UrlRow {
   standalone:  true,
   templateUrl: './bulk-flipkart-url-modal.component.html',
   styleUrl:    './bulk-flipkart-url-modal.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BulkFlipkartUrlModalComponent implements OnInit {
   private readonly api = inject(ProductApiService);

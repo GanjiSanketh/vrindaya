@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, signal, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser }                                 from '@angular/common';
 import { RouterLink }                                        from '@angular/router';
 import { ProductQueryService }                               from '../../../../core/services/product-query.service';
@@ -15,6 +15,7 @@ const PAGE_SIZE = 24;
   imports: [RouterLink, ProductCard, SkeletonGridComponent],
   templateUrl: './trending-page.component.html',
   styleUrl: './trending-page.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrendingPageComponent implements OnInit {
   private readonly query      = inject(ProductQueryService);

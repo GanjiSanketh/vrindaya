@@ -1,4 +1,4 @@
-import { Component, inject, afterNextRender, OnDestroy } from '@angular/core';
+import { Component, inject, afterNextRender, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd }            from '@angular/router';
 import { filter }                                         from 'rxjs/operators';
 import { Subscription }                                   from 'rxjs';
@@ -10,9 +10,6 @@ import { ImageLightboxComponent }                        from '../shared/compone
 import { ExitIntentPopupComponent }                      from '../shared/components/exit-intent-popup/exit-intent-popup.component';
 import { InstallPromptComponent }                        from '../shared/components/install-prompt/install-prompt.component';
 import { UpdateNotificationComponent }                   from '../shared/components/update-notification/update-notification.component';
-import { InsiderRibbonComponent }                        from '../features/marketing/components/insider-ribbon/insider-ribbon.component';
-import { InsiderModalComponent }                         from '../features/marketing/components/insider-modal/insider-modal.component';
-import { InsiderExperienceService }                      from '../features/marketing/services/insider-experience.service';
 import { ExitIntentService }                             from '../core/services/exit-intent.service';
 
 @Component({
@@ -28,8 +25,6 @@ import { ExitIntentService }                             from '../core/services/
     ExitIntentPopupComponent,
     InstallPromptComponent,
     UpdateNotificationComponent,
-    InsiderRibbonComponent,
-    InsiderModalComponent,
   ],
   template: `
     <app-header />
@@ -41,19 +36,11 @@ import { ExitIntentService }                             from '../core/services/
     <app-exit-intent-popup />
     <app-install-prompt />
     <app-update-notification />
-
-    @defer (on idle) {
-      <app-insider-ribbon />
-    }
-
-    @defer (when insider.modalOpen()) {
-      <app-insider-modal />
-    }
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutComponent implements OnDestroy {
   private readonly exitIntent  = inject(ExitIntentService);
-  readonly insider              = inject(InsiderExperienceService);
   private readonly router      = inject(Router);
   private readonly routeSub:   Subscription;
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-maintenance-page',
@@ -108,5 +108,6 @@ import { Component } from '@angular/core';
       .mp-bg-ornament--2 { width: 250px; height: 250px; bottom: -60px; right: -50px; }
     }
   `],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MaintenancePageComponent {}

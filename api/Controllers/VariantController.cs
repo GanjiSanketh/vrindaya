@@ -94,8 +94,8 @@ public class VariantController : ControllerBase
             return BadRequest(new ApiErrorResponse { Success = false, Message = "Only JPG, PNG, and WebP images are allowed." });
 
         await using var stream = file.OpenReadStream();
-        var (url, publicId) = await _imageService.UploadImageAsync(productId, variantId, slot, stream, fileName, ct);
-        return Ok(new UploadedImageResponse { Url = url, PublicId = publicId });
+        var (url, publicId, width, height) = await _imageService.UploadImageAsync(productId, variantId, slot, stream, fileName, ct);
+        return Ok(new UploadedImageResponse { Url = url, PublicId = publicId, Width = width, Height = height });
     }
 
     [HttpDelete("products/{productId}/variants/{variantId}/images")]

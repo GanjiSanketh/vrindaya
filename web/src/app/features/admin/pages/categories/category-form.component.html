@@ -87,22 +87,18 @@
       <div class="hbf-side">
         <div class="hbf-section">
           <h2 class="hbf-section-title">Image</h2>
-          <app-single-image-upload
-            label="Category Image *"
-            section="categories"
-            [currentUrl]="image()?.url ?? null"
-            (uploaded)="onImageUploaded($event)"
-            (removed)="onImageRemoved()" />
+          <div class="hbf-field">
+            <label class="hbf-label">Image URL *</label>
+            <input class="hbf-input" [class.hbf-input--err]="isInvalid('imageUrl')" formControlName="imageUrl" type="url" placeholder="https://..." />
+          </div>
         </div>
 
         <div class="hbf-section">
           <h2 class="hbf-section-title">Banner Image</h2>
-          <app-single-image-upload
-            label="Banner Image"
-            section="categories"
-            [currentUrl]="bannerImage()?.url ?? null"
-            (uploaded)="onBannerUploaded($event)"
-            (removed)="onBannerRemoved()" />
+          <div class="hbf-field">
+            <label class="hbf-label">Banner Image URL</label>
+            <input class="hbf-input" formControlName="bannerImageUrl" type="url" placeholder="https://..." />
+          </div>
         </div>
       </div>
 

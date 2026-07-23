@@ -10,6 +10,64 @@ import {
 } from '../models/product-api.model';
 import { LifecycleStageValue } from '../constants/lifecycle-stage.constants';
 
+export interface PricingDashboardResponse {
+  summary: PricingSummary;
+  topProfitable: ProductPricingDto[];
+  leastProfitable: ProductPricingDto[];
+  sellingAtLoss: ProductPricingDto[];
+  allProducts: ProductPricingDto[];
+}
+export interface PricingSummary {
+  totalProducts: number;
+  profitableCount: number;
+  lossCount: number;
+  averageProfitPercent: number;
+  totalProfit: number;
+}
+export interface ProductPricingDto {
+  productId: string;
+  productName: string;
+  productImage: string | null;
+  sellingPrice: number;
+  mrp: number | null;
+  costPrice: number | null;
+  packagingCost: number;
+  shippingCost: number;
+  commissionPercent: number;
+  commissionAmount: number;
+  gstPercent: number;
+  gstAmount: number;
+  totalCost: number;
+  profit: number;
+  profitPercent: number;
+  marginPercent: number;
+  recommendedSellingPrice: number;
+  minimumSellingPrice: number;
+  isLoss: boolean;
+}
+
+export interface InventoryProductResponse {
+  productId: string;
+  productName: string;
+  productImage: string | null;
+  variants: InventoryVariantResponse[];
+}
+export interface InventoryVariantResponse {
+  variantId: string;
+  colourName: string;
+  colourHex: string | null;
+  sizes: InventorySizeResponse[];
+}
+export interface InventorySizeResponse {
+  size: string;
+  stock: number;
+}
+export interface StockUpdateItem {
+  productId: string;
+  variantId: string;
+  sizes: { size: string; stock: number }[];
+}
+
 export interface PagedProductListResult {
   items: Product[];
   nextCursor: string | null;
@@ -149,9 +207,11 @@ export class ProductApiService {
     return product;
   }
 
-  async softDelete(id: string): Promise<void> {
-    await firstValueFrom(this.http.delete<void>(`${BASE}/${id}`));
-    this.patchLocal(id, { deleted: true, active: false });
+  /** Permanently deletes the product, all variants, and all Cloudinary images. Returns the response so the caller can show a success message. */
+  async delete(id: string): Promise<{ success: boolean; message: string }> {
+    const res = await firstValueFrom(this.http.delete<{ success: boolean; message: string }>(`${BASE}/${id}`));
+    this.products.update(list => list.filter(p => p.id !== id));
+    return res;
   }
 
   async restore(id: string): Promise<void> {
@@ -294,6 +354,40 @@ export class ProductApiService {
   /** One-click convenience — same endpoint as bulkUpdateLifecycleStage with the "Archived" preset. */
   async bulkArchive(ids: string[]): Promise<void> {
     return this.bulkUpdateLifecycleStage(ids, 'Archived');
+  }
+
+  /* ── Pricing Dashboard ── */
+
+  getPricingDashboard() {
+    return this.http.get<PricingDashboardResponse>(`${environment.apiBaseUrl}/pricing/dashboard`);
+  }
+
+  /* ── Inventory Management ── */
+
+  getInventory() {
+    return this.http.get<InventoryProductResponse[]>(`${INVENTORY_BASE}`);
+  }
+
+  updateStock(updates: StockUpdateItem[]) {
+    return this.http.patch<void>(`${INVENTORY_BASE}/stock`, { updates });
+  }
+
+  /* ── Variant Image Upload ── */
+
+  uploadVariantImage(productId: string, variantId: string, slot: string, file: File) {
+    const fd = new FormData();
+    fd.append('slot', slot);
+    fd.append('file', file);
+    return this.http.post<{ url: string; publicId: string }>(
+      `${BASE}/${productId}/variants/${variantId}/images`, fd,
+    );
+  }
+
+  deleteVariantImage(productId: string, variantId: string, publicId: string) {
+    return this.http.delete<void>(
+      `${BASE}/${productId}/variants/${variantId}/images`,
+      { params: { publicId } },
+    );
   }
 
   private patchLocal(id: string, patch: Partial<Product>): void {

@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import {
-  FormBuilder, FormArray, FormGroup, ReactiveFormsModule, Validators, AbstractControl,
+  FormBuilder, ReactiveFormsModule, Validators, AbstractControl,
 } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -8,12 +8,10 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { ProductApiService }                  from '../../../../core/services/product-api.service';
-import { VariantApiService }                  from '../../../../core/services/variant-api.service';
-import { AdminProductInput }                  from '../../../../core/models/product-api.model';
+import { AdminProductInput, VariantRequest }  from '../../../../core/models/product-api.model';
 import { ProductImageGalleryComponent, GalleryImageState } from '../../components/product-image-gallery/product-image-gallery.component';
 import { APP_ROUTES }                         from '../../../../core/constants/routes.constants';
-import { Product, ProductImage, ProductSize } from '../../../../core/models/product.model';
-import type { ProductVariant }               from '../../../../core/models/product-variant.model';
+import { Product, ProductImage }              from '../../../../core/models/product.model';
 import { slugify }                            from '../../../../shared/utils/slugify.util';
 import {
   validateImageFile, processImageForUpload, CorruptImageError,
@@ -55,13 +53,13 @@ const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
   imports:     [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, ProductImageGalleryComponent],
   templateUrl: './admin-product-form.component.html',
   styleUrl:    './admin-product-form.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminProductFormComponent implements OnInit {
   private readonly fb     = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route  = inject(ActivatedRoute);
   readonly api             = inject(ProductApiService);
-  readonly variantApi      = inject(VariantApiService);
 
   readonly BASE       = `/${APP_ROUTES.ADMIN}`;
   readonly isEdit     = signal(false);
@@ -97,6 +95,7 @@ export class AdminProductFormComponent implements OnInit {
     fabric:             [''],
     washCare:           [''],
     sizeChart:          [''],
+    costPrice:          [null as number | null],
     tags:               [''],
     featured:           [false],
     newArrival:         [false],
@@ -161,9 +160,11 @@ export class AdminProductFormComponent implements OnInit {
 
   private async loadVariants(productId: string): Promise<void> {
     try {
-      const variants = await firstValueFrom(this.variantApi.getVariants(productId));
-      if (!variants?.length) return;
-      this.variants.set(variants.map(v => ({
+      const p = await this.api.getById(productId);
+      if (!p || !('variants' in p)) return;
+      const apiVariants = (p as any).variants ?? [];
+      if (!apiVariants?.length) return;
+      this.variants.set(apiVariants.map((v: any) => ({
         id: v.id,
         colourName: v.colourName,
         colourHex: v.colourHex || '#000000',
@@ -172,14 +173,14 @@ export class AdminProductFormComponent implements OnInit {
         mrp: v.mrp,
         flipkartUrl: v.flipkartUrl || '',
         isActive: v.isActive,
-        sizes: v.sizes.map(s => ({ size: s.size, stock: s.stock })),
+        sizes: v.sizes.map((s: any) => ({ size: s.size, stock: s.stock })),
         images: Object.fromEntries(VARIANT_IMAGE_SLOTS.map(slot => [
           slot.key,
           {
-            url: (v.images as any)[slot.key] || null,
+            url: v.images?.[slot.key] || null,
             publicId: null,
             file: null,
-            preview: (v.images as any)[slot.key] || null,
+            preview: v.images?.[slot.key] || null,
             uploading: false,
             error: null,
           },
@@ -187,8 +188,7 @@ export class AdminProductFormComponent implements OnInit {
         isExisting: true,
         isDeleted: false,
       })));
-      // Expand all by default
-      this.expandedVariantIds.set(new Set(variants.map(v => v.id)));
+      this.expandedVariantIds.set(new Set(apiVariants.map((v: any) => v.id)));
     } catch {
       // silent
     }
@@ -235,8 +235,50 @@ export class AdminProductFormComponent implements OnInit {
     });
   }
 
+  duplicateVariant(id: string): void {
+    const source = this.variants().find(v => v.id === id);
+    if (!source) return;
+    const newId = crypto.randomUUID();
+    this.variants.update(list => [...list, {
+      ...source,
+      id: newId,
+      colourName: source.colourName + ' (copy)',
+      sku: source.sku ? source.sku + '-COPY' : '',
+      isExisting: false,
+      isDeleted: false,
+      images: Object.fromEntries(VARIANT_IMAGE_SLOTS.map(slot => [
+        slot.key, { ...source.images[slot.key] },
+      ])),
+    }]);
+    this.expandedVariantIds.update(s => new Set(s).add(newId));
+  }
+
+  triggerFileInput(slotKey: string, variantId: string): void {
+    const el = document.getElementById('img-' + variantId + '-' + slotKey) as HTMLInputElement;
+    el?.click();
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  onDrop(event: DragEvent, variantId: string, slotKey: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      const input = document.getElementById('img-' + variantId + '-' + slotKey) as HTMLInputElement;
+      if (input) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        this.onVariantImageSelected({ target: input } as any, variantId, slotKey);
+      }
+    }
+  }
+
   trackByVariantId(_: number, v: VariantFormData): string { return v.id; }
-  trackBySize(_: number, s: SizeRow): string { return s.size; }
 
   addSize(variantId: string): void {
     this.variants.update(list => list.map(v => {
@@ -268,10 +310,8 @@ export class AdminProductFormComponent implements OnInit {
 
     try {
       const processed = await processImageForUpload(file);
-      // Need a temp variant ID for the folder path if this is a new variant
-      const folderVariantId = variantId;
       const res = await firstValueFrom(
-        this.variantApi.uploadVariantImage(this.productId(), folderVariantId, slotKey, new File([processed.blob], file.name, { type: 'image/webp' }))
+        this.api.uploadVariantImage(this.productId(), variantId, slotKey, new File([processed.blob], file.name, { type: 'image/webp' }))
       );
       this.updateVariantImage(variantId, slotKey, {
         url: res.url,
@@ -291,7 +331,7 @@ export class AdminProductFormComponent implements OnInit {
     const v = this.variants().find(x => x.id === variantId);
     const img = v?.images[slotKey];
     if (img?.publicId && v) {
-      this.variantApi.deleteVariantImage(this.productId(), variantId, img.publicId).subscribe({ error: () => {} });
+      this.api.deleteVariantImage(this.productId(), variantId, img.publicId).subscribe({ error: () => {} });
     }
     if (img?.preview?.startsWith('blob:')) URL.revokeObjectURL(img.preview);
     this.updateVariantImage(variantId, slotKey, { url: null, publicId: null, file: null, preview: null, uploading: false, error: null });
@@ -428,6 +468,7 @@ export class AdminProductFormComponent implements OnInit {
       fabric:             p.fabric ?? '',
       washCare:           p.washCare ?? '',
       sizeChart:          (p as any).sizeChart ?? '',
+      costPrice:          p.costPrice ?? null,
       tags:               p.tags.join(', '),
       featured:           p.featured,
       newArrival:         p.newArrival,
@@ -522,6 +563,30 @@ export class AdminProductFormComponent implements OnInit {
       return;
     }
 
+    const variants: VariantRequest[] = this.variants()
+      .filter(v => !v.isDeleted)
+      .map(v => ({
+        id: v.isExisting ? v.id : undefined,
+        colourName: v.colourName,
+        colourHex: v.colourHex || undefined,
+        sku: v.sku,
+        sellingPrice: v.sellingPrice ?? undefined,
+        mrp: v.mrp ?? undefined,
+        flipkartUrl: v.flipkartUrl || undefined,
+        displayOrder: 0,
+        isActive: v.isActive,
+        sizes: v.sizes.filter(s => s.stock > 0).map(s => ({ size: s.size, stock: s.stock })),
+        images: {
+          primary: v.images['primary']?.url || undefined,
+          front: v.images['front']?.url || undefined,
+          back: v.images['back']?.url || undefined,
+          left: v.images['left']?.url || undefined,
+          right: v.images['right']?.url || undefined,
+          closeup: v.images['closeup']?.url || undefined,
+          gallery: [],
+        },
+      }));
+
     const input: AdminProductInput = {
       ...(this.isEdit() ? {} : { id: this.productId() }),
       name:             formVals.name!.trim(),
@@ -530,13 +595,8 @@ export class AdminProductFormComponent implements OnInit {
       subCategory:      formVals.subCategory?.trim() || undefined,
       description:      formVals.description?.trim() || undefined,
       shortDescription: formVals.shortDescription?.trim() || undefined,
-      price:            0,
-      mrp:              0,
-      discount:         0,
       fabric:           formVals.fabric?.trim() || undefined,
       washCare:         formVals.washCare?.trim() || undefined,
-      sizes:            [],
-      sku:              '',
       tags:             (formVals.tags ?? '').split(',').map(t => t.trim()).filter(Boolean),
       featured:         !!formVals.featured,
       newArrival:       !!formVals.newArrival,
@@ -546,76 +606,19 @@ export class AdminProductFormComponent implements OnInit {
       lowStockThreshold: formVals.lowStockThreshold ?? undefined,
       autoHideWhenOutOfStock: !!formVals.autoHideWhenOutOfStock,
       images,
+      costPrice:          formVals.costPrice ?? undefined,
       brand:              formVals.brand?.trim() || undefined,
       seoTitle:           formVals.seoTitle?.trim() || undefined,
       seoDescription:     formVals.seoDescription?.trim() || undefined,
       seoKeywords:        (formVals.seoKeywords ?? '').split(',').map(t => t.trim()).filter(Boolean),
-      color:              undefined,
-      flipkartProductUrl: undefined,
-      flipkartProductId:  undefined,
+      variants,
     };
 
     try {
-      // Step 1: Save product
       if (this.isEdit()) {
         await this.api.update(this.productId(), input);
       } else {
         await this.api.create(input);
-      }
-
-      // Step 2: Save variants
-      const activeVariants = this.variants().filter(v => !v.isDeleted);
-      for (const v of activeVariants) {
-        if (v.isExisting) {
-          // Update existing variant
-          const updatePayload = {
-            colourName: v.colourName,
-            colourHex: v.colourHex || null,
-            sku: v.sku,
-            sellingPrice: v.sellingPrice,
-            mrp: v.mrp,
-            flipkartUrl: v.flipkartUrl || null,
-            displayOrder: 0,
-            isActive: v.isActive,
-            isFeatured: false,
-            isBestSeller: false,
-            isNewArrival: false,
-            sizes: v.sizes.filter(s => s.stock > 0).map(s => ({ size: s.size, stock: s.stock })),
-            images: {
-              primary: v.images['primary']?.url || null,
-              front: v.images['front']?.url || null,
-              back: v.images['back']?.url || null,
-              left: v.images['left']?.url || null,
-              right: v.images['right']?.url || null,
-              closeup: v.images['closeup']?.url || null,
-              gallery: [] as string[],
-            },
-          };
-          await firstValueFrom(this.variantApi.updateVariant(v.id, updatePayload));
-        } else {
-          // Create new variant
-          const createPayload = {
-            colourName: v.colourName,
-            colourHex: v.colourHex || null,
-            sku: v.sku,
-            sellingPrice: v.sellingPrice,
-            mrp: v.mrp,
-            flipkartUrl: v.flipkartUrl || null,
-            displayOrder: 0,
-            isActive: v.isActive,
-            isFeatured: false,
-            isBestSeller: false,
-            isNewArrival: false,
-            sizes: v.sizes.filter(s => s.stock > 0).map(s => ({ size: s.size, stock: s.stock })),
-          };
-          await firstValueFrom(this.variantApi.createVariant(this.productId(), createPayload));
-        }
-      }
-
-      // Step 3: Handle deleted variants
-      for (const v of this.variants()) {
-        if (!v.isDeleted || !v.isExisting) continue;
-        await firstValueFrom(this.variantApi.deleteVariant(v.id));
       }
 
       this.saved.set(true);

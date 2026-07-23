@@ -2,8 +2,6 @@ using Serilog;
 using Vrindaya.Api.Constants;
 using Vrindaya.Api.Extensions;
 using Vrindaya.Api.Interfaces;
-using Vrindaya.Api.Scripts;
-using Vrindaya.Api.Services.Admin;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,12 +20,6 @@ builder.Services.AddApplicationServices();
 // minted AppJwt for everything else); "AdminOnly" requires either RBAC role ──
 builder.Services.AddAdminAuthentication();
 
-// ── External API integrations (typed HttpClient via IHttpClientFactory) ──────
-builder.Services.AddWhatsAppIntegration();
-
-// ── Background workers ────────────────────────────────────────────────────────
-builder.Services.AddCampaignDeliveryWorker();
-
 // ── Cross-cutting infrastructure ──────────────────────────────────────────────
 builder.Services.AddCorsPolicy(builder.Configuration);
 builder.Services.AddApiVersioningSupport();
@@ -42,14 +34,6 @@ builder.Services.AddSwaggerDocumentation();
 
 var app = builder.Build();
 
-// ── One-time maintenance mode — see Scripts/LegacyImageMigration.cs. Runs
-// the migration/scan and exits immediately; the web server never starts. ──
-if (args.Length > 0 && args[0] == "migrate-legacy-images")
-{
-    await LegacyImageMigration.RunAsync(app.Services, args);
-    return;
-}
-
 // ── Startup validation — fail fast if required env vars are missing ───────────
 ValidateRequiredConfiguration(app.Services);
 
@@ -59,8 +43,11 @@ ValidateRequiredConfiguration(app.Services);
 // retry naturally. ─────────────────────────────────────────────────────────────
 EagerInitialize(app.Services);
 
-// ── RBAC bootstrap — idempotent; a no-op on every boot after the first ───
-await AdminUserSeeder.SeedInitialSuperAdminAsync(app.Services);
+// ── One-time schema migration: upgrades variant image documents stored in
+// the old format (plain URL strings) to the current object format
+// ({ url, publicId, width, height, alt }). The repository reads both formats
+// transparently, so this is optional — run it once to clean up Firestore data.
+_ = RunVariantImageMigrationAsync(app.Services);
 
 // ── Request pipeline ──────────────────────────────────────────────────────────
 // Order matters: exception handling wraps everything, forwarded headers
@@ -172,4 +159,29 @@ static void EagerInitialize(IServiceProvider services)
     }
 
     logger.LogInformation("[STARTUP] Eager initialization complete.");
+}
+
+/// <summary>
+/// One-time migration from old image schema (string URLs) to new image schema
+/// (VariantImageSlotDocument objects). Runs in the background so it doesn't
+/// block the first request. Migration is idempotent — documents already in the
+/// new format are skipped.
+/// </summary>
+static async Task RunVariantImageMigrationAsync(IServiceProvider services)
+{
+    try
+    {
+        var repo = services.GetRequiredService<IProductVariantRepository>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
+
+        logger.LogInformation("[STARTUP] Checking for variant image schema migration...");
+        await repo.MigrateAllVariantsImagesAsync();
+        logger.LogInformation("[STARTUP] Variant image migration check complete.");
+    }
+    catch (Exception ex)
+    {
+        // Non-fatal — the repository handles both schemas transparently.
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning(ex, "[STARTUP] Variant image migration failed — old-format documents will still be readable.");
+    }
 }

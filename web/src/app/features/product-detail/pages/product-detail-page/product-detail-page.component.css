@@ -11,21 +11,6 @@
   padding-bottom: 3.5rem;
 }
 
-/* ── Breadcrumb ── */
-.pd-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 1rem 0;
-  font-size: 0.78rem;
-}
-
-.pd-bc-link  { color: var(--text-muted); text-decoration: none; transition: color 0.18s; text-transform: capitalize; }
-.pd-bc-link:hover { color: var(--maroon); }
-.pd-bc-sep     { color: var(--text-light); font-size: 0.6rem; }
-.pd-bc-current { color: var(--text); font-weight: 500; }
-
-/* ── Layout ── */
 .pd-main {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
@@ -117,23 +102,6 @@
 /* ── Details ── */
 .pd-details { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 0.25rem; }
 
-.pd-badge-row { min-height: 22px; }
-
-.pd-badge {
-  display: inline-block;
-  padding: 3px 9px;
-  background: var(--maroon, #0f6f84);
-  color: #fff;
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border-radius: 3px;
-}
-
-.pd-badge--new { background: var(--gold, #c9a54c); color: var(--text, #222); }
-.pd-badge--oos { background: #4b4b4b; color: #fff; }
-
 .pd-name {
   font-family: var(--font-serif, 'Cormorant Garamond', serif);
   font-size: clamp(1.6rem, 3.5vw, 2.25rem);
@@ -142,13 +110,6 @@
   line-height: 1.2;
   margin: 0;
 }
-
-.pd-price-row { display: flex; align-items: baseline; gap: 0.75rem; }
-.pd-price     { font-size: 1.4rem; font-weight: 700; color: var(--maroon, #0f6f84); }
-.pd-mrp       { font-size: 1rem; color: var(--text-light, #999); text-decoration: line-through; }
-.pd-discount  { font-size: 0.85rem; font-weight: 700; color: #1a8435; }
-
-.pd-sku { font-size: 0.8rem; color: var(--text-muted, #666); margin: 0; }
 
 .pd-rule { height: 1px; background: var(--border, #eaeaea); margin: 0.25rem 0; }
 

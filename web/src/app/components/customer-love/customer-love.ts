@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../core/services/product.service';
 
@@ -8,6 +8,7 @@ import { ProductService } from '../../core/services/product.service';
   imports: [CommonModule],
   templateUrl: './customer-love.html',
   styleUrl: './customer-love.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerLove {
   readonly testimonials = inject(ProductService).testimonials;

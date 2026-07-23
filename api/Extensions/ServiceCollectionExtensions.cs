@@ -14,15 +14,8 @@ using Vrindaya.Api.Constants;
 using Vrindaya.Api.Helpers;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Services;
-using Vrindaya.Api.Services.Admin;
-using Vrindaya.Api.Services.Audit;
-using Vrindaya.Api.Services.Brand;
-using Vrindaya.Api.Services.CampaignDelivery;
-using Vrindaya.Api.Services.Marketplace;
 using Vrindaya.Api.Services.Homepage;
-using Vrindaya.Api.Services.Marketing;
 using Vrindaya.Api.Services.Products;
-using Vrindaya.Api.Services.WhatsApp;
 
 namespace Vrindaya.Api.Extensions;
 
@@ -43,33 +36,17 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IHealthService, HealthService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IProductService, ProductService>();
-        services.AddScoped<IMarketingService, MarketingService>();
-        services.AddScoped<ICampaignService, CampaignService>();
-        services.AddScoped<IWhatsAppService, WhatsAppService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();
-        services.AddScoped<IOrderService, OrderService>();
 
-        // Singleton: wraps one lazily built, reused FirestoreDb client — the
-        // same reasoning as reusing an HttpClient rather than rebuilding it
-        // per call. CampaignDeliveryWorker (a singleton itself) resolves
-        // IFirebaseService directly; nothing about it is request-scoped.
+        // Singleton: wraps one lazily built, reused FirestoreDb client.
         services.AddSingleton<IFirebaseService, FirebaseService>();
 
-        // Singleton: wraps one Cloudinary client built once in the
-        // constructor — every image upload/replace/delete in the app goes
-        // through this (see ICloudinaryService's doc comment).
+        // Singleton: wraps one Cloudinary client built once in the constructor.
         services.AddSingleton<ICloudinaryService, CloudinaryService>();
 
-        services.AddScoped<ICampaignDeliveryRepository, CampaignDeliveryRepository>();
-
-        // Product module — see api's Product Management architecture docs.
-        // ProductRepository is pure Firestore data access (mirrors
-        // CampaignDeliveryRepository); the other three are ProductService's
-        // internal collaborators, composed there rather than called
-        // directly by the controller (except ProductStorageService, which
-        // the controller calls directly for upload-images since uploading
-        // doesn't touch the product document at all).
+        // Product module
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IProductValidationService, ProductValidationService>();
         services.AddScoped<ILifecycleService, LifecycleService>();
@@ -78,73 +55,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
         services.AddScoped<IProductVariantService, ProductVariantService>();
         services.AddScoped<IVariantImageService, VariantImageService>();
+        services.AddScoped<IInventoryService, InventoryService>();
+        services.AddScoped<IPricingService, PricingService>();
 
-        // Homepage CMS module — HomepageService aggregates every section
-        // below into the single GET /homepage response; IHomepageCacheService
-        // wraps the same IMemoryCache instance HomepageService reads from,
-        // so every mutation here invalidates that one cached response.
+        // Categories
         services.AddMemoryCache();
-        services.AddSingleton<IHomepageCacheService, HomepageCacheService>();
-        services.AddScoped<IHomepageStorageService, HomepageStorageService>();
-        services.AddScoped<IHeroBannerRepository, HeroBannerRepository>();
-        services.AddScoped<IHeroBannerService, HeroBannerService>();
-        services.AddScoped<IPromotionalBannerRepository, PromotionalBannerRepository>();
-        services.AddScoped<IPromotionalBannerService, PromotionalBannerService>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICategoryService, CategoryService>();
-        services.AddScoped<ICollectionRepository, CollectionRepository>();
-        services.AddScoped<ICollectionService, CollectionService>();
-        services.AddScoped<IHomepageConfigRepository, HomepageConfigRepository>();
-        services.AddScoped<IHomepageConfigService, HomepageConfigService>();
-        services.AddScoped<IHomepageService, HomepageService>();
-
-        // Brand CMS module (Phase 9) — About Us/Contact/Store Info/Social
-        // Links/FAQs/Policies/Footer, all in one singleton document.
-        // BrandConfigService reads/writes the same shared IMemoryCache
-        // instance registered above, keyed by AppConstants.BrandConfigCacheKey.
-        services.AddScoped<IBrandConfigRepository, BrandConfigRepository>();
-        services.AddScoped<IBrandConfigService, BrandConfigService>();
-
-        // Marketplace Management — Flipkart settings singleton document at
-        // marketplaceSettings/flipkart. Same singleton/cache pattern as
-        // BrandConfigService, keyed by AppConstants.FlipkartSettingsCacheKey.
-        services.AddScoped<IMarketplaceSettingsRepository, MarketplaceSettingsRepository>();
-        services.AddScoped<IMarketplaceSettingsService, MarketplaceSettingsService>();
-
-        // Marketing/Campaign media — image uploads only (see MarketingAssetsController).
-        services.AddScoped<IMarketingStorageService, MarketingStorageService>();
-
-        // RBAC — who may sign in and with which role (AdminUsersController),
-        // plus the AppJwt this app mints for itself after a successful login
-        // (see AddAdminAuthentication/JwtTokenService).
-        services.AddScoped<IAdminUserRepository, AdminUserRepository>();
-        services.AddScoped<IAdminUserService, AdminUserService>();
-        services.AddScoped<IJwtTokenService, JwtTokenService>();
-
-        // Audit Log — append-only ledger for every important admin action.
-        // Reusable across all modules via IAuditLogService.
-        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-        services.AddScoped<IAuditLogService, AuditLogService>();
-
-        // Expense Management — expenses collection with CRUD, search, filters,
-        // pagination, monthly/yearly summaries, and audit trail.
-        services.AddScoped<IExpenseRepository, Services.Expenses.ExpenseRepository>();
-        services.AddScoped<IExpenseService, Services.Expenses.ExpenseService>();
-
-        // Revenue Management — revenues collection with CRUD, search, filters,
-        // pagination, monthly/yearly summaries, and audit trail.
-        services.AddScoped<IRevenueRepository, Services.Revenues.RevenueRepository>();
-        services.AddScoped<IRevenueService, Services.Revenues.RevenueService>();
-
-        // Cash Flow — aggregates paid revenues (money in) and paid expenses
-        // (money out) into a cash flow dashboard with pending settlements,
-        // pending expenses, monthly/yearly series.
-        services.AddScoped<ICashFlowService, Services.CashFlow.CashFlowService>();
-
-        // Settlement Reconciliation — compares expected vs actual settlements,
-        // detects missing payments, commission mismatches, unexpected charges,
-        // and settlement delays. Future-ready for Flipkart API data source.
-        services.AddScoped<ISettlementReconciliationService, Services.Settlement.SettlementReconciliationService>();
 
         return services;
     }
@@ -265,9 +182,7 @@ public static class ServiceCollectionExtensions
             }
         });
 
-        services.Configure<WhatsAppOptions>(configuration.GetSection(WhatsAppOptions.SectionName));
         services.Configure<CorsOptions>(configuration.GetSection(CorsOptions.SectionName));
-        services.Configure<CampaignDeliveryOptions>(configuration.GetSection(CampaignDeliveryOptions.SectionName));
         services.Configure<CloudinaryOptions>(configuration.GetSection(CloudinaryOptions.SectionName));
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
@@ -391,33 +306,4 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>
-    /// Registers MetaWhatsAppProvider as a typed HttpClient (this is what
-    /// registers IHttpClientFactory under the hood and gives this client
-    /// pooled/reused connections). The Graph API root is fixed here; the
-    /// versioned, phone-number-specific path is built per request inside
-    /// MetaWhatsAppProvider from WhatsAppOptions.
-    /// </summary>
-    public static IServiceCollection AddWhatsAppIntegration(this IServiceCollection services)
-    {
-        services.AddHttpClient<IWhatsAppProvider, MetaWhatsAppProvider>(client =>
-        {
-            client.BaseAddress = new Uri(AppConstants.WhatsAppGraphApiBaseUrl);
-            client.Timeout = TimeSpan.FromSeconds(30);
-        });
-
-        return services;
-    }
-
-    /// <summary>
-    /// Registers CampaignDeliveryWorker as a hosted BackgroundService — it
-    /// starts with the app and runs for the app's lifetime, polling
-    /// campaignExecutions/campaignRecipients on the interval configured
-    /// under "CampaignDelivery".
-    /// </summary>
-    public static IServiceCollection AddCampaignDeliveryWorker(this IServiceCollection services)
-    {
-        services.AddHostedService<CampaignDeliveryWorker>();
-        return services;
-    }
 }

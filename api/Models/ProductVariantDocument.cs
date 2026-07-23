@@ -55,25 +55,44 @@ public class ProductVariantDocument
 public class VariantImagesDocument
 {
     [FirestoreProperty("primary")]
-    public string? Primary { get; set; }
+    public VariantImageSlotDocument? Primary { get; set; }
 
     [FirestoreProperty("front")]
-    public string? Front { get; set; }
+    public VariantImageSlotDocument? Front { get; set; }
 
     [FirestoreProperty("back")]
-    public string? Back { get; set; }
+    public VariantImageSlotDocument? Back { get; set; }
 
     [FirestoreProperty("left")]
-    public string? Left { get; set; }
+    public VariantImageSlotDocument? Left { get; set; }
 
     [FirestoreProperty("right")]
-    public string? Right { get; set; }
+    public VariantImageSlotDocument? Right { get; set; }
 
     [FirestoreProperty("closeup")]
-    public string? Closeup { get; set; }
+    public VariantImageSlotDocument? Closeup { get; set; }
 
     [FirestoreProperty("gallery")]
-    public List<string> Gallery { get; set; } = [];
+    public List<VariantImageSlotDocument> Gallery { get; set; } = [];
+}
+
+[FirestoreData]
+public class VariantImageSlotDocument
+{
+    [FirestoreProperty("url")]
+    public string Url { get; set; } = string.Empty;
+
+    [FirestoreProperty("publicId")]
+    public string PublicId { get; set; } = string.Empty;
+
+    [FirestoreProperty("width")]
+    public int Width { get; set; }
+
+    [FirestoreProperty("height")]
+    public int Height { get; set; }
+
+    [FirestoreProperty("alt")]
+    public string? Alt { get; set; }
 }
 
 [FirestoreData]

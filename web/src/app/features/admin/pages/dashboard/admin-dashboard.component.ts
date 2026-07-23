@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink }                          from '@angular/router';
 import { CurrencyPipe }                        from '@angular/common';
 import { ProductApiService }                   from '../../../../core/services/product-api.service';
@@ -13,6 +13,7 @@ import { LIFECYCLE_STAGES }                    from '../../../../core/constants/
   imports:     [RouterLink, CurrencyPipe],
   templateUrl: './admin-dashboard.component.html',
   styleUrl:    './admin-dashboard.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminDashboardComponent {
   readonly productApi = inject(ProductApiService);

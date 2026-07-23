@@ -52,6 +52,7 @@ export interface Product {
   updatedAt:         Timestamp | string | null;
   images:            ProductImage[];
 
+  costPrice?:         number;
   brand:              string;
   flipkartProductUrl?: string;
   flipkartProductId?:  string;
@@ -100,6 +101,12 @@ export interface Product {
   isBestSeller?:     boolean;
   rating:            number;
   flipkartUrl:       string;
+
+  /* ─── Variant denormalized fields ─── */
+  variantCount: number;
+  totalStock: number;
+  lowestPrice?: number;
+  highestPrice?: number;
 }
 
 export interface Category {

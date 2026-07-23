@@ -41,8 +41,6 @@
                 <img [src]="item.product.image" [alt]="item.product.name" class="so-thumb" loading="lazy" draggable="false" />
               } @else if (item.kind === 'category') {
                 <img [src]="item.category.image" [alt]="item.category.name" class="so-thumb" loading="lazy" draggable="false" />
-              } @else if (item.collection.image) {
-                <img [src]="item.collection.image" [alt]="item.collection.name" class="so-thumb" loading="lazy" draggable="false" />
               } @else {
                 <span class="so-thumb so-thumb--icon"><i class="bi bi-collection"></i></span>
               }
@@ -53,7 +51,7 @@
               @if (item.kind === 'product') {
                 <span class="so-result-cta">View Details</span>
               } @else {
-                <span class="so-result-cta so-result-cta--type">{{ item.kind === 'category' ? 'Category' : 'Collection' }}</span>
+                <span class="so-result-cta">Category</span>
               }
               <i class="bi bi-arrow-right so-result-arrow"></i>
             </li>

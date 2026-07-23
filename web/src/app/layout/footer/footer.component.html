@@ -1,10 +1,8 @@
 <footer id="footer">
 
-  <!-- ══ TOP SECTION (cream) ══ -->
   <div class="ft-top">
     <div class="container-vr">
 
-      <!-- Brand block -->
       <div class="ft-brand">
         <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="ft-logo" draggable="false" />
         <h2 class="ft-brand-name">VRINDAYA</h2>
@@ -23,98 +21,50 @@
           designed for every occasion.
         </p>
 
-        @if (brand()?.footer?.showSocialLinks && (brand()?.socialLinks?.instagram || brand()?.socialLinks?.flipkart)) {
-          <div class="ft-social">
-            @if (brand()!.socialLinks.instagram) {
-              <a [href]="brand()!.socialLinks.instagram" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
-                <i class="bi bi-instagram" aria-hidden="true"></i>
-              </a>
-            }
-            @if (brand()!.socialLinks.flipkart) {
-              <a [href]="brand()!.socialLinks.flipkart" target="_blank" rel="noopener noreferrer" aria-label="Visit our Flipkart store">
-                <i class="bi bi-shop" aria-hidden="true"></i>
-              </a>
-            }
-          </div>
-        }
+        <div class="ft-social">
+          <a href="https://www.instagram.com/vrindaya.co" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
+            <i class="bi bi-instagram" aria-hidden="true"></i>
+          </a>
+          <a href="https://www.flipkart.com/vrindaya" target="_blank" rel="noopener noreferrer" aria-label="Visit our Flipkart store">
+            <i class="bi bi-shop" aria-hidden="true"></i>
+          </a>
+        </div>
       </div>
 
       <div class="ft-divider-h"></div>
 
-      <!-- Columns: Shop · Quick Links · Policies (dynamic) -->
       <div class="ft-cols">
 
-        <!-- Shop -->
         <div class="ft-col">
           <h4 class="ft-col-title">SHOP</h4>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
-            <li>
-              <a routerLink="/category/long-kurtas"
-                 routerLinkActive="ft-link-active">Long Kurtas</a>
-            </li>
-            <li>
-              <a routerLink="/category/short-kurtas"
-                 routerLinkActive="ft-link-active">Short Kurtas</a>
-            </li>
-            <li>
-              <a routerLink="/category/2-piece-sets"
-                 routerLinkActive="ft-link-active">2-Piece Sets</a>
-            </li>
-            <li>
-              <a routerLink="/category/3-piece-sets"
-                 routerLinkActive="ft-link-active">3-Piece Sets</a>
-            </li>
+            <li><a routerLink="/category/long-kurtas" routerLinkActive="ft-link-active">Long Kurtas</a></li>
+            <li><a routerLink="/category/short-kurtas" routerLinkActive="ft-link-active">Short Kurtas</a></li>
+            <li><a routerLink="/category/2-piece-sets" routerLinkActive="ft-link-active">2-Piece Sets</a></li>
+            <li><a routerLink="/category/3-piece-sets" routerLinkActive="ft-link-active">3-Piece Sets</a></li>
           </ul>
         </div>
 
-        <!-- Quick Links -->
         <div class="ft-col">
           <h4 class="ft-col-title">QUICK LINKS</h4>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
-            <li>
-              <a routerLink="/about" routerLinkActive="ft-link-active">About Us</a>
-            </li>
-            <li>
-              <a routerLink="/contact" routerLinkActive="ft-link-active">Contact</a>
-            </li>
-            <li>
-              <a routerLink="/faq" routerLinkActive="ft-link-active">FAQs</a>
-            </li>
-            <li>
-              <a routerLink="/new-arrivals" routerLinkActive="ft-link-active">New Arrivals</a>
-            </li>
-            <li>
-              <a routerLink="/trending" routerLinkActive="ft-link-active">Trending Collection</a>
-            </li>
+            <li><a routerLink="/about" routerLinkActive="ft-link-active">About Us</a></li>
+            <li><a routerLink="/contact" routerLinkActive="ft-link-active">Contact</a></li>
+            <li><a routerLink="/faq" routerLinkActive="ft-link-active">FAQs</a></li>
+            <li><a routerLink="/new-arrivals" routerLinkActive="ft-link-active">New Arrivals</a></li>
+            <li><a routerLink="/trending" routerLinkActive="ft-link-active">Trending Collection</a></li>
           </ul>
         </div>
-
-        <!-- Policies — only shown when the admin has added at least one -->
-        @if (brand()?.footer?.showPolicyLinks && (brand()?.policies?.length ?? 0) > 0) {
-          <div class="ft-col">
-            <h4 class="ft-col-title">POLICIES</h4>
-            <div class="ft-col-rule"></div>
-            <ul class="ft-links">
-              @for (policy of brand()!.policies; track policy.id) {
-                <li>
-                  <a [routerLink]="'/policies/' + policy.id" routerLinkActive="ft-link-active">{{ policy.title }}</a>
-                </li>
-              }
-            </ul>
-          </div>
-        }
 
       </div>
     </div>
   </div>
 
-  <!-- ══ BOTTOM SECTION ══ -->
   <div class="ft-bottom">
     <div class="container-vr">
 
-      <!-- 3 feature blocks centered -->
       <div class="ft-features">
         <div class="ft-feature">
           <div class="ft-feat-icon"><i class="bi bi-flower1"></i></div>
@@ -139,7 +89,6 @@
         </div>
       </div>
 
-      <!-- Copyright strip -->
       <div class="ft-copy">
         <div class="ft-copy-line"></div>
         <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="16" height="12">
@@ -148,8 +97,8 @@
           <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
         </svg>
         <div class="ft-copy-line"></div>
-        <p class="ft-copy-text">{{ brand()?.footer?.copyrightText || ('© ' + currentYear + ' Vrindaya. All Rights Reserved.') }}</p>
-        <em class="ft-copy-tag">Wear the Grace ✦</em>
+        <p class="ft-copy-text">&copy; {{ currentYear }} Vrindaya. All Rights Reserved.</p>
+        <em class="ft-copy-tag">Wear the Grace</em>
       </div>
 
     </div>

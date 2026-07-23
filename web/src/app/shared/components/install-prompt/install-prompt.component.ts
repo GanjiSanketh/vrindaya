@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, signal, OnInit, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser }                               from '@angular/common';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -11,6 +11,7 @@ interface BeforeInstallPromptEvent extends Event {
   standalone: true,
   templateUrl: './install-prompt.component.html',
   styleUrl:    './install-prompt.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstallPromptComponent implements OnInit {
   private readonly pid = inject(PLATFORM_ID);

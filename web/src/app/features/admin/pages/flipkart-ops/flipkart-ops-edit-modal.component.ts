@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, OnInit } from '@angular/core';
+import { Component, inject, input, output, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ProductApiService } from '../../../../core/services/product-api.service';
@@ -12,6 +12,7 @@ import { FlipkartOpsInput } from '../../../../core/models/product-api.model';
   imports:     [ReactiveFormsModule, DatePipe],
   templateUrl: './flipkart-ops-edit-modal.component.html',
   styleUrl:    './flipkart-ops-edit-modal.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FlipkartOpsEditModalComponent implements OnInit {
   private readonly fb  = inject(FormBuilder);

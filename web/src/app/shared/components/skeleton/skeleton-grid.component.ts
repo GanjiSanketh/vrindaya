@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule }    from '@angular/common';
 import { ProductCardSkeletonComponent } from './product-card-skeleton.component';
 
@@ -14,6 +14,7 @@ import { ProductCardSkeletonComponent } from './product-card-skeleton.component'
     </div>
   `,
   styleUrl: './skeleton-grid.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkeletonGridComponent {
   readonly count = input<number>(8);

@@ -114,6 +114,10 @@ public class ProductDocument
     [FirestoreProperty("brand")]
     public string Brand { get; set; } = string.Empty;
 
+    /// <summary>Cost price paid to acquire the product — used for profit calculations in the Pricing Dashboard.</summary>
+    [FirestoreProperty("costPrice")]
+    public double? CostPrice { get; set; }
+
     [FirestoreProperty("flipkartProductUrl")]
     public string? FlipkartProductUrl { get; set; }
 
@@ -205,6 +209,23 @@ public class ProductDocument
     /// <summary>Stamped only by inventory-specific writes (UpdateStockAsync/UpdateInventoryAsync) — distinct from the general UpdatedAt, which any product edit touches.</summary>
     [FirestoreProperty("stockUpdatedAt")]
     public DateTime? StockUpdatedAt { get; set; }
+
+    /* ─── Variant denormalized fields ─────────────────────────────────
+       Computed during SyncVariantsAsync and written atomically with the
+       product doc so list queries never need to scan the variants
+       subcollection. ──────────────────────────────────────────────── */
+
+    [FirestoreProperty("variantCount")]
+    public int VariantCount { get; set; }
+
+    [FirestoreProperty("totalStock")]
+    public long TotalStock { get; set; }
+
+    [FirestoreProperty("lowestPrice")]
+    public double? LowestPrice { get; set; }
+
+    [FirestoreProperty("highestPrice")]
+    public double? HighestPrice { get; set; }
 }
 
 [FirestoreData]

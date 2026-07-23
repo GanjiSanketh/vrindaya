@@ -9,11 +9,19 @@ public class ProductVariantService : IProductVariantService
 {
     private readonly IProductVariantRepository _repo;
     private readonly IProductRepository _productRepo;
+    private readonly ICloudinaryService _cloudinary;
+    private readonly ILogger<ProductVariantService> _logger;
 
-    public ProductVariantService(IProductVariantRepository repo, IProductRepository productRepo)
+    public ProductVariantService(
+        IProductVariantRepository repo,
+        IProductRepository productRepo,
+        ICloudinaryService cloudinary,
+        ILogger<ProductVariantService> logger)
     {
         _repo = repo;
         _productRepo = productRepo;
+        _cloudinary = cloudinary;
+        _logger = logger;
     }
 
     public async Task<List<VariantResponse>> GetVariantsAsync(string productId, CancellationToken ct = default)
@@ -63,15 +71,15 @@ public class ProductVariantService : IProductVariantService
 
         var ordered = images.OrderBy(i => i.Order).ToList();
 
-        result.Primary = ordered[0].Url;
-        var gallery = ordered.Skip(1).Select(i => i.Url).ToList();
+        result.Primary = new VariantImageSlotDocument { Url = ordered[0].Url, PublicId = ordered[0].PublicId };
+        var gallery = ordered.Skip(1).ToList();
         if (gallery.Count > 0)
         {
-            result.Gallery = gallery;
-            if (gallery.Count >= 1) result.Front = gallery[0];
-            if (gallery.Count >= 2) result.Back = gallery[1];
-            if (gallery.Count >= 3) result.Left = gallery[2];
-            if (gallery.Count >= 4) result.Right = gallery[3];
+            result.Gallery = gallery.Select(i => new VariantImageSlotDocument { Url = i.Url, PublicId = i.PublicId }).ToList();
+            if (gallery.Count >= 1) result.Front = new VariantImageSlotDocument { Url = gallery[0].Url, PublicId = gallery[0].PublicId };
+            if (gallery.Count >= 2) result.Back = new VariantImageSlotDocument { Url = gallery[1].Url, PublicId = gallery[1].PublicId };
+            if (gallery.Count >= 3) result.Left = new VariantImageSlotDocument { Url = gallery[2].Url, PublicId = gallery[2].PublicId };
+            if (gallery.Count >= 4) result.Right = new VariantImageSlotDocument { Url = gallery[3].Url, PublicId = gallery[3].PublicId };
         }
 
         return result;
@@ -142,16 +150,16 @@ public class ProductVariantService : IProductVariantService
 
         if (request.Images != null)
         {
-            existing.Images = new VariantImagesDocument
+            var oldPublicIds = GetImagePublicIds(existing.Images);
+            existing.Images = MapImagesInput(request.Images);
+            var newPublicIds = GetImagePublicIds(existing.Images);
+
+            var removed = oldPublicIds.Where(id => !newPublicIds.Contains(id)).ToList();
+            foreach (var pid in removed)
             {
-                Primary = request.Images.Primary,
-                Front = request.Images.Front,
-                Back = request.Images.Back,
-                Left = request.Images.Left,
-                Right = request.Images.Right,
-                Closeup = request.Images.Closeup,
-                Gallery = request.Images.Gallery,
-            };
+                try { await _cloudinary.DeleteImageAsync(pid, ct); }
+                catch (Exception ex) { _logger.LogWarning(ex, "Failed to delete variant image {PublicId} during update", pid); }
+            }
         }
 
         await _repo.UpdateVariantAsync(variantId, existing, ct);
@@ -160,12 +168,82 @@ public class ProductVariantService : IProductVariantService
 
     public async Task DeleteVariantAsync(string variantId, CancellationToken ct = default)
     {
+        ProductVariantDocument? doc = null;
+        try
+        {
+            doc = await _repo.GetVariantAsync(variantId, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not read variant document {VariantId} before delete; skipping image cleanup", variantId);
+        }
+
+        if (doc != null)
+        {
+            var publicIds = GetImagePublicIds(doc.Images);
+            foreach (var pid in publicIds)
+            {
+                try { await _cloudinary.DeleteImageAsync(pid, ct); }
+                catch (Exception ex) { _logger.LogWarning(ex, "Failed to delete variant image {PublicId}", pid); }
+            }
+        }
+
         await _repo.DeleteVariantAsync(variantId, ct);
     }
 
     public async Task<string> GenerateIdAsync()
     {
         return await _repo.GenerateIdAsync();
+    }
+
+    private static VariantImagesDocument MapImagesInput(VariantImagesInput input)
+    {
+        static VariantImageSlotDocument? ToDoc(VariantImageSlotInput? s)
+        {
+            if (s == null || string.IsNullOrEmpty(s.Url)) return null;
+            return new VariantImageSlotDocument
+            {
+                Url = s.Url,
+                PublicId = s.PublicId ?? string.Empty,
+                Width = s.Width,
+                Height = s.Height,
+                Alt = s.Alt,
+            };
+        }
+
+        return new VariantImagesDocument
+        {
+            Primary = ToDoc(input.Primary),
+            Front = ToDoc(input.Front),
+            Back = ToDoc(input.Back),
+            Left = ToDoc(input.Left),
+            Right = ToDoc(input.Right),
+            Closeup = ToDoc(input.Closeup),
+            Gallery = (input.Gallery ?? []).Select(g => ToDoc(g)).Where(x => x != null).Cast<VariantImageSlotDocument>().ToList(),
+        };
+    }
+
+    private static VariantImageSlotResponse? ToSlotResponse(VariantImageSlotDocument? slot) =>
+        slot == null ? null : new()
+        {
+            Url = slot.Url,
+            PublicId = slot.PublicId,
+            Width = slot.Width,
+            Height = slot.Height,
+            Alt = slot.Alt,
+        };
+
+    internal static List<string> GetImagePublicIds(VariantImagesDocument images)
+    {
+        var ids = new List<string>();
+        if (images.Primary is { PublicId.Length: > 0 }) ids.Add(images.Primary.PublicId);
+        if (images.Front is { PublicId.Length: > 0 }) ids.Add(images.Front.PublicId);
+        if (images.Back is { PublicId.Length: > 0 }) ids.Add(images.Back.PublicId);
+        if (images.Left is { PublicId.Length: > 0 }) ids.Add(images.Left.PublicId);
+        if (images.Right is { PublicId.Length: > 0 }) ids.Add(images.Right.PublicId);
+        if (images.Closeup is { PublicId.Length: > 0 }) ids.Add(images.Closeup.PublicId);
+        ids.AddRange((images.Gallery ?? []).Where(g => g.PublicId.Length > 0).Select(g => g.PublicId));
+        return ids;
     }
 
     private static VariantResponse MapToResponse(ProductVariantDocument doc, string? id = null)
@@ -186,13 +264,13 @@ public class ProductVariantService : IProductVariantService
             IsNewArrival = doc.IsNewArrival,
             Images = new VariantImagesResponse
             {
-                Primary = doc.Images.Primary,
-                Front = doc.Images.Front,
-                Back = doc.Images.Back,
-                Left = doc.Images.Left,
-                Right = doc.Images.Right,
-                Closeup = doc.Images.Closeup,
-                Gallery = doc.Images.Gallery,
+                Primary = ToSlotResponse(doc.Images.Primary),
+                Front = ToSlotResponse(doc.Images.Front),
+                Back = ToSlotResponse(doc.Images.Back),
+                Left = ToSlotResponse(doc.Images.Left),
+                Right = ToSlotResponse(doc.Images.Right),
+                Closeup = ToSlotResponse(doc.Images.Closeup),
+                Gallery = (doc.Images.Gallery ?? []).Select(ToSlotResponse).ToList(),
             },
             Sizes = doc.Sizes.Select(s => new VariantSizeResponse
             {

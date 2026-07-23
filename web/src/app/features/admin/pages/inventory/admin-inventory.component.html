@@ -1,0 +1,78 @@
+<div class="inv-page">
+
+  <header class="inv-header">
+    <h1 class="inv-title">Inventory</h1>
+    <span class="inv-count">{{ products().length }} products</span>
+  </header>
+
+  @if (loading()) {
+    <div class="inv-loading">Loading inventory…</div>
+  } @else if (error(); as msg) {
+    <div class="inv-error">
+      <p>{{ msg }}</p>
+      <button type="button" class="inv-btn" (click)="load()">Retry</button>
+    </div>
+  } @else if (products().length === 0) {
+    <div class="inv-empty">No products with variants found.</div>
+  } @else {
+    <div class="inv-list">
+      @for (p of products(); track p.productId) {
+        <div class="inv-product" [class.expanded]="p.expanded">
+
+          <!-- Product header -->
+          <button type="button" class="inv-product-header" (click)="toggleProduct(p.productId)">
+            <span class="inv-chevron">{{ p.expanded ? '▼' : '▶' }}</span>
+            @if (p.productImage) {
+              <img [src]="p.productImage" alt="" class="inv-thumb" />
+            }
+            <span class="inv-product-name">{{ p.productName }}</span>
+            <span class="inv-variant-count">{{ p.variants.length }} variant{{ p.variants.length !== 1 ? 's' : '' }}</span>
+          </button>
+
+          @if (p.expanded) {
+            <div class="inv-variants">
+              @for (v of p.variants; track v.variantId) {
+                <div class="inv-variant" [class.dirty]="isDirty(v)">
+
+                  <!-- Variant header -->
+                  <button type="button" class="inv-variant-header" (click)="toggleVariant(p.productId, v.variantId)">
+                    <span class="inv-chevron">{{ v.expanded ? '▼' : '▶' }}</span>
+                    <span class="inv-swatch" [style.background]="v.colourHex || '#ccc'" [title]="v.colourName"></span>
+                    <span class="inv-colour-name">{{ v.colourName }}</span>
+                  </button>
+
+                  @if (v.expanded) {
+                    <div class="inv-sizes">
+                      @for (s of v.sizes; track s.size) {
+                        <label class="inv-size-field">
+                          <span class="inv-size-label">{{ s.size }}</span>
+                          <input type="number" class="inv-stock-input" [value]="s.stock"
+                                 (input)="onStockInput(v, s.size, $any($event.target).value)" min="0" />
+                        </label>
+                      }
+                    </div>
+                  }
+
+                  <!-- Save -->
+                  <div class="inv-variant-actions">
+                    <button type="button" class="inv-btn inv-btn--save"
+                            [disabled]="!isDirty(v) || v.saving"
+                            (click)="saveVariantStock(p, v)">
+                      {{ v.saving ? 'Saving…' : 'Save' }}
+                    </button>
+                    @if (isDirty(v)) {
+                      <span class="inv-dirty-badge">Unsaved</span>
+                    }
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+  }
+
+</div>

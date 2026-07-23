@@ -2,50 +2,13 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /* ══════════════════════════════════════════════════════════════
-       Helpers
-       ══════════════════════════════════════════════════════════════ */
-
-    /**
-     * Vrindaya currently authorizes a single hardcoded admin email
-     * (see AdminAuthService.ADMIN_EMAIL in the app). Keep this literal
-     * in sync with that constant until the app migrates to the
-     * Firestore-backed `admin-users` role directory.
-     */
     function isAdminUser() {
       return request.auth != null
         && request.auth.token.email != null
         && request.auth.token.email.lower() == 'gsanketh7121@gmail.com';
     }
 
-    /* ══════════════════════════════════════════════════════════════
-       marketingSubscribers/{mobileNumber}
-       Public VIP Club sign-up — doc ID is the 10-digit mobile number.
-
-       NOTE on `allow get: if true`: the app's duplicate-check flow does
-       a direct getDoc() on this path (no query/list) before writing, so
-       a single-document `get` must be public. Firestore Rules cannot
-       redact individual fields, so this means anyone who already knows
-       (or guesses) a specific mobile number can read that one
-       subscriber's full record. Bulk `list` — i.e. enumerating/browsing
-       every subscriber — stays admin-only, so the customer list as a
-       whole is not exposed.
-       ══════════════════════════════════════════════════════════════ */
     match /marketingSubscribers/{mobileNumber} {
-
-      // Anyone can create their own subscriber document, but only with a
-      // validated, whitelisted shape. There is no public `update` rule,
-      // so a resubmission against an existing doc is rejected by
-      // Firestore itself — defense-in-depth alongside the app's own
-      // getDoc() duplicate check in MarketingService.subscribe().
-      //
-      // Admins get a second, wider-whitelisted branch for the Bulk Import
-      // feature (adds importedBy/importedAt). Note that `create` alone does
-      // NOT protect bulk import from overwriting an existing subscriber —
-      // admins already hold `update` below, so a write to an existing doc
-      // would succeed as an update, not be rejected here. BulkImportService
-      // is responsible for checking existence itself before writing.
       allow create: if
         mobileNumber.matches('^[6-9][0-9]{9}$')
         && request.resource.data.mobileNumber == mobileNumber
@@ -69,80 +32,25 @@ service cloud.firestore {
                      )
                 )
            );
-
-      // Single-document existence check — required by the app's public
-      // duplicate-check flow. See note above on the resulting trade-off.
       allow get: if true;
-
-      // Bulk listing (the admin dashboard's subscriber table) and all
-      // mutations beyond the public `create` stay admin-only.
       allow list, update, delete: if isAdminUser();
     }
 
-    /* ══════════════════════════════════════════════════════════════
-       campaigns/{campaignId}
-       campaignTemplates/{templateId}
-       whatsappSettings/{docId}
-       campaignQueue/{itemId}
-       testMessages/{messageId}
-       campaignExecutions/{executionId}
-       campaignRecipients/{recipientId}
-       Purely internal admin data — no public surface at all, unlike
-       marketingSubscribers. Fully admin-gated.
-       ══════════════════════════════════════════════════════════════ */
-    match /campaigns/{campaignId} {
-      allow read, write: if isAdminUser();
-    }
-
-    match /campaignTemplates/{templateId} {
-      allow read, write: if isAdminUser();
-    }
-
-    match /whatsappSettings/{docId} {
-      allow read, write: if isAdminUser();
-    }
-
-    match /campaignQueue/{itemId} {
-      allow read, write: if isAdminUser();
-    }
-
-    match /testMessages/{messageId} {
-      allow read, write: if isAdminUser();
-    }
-
-    // One execution record per "Send Campaign" click — tracking only in
-    // this phase (see CampaignExecutionService.createExecution). A future
-    // batch-sending worker (next phase) will update processedRecipients/
-    // successfulRecipients/failedRecipients/status on the same document.
-    match /campaignExecutions/{executionId} {
-      allow read, write: if isAdminUser();
-    }
-
-    // One document per subscriber snapshotted into a given execution (see
-    // CampaignRecipientService.createRecipientsForExecution). A future
-    // batch-sending worker (next phase) will update status/messageId/
-    // attempts/errorMessage/*At fields on these same documents.
-    match /campaignRecipients/{recipientId} {
-      allow read, write: if isAdminUser();
-    }
-
-    /* ══════════════════════════════════════════════════════════════
-       products/{productId}
-       First "public read / admin write" collection at the list level
-       in this app. Every public storefront query MUST include
-       where('active','==', true) explicitly — Firestore only allows a
-       `list` when the query's own where-clause guarantees every
-       possible matching doc satisfies the rule.
-       ══════════════════════════════════════════════════════════════ */
     match /products/{productId} {
       allow get, list: if isAdminUser() || resource.data.active == true;
       allow create, update, delete: if isAdminUser();
     }
 
-    /* ══════════════════════════════════════════════════════════════
-       Everything else is untouched by this change and stays locked
-       down, matching the project's existing "deny by default" policy.
-       ══════════════════════════════════════════════════════════════ */
+    match /productVariants/{variantId} {
+      allow read: if true;
+      allow write: if isAdminUser();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdminUser();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

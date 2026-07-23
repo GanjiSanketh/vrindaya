@@ -1,16 +1,18 @@
-<div class="pc-card" (click)="openFlipart($event)" role="button" tabindex="0"
-     (keydown.enter)="openFlipart($event)" [attr.aria-label]="product().name">
+@let p = product();
+@let hoverImg = hoverImage();
+@let noHoverImg = noHover();
+@let wishlisted = isWishlisted();
 
-  <!-- Image -->
-  <div class="pc-img-wrap" [class.has-hover]="!noHover()">
+<div class="pc-card" (click)="openFlipart($event)" role="button" tabindex="0"
+     (keydown.enter)="openFlipart($event)" [attr.aria-label]="p.name">
+
+  <div class="pc-img-wrap" [class.has-hover]="!noHoverImg">
     @if (!imgError()) {
-      <img [src]="product().image || ''" [alt]="product().name"
+      <img [src]="p.image || ''" [alt]="p.name"
            class="pc-img pc-img--primary" loading="lazy"
            draggable="false" (error)="onImgError()" />
-      <!-- Hover image: derived from gallery[0] when hoverImage field is absent.
-           hoverImgError guard ensures cover never disappears on load failure. -->
-      @if (hoverImage() && !hoverImgError()) {
-        <img [src]="hoverImage()!" [alt]="product().name"
+      @if (hoverImg && !hoverImgError()) {
+        <img [src]="hoverImg" [alt]="p.name"
              class="pc-img pc-img--hover" loading="lazy"
              draggable="false" aria-hidden="true"
              (error)="onHoverImgError()" />
@@ -21,31 +23,27 @@
       </div>
     }
 
-    <!-- Badge: top-left slot — always above action buttons -->
     <div class="pc-slot--tl pc-badges pc-badges--img">
-      @if (product().isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
-      @else if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
-      @else if (product().isTrending) { <span class="pc-badge">FEATURED</span> }
-      @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
+      @if (p.isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
+      @else if (p.isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
+      @else if (p.isTrending) { <span class="pc-badge">FEATURED</span> }
+      @else if (p.isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
-    <!-- Wishlist: top-right slot (first action, highest z-index) -->
     <button class="pc-slot--tr pc-action-btn pc-wish-btn"
             (click)="toggleWishlist($event)"
-            [class.wishlisted]="isWishlisted()"
-            [attr.aria-label]="isWishlisted() ? 'Remove from wishlist' : 'Add to wishlist'">
-      <i class="bi" [class.bi-heart-fill]="isWishlisted()" [class.bi-heart]="!isWishlisted()"></i>
+            [class.wishlisted]="wishlisted"
+            [attr.aria-label]="wishlisted ? 'Remove from wishlist' : 'Add to wishlist'">
+      <i class="bi" [class.bi-heart-fill]="wishlisted" [class.bi-heart]="!wishlisted"></i>
     </button>
 
-    <!-- Quick View: second right slot (below wishlist) -->
     <button class="pc-slot--tr-2 pc-action-btn pc-qv-btn"
             (click)="openQuickView($event)" aria-label="Quick view">
       <i class="bi bi-eye"></i>
     </button>
 
-    <!-- Hover overlay: desktop only -->
     <div class="pc-overlay">
-      @if (product().flipkartUrl) {
+      @if (p.flipkartUrl) {
         <span class="pc-overlay-cta">View on Flipkart <i class="bi bi-arrow-right"></i></span>
       } @else {
         <span class="pc-overlay-cta pc-overlay-cta--soon">Coming Soon</span>
@@ -53,22 +51,20 @@
     </div>
   </div>
 
-  <!-- Info -->
   <div class="pc-info">
-    <!-- Badge: mobile — shown below image in info panel -->
     <div class="pc-badges pc-badges--info">
-      @if (product().isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
-      @else if (product().isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
-      @else if (product().isTrending) { <span class="pc-badge">FEATURED</span> }
-      @else if (product().isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
+      @if (p.isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
+      @else if (p.isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
+      @else if (p.isTrending) { <span class="pc-badge">FEATURED</span> }
+      @else if (p.isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
-    <h3 class="pc-name">{{ product().name }}</h3>
+    <h3 class="pc-name">{{ p.name }}</h3>
     <div class="pc-cta-row">
       <span class="pc-cta-label"><i class="bi bi-gem"></i> Exclusive Collection</span>
     </div>
     <div class="pc-rule"></div>
-    @if (product().flipkartUrl) {
+    @if (p.flipkartUrl) {
       <button class="pc-link" (click)="openFlipart($event)">
         View on Flipkart <i class="bi bi-arrow-right"></i>
       </button>

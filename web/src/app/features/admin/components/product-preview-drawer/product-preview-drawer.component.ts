@@ -1,4 +1,4 @@
-import { Component, inject, input, output, effect, signal } from '@angular/core';
+import { Component, inject, input, output, effect, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductApiService } from '../../../../core/services/product-api.service';
@@ -17,6 +17,7 @@ import { Product } from '../../../../core/models/product.model';
   imports:     [CommonModule, RouterLink],
   templateUrl: './product-preview-drawer.component.html',
   styleUrl:    './product-preview-drawer.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductPreviewDrawerComponent {
   private readonly api = inject(ProductApiService);
