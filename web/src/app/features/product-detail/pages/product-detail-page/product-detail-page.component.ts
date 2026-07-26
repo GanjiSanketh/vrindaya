@@ -1,7 +1,8 @@
+import { Location } from '@angular/common';
 import {
   ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription, firstValueFrom } from 'rxjs';
 
 import { ProductQueryService, ProductNotFoundError } from '../../../../core/services/product-query.service';
@@ -25,10 +26,12 @@ const RELATED_LIMIT = 8;
 })
 export class ProductDetailPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly query = inject(ProductQueryService);
   private readonly variantApi = inject(VariantApiService);
   private readonly lightbox = inject(LightboxService);
   private readonly seo = inject(SeoService);
+  private readonly location = inject(Location);
   private paramSub!: Subscription;
 
   readonly product      = signal<Product | null>(null);
@@ -56,12 +59,12 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
     const v = this.selectedVariant();
     if (v) {
       const imgs: string[] = [];
-      if (v.images.primary) imgs.push(v.images.primary);
-      if (v.images.front)   imgs.push(v.images.front);
-      if (v.images.back)    imgs.push(v.images.back);
-      if (v.images.left)    imgs.push(v.images.left);
-      if (v.images.right)   imgs.push(v.images.right);
-      imgs.push(...v.images.gallery);
+      if (v.images.primary) imgs.push(v.images.primary.url);
+      if (v.images.front)   imgs.push(v.images.front.url);
+      if (v.images.back)    imgs.push(v.images.back.url);
+      if (v.images.left)    imgs.push(v.images.left.url);
+      if (v.images.right)   imgs.push(v.images.right.url);
+      imgs.push(...v.images.gallery.map(g => g.url));
       if (imgs.length) return imgs;
     }
     const p = this.product();
@@ -144,6 +147,20 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
       this.relatedProducts.set([]);
     } finally {
       this.relatedLoading.set(false);
+    }
+  }
+
+  readonly categoryUrl = computed(() => {
+    const p = this.product();
+    return p?.category ? `/category/${p.category}` : null;
+  });
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      const url = this.categoryUrl();
+      if (url) void this.router.navigateByUrl(url);
     }
   }
 

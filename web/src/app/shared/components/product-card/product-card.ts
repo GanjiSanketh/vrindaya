@@ -49,10 +49,7 @@ export class ProductCard {
     if (isDevMode()) {
       effect(() => {
         const p = this.product();
-        console.log('[IMAGE] Product images:', p.images);
-        console.log('[IMAGE] Primary image URL:', p.image);
-        console.log('[IMAGE] Hover image URL:', this.hoverImage());
-        console.log('[IMAGE] Gallery:', p.gallery);
+        console.log('[PRODUCT]', { id: p.id, name: p.name, flipkartUrl: p.flipkartUrl, flipkartProductUrl: p.flipkartProductUrl });
       });
     }
 

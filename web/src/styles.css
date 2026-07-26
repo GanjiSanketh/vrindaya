@@ -22,6 +22,12 @@
   --text-light:    #999999;
   --border:        #eaeaea;
 
+  /* ── Luxury palette ── */
+  --ivory:         #FFF8F0;
+  --ivory-dark:    #F5EDE0;
+  --champagne:     #F7E8D0;
+  --warm-beige:    #F0E6D8;
+
   /* ── Typography ── */
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans:  'DM Sans', system-ui, sans-serif;

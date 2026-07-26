@@ -16,9 +16,9 @@
 
 @media (hover: hover) {
   .pc-card:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.13);
-    border-color: rgba(201, 165, 76, 0.35);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 56px rgba(0, 0, 0, 0.13);
+    border-color: rgba(201, 165, 76, 0.4);
   }
 }
 
@@ -126,7 +126,8 @@
 }
 
 @media (hover: hover) {
-  .pc-card:hover .pc-action-btn      { opacity: 1; transform: scale(1); }
+  .pc-card:hover .pc-wish-btn        { opacity: 1; transform: scale(1); transition-delay: 0s; }
+  .pc-card:hover .pc-qv-btn          { opacity: 1; transform: scale(1); transition-delay: 0.06s; }
   .pc-action-btn:hover               { transform: scale(1.12); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); }
 }
 

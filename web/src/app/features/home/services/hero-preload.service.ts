@@ -12,6 +12,7 @@ export interface PreloadProgress {
 export class HeroPreloadService {
   private cache = new Map<number, HTMLImageElement>();
   private totalFrames = HERO_CONFIG.frames.count;
+  private loadedCount = 0;
   readonly progress = signal<PreloadProgress>({ loaded: 0, total: this.totalFrames, percent: 0, done: false });
 
   preload(mobile?: boolean): Promise<HTMLImageElement[]> {
@@ -24,6 +25,7 @@ export class HeroPreloadService {
       const promise = new Promise<HTMLImageElement>((resolve) => {
         const img = new Image();
         img.onload = () => {
+          this.loadedCount++;
           this.cache.set(i, img);
           this.progress.update(p => ({
             ...p,
@@ -33,6 +35,8 @@ export class HeroPreloadService {
           resolve(img);
         };
         img.onerror = () => {
+          const url = HERO_CONFIG.frames.getUrl(i + 1);
+          console.error('[HeroPreload] Failed to load frame:', url);
           this.cache.set(i, img);
           this.progress.update(p => ({
             ...p,
@@ -41,7 +45,11 @@ export class HeroPreloadService {
           }));
           resolve(img);
         };
-        img.src = HERO_CONFIG.frames.getUrl(i + 1);
+        const src = HERO_CONFIG.frames.getUrl(i + 1);
+        if (typeof src !== 'string' || !src) {
+          console.error('[HeroPreload] Null or invalid image URL at index', i + 1);
+        }
+        img.src = src;
       });
       promises.push(promise);
     }
@@ -50,6 +58,10 @@ export class HeroPreloadService {
       this.progress.update(p => ({ ...p, done: true }));
       return imgs;
     });
+  }
+
+  anyLoaded(): boolean {
+    return this.loadedCount > 0;
   }
 
   getFrame(index: number): HTMLImageElement | undefined {

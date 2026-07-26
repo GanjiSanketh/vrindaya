@@ -16,6 +16,7 @@ using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Services;
 using Vrindaya.Api.Services.Homepage;
 using Vrindaya.Api.Services.Products;
+using Vrindaya.Api.Services.Sales;
 
 namespace Vrindaya.Api.Extensions;
 
@@ -51,12 +52,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductValidationService, ProductValidationService>();
         services.AddScoped<ILifecycleService, LifecycleService>();
         services.AddScoped<IImageCompressionService, ImageCompressionService>();
-        services.AddScoped<IProductStorageService, ProductStorageService>();
         services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
         services.AddScoped<IProductVariantService, ProductVariantService>();
         services.AddScoped<IVariantImageService, VariantImageService>();
         services.AddScoped<IInventoryService, InventoryService>();
         services.AddScoped<IPricingService, PricingService>();
+        services.AddScoped<IDashboardService, DashboardService>();
+
+        // Sales
+        services.AddScoped<ISaleRepository, SaleRepository>();
+        services.AddScoped<ISaleService, SaleService>();
 
         // Categories
         services.AddMemoryCache();

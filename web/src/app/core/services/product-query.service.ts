@@ -94,7 +94,7 @@ export class ProductQueryService {
   /** Same-category products, excluding the current one — reuses the category listing query, no dedicated backend endpoint needed. */
   async getRelated(categoryId: string, excludeId: string, limit = 4): Promise<Product[]> {
     const page = await this.getByCategory(categoryId, limit + 1);
-    return page.items.filter(p => p.id !== excludeId).slice(0, limit);
+    return page.items.filter(p => p.id !== excludeId && p.variantCount > 0 && p.totalStock > 0).slice(0, limit);
   }
 
   /** The Shop/browse page — one filter chip (or none) + one of the 5 storefront sort options, server-side paginated. */
@@ -137,7 +137,11 @@ export class ProductQueryService {
         }),
       ), DETAIL_TTL_MS),
     );
-    return apiDetailToProduct(dto);
+    const product = apiDetailToProduct(dto);
+    if (product.variantCount === 0 || product.totalStock === 0) {
+      throw new ProductNotFoundError(id);
+    }
+    return product;
   }
 
   private async fetchPage(url: string, params: Record<string, string>): Promise<ProductPage> {
@@ -145,7 +149,10 @@ export class ProductQueryService {
     const page = await firstValueFrom(
       this.cache.get(key, () => this.http.get<ApiPagedProducts>(url, { params }).pipe(this.mapError()), LISTING_TTL_MS),
     );
-    return { items: page.items.map(apiSummaryToProduct), nextCursor: page.nextCursor };
+    const items = page.items
+      .map(apiSummaryToProduct)
+      .filter(p => p.variantCount > 0 && p.totalStock > 0);
+    return { items, nextCursor: page.nextCursor };
   }
 
   private mapError<T>() {

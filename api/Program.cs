@@ -28,7 +28,8 @@ builder.Services.AddRateLimitingSupport();
 builder.Services.AddHealthChecks();
 
 // ── MVC + API documentation ───────────────────────────────────────────────────
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(o => o.SuppressModelStateInvalidFilter = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
 

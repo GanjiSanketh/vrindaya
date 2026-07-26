@@ -20,7 +20,7 @@ public class ProductSummaryResponse
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    public double? CostPrice { get; set; }
+    public PricingResponseDto? Pricing { get; set; }
     public string Brand { get; set; } = string.Empty;
     public string? FlipkartProductUrl { get; set; }
     public string? FlipkartProductId { get; set; }

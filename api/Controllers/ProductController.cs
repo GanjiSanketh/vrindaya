@@ -2,6 +2,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vrindaya.Api.Common;
+using Vrindaya.Api.Common.Exceptions;
 using Vrindaya.Api.Constants;
 using Vrindaya.Api.DTOs.Products;
 using Vrindaya.Api.Interfaces;
@@ -15,12 +16,12 @@ namespace Vrindaya.Api.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
-    private readonly IProductStorageService _productStorageService;
+    private readonly ILogger<ProductController> _logger;
 
-    public ProductController(IProductService productService, IProductStorageService productStorageService)
+    public ProductController(IProductService productService, ILogger<ProductController> logger)
     {
         _productService = productService;
-        _productStorageService = productStorageService;
+        _logger = logger;
     }
 
     /// <summary>Public: active products only. Admins (valid Bearer token, admin email): everything, including drafts.</summary>
@@ -80,23 +81,113 @@ public class ProductController : ControllerBase
     [HttpPost]
     [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
     [ProducesResponseType(typeof(ProductDetailResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<ProductDetailResponse>> CreateProduct([FromBody] CreateProductRequest request, CancellationToken cancellationToken)
     {
+        if (!ModelState.IsValid)
+        {
+            foreach (var kv in ModelState)
+            {
+                var key = kv.Key;
+                foreach (var err in kv.Value.Errors)
+                {
+                    _logger.LogWarning("Validation error on {Key}: {Message} (attempted {Value})",
+                        key, err.ErrorMessage, kv.Value.AttemptedValue);
+                }
+            }
+            var errors = ModelState
+                .Where(kv => kv.Value.Errors.Count > 0)
+                .ToDictionary(
+                    kv => kv.Key,
+                    kv => kv.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { message = "Validation failed. Check the request payload.", errors });
+        }
+
+        var flipkartUrls = request.Variants?.Select(v => v.FlipkartUrl).ToList();
+        _logger.LogInformation("[Step 4] CreateProduct: request has {Count} variants, flipkartUrl values: {@FlipkartUrls}", request.Variants?.Count ?? 0, flipkartUrls);
         var createdBy = User.FindFirstEmail();
         var response = await _productService.CreateProductAsync(request, createdBy, cancellationToken);
         return CreatedAtAction(nameof(GetProductById), new { id = response.Id, version = "1.0" }, response);
     }
 
+    /// <summary>Returns all variant image metadata for a product — never downloads or transforms images, only reads Firestore documents.</summary>
+    [HttpGet("{id}/images")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ProductImagesResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+    public async Task<ActionResult<ProductImagesResponse>> GetProductImages(string id, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Entering GetProductImages for product {ProductId}", id);
+
+        try
+        {
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
+
+            _logger.LogDebug("Loading variant images for product {ProductId}", id);
+            var response = await _productService.GetProductImagesAsync(id, User.IsAdmin(), timeoutCts.Token);
+
+            _logger.LogInformation("Returning GetProductImages for product {ProductId} — {Count} variants", id, response.Variants.Count);
+            return Ok(response);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogError("GetProductImages timed out for product {ProductId}", id);
+            return StatusCode(StatusCodes.Status504GatewayTimeout, new ApiErrorResponse
+            {
+                Success = false,
+                Message = "The request timed out while loading product images. Please try again.",
+            });
+        }
+        catch (ProductNotFoundException)
+        {
+            _logger.LogWarning("GetProductImages: product {ProductId} not found", id);
+            return NotFound(new ApiErrorResponse { Success = false, Message = "Product not found." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetProductImages failed for product {ProductId}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiErrorResponse
+            {
+                Success = false,
+                Message = "An unexpected error occurred while loading product images.",
+            });
+        }
+    }
+
     [HttpPut("{id}")]
     [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
     [ProducesResponseType(typeof(ProductDetailResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<ProductDetailResponse>> UpdateProduct(string id, [FromBody] UpdateProductRequest request, CancellationToken cancellationToken)
     {
+        if (!ModelState.IsValid)
+        {
+            foreach (var kv in ModelState)
+            {
+                var key = kv.Key;
+                foreach (var err in kv.Value.Errors)
+                {
+                    _logger.LogWarning("Validation error on {Key}: {Message} (attempted {Value})",
+                        key, err.ErrorMessage, kv.Value.AttemptedValue);
+                }
+            }
+            var errors = ModelState
+                .Where(kv => kv.Value.Errors.Count > 0)
+                .ToDictionary(
+                    kv => kv.Key,
+                    kv => kv.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return BadRequest(new { message = "Validation failed. Check the request payload.", errors });
+        }
+
+        var flipkartUrls = request.Variants?.Select(v => v.FlipkartUrl).ToList();
+        _logger.LogInformation("[Step 4] UpdateProduct: request has {Count} variants, flipkartUrl values: {@FlipkartUrls}", request.Variants?.Count ?? 0, flipkartUrls);
         var updatedBy = User.FindFirstEmail();
         var response = await _productService.UpdateProductAsync(id, request, updatedBy, cancellationToken);
         return Ok(response);
@@ -189,97 +280,6 @@ public class ProductController : ControllerBase
     /// progress/error/retry state independently. Final image order is
     /// decided entirely by the admin's drag-reorder and sent as part of
     /// Images[] on Save (PUT/POST) — this endpoint has no notion of order.
-    /// <paramref name="fileName"/> is the position-based name the client
-    /// computed for this image ("cover", "image-2", ...) — optional; when
-    /// omitted, the upload gets a generated GUID name instead (unchanged
-    /// behavior for any caller that doesn't care about naming). "Replace
-    /// image" is a separate explicit delete-then-upload flow (see
-    /// AdminProductFormComponent) — Cloudinary never overwrites in place.
-    /// </summary>
-    [HttpPost("upload-images")]
-    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
-    [Consumes("multipart/form-data")]
-    [ProducesResponseType(typeof(UploadedImageResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UploadedImageResponse>> UploadImage(
-        [FromForm] string productId,
-        [FromForm] string? fileName,
-        IFormFile file,
-        CancellationToken cancellationToken)
-    {
-        if (!AppConstants.AllowedImageContentTypes.Contains(file.ContentType))
-        {
-            return BadRequest(new ApiErrorResponse { Success = false, Message = "Only JPG, PNG, and WebP images are allowed." });
-        }
-
-        await using var stream = file.OpenReadStream();
-        var (url, publicId) = await _productStorageService.UploadImageAsync(productId, stream, fileName, cancellationToken);
-
-        return Ok(new UploadedImageResponse { Url = url, PublicId = publicId });
-    }
-
-    /// <summary>
-    /// Batch counterpart of UploadImage — uploads every file in one call
-    /// instead of one HTTP round trip per file. All-or-nothing: if any file
-    /// fails the content-type check, nothing is uploaded. <paramref name="fileNames"/>,
-    /// when given, must have exactly one entry per file, in the same order —
-    /// a count mismatch is rejected rather than guessed at; omitting it
-    /// entirely falls back to generated GUID names for every file.
-    /// </summary>
-    [HttpPost("upload-images/batch")]
-    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
-    [Consumes("multipart/form-data")]
-    [ProducesResponseType(typeof(List<UploadedImageResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<UploadedImageResponse>>> UploadImages(
-        [FromForm] string productId,
-        [FromForm] List<string>? fileNames,
-        List<IFormFile> files,
-        CancellationToken cancellationToken)
-    {
-        if (files.Count == 0)
-        {
-            return BadRequest(new ApiErrorResponse { Success = false, Message = "At least one file is required." });
-        }
-
-        if (files.Any(f => !AppConstants.AllowedImageContentTypes.Contains(f.ContentType)))
-        {
-            return BadRequest(new ApiErrorResponse { Success = false, Message = "Only JPG, PNG, and WebP images are allowed." });
-        }
-
-        if (fileNames is { Count: > 0 } && fileNames.Count != files.Count)
-        {
-            return BadRequest(new ApiErrorResponse { Success = false, Message = "fileNames must have exactly one entry per file." });
-        }
-
-        var streams = files.Select(f => f.OpenReadStream()).ToList();
-        try
-        {
-            var namedStreams = streams
-                .Select((stream, i) => (Stream: stream, FileName: fileNames is { Count: > 0 } ? fileNames[i] : null))
-                .ToList();
-
-            var uploaded = await _productStorageService.UploadMultipleImagesAsync(productId, namedStreams, cancellationToken);
-            return Ok(uploaded.Select(u => new UploadedImageResponse { Url = u.Url, PublicId = u.PublicId }).ToList());
-        }
-        finally
-        {
-            foreach (var stream in streams)
-            {
-                await stream.DisposeAsync();
-            }
-        }
-    }
-
-    [HttpDelete("upload-images")]
-    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeleteImage([FromQuery] string productId, [FromQuery] string publicId, CancellationToken cancellationToken)
-    {
-        await _productStorageService.DeleteImageAsync(productId, publicId, cancellationToken);
-        return NoContent();
-    }
-
     [HttpPatch("{id}/status")]
     [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

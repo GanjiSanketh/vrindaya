@@ -11,6 +11,13 @@ public class VariantResponse
     public string Sku { get; set; } = string.Empty;
     public double? SellingPrice { get; set; }
     public double? Mrp { get; set; }
+    public double? PurchaseCost { get; set; }
+    public double? PackagingCost { get; set; }
+    public double? FlipkartCommission { get; set; }
+    public double? ShippingCharges { get; set; }
+    public double? MarketingCost { get; set; }
+    public double? OtherCharges { get; set; }
+    public double? DesiredProfit { get; set; }
     public string? FlipkartUrl { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; }
@@ -62,6 +69,13 @@ public class CreateVariantRequest
 
     public double? SellingPrice { get; set; }
     public double? Mrp { get; set; }
+    public double? PurchaseCost { get; set; }
+    public double? PackagingCost { get; set; }
+    public double? FlipkartCommission { get; set; }
+    public double? ShippingCharges { get; set; }
+    public double? MarketingCost { get; set; }
+    public double? OtherCharges { get; set; }
+    public double? DesiredProfit { get; set; }
 
     [Url, MaxLength(500)]
     public string? FlipkartUrl { get; set; }
@@ -74,6 +88,8 @@ public class CreateVariantRequest
 
     [Required, MinLength(1)]
     public List<UpsertVariantSize> Sizes { get; set; } = [];
+
+    public VariantImagesInput? Images { get; set; }
 }
 
 public class UpdateVariantRequest
@@ -89,6 +105,13 @@ public class UpdateVariantRequest
 
     public double? SellingPrice { get; set; }
     public double? Mrp { get; set; }
+    public double? PurchaseCost { get; set; }
+    public double? PackagingCost { get; set; }
+    public double? FlipkartCommission { get; set; }
+    public double? ShippingCharges { get; set; }
+    public double? MarketingCost { get; set; }
+    public double? OtherCharges { get; set; }
+    public double? DesiredProfit { get; set; }
 
     [Url, MaxLength(500)]
     public string? FlipkartUrl { get; set; }
@@ -153,6 +176,13 @@ public class EmbeddedVariantRequest
 
     public double? SellingPrice { get; set; }
     public double? Mrp { get; set; }
+    public double? PurchaseCost { get; set; }
+    public double? PackagingCost { get; set; }
+    public double? FlipkartCommission { get; set; }
+    public double? ShippingCharges { get; set; }
+    public double? MarketingCost { get; set; }
+    public double? OtherCharges { get; set; }
+    public double? DesiredProfit { get; set; }
 
     [Url, MaxLength(500)]
     public string? FlipkartUrl { get; set; }

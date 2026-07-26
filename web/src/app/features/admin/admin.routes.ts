@@ -24,12 +24,16 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'categories/new', loadComponent: () => import('./pages/categories/category-form.component').then(m => m.CategoryFormComponent) },
       { path: 'categories/:id/edit', loadComponent: () => import('./pages/categories/category-form.component').then(m => m.CategoryFormComponent) },
 
+      { path: 'sales', redirectTo: 'sales/orders', pathMatch: 'full' },
+      { path: 'sales/orders', loadComponent: () => import('./pages/sales/sale-list/sale-list.component').then(m => m.SaleListComponent) },
+      { path: 'sales/record', loadComponent: () => import('./pages/sales/record-sale/record-sale.component').then(m => m.RecordSaleComponent) },
+      { path: 'sales/:id', loadComponent: () => import('./pages/sales/sale-detail/sale-detail.component').then(m => m.SaleDetailComponent) },
+      { path: 'sales/:id/edit', loadComponent: () => import('./pages/sales/record-sale/record-sale.component').then(m => m.RecordSaleComponent) },
       { path: 'flipkart-ops', loadComponent: () => import('./pages/flipkart-ops/flipkart-ops-list.component').then(m => m.FlipkartOpsListComponent) },
       { path: 'popup-config', loadComponent: () => import('./pages/popup-config/popup-config.component').then(m => m.PopupConfigComponent) },
       { path: 'exit-intent', loadComponent: () => import('./pages/exit-intent-config/exit-intent-config.component').then(m => m.ExitIntentConfigComponent) },
       { path: 'analytics', loadComponent: () => import('./pages/analytics/admin-analytics.component').then(m => m.AdminAnalyticsComponent) },
+      { path: '**', redirectTo: 'products' },
     ],
   },
-
-  { path: '**', redirectTo: 'dashboard' },
 ];

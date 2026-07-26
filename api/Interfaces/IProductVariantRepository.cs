@@ -14,6 +14,7 @@ public interface IProductVariantRepository
     Task<List<string>> GetVariantIdsAsync(string productId, CancellationToken ct = default);
     Task<bool> SkuExistsAsync(string sku, string? excludeVariantId = null, CancellationToken ct = default);
     Task<bool> HasVariantsAsync(string productId, CancellationToken ct = default);
+    Task<ProductVariantDocument?> GetFirstActiveVariantAsync(string productId, CancellationToken ct = default);
     Task<string> GenerateIdAsync();
     Task MigrateAllVariantsImagesAsync(CancellationToken ct = default);
 }

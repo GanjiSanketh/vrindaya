@@ -31,7 +31,7 @@ export interface ApiProductSummary {
   displayOrder: number;
   createdAt: string;
   updatedAt: string;
-  costPrice?: number;
+  pricing?: PricingResponse;
   brand: string;
   flipkartProductUrl?: string;
   flipkartProductId?: string;
@@ -122,19 +122,22 @@ export interface AdminProductListQuery {
   maxPrice?: number;
 }
 
-export interface ApiUploadedImage {
+export interface VariantImageSlotInput {
   url: string;
-  publicId: string;
+  publicId?: string;
+  width?: number;
+  height?: number;
+  alt?: string;
 }
 
 export interface VariantImageInput {
-  primary?: string;
-  front?: string;
-  back?: string;
-  left?: string;
-  right?: string;
-  closeup?: string;
-  gallery: string[];
+  primary?: VariantImageSlotInput;
+  front?: VariantImageSlotInput;
+  back?: VariantImageSlotInput;
+  left?: VariantImageSlotInput;
+  right?: VariantImageSlotInput;
+  closeup?: VariantImageSlotInput;
+  gallery: VariantImageSlotInput[];
 }
 
 export interface VariantSizeInput {
@@ -149,6 +152,13 @@ export interface VariantRequest {
   sku: string;
   sellingPrice?: number;
   mrp?: number;
+  purchaseCost?: number;
+  packagingCost?: number;
+  flipkartCommission?: number;
+  shippingCharges?: number;
+  marketingCost?: number;
+  otherCharges?: number;
+  desiredProfit?: number;
   flipkartUrl?: string;
   displayOrder: number;
   isActive: boolean;
@@ -157,13 +167,21 @@ export interface VariantRequest {
 }
 
 export interface ApiVariantImage {
-  primary?: string;
-  front?: string;
-  back?: string;
-  left?: string;
-  right?: string;
-  closeup?: string;
-  gallery: string[];
+  primary?: ApiVariantImageSlot;
+  front?: ApiVariantImageSlot;
+  back?: ApiVariantImageSlot;
+  left?: ApiVariantImageSlot;
+  right?: ApiVariantImageSlot;
+  closeup?: ApiVariantImageSlot;
+  gallery: ApiVariantImageSlot[];
+}
+
+export interface ApiVariantImageSlot {
+  url: string;
+  publicId: string;
+  width: number;
+  height: number;
+  alt?: string;
 }
 
 export interface ApiVariantSize {
@@ -179,6 +197,13 @@ export interface ApiVariant {
   sku: string;
   sellingPrice?: number;
   mrp?: number;
+  purchaseCost?: number;
+  packagingCost?: number;
+  flipkartCommission?: number;
+  shippingCharges?: number;
+  marketingCost?: number;
+  otherCharges?: number;
+  desiredProfit?: number;
   flipkartUrl?: string;
   displayOrder: number;
   isActive: boolean;
@@ -188,7 +213,156 @@ export interface ApiVariant {
   updatedAt: string;
 }
 
+/* ── Dashboard DTOs ── */
+
+export interface DashboardDto {
+  summaryCards: SummaryCardsDto;
+  profitAnalytics: ProfitAnalyticsDto;
+  categoryAnalytics: CategoryAnalyticsDto[];
+  lowStockProducts: LowStockProductDto[];
+  topExpensiveProducts: ProductSummaryDto[];
+  mostProfitableProducts: ProductProfitDto[];
+  recentlyAddedProducts: ProductSummaryDto[];
+  outOfStockProducts: OutOfStockProductDto[];
+  inventoryByCategory: ChartDataPoint[];
+  inventoryValueDistribution: ChartDataPoint[];
+  revenueDistribution: ChartDataPoint[];
+  profitDistribution: ChartDataPoint[];
+  productStatusDistribution: ChartDataPoint[];
+  topRevenueProducts: BarDataPoint[];
+  topProfitProducts: BarDataPoint[];
+  stockPerProduct: BarDataPoint[];
+  purchaseCostVsSellingPrice: CategoryCostPriceDto[];
+  productTypeDistribution: ChartDataPoint[];
+  todaySnapshot: TodaySnapshotDto;
+}
+
+export interface SummaryCardsDto {
+  totalProducts: number;
+  totalVariants: number;
+  inventoryQuantity: number;
+  inventoryValue: number;
+  potentialSalesValue: number;
+  expectedProfit: number;
+  averageProfitPercent: number;
+  averageRoiPercent: number;
+}
+
+export interface ProfitAnalyticsDto {
+  averageProfitPercent: number;
+  averageRoiPercent: number;
+  averageSellingPrice: number;
+  averagePurchaseCost: number;
+  highestMarginProduct: ProductProfitInfo | null;
+  lowestMarginProduct: ProductProfitInfo | null;
+}
+
+export interface ProductProfitInfo {
+  productId: string;
+  productName: string;
+  imageUrl: string | null;
+  variantName: string | null;
+  profitPercent: number;
+  profit: number;
+}
+
+export interface CategoryAnalyticsDto {
+  category: string;
+  productCount: number;
+  totalStock: number;
+  inventoryValue: number;
+  expectedProfit: number;
+}
+
+export interface LowStockProductDto {
+  productId: string;
+  productName: string;
+  imageUrl: string | null;
+  category: string;
+  stock: number;
+  sellingPrice: number;
+}
+
+export interface ProductSummaryDto {
+  productId: string;
+  productName: string;
+  imageUrl: string | null;
+  category: string;
+  sellingPrice: number;
+  createdAt: string;
+}
+
+export interface ProductProfitDto {
+  productId: string;
+  productName: string;
+  imageUrl: string | null;
+  category: string;
+  sellingPrice: number;
+  totalCost: number;
+  profit: number;
+  profitPercent: number;
+}
+
+export interface OutOfStockProductDto {
+  productId: string;
+  productName: string;
+  imageUrl: string | null;
+  category: string;
+  stock: number;
+}
+
+export interface ChartDataPoint {
+  label: string;
+  value: number;
+}
+
+export interface BarDataPoint {
+  label: string;
+  value: number;
+}
+
+export interface CategoryCostPriceDto {
+  category: string;
+  purchaseCost: number;
+  sellingPrice: number;
+}
+
+export interface TodaySnapshotDto {
+  products: number;
+  variants: number;
+  totalUnits: number;
+  inventoryCost: number;
+  potentialRevenue: number;
+  expectedProfit: number;
+  averageMarginPercent: number;
+  averageRoiPercent: number;
+}
+
 /** Wire body for POST /products and PUT /products/{id} — mirrors CreateProductRequest/UpdateProductRequest. */
+export interface PricingInput {
+  purchaseCost?: number;
+  packagingCharges?: number;
+  flipkartCharges?: number;
+  otherCharges?: number;
+  desiredProfit?: number;
+  totalCost?: number;
+  sellingPrice?: number;
+  profitMargin?: number;
+  roi?: number;
+}
+
+export interface PricingResponse {
+  purchaseCost: number;
+  packagingCharges: number;
+  flipkartCharges: number;
+  otherCharges: number;
+  desiredProfit: number;
+  totalCost: number;
+  sellingPrice: number;
+  profitMargin: number;
+  roi: number;
+}
+
 export interface AdminProductInput {
   id?: string;
   name: string;
@@ -211,7 +385,7 @@ export interface AdminProductInput {
   active: boolean;
   displayOrder: number;
   images: ProductImage[];
-  costPrice?: number;
+  pricing?: PricingInput;
   brand?: string;
   seoTitle?: string;
   seoDescription?: string;
@@ -236,12 +410,99 @@ export interface FlipkartOpsInput {
   marketplaceTags: string[];
 }
 
+/* ── Sales ── */
+
+export interface SaleDto {
+  id: string;
+  productId: string;
+  productName: string;
+  productImage: string | null;
+  variantId: string;
+  colourName: string;
+  category: string;
+  size: string;
+  quantity: number;
+  saleChannel: string;
+  sellingPrice: number;
+  purchaseCost: number;
+  packagingCost: number;
+  flipkartCommission: number;
+  shippingCharges: number;
+  marketingCost: number;
+  otherCharges: number;
+  totalCost: number;
+  amountReceived: number;
+  profit: number;
+  paymentMethod: string;
+  customerName: string | null;
+  customerPhone: string | null;
+  invoiceNumber: string | null;
+  notes: string | null;
+  soldAt: string;
+  createdAt: string;
+}
+
+export interface CreateSaleRequest {
+  productId: string;
+  variantId: string;
+  size: string;
+  quantity: number;
+  saleChannel: string;
+  sellingPrice: number;
+  flipkartCommission: number;
+  shippingCharges: number;
+  marketingCost: number;
+  otherCharges: number;
+  paymentMethod: string;
+  customerName?: string;
+  customerPhone?: string;
+  invoiceNumber?: string;
+  notes?: string;
+  soldAt?: string;
+}
+
+export interface SalesSummaryDto {
+  totalRevenue: number;
+  totalProfit: number;
+  totalOrders: number;
+  todayRevenue: number;
+  todayProfit: number;
+  todayOrders: number;
+  monthlyRevenue: number;
+  monthlyProfit: number;
+  monthlyOrders: number;
+  revenueByCategory: ChartDataPoint[];
+  revenueByChannel: ChartDataPoint[];
+  profitByCategory: ChartDataPoint[];
+  ordersByChannel: ChartDataPoint[];
+  paymentMethodDistribution: ChartDataPoint[];
+  monthlyTrend: MonthlySalesTrend[];
+  topSellingProducts: ProductSalesDto[];
+}
+
+export interface MonthlySalesTrend {
+  month: string;
+  revenue: number;
+  profit: number;
+  orders: number;
+}
+
+export interface ProductSalesDto {
+  productId: string;
+  productName: string;
+  productImage: string | null;
+  quantity: number;
+  revenue: number;
+  profit: number;
+}
+
 function toProductImage(img: ApiProductImage): ProductImage {
   return { url: img.url, publicId: img.publicId, slot: img.slot, order: img.order };
 }
 
 /** Admin list rows only ever come from ApiProductSummary — sizes/images/description are intentionally blank (not needed for list display; the form fetches full detail separately). */
 export function apiSummaryToProduct(dto: ApiProductSummary): Product {
+  console.log('[apiSummaryToProduct]', { id: dto.id, name: dto.name, flipkartProductUrl: dto.flipkartProductUrl });
   const images = dto.thumbnail ? [toProductImage(dto.thumbnail)] : [];
 
   return {
@@ -266,7 +527,7 @@ export function apiSummaryToProduct(dto: ApiProductSummary): Product {
     updatedBy: '',
     updatedAt: dto.updatedAt,
     images,
-    costPrice: dto.costPrice,
+    pricing: dto.pricing,
     brand: dto.brand,
     flipkartProductUrl: dto.flipkartProductUrl,
     flipkartProductId: dto.flipkartProductId,
@@ -293,6 +554,7 @@ export function apiSummaryToProduct(dto: ApiProductSummary): Product {
     isOutOfStock: dto.isOutOfStock,
     isLowStock: dto.isLowStock,
 
+    thumbnailUrl: dto.thumbnail?.url,
     image: dto.thumbnail?.url ?? '',
     isTrending: dto.featured,
     isNew: dto.newArrival,
@@ -307,7 +569,12 @@ export function apiSummaryToProduct(dto: ApiProductSummary): Product {
   };
 }
 
+/** Same but falls back to any variant's flipkartUrl when the product-level field is empty (defence-in-depth — the backend sync should keep them in sync). */
 export function apiDetailToProduct(dto: ApiProductDetail): Product {
+  // Derive flipkartUrl from the first variant that has one when the product-level field is empty
+  const flipkartUrl = dto.flipkartProductUrl
+    ?? dto.variants?.find(v => v.flipkartUrl)?.flipkartUrl
+    ?? '';
   const images = [...dto.images].sort((a, b) => a.order - b.order).map(toProductImage);
 
   return {
@@ -343,7 +610,7 @@ export function apiDetailToProduct(dto: ApiProductDetail): Product {
     updatedBy: dto.updatedBy,
     updatedAt: dto.updatedAt,
     images,
-    costPrice: dto.costPrice,
+    pricing: dto.pricing,
     brand: dto.brand,
     flipkartProductId: dto.flipkartProductId,
     seoTitle: dto.seoTitle,
@@ -372,6 +639,8 @@ export function apiDetailToProduct(dto: ApiProductDetail): Product {
     isOutOfStock: dto.isOutOfStock,
     isLowStock: dto.isLowStock,
 
+    thumbnailUrl: dto.thumbnail?.url,
+    variants: dto.variants as any[],
     image: images[0]?.url ?? '',
     hoverImage: images[1]?.url,
     gallery: images.slice(1).map(i => i.url),
@@ -379,7 +648,7 @@ export function apiDetailToProduct(dto: ApiProductDetail): Product {
     isNew: dto.newArrival,
     isBestSeller: dto.bestSeller,
     rating: 4.5,
-    flipkartUrl: dto.flipkartProductUrl ?? '',
+    flipkartUrl,
 
     variantCount: dto.variantCount,
     totalStock: dto.totalStock,

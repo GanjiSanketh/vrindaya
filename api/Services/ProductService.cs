@@ -12,7 +12,6 @@ public class ProductService : IProductService
 {
     private readonly IProductRepository _repository;
     private readonly IProductValidationService _validationService;
-    private readonly IProductStorageService _storageService;
     private readonly IProductVariantRepository _variantRepository;
     private readonly ICloudinaryService _cloudinary;
     private readonly ILogger<ProductService> _logger;
@@ -20,14 +19,12 @@ public class ProductService : IProductService
     public ProductService(
         IProductRepository repository,
         IProductValidationService validationService,
-        IProductStorageService storageService,
         IProductVariantRepository variantRepository,
         ICloudinaryService cloudinary,
         ILogger<ProductService> logger)
     {
         _repository = repository;
         _validationService = validationService;
-        _storageService = storageService;
         _variantRepository = variantRepository;
         _cloudinary = cloudinary;
         _logger = logger;
@@ -58,10 +55,40 @@ public class ProductService : IProductService
         }
 
         var result = await _repository.GetPagedAsync(query, cancellationToken);
+        var summaries = result.Items.Select(x => ToSummary(x.Id, x.Data)).ToList();
+
+        // Backfill thumbnail from first active variant for products that don't have thumbnailUrl denormalized yet
+        var needsThumb = summaries.Where(s => s.Thumbnail == null).Select(s => s.Id).ToList();
+        if (needsThumb.Count > 0)
+        {
+            var tasks = needsThumb.Select(async id =>
+            {
+                try
+                {
+                    var v = await _variantRepository.GetFirstActiveVariantAsync(id, cancellationToken);
+                    var url = v?.Images?.Primary?.Url ?? v?.Images?.Gallery?.FirstOrDefault()?.Url;
+                    return (Id: id, Url: url);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to load first variant thumbnail for product {ProductId}", id);
+                    return (Id: id, Url: (string?)null);
+                }
+            });
+            var results = await Task.WhenAll(tasks);
+            var thumbMap = results.Where(r => r.Url != null).ToDictionary(r => r.Id, r => r.Url);
+            for (var i = 0; i < summaries.Count; i++)
+            {
+                if (summaries[i].Thumbnail == null && thumbMap.TryGetValue(summaries[i].Id, out var url))
+                    summaries[i].Thumbnail = new ProductImageDto { Url = url };
+            }
+        }
+
+        _logger.LogInformation("GetProductsAsync: returning {Count} items (total={Total})", summaries.Count, result.TotalCount);
 
         return new PagedProductsResponse
         {
-            Items = result.Items.Select(x => ToSummary(x.Id, x.Data)).ToList(),
+            Items = summaries,
             NextCursor = result.NextCursor,
             TotalCount = result.TotalCount,
         };
@@ -69,15 +96,45 @@ public class ProductService : IProductService
 
     public async Task<ProductDetailResponse> GetProductByIdAsync(string id, bool isAdmin, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Entering GetProductByIdAsync for product {ProductId}", id);
+
         var doc = await _repository.GetByIdAsync(id, cancellationToken);
+        _logger.LogDebug("Product document loaded for {ProductId}, exists={Exists}", id, doc != null);
 
         // 404 (not 403) when inactive + non-admin — doesn't leak draft existence to the public.
         if (doc == null || (!doc.Active && !isAdmin))
         {
+            _logger.LogWarning("Product {ProductId} not found or inactive for non-admin", id);
             throw new ProductNotFoundException(id);
         }
 
-        return await ToDetailWithVariants(id, doc, cancellationToken);
+        var result = await ToDetailWithVariants(id, doc, cancellationToken);
+        _logger.LogInformation("Returning detail for product {ProductId} with {Count} variants", id, result.Variants.Count);
+        return result;
+    }
+
+    public async Task<ProductImagesResponse> GetProductImagesAsync(string id, bool isAdmin, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Entering GetProductImagesAsync for product {ProductId}", id);
+
+        var doc = await _repository.GetByIdAsync(id, cancellationToken);
+        if (doc == null || (!doc.Active && !isAdmin))
+            throw new ProductNotFoundException(id);
+
+        _logger.LogDebug("Loading variants for product {ProductId}", id);
+        var variantTuples = await _variantRepository.GetVariantsAsync(id, cancellationToken);
+
+        var variants = variantTuples
+            .Select(t => new VariantImageGroup
+            {
+                VariantId = t.Id,
+                ColourName = t.Data.ColourName,
+                Images = ToVariantImageResponse(t.Data.Images),
+            })
+            .ToList();
+
+        _logger.LogInformation("Loaded {Count} variant image groups for product {ProductId}", variants.Count, id);
+        return new ProductImagesResponse { ProductId = id, Variants = variants };
     }
 
     public async Task<ProductDetailResponse> CreateProductAsync(CreateProductRequest request, string createdBy, CancellationToken cancellationToken)
@@ -117,7 +174,7 @@ public class ProductService : IProductService
             SeoDescription = request.SeoDescription,
             SeoKeywords = request.SeoKeywords,
             SearchKeywords = BuildSearchKeywords(request.Name, request.Brand, request.Category, null, request.Tags),
-            CostPrice = request.CostPrice,
+            Pricing = ToPricingDocument(request.Pricing),
             LowStockThreshold = request.LowStockThreshold,
             AutoHideWhenOutOfStock = request.AutoHideWhenOutOfStock,
         };
@@ -125,7 +182,8 @@ public class ProductService : IProductService
         await _repository.CreateAsync(request.Id, document, cancellationToken);
         await SyncVariantsAsync(request.Id, request.Variants, cancellationToken);
 
-        return await ToDetailWithVariants(request.Id, document, cancellationToken);
+        var created = await _repository.GetByIdAsync(request.Id, cancellationToken) ?? throw new ProductNotFoundException(request.Id);
+        return await ToDetailWithVariants(request.Id, created, cancellationToken);
     }
 
     public async Task<ProductDetailResponse> UpdateProductAsync(string id, UpdateProductRequest request, string updatedBy, CancellationToken cancellationToken)
@@ -147,7 +205,7 @@ public class ProductService : IProductService
             ["neck"] = OptionalField(request.Neck),
             ["occasion"] = OptionalField(request.Occasion),
             ["washCare"] = OptionalField(request.WashCare),
-            ["costPrice"] = request.CostPrice.HasValue ? request.CostPrice.Value : FieldValue.Delete,
+            ["pricing"] = request.Pricing != null ? ToPricingDict(request.Pricing) : FieldValue.Delete,
             ["tags"] = request.Tags,
             ["featured"] = request.Featured,
             ["newArrival"] = request.NewArrival,
@@ -283,23 +341,6 @@ public class ProductService : IProductService
         var newId = _repository.GenerateId();
         var suffix = Guid.NewGuid().ToString("N")[..8];
 
-        var orderedSourceImages = source.Images.OrderBy(i => i.Order).ToList();
-        var copiedImages = await _storageService.DuplicateImagesAsync(
-            id, newId, orderedSourceImages.Select(i => (i.PublicId, i.Url)).ToList(), cancellationToken);
-
-        // DuplicateImagesAsync preserves each file's name and processes the
-        // images in the order given, so pairing position-by-position with
-        // orderedSourceImages keeps each copy's Order/Slot intact.
-        var images = orderedSourceImages
-            .Zip(copiedImages, (original, copy) => new ProductImageDocument
-            {
-                Url = copy.Url,
-                PublicId = copy.PublicId,
-                Slot = original.Slot,
-                Order = original.Order,
-            })
-            .ToList();
-
         var newSlug = $"{source.Slug}-copy-{suffix}";
         var newSku = $"{source.Sku}-COPY-{suffix}".ToUpperInvariant();
         var now = DateTime.UtcNow;
@@ -339,7 +380,7 @@ public class ProductService : IProductService
             CreatedAt = now,
             UpdatedBy = createdBy,
             UpdatedAt = now,
-            Images = images,
+            Images = [],
             Brand = source.Brand,
             FlipkartProductUrl = source.FlipkartProductUrl,
             FlipkartProductId = source.FlipkartProductId,
@@ -461,6 +502,55 @@ public class ProductService : IProductService
 
     private static ProductImageDto ToImageDto(ProductImageDocument doc) => new() { Url = doc.Url, PublicId = doc.PublicId, Slot = doc.Slot, Order = doc.Order };
 
+    private static ProductPricingDocument? ToPricingDocument(PricingRequestDto? dto)
+    {
+        if (dto == null) return null;
+        return new ProductPricingDocument
+        {
+            PurchaseCost = dto.PurchaseCost,
+            PackagingCharges = dto.PackagingCharges,
+            FlipkartCharges = dto.FlipkartCharges,
+            OtherCharges = dto.OtherCharges,
+            DesiredProfit = dto.DesiredProfit,
+            TotalCost = dto.TotalCost,
+            SellingPrice = dto.SellingPrice,
+            ProfitMargin = dto.ProfitMargin,
+            Roi = dto.Roi,
+        };
+    }
+
+    private static PricingResponseDto? ToPricingResponse(ProductPricingDocument? doc)
+    {
+        if (doc == null) return null;
+        return new PricingResponseDto
+        {
+            PurchaseCost = doc.PurchaseCost,
+            PackagingCharges = doc.PackagingCharges,
+            FlipkartCharges = doc.FlipkartCharges,
+            OtherCharges = doc.OtherCharges,
+            DesiredProfit = doc.DesiredProfit,
+            TotalCost = doc.TotalCost,
+            SellingPrice = doc.SellingPrice,
+            ProfitMargin = doc.ProfitMargin,
+            Roi = doc.Roi,
+        };
+    }
+
+    private static object ToPricingDict(PricingRequestDto dto)
+    {
+        var dict = new Dictionary<string, object?>();
+        dict["purchaseCost"] = dto.PurchaseCost;
+        dict["packagingCharges"] = dto.PackagingCharges;
+        dict["flipkartCharges"] = dto.FlipkartCharges;
+        dict["otherCharges"] = dto.OtherCharges;
+        dict["desiredProfit"] = dto.DesiredProfit;
+        dict["totalCost"] = dto.TotalCost;
+        dict["sellingPrice"] = dto.SellingPrice;
+        dict["profitMargin"] = dto.ProfitMargin;
+        dict["roi"] = dto.Roi;
+        return dict;
+    }
+
     /// <summary>Derived, not persisted — the image with the lowest Order (position 0 in the admin's gallery).</summary>
     private static ProductImageDto? DeriveThumbnail(List<ProductImageDocument> images)
     {
@@ -475,11 +565,11 @@ public class ProductService : IProductService
         Slug = doc.Slug,
         Category = doc.Category,
         Sku = doc.Sku,
-        Price = doc.Price,
-        Mrp = doc.Mrp,
+        Price = doc.LowestPrice ?? doc.Price,
+        Mrp = doc.LowestPrice ?? doc.Mrp,
         Discount = doc.Discount,
-        CostPrice = doc.CostPrice,
-        Stock = doc.Stock,
+        Pricing = doc.Pricing != null ? ToPricingResponse(doc.Pricing) : null,
+        Stock = doc.TotalStock,
         Featured = doc.Featured,
         NewArrival = doc.NewArrival,
         BestSeller = doc.BestSeller,
@@ -492,7 +582,7 @@ public class ProductService : IProductService
         FlipkartProductId = doc.FlipkartProductId,
         Deleted = doc.Deleted,
         DeletedAt = doc.DeletedAt,
-        Thumbnail = DeriveThumbnail(doc.Images),
+        Thumbnail = doc.ThumbnailUrl != null ? new ProductImageDto { Url = doc.ThumbnailUrl } : DeriveThumbnail(doc.Images),
         FlipkartSellerSku = doc.FlipkartSellerSku,
         FlipkartFsn = doc.FlipkartFsn,
         LaunchDate = doc.LaunchDate,
@@ -509,83 +599,98 @@ public class ProductService : IProductService
         ReservedStock = doc.ReservedStock,
         AutoHideWhenOutOfStock = doc.AutoHideWhenOutOfStock,
         StockUpdatedAt = doc.StockUpdatedAt,
-        IsOutOfStock = doc.Stock <= 0,
-        IsLowStock = doc.Stock > 0 && doc.LowStockThreshold.HasValue && doc.Stock <= doc.LowStockThreshold.Value,
+        IsOutOfStock = doc.TotalStock <= 0,
+        IsLowStock = doc.TotalStock > 0 && doc.LowStockThreshold.HasValue && doc.TotalStock <= doc.LowStockThreshold.Value,
         VariantCount = doc.VariantCount,
         TotalStock = doc.TotalStock,
         LowestPrice = doc.LowestPrice,
         HighestPrice = doc.HighestPrice,
     };
 
-    private static ProductDetailResponse ToDetail(string id, ProductDocument doc, List<VariantResponse>? variants = null) => new()
+    private static ProductDetailResponse ToDetail(string id, ProductDocument doc, List<VariantResponse>? variants = null)
     {
-        Id = id,
-        Name = doc.Name,
-        Slug = doc.Slug,
-        Category = doc.Category,
-        SubCategory = doc.SubCategory,
-        Description = doc.Description,
-        ShortDescription = doc.ShortDescription,
-        Fabric = doc.Fabric,
-        Pattern = doc.Pattern,
-        Fit = doc.Fit,
-        Sleeve = doc.Sleeve,
-        Neck = doc.Neck,
-        Occasion = doc.Occasion,
-        WashCare = doc.WashCare,
-        Tags = doc.Tags,
-        Featured = doc.Featured,
-        NewArrival = doc.NewArrival,
-        BestSeller = doc.BestSeller,
-        Active = doc.Active,
-        DisplayOrder = doc.DisplayOrder,
-        CreatedBy = doc.CreatedBy,
-        CreatedAt = doc.CreatedAt,
-        UpdatedBy = doc.UpdatedBy,
-        UpdatedAt = doc.UpdatedAt,
-        Images = doc.Images.Select(ToImageDto).ToList(),
-        CostPrice = doc.CostPrice,
-        Brand = doc.Brand,
-        SeoTitle = doc.SeoTitle,
-        SeoDescription = doc.SeoDescription,
-        SeoKeywords = doc.SeoKeywords,
-        Deleted = doc.Deleted,
-        DeletedAt = doc.DeletedAt,
-        Thumbnail = DeriveThumbnail(doc.Images),
-        Variants = variants ?? [],
-        // Legacy backward‑compat fields — may be 0 / empty for new products
-        Price = doc.Price,
-        Mrp = doc.Mrp,
-        Discount = doc.Discount,
-        Sizes = doc.Sizes.Select(s => new ProductSizeDto { Size = s.Size, Stock = s.Stock }).ToList(),
-        Stock = doc.Stock,
-        Sku = doc.Sku,
-        Color = doc.Color,
-        FlipkartProductUrl = doc.FlipkartProductUrl,
-        FlipkartProductId = doc.FlipkartProductId,
-        FlipkartSellerSku = doc.FlipkartSellerSku,
-        FlipkartFsn = doc.FlipkartFsn,
-        LaunchDate = doc.LaunchDate,
-        LastSyncDate = doc.LastSyncDate,
-        MarketplacePrice = doc.MarketplacePrice,
-        MarketplaceMrp = doc.MarketplaceMrp,
-        MarketplaceDiscount = doc.MarketplaceDiscount,
-        MarketplaceCategory = doc.MarketplaceCategory,
-        MarketplaceTags = doc.MarketplaceTags,
-        WebsiteClickCount = doc.WebsiteClickCount,
-        LastClickAt = doc.LastClickAt,
-        LifecycleStage = doc.LifecycleStage,
-        LowStockThreshold = doc.LowStockThreshold,
-        ReservedStock = doc.ReservedStock,
-        AutoHideWhenOutOfStock = doc.AutoHideWhenOutOfStock,
-        StockUpdatedAt = doc.StockUpdatedAt,
-        IsOutOfStock = doc.Stock <= 0,
-        IsLowStock = doc.Stock > 0 && doc.LowStockThreshold.HasValue && doc.Stock <= doc.LowStockThreshold.Value,
-    };
+        var activeVariants = variants?.Where(v => v.IsActive).ToList();
+        var firstActive = activeVariants?.FirstOrDefault();
+        var flatImages = variants != null ? FlattenVariantImages(variants) : doc.Images.Select(ToImageDto).ToList();
+        var computedStock = activeVariants?.Sum(v => v.Sizes.Sum(s => s.Stock)) ?? (variants != null ? 0 : doc.Stock);
+
+        return new()
+        {
+            Id = id,
+            Name = doc.Name,
+            Slug = doc.Slug,
+            Category = doc.Category,
+            SubCategory = doc.SubCategory,
+            Description = doc.Description,
+            ShortDescription = doc.ShortDescription,
+            Fabric = doc.Fabric,
+            Pattern = doc.Pattern,
+            Fit = doc.Fit,
+            Sleeve = doc.Sleeve,
+            Neck = doc.Neck,
+            Occasion = doc.Occasion,
+            WashCare = doc.WashCare,
+            Tags = doc.Tags,
+            Featured = doc.Featured,
+            NewArrival = doc.NewArrival,
+            BestSeller = doc.BestSeller,
+            Active = doc.Active,
+            DisplayOrder = doc.DisplayOrder,
+            CreatedBy = doc.CreatedBy,
+            CreatedAt = doc.CreatedAt,
+            UpdatedBy = doc.UpdatedBy,
+            UpdatedAt = doc.UpdatedAt,
+            Images = flatImages,
+            Pricing = doc.Pricing != null ? ToPricingResponse(doc.Pricing) : null,
+            Brand = doc.Brand,
+            SeoTitle = doc.SeoTitle,
+            SeoDescription = doc.SeoDescription,
+            SeoKeywords = doc.SeoKeywords,
+            Deleted = doc.Deleted,
+            DeletedAt = doc.DeletedAt,
+            Thumbnail = doc.ThumbnailUrl != null ? new ProductImageDto { Url = doc.ThumbnailUrl } : DeriveThumbnail(doc.Images),
+            Variants = variants ?? [],
+            // Legacy backward‑compat — populated from first active variant when available
+            Price = firstActive?.SellingPrice ?? doc.Price,
+            Mrp = firstActive?.Mrp ?? doc.Mrp,
+            Discount = doc.Discount,
+            Sizes = firstActive?.Sizes.Select(s => new ProductSizeDto { Size = s.Size, Stock = s.Stock }).ToList()
+                    ?? doc.Sizes.Select(s => new ProductSizeDto { Size = s.Size, Stock = s.Stock }).ToList(),
+            Stock = computedStock,
+            Sku = firstActive?.Sku ?? doc.Sku,
+            Color = firstActive?.ColourName ?? doc.Color,
+            FlipkartProductUrl = doc.FlipkartProductUrl,
+            FlipkartProductId = doc.FlipkartProductId,
+            FlipkartSellerSku = doc.FlipkartSellerSku,
+            FlipkartFsn = doc.FlipkartFsn,
+            LaunchDate = doc.LaunchDate,
+            LastSyncDate = doc.LastSyncDate,
+            MarketplacePrice = doc.MarketplacePrice,
+            MarketplaceMrp = doc.MarketplaceMrp,
+            MarketplaceDiscount = doc.MarketplaceDiscount,
+            MarketplaceCategory = doc.MarketplaceCategory,
+            MarketplaceTags = doc.MarketplaceTags,
+            WebsiteClickCount = doc.WebsiteClickCount,
+            LastClickAt = doc.LastClickAt,
+            LifecycleStage = doc.LifecycleStage,
+            LowStockThreshold = doc.LowStockThreshold,
+            ReservedStock = doc.ReservedStock,
+            AutoHideWhenOutOfStock = doc.AutoHideWhenOutOfStock,
+            StockUpdatedAt = doc.StockUpdatedAt,
+            IsOutOfStock = computedStock <= 0,
+            IsLowStock = computedStock > 0 && doc.LowStockThreshold.HasValue && computedStock <= doc.LowStockThreshold.Value,
+            VariantCount = activeVariants?.Count ?? doc.VariantCount,
+            TotalStock = activeVariants?.Sum(v => v.Sizes.Sum(s => s.Stock)) ?? doc.TotalStock,
+            LowestPrice = doc.LowestPrice,
+            HighestPrice = doc.HighestPrice,
+        };
+    }
 
     private async Task<ProductDetailResponse> ToDetailWithVariants(string id, ProductDocument doc, CancellationToken ct)
     {
+        _logger.LogDebug("ToDetailWithVariants: loading variants for product {ProductId}", id);
         var variantTuples = await _variantRepository.GetVariantsAsync(id, ct);
+        _logger.LogDebug("ToDetailWithVariants: loaded {Count} variants for product {ProductId}", variantTuples.Count, id);
         var variantResponses = variantTuples.Select(t => ToVariantResponse(t.Id, t.Data)).ToList();
         return ToDetail(id, doc, variantResponses);
     }
@@ -598,6 +703,13 @@ public class ProductService : IProductService
         Sku = doc.Sku,
         SellingPrice = doc.SellingPrice,
         Mrp = doc.Mrp,
+        PurchaseCost = doc.PurchaseCost,
+        PackagingCost = doc.PackagingCost,
+        FlipkartCommission = doc.FlipkartCommission,
+        ShippingCharges = doc.ShippingCharges,
+        MarketingCost = doc.MarketingCost,
+        OtherCharges = doc.OtherCharges,
+        DesiredProfit = doc.DesiredProfit,
         IsActive = doc.IsActive,
         FlipkartUrl = doc.FlipkartUrl,
         DisplayOrder = doc.DisplayOrder,
@@ -634,6 +746,19 @@ public class ProductService : IProductService
             Height = slot.Height,
             Alt = slot.Alt,
         };
+
+    private static List<ProductImageDto> FlattenVariantImages(List<VariantResponse> variants)
+    {
+        var result = new List<ProductImageDto>();
+        foreach (var v in variants)
+        {
+            if (v.Images?.Primary != null)
+                result.Add(new ProductImageDto { Url = v.Images.Primary.Url, PublicId = v.Images.Primary.PublicId, Order = result.Count });
+            foreach (var g in v.Images?.Gallery ?? [])
+                result.Add(new ProductImageDto { Url = g.Url, PublicId = g.PublicId, Order = result.Count });
+        }
+        return result;
+    }
 
     private static VariantImageSlotDocument? ToSlotDocument(VariantImageSlotInput? input)
     {
@@ -678,10 +803,13 @@ public class ProductService : IProductService
         long totalStock = 0;
         double? lowestPrice = null;
         double? highestPrice = null;
+        string? thumbnailUrl = null;
 
         // Create or update each variant in the request
         foreach (var v in variants)
         {
+            _logger.LogInformation("[SyncVariants] Variant {VariantId}: FlipkartUrl from request = '{FlipkartUrl}' (null? {IsNull}, empty? {IsEmpty})",
+                v.Id ?? "new", v.FlipkartUrl, v.FlipkartUrl == null, string.IsNullOrEmpty(v.FlipkartUrl));
             var images = v.Images;
             var sizes = (v.Sizes ?? []).Select(s => new VariantSizeDocument { Size = s.Size, Stock = s.Stock }).ToList();
             var variantStock = sizes.Sum(s => s.Stock);
@@ -695,6 +823,12 @@ public class ProductService : IProductService
                     if (lowestPrice is null || v.SellingPrice.Value < lowestPrice) lowestPrice = v.SellingPrice;
                     if (highestPrice is null || v.SellingPrice.Value > highestPrice) highestPrice = v.SellingPrice;
                 }
+
+                if (thumbnailUrl == null)
+                {
+                    thumbnailUrl = v.Images?.Primary?.Url
+                        ?? v.Images?.Gallery?.FirstOrDefault()?.Url;
+                }
             }
 
             var doc = new ProductVariantDocument
@@ -704,6 +838,13 @@ public class ProductService : IProductService
                 Sku = v.Sku,
                 SellingPrice = v.SellingPrice,
                 Mrp = v.Mrp,
+                PurchaseCost = v.PurchaseCost,
+                PackagingCost = v.PackagingCost,
+                FlipkartCommission = v.FlipkartCommission,
+                ShippingCharges = v.ShippingCharges,
+                MarketingCost = v.MarketingCost,
+                OtherCharges = v.OtherCharges,
+                DesiredProfit = v.DesiredProfit,
                 IsActive = v.IsActive,
                 FlipkartUrl = v.FlipkartUrl,
                 DisplayOrder = v.DisplayOrder,
@@ -736,6 +877,13 @@ public class ProductService : IProductService
             }
         }
 
+        // Promote the first non-empty variant flipkartUrl to the product-level field
+        // so list views (home page, category, etc.) see it via ProductSummaryResponse.FlipkartProductUrl
+        var firstFlipkartUrl = variants
+            .Select(v => v.FlipkartUrl)
+            .FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
+
+        _logger.LogInformation("[SyncVariants] Promoting firstFlipkartUrl = '{Url}' to product doc flipkartProductUrl", firstFlipkartUrl);
         // Write denormalized variant summary onto the product document
         await _repository.UpdateAsync(productId, new Dictionary<string, object?>
         {
@@ -743,6 +891,8 @@ public class ProductService : IProductService
             ["totalStock"] = totalStock,
             ["lowestPrice"] = lowestPrice.HasValue ? lowestPrice.Value : FieldValue.Delete,
             ["highestPrice"] = highestPrice.HasValue ? highestPrice.Value : FieldValue.Delete,
+            ["thumbnailUrl"] = thumbnailUrl ?? (object)FieldValue.Delete,
+            ["flipkartProductUrl"] = firstFlipkartUrl ?? (object)FieldValue.Delete,
         }, ct);
     }
 

@@ -1,6 +1,6 @@
 export const environment = {
   production:   true,
-  maintenanceMode: true,
+  maintenanceMode: false,
   adminEmail:   'gsanketh7121@gmail.com',
   apiBaseUrl:   'https://vrindaya-api.onrender.com/api/v1',
   firebase: {

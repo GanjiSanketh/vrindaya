@@ -306,11 +306,12 @@ export class AdminProductListComponent {
 
   /* ── Single-row actions ── */
 
-  confirmDelete(id: string): void { this.deleteId.set(id); this.deleteError.set(null); }
+  confirmDelete(id: string): void { console.log("Delete clicked", id); this.deleteId.set(id); this.deleteError.set(null); }
   cancelDelete():            void { this.deleteId.set(null); this.deleteError.set(null); }
 
   async doDelete(): Promise<void> {
     const id = this.deleteId();
+    console.log("doDelete called for", id);
     if (id === null) return;
     this.deleting.set(true);
     this.deleteError.set(null);

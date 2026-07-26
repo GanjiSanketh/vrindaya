@@ -114,9 +114,8 @@ public class ProductDocument
     [FirestoreProperty("brand")]
     public string Brand { get; set; } = string.Empty;
 
-    /// <summary>Cost price paid to acquire the product — used for profit calculations in the Pricing Dashboard.</summary>
-    [FirestoreProperty("costPrice")]
-    public double? CostPrice { get; set; }
+    [FirestoreProperty("pricing")]
+    public ProductPricingDocument? Pricing { get; set; }
 
     [FirestoreProperty("flipkartProductUrl")]
     public string? FlipkartProductUrl { get; set; }
@@ -226,6 +225,41 @@ public class ProductDocument
 
     [FirestoreProperty("highestPrice")]
     public double? HighestPrice { get; set; }
+
+    /// <summary>Denormalized first active variant's primary image URL, written during SyncVariantsAsync so list queries never scan the variants subcollection for a thumbnail.</summary>
+    [FirestoreProperty("thumbnailUrl")]
+    public string? ThumbnailUrl { get; set; }
+}
+
+[FirestoreData]
+public class ProductPricingDocument
+{
+    [FirestoreProperty("purchaseCost")]
+    public double? PurchaseCost { get; set; }
+
+    [FirestoreProperty("packagingCharges")]
+    public double? PackagingCharges { get; set; }
+
+    [FirestoreProperty("flipkartCharges")]
+    public double? FlipkartCharges { get; set; }
+
+    [FirestoreProperty("otherCharges")]
+    public double? OtherCharges { get; set; }
+
+    [FirestoreProperty("desiredProfit")]
+    public double? DesiredProfit { get; set; }
+
+    [FirestoreProperty("totalCost")]
+    public double? TotalCost { get; set; }
+
+    [FirestoreProperty("sellingPrice")]
+    public double? SellingPrice { get; set; }
+
+    [FirestoreProperty("profitMargin")]
+    public double? ProfitMargin { get; set; }
+
+    [FirestoreProperty("roi")]
+    public double? Roi { get; set; }
 }
 
 [FirestoreData]

@@ -4,8 +4,9 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Product } from '../models/product.model';
 import {
-  ApiPagedProducts, ApiProductDetail, ApiUploadedImage, AdminProductInput, FlipkartOpsInput,
-  AdminProductListQuery, ProductFlagName,
+  ApiPagedProducts, ApiProductDetail, AdminProductInput, FlipkartOpsInput,
+  AdminProductListQuery, ProductFlagName, DashboardDto,
+  SaleDto, CreateSaleRequest,
   apiSummaryToProduct, apiDetailToProduct,
 } from '../models/product-api.model';
 import { LifecycleStageValue } from '../constants/lifecycle-stage.constants';
@@ -209,7 +210,9 @@ export class ProductApiService {
 
   /** Permanently deletes the product, all variants, and all Cloudinary images. Returns the response so the caller can show a success message. */
   async delete(id: string): Promise<{ success: boolean; message: string }> {
+    console.log("ProductApiService.delete: Calling DELETE", `${BASE}/${id}`);
     const res = await firstValueFrom(this.http.delete<{ success: boolean; message: string }>(`${BASE}/${id}`));
+    console.log("ProductApiService.delete: Response", res);
     this.products.update(list => list.filter(p => p.id !== id));
     return res;
   }
@@ -269,41 +272,6 @@ export class ProductApiService {
     return this.products().some(p => p.sku === sku && p.id !== excludeId);
   }
 
-  /**
-   * fileName is the position-based name computed by the caller ("cover",
-   * "image-2", ...) — see image-processing.util.ts, used as the
-   * human-readable base of the generated Cloudinary public id. "Replace
-   * image" is a separate explicit delete-then-upload (see
-   * AdminProductFormComponent.replaceImage) — Cloudinary never overwrites
-   * in place.
-   */
-  uploadImage(productId: string, file: File | Blob, fileName?: string, onProgress?: (percent: number) => void): Promise<ApiUploadedImage> {
-    const formData = new FormData();
-    formData.append('productId', productId);
-    if (fileName) formData.append('fileName', fileName);
-    formData.append('file', file, fileName ? `${fileName}.webp` : undefined);
-
-    return new Promise((resolve, reject) => {
-      this.http.post<ApiUploadedImage>(`${BASE}/upload-images`, formData, {
-        reportProgress: !!onProgress,
-        observe: 'events',
-      }).subscribe({
-        next: event => {
-          if (event.type === HttpEventType.UploadProgress && event.total) {
-            onProgress?.(Math.round((event.loaded / event.total) * 100));
-          } else if (event.type === HttpEventType.Response) {
-            resolve(event.body as ApiUploadedImage);
-          }
-        },
-        error: err => reject(err instanceof Error ? err : new Error('Upload failed.')),
-      });
-    });
-  }
-
-  async deleteImage(productId: string, publicId: string): Promise<void> {
-    await firstValueFrom(this.http.delete<void>(`${BASE}/upload-images`, { params: { productId, publicId } }));
-  }
-
   /* ── Flipkart Operations (Phase 7) ── */
 
   async updateFlipkartOps(id: string, input: FlipkartOpsInput): Promise<void> {
@@ -360,6 +328,34 @@ export class ProductApiService {
 
   getPricingDashboard() {
     return this.http.get<PricingDashboardResponse>(`${environment.apiBaseUrl}/pricing/dashboard`);
+  }
+
+  /* ── Admin Dashboard ── */
+
+  getDashboard() {
+    return this.http.get<DashboardDto>(`${environment.apiBaseUrl}/dashboard`);
+  }
+
+  /* ── Sales Management ── */
+
+  getSales() {
+    return this.http.get<SaleDto[]>(`${environment.apiBaseUrl}/sales`);
+  }
+
+  getSale(id: string) {
+    return this.http.get<SaleDto>(`${environment.apiBaseUrl}/sales/${id}`);
+  }
+
+  createSale(request: CreateSaleRequest) {
+    return this.http.post<SaleDto>(`${environment.apiBaseUrl}/sales`, request);
+  }
+
+  updateSale(id: string, request: CreateSaleRequest) {
+    return this.http.put<SaleDto>(`${environment.apiBaseUrl}/sales/${id}`, request);
+  }
+
+  deleteSale(id: string) {
+    return this.http.delete<void>(`${environment.apiBaseUrl}/sales/${id}`);
   }
 
   /* ── Inventory Management ── */

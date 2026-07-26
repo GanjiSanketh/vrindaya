@@ -1,127 +1,67 @@
-import { Component, ElementRef, inject, input, viewChild, afterNextRender, type OnDestroy, ChangeDetectionStrategy } from '@angular/core';
-import { HeroPreloadService } from '../../services/hero-preload.service';
+import { Component, input, output, signal, ChangeDetectionStrategy, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-hero-sequence',
   standalone: true,
+  imports: [],
   template: `
-    <canvas class="hero-canvas" #sequenceCanvas></canvas>
-    @if (!progress().done) {
-      <div class="loading-overlay">
-        <div class="loading-bar-track">
-          <div class="loading-bar-fill" [style.width.%]="progress().percent"></div>
-        </div>
-        <span class="loading-text">Loading&hellip;</span>
-      </div>
+    @if (showFallback()) {
+      <div class="hero-fallback-bg" aria-hidden="true"></div>
     }
+
+    <img
+      [src]="currentSrc()"
+      alt="Vrindaya — Wear The Grace"
+      class="hero-image"
+      [class.hero-image--loaded]="!loading()"
+      [class.hero-image--hidden]="showFallback()"
+      fetchpriority="high"
+      loading="eager"
+      decoding="async"
+      (load)="onLoadSuccess()"
+      (error)="onLoadError()"
+    />
   `,
   styleUrl: './hero-sequence.component.css',
   host: { class: 'hero-sequence-container' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HeroSequenceComponent implements OnDestroy {
-  private readonly preload = inject(HeroPreloadService);
-  readonly canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('sequenceCanvas');
+export class HeroSequenceComponent implements OnInit {
   readonly fallbackImg = input<string>('');
-  readonly progress = this.preload.progress;
+  readonly loaded = output<void>();
 
-  private ctx: CanvasRenderingContext2D | null = null;
-  private animationId: number | null = null;
-  private loadedImages: HTMLImageElement[] = [];
-  private currentFrame = 0;
-  private canvasEl: HTMLCanvasElement | null = null;
-  private rafActive = false;
-  private targetFrame = 0;
+  readonly currentSrc = signal<string>('');
+  readonly loading = signal(true);
+  readonly showFallback = signal(false);
 
-  constructor() {
-    afterNextRender(() => this.tryInit());
-  }
+  private retried = false;
 
-  preloadFrames(): Promise<void> {
-    return this.tryInit();
-  }
-
-  private async tryInit(): Promise<void> {
-    if (this.initialized) return;
-    this.initialized = true;
-
-    const canvas = this.canvasRef()?.nativeElement;
-    if (!canvas) return;
-    this.canvasEl = canvas;
-    this.ctx = canvas.getContext('2d', { alpha: false });
-    this.resizeCanvas();
-
-    const isMobile = window.innerWidth < 768;
-    this.loadedImages = await this.preload.preload(isMobile);
-
-    if (this.loadedImages.length > 0) {
-      this.drawFrame(0);
+  ngOnInit(): void {
+    const src = this.fallbackImg();
+    if (src) {
+      this.currentSrc.set(src);
     }
-
-    window.addEventListener('resize', this.onResize);
   }
 
-  private initialized = false;
+  onLoadSuccess(): void {
+    this.loading.set(false);
+    this.showFallback.set(false);
+    this.loaded.emit();
+  }
 
-  private onResize = (): void => {
-    this.resizeCanvas();
-    if (this.loadedImages.length > 0) {
-      this.drawFrame(this.currentFrame);
+  onLoadError(): void {
+    const currentUrl = this.currentSrc();
+    console.error('[HeroSequence] Failed to load image:', currentUrl);
+
+    if (!this.retried) {
+      this.retried = true;
+      const fallbackUrl = 'assets/hero/hero-fallback.png';
+      this.currentSrc.set(fallbackUrl);
+    } else {
+      console.error('[HeroSequence] Fallback image also failed. Showing neutral background.');
+      this.loading.set(false);
+      this.showFallback.set(true);
+      this.loaded.emit();
     }
-  };
-
-  private resizeCanvas(): void {
-    if (!this.canvasEl) return;
-    const rect = this.canvasEl.parentElement?.getBoundingClientRect() ?? { width: 0, height: 0 };
-    const dpr = window.devicePixelRatio || 1;
-    this.canvasEl.width = rect.width * dpr;
-    this.canvasEl.height = rect.height * dpr;
-    this.canvasEl.style.width = `${rect.width}px`;
-    this.canvasEl.style.height = `${rect.height}px`;
-    this.ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  renderFrame(index: number): void {
-    if (this.rafActive) {
-      this.targetFrame = index;
-      return;
-    }
-    this.rafActive = true;
-    this.targetFrame = index;
-    this.animationId = requestAnimationFrame(() => {
-      this.drawFrame(this.targetFrame);
-      this.rafActive = false;
-    });
-  }
-
-  private drawFrame(index: number): void {
-    if (!this.ctx || !this.canvasEl) return;
-    const img = this.loadedImages[index];
-    if (!img || !img.complete) return;
-
-    this.currentFrame = index;
-    const w = this.canvasEl.clientWidth;
-    const h = this.canvasEl.clientHeight;
-    const dpr = window.devicePixelRatio || 1;
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    this.ctx.clearRect(0, 0, w, h);
-
-    const iw = img.naturalWidth;
-    const ih = img.naturalHeight;
-    const scale = Math.max(w / iw, h / ih);
-    const sw = iw * scale;
-    const sh = ih * scale;
-    const sx = (w - sw) / 2;
-    const sy = (h - sh) / 2;
-    this.ctx.drawImage(img, sx, sy, sw, sh);
-  }
-
-  ngOnDestroy(): void {
-    window.removeEventListener('resize', this.onResize);
-    if (this.animationId !== null) {
-      cancelAnimationFrame(this.animationId);
-    }
-    this.preload.clear();
   }
 }

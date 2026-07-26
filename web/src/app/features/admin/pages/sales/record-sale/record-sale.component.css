@@ -1,0 +1,33 @@
+.rs-page { max-width: 720px; }
+.rs-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.rs-back { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #0f6f84; text-decoration: none; font-weight: 600; }
+.rs-back:hover { text-decoration: underline; }
+.rs-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 700; color: #0c4a58; margin: 0; }
+.rs-alert { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; }
+.rs-alert--err { background: #fff1f2; color: #dc2626; border: 1px solid #fecdd3; }
+.rs-alert--ok { background: #edf7ef; color: #22a34a; border: 1px solid #b7e0c5; }
+.rs-form { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 1rem; }
+.rs-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.rs-label { font-size: 0.75rem; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; }
+.rs-input, .rs-select { padding: 0.6rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: #1a1a2e; background: #fff; }
+.rs-input:focus, .rs-select:focus { outline: none; border-color: #0f6f84; box-shadow: 0 0 0 2px rgba(15,111,132,0.15); }
+.rs-hint { font-size: 0.72rem; color: #6b7280; }
+.rs-stock-info { font-size: 0.82rem; color: #0f6f84; margin-top: 0.2rem; }
+.rs-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.rs-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.rs-section-title { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; color: #0c4a58; margin: 0.5rem 0 0; padding-top: 1rem; border-top: 1px solid #e8ecf0; }
+.rs-calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; padding: 1rem; background: #fafbfc; border-radius: 8px; border: 1px solid #f0f4f7; }
+.rs-calc-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.rs-calc-label { font-size: 0.65rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+.rs-calc-value { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+.rs-calc-value--rev { color: #0f6f84; }
+.rs-calc-value--neg { color: #dc2626; }
+.rs-calc-item--profit { background: #e6f4f7; border-radius: 6px; padding: 0.5rem; }
+.rs-actions { display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid #e8ecf0; }
+.rs-btn-cancel { padding: 0.6rem 1.25rem; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: #6b7280; text-decoration: none; cursor: pointer; }
+.rs-btn-cancel:hover { border-color: #9ca3af; }
+.rs-btn-save { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; background: #0f6f84; color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.rs-btn-save:hover:not(:disabled) { background: #0c5c6e; }
+.rs-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+.spinner-sm { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.5s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

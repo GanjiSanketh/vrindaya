@@ -18,14 +18,22 @@ export interface ProductVariant {
   updatedAt: string;
 }
 
+export interface VariantImageSlot {
+  url: string;
+  publicId: string;
+  width?: number;
+  height?: number;
+  alt?: string;
+}
+
 export interface VariantImages {
-  primary: string | null;
-  front: string | null;
-  back: string | null;
-  left: string | null;
-  right: string | null;
-  closeup: string | null;
-  gallery: string[];
+  primary: VariantImageSlot | null;
+  front: VariantImageSlot | null;
+  back: VariantImageSlot | null;
+  left: VariantImageSlot | null;
+  right: VariantImageSlot | null;
+  closeup: VariantImageSlot | null;
+  gallery: VariantImageSlot[];
 }
 
 export interface VariantSize {

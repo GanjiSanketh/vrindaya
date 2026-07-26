@@ -21,6 +21,9 @@ public interface IProductService
     /// <summary>Throws ProductNotFoundException (404, not 403) if missing OR inactive-and-caller-isn't-admin — avoids leaking draft existence.</summary>
     Task<ProductDetailResponse> GetProductByIdAsync(string id, bool isAdmin, CancellationToken cancellationToken);
 
+    /// <summary>Returns variant image metadata only — never downloads or transforms images. Lightweight alternative to GetProductByIdAsync when only images are needed. Throws ProductNotFoundException if the product doesn't exist.</summary>
+    Task<ProductImagesResponse> GetProductImagesAsync(string id, bool isAdmin, CancellationToken cancellationToken);
+
     Task<ProductDetailResponse> CreateProductAsync(CreateProductRequest request, string createdBy, CancellationToken cancellationToken);
 
     Task<ProductDetailResponse> UpdateProductAsync(string id, UpdateProductRequest request, string updatedBy, CancellationToken cancellationToken);

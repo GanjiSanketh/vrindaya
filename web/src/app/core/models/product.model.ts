@@ -13,6 +13,18 @@ export interface ProductSize {
   stock: number;
 }
 
+export interface ProductPricing {
+  purchaseCost?:     number;
+  packagingCharges?: number;
+  flipkartCharges?:  number;
+  otherCharges?:     number;
+  desiredProfit?:    number;
+  totalCost?:        number;
+  sellingPrice?:     number;
+  profitMargin?:     number;
+  roi?:              number;
+}
+
 export interface Product {
   id:                string;
   name:              string;
@@ -52,7 +64,7 @@ export interface Product {
   updatedAt:         Timestamp | string | null;
   images:            ProductImage[];
 
-  costPrice?:         number;
+  pricing?:           ProductPricing;
   brand:              string;
   flipkartProductUrl?: string;
   flipkartProductId?:  string;
@@ -101,6 +113,12 @@ export interface Product {
   isBestSeller?:     boolean;
   rating:            number;
   flipkartUrl:       string;
+
+  /** First active variant's primary image URL — populated from the API's thumbnail field. */
+  thumbnailUrl?: string;
+
+  /** Raw variant data from the API — used by the admin form to rebuild the variant list on edit. */
+  variants?: any[];
 
   /* ─── Variant denormalized fields ─── */
   variantCount: number;

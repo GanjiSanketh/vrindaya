@@ -9,48 +9,59 @@ import { firstValueFrom } from 'rxjs';
 
 import { ProductApiService }                  from '../../../../core/services/product-api.service';
 import { AdminProductInput, VariantRequest }  from '../../../../core/models/product-api.model';
-import { ProductImageGalleryComponent, GalleryImageState } from '../../components/product-image-gallery/product-image-gallery.component';
 import { APP_ROUTES }                         from '../../../../core/constants/routes.constants';
 import { Product, ProductImage }              from '../../../../core/models/product.model';
 import { slugify }                            from '../../../../shared/utils/slugify.util';
-import {
-  validateImageFile, processImageForUpload, CorruptImageError,
-} from '../../../../shared/utils/image-processing.util';
+import { validateImageFile, processImageForUpload } from '../../../../shared/utils/image-processing.util';
 
 interface CategoryOption { id: string; label: string; }
 interface SizeRow { size: string; stock: number; }
-interface VariantImageSlot { key: string; label: string; }
+
+interface VariantGalleryImage {
+  url:      string | null;
+  publicId: string | null;
+  file:     File | null;
+  preview:  string | null;
+  uploading: boolean;
+  error:     string | null;
+  isCover:   boolean;
+  order:      number;
+}
 
 interface VariantFormData {
   id: string;
   colourName: string;
   colourHex: string;
   sku: string;
-  sellingPrice: number | null;
-  mrp: number | null;
+  purchaseCost: number | null;
+  packagingCost: number | null;
+  flipkartCommission: number | null;
+  shippingCharges: number | null;
+  marketingCost: number | null;
+  otherCharges: number | null;
+  desiredProfit: number | null;
   flipkartUrl: string;
   isActive: boolean;
   sizes: SizeRow[];
-  images: Record<string, { url: string | null; publicId: string | null; file: File | null; preview: string | null; uploading: boolean; error: string | null }>;
+  gallery: VariantGalleryImage[];
   isExisting: boolean;
   isDeleted: boolean;
+  pricing: VariantPricingSummary;
 }
 
-const MAX_IMAGES = 10;
-const VARIANT_IMAGE_SLOTS: VariantImageSlot[] = [
-  { key: 'primary', label: 'Primary Image' },
-  { key: 'front', label: 'Front' },
-  { key: 'back', label: 'Back' },
-  { key: 'left', label: 'Left' },
-  { key: 'right', label: 'Right' },
-  { key: 'closeup', label: 'Detail Closeup' },
-];
+interface VariantPricingSummary {
+  totalCost: number;
+  sellingPrice: number;
+  profitMargin: number;
+  roi: number;
+}
+
 const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
 
 @Component({
   selector:    'app-admin-product-form',
   standalone:  true,
-  imports:     [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, ProductImageGalleryComponent],
+  imports:     [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './admin-product-form.component.html',
   styleUrl:    './admin-product-form.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -69,8 +80,6 @@ export class AdminProductFormComponent implements OnInit {
   readonly slugError  = signal<string | null>(null);
   readonly skuError   = signal<string | null>(null);
   readonly productId  = signal<string>('');
-  readonly maxImages  = MAX_IMAGES;
-  readonly imageSlots = VARIANT_IMAGE_SLOTS;
 
   readonly expandedVariantIds = signal<Set<string>>(new Set());
 
@@ -95,7 +104,6 @@ export class AdminProductFormComponent implements OnInit {
     fabric:             [''],
     washCare:           [''],
     sizeChart:          [''],
-    costPrice:          [null as number | null],
     tags:               [''],
     featured:           [false],
     newArrival:         [false],
@@ -109,9 +117,6 @@ export class AdminProductFormComponent implements OnInit {
     seoKeywords:        [''],
   });
 
-  readonly images = signal<GalleryImageState[]>([]);
-  readonly filledImageCount = computed(() => this.images().filter(i => i.status === 'uploaded').length);
-
   readonly variants = signal<VariantFormData[]>([]);
 
   readonly totalStock = computed(() => {
@@ -124,6 +129,42 @@ export class AdminProductFormComponent implements OnInit {
   });
 
   readonly activeVariantCount = computed(() => this.variants().filter(v => !v.isDeleted).length);
+
+  readonly hasAtLeastOneVariant = computed(() => this.activeVariantCount() > 0);
+
+  readonly canSave = computed(() => this.hasAtLeastOneVariant() && !this.saving());
+
+  readonly variantMinSellingPrice = computed(() => {
+    let min = Infinity;
+    for (const v of this.variants()) {
+      if (v.isDeleted) continue;
+      const sp = v.pricing.sellingPrice;
+      if (sp > 0 && sp < min) min = sp;
+    }
+    return min === Infinity ? null : min;
+  });
+
+  readonly variantMaxSellingPrice = computed(() => {
+    let max = -Infinity;
+    for (const v of this.variants()) {
+      if (v.isDeleted) continue;
+      const sp = v.pricing.sellingPrice;
+      if (sp > 0 && sp > max) max = sp;
+    }
+    return max === -Infinity ? null : max;
+  });
+
+  readonly priceRangeDisplay = computed(() => {
+    const min = this.variantMinSellingPrice();
+    const max = this.variantMaxSellingPrice();
+    if (min === null && max === null) return '—';
+    if (min === max) return `₹${min!.toFixed(0)}`;
+    return `₹${min!.toFixed(0)} – ₹${max!.toFixed(0)}`;
+  });
+
+  variantTotalStock(v: VariantFormData): number {
+    return v.sizes.reduce((sum, s) => sum + (s.stock || 0), 0);
+  }
 
   get f(): { [key: string]: AbstractControl } { return this.form.controls; }
 
@@ -164,43 +205,33 @@ export class AdminProductFormComponent implements OnInit {
       if (!p || !('variants' in p)) return;
       const apiVariants = (p as any).variants ?? [];
       if (!apiVariants?.length) return;
-      this.variants.set(apiVariants.map((v: any) => ({
-        id: v.id,
-        colourName: v.colourName,
-        colourHex: v.colourHex || '#000000',
-        sku: v.sku,
-        sellingPrice: v.sellingPrice,
-        mrp: v.mrp,
-        flipkartUrl: v.flipkartUrl || '',
-        isActive: v.isActive,
-        sizes: v.sizes.map((s: any) => ({ size: s.size, stock: s.stock })),
-        images: Object.fromEntries(VARIANT_IMAGE_SLOTS.map(slot => [
-          slot.key,
-          {
-            url: v.images?.[slot.key] || null,
-            publicId: null,
-            file: null,
-            preview: v.images?.[slot.key] || null,
-            uploading: false,
-            error: null,
-          },
-        ])),
-        isExisting: true,
-        isDeleted: false,
-      })));
+      this.variants.set(apiVariants.map((v: any) => {
+        const base = {
+          id: v.id,
+          colourName: v.colourName,
+          colourHex: v.colourHex || '#000000',
+          sku: v.sku,
+          purchaseCost: v.purchaseCost ?? null,
+          packagingCost: v.packagingCost ?? null,
+          flipkartCommission: v.flipkartCommission ?? null,
+          shippingCharges: v.shippingCharges ?? null,
+          marketingCost: v.marketingCost ?? null,
+          otherCharges: v.otherCharges ?? null,
+          desiredProfit: v.desiredProfit ?? null,
+          flipkartUrl: v.flipkartUrl || '',
+          isActive: v.isActive,
+          sizes: v.sizes.map((s: any) => ({ size: s.size, stock: s.stock })),
+          gallery: buildVariantGallery(v.images),
+          isExisting: true,
+          isDeleted: false,
+          pricing: { totalCost: 0, sellingPrice: 0, profitMargin: 0, roi: 0 },
+        } as VariantFormData;
+        return this.recalcPricing(base);
+      }));
       this.expandedVariantIds.set(new Set(apiVariants.map((v: any) => v.id)));
     } catch {
       // silent
     }
-  }
-
-  /* ── Image helpers ── */
-
-  private createEmptyImageState(): Record<string, { url: string | null; publicId: string | null; file: File | null; preview: string | null; uploading: boolean; error: string | null }> {
-    return Object.fromEntries(VARIANT_IMAGE_SLOTS.map(slot => [
-      slot.key,
-      { url: null, publicId: null, file: null, preview: null, uploading: false, error: null },
-    ]));
   }
 
   createVariant(): void {
@@ -210,14 +241,20 @@ export class AdminProductFormComponent implements OnInit {
       colourName: '',
       colourHex: '#000000',
       sku: '',
-      sellingPrice: null,
-      mrp: null,
+      purchaseCost: null,
+      packagingCost: null,
+      flipkartCommission: null,
+      shippingCharges: null,
+      marketingCost: null,
+      otherCharges: null,
+      desiredProfit: null,
       flipkartUrl: '',
       isActive: true,
       sizes: DEFAULT_SIZES.map(s => ({ size: s, stock: 0 })),
-      images: this.createEmptyImageState(),
+      gallery: [],
       isExisting: false,
       isDeleted: false,
+      pricing: { totalCost: 0, sellingPrice: 0, profitMargin: 0, roi: 0 },
     }]);
     this.expandedVariantIds.update(s => new Set(s).add(id));
   }
@@ -246,39 +283,16 @@ export class AdminProductFormComponent implements OnInit {
       sku: source.sku ? source.sku + '-COPY' : '',
       isExisting: false,
       isDeleted: false,
-      images: Object.fromEntries(VARIANT_IMAGE_SLOTS.map(slot => [
-        slot.key, { ...source.images[slot.key] },
-      ])),
+      gallery: source.gallery.map(g => ({ ...g, file: null, preview: null, uploading: false, error: null })),
     }]);
     this.expandedVariantIds.update(s => new Set(s).add(newId));
   }
 
-  triggerFileInput(slotKey: string, variantId: string): void {
-    const el = document.getElementById('img-' + variantId + '-' + slotKey) as HTMLInputElement;
-    el?.click();
-  }
-
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  onDrop(event: DragEvent, variantId: string, slotKey: string): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const file = event.dataTransfer?.files?.[0];
-    if (file) {
-      const input = document.getElementById('img-' + variantId + '-' + slotKey) as HTMLInputElement;
-      if (input) {
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        input.files = dt.files;
-        this.onVariantImageSelected({ target: input } as any, variantId, slotKey);
-      }
-    }
-  }
-
   trackByVariantId(_: number, v: VariantFormData): string { return v.id; }
+
+  trackByGalleryIndex(_: number, img: VariantGalleryImage): string {
+    return img.publicId ?? img.preview ?? `${_}`;
+  }
 
   addSize(variantId: string): void {
     this.variants.update(list => list.map(v => {
@@ -295,163 +309,152 @@ export class AdminProductFormComponent implements OnInit {
     }));
   }
 
-  /* ── Variant Image Upload ── */
+  /* ── Variant Gallery Upload ── */
 
-  async onVariantImageSelected(event: Event, variantId: string, slotKey: string): Promise<void> {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+  onVariantFilesSelected(event: Event, variantId: string): void {
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    if (!files.length) return;
+    void this.uploadVariantGalleryImages(files, variantId);
+  }
 
-    const error = validateImageFile(file);
-    if (error) { this.formError.set(error); return; }
+  onVariantGalleryDrop(event: DragEvent, variantId: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const files = Array.from(event.dataTransfer?.files ?? []);
+    if (!files.length) return;
+    void this.uploadVariantGalleryImages(files, variantId);
+  }
 
-    // Show local preview
-    const preview = URL.createObjectURL(file);
-    this.updateVariantImage(variantId, slotKey, { file, preview, uploading: true, error: null });
+  onVariantGalleryDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 
-    try {
-      const processed = await processImageForUpload(file);
-      const res = await firstValueFrom(
-        this.api.uploadVariantImage(this.productId(), variantId, slotKey, new File([processed.blob], file.name, { type: 'image/webp' }))
-      );
-      this.updateVariantImage(variantId, slotKey, {
-        url: res.url,
-        publicId: res.publicId,
-        uploading: false,
-        error: null,
-      });
-    } catch (err: unknown) {
-      this.updateVariantImage(variantId, slotKey, {
-        uploading: false,
-        error: err instanceof Error ? err.message : 'Upload failed',
-      });
+  private async uploadVariantGalleryImages(files: File[], variantId: string): Promise<void> {
+    for (const file of files) {
+      const error = validateImageFile(file);
+      if (error) { this.formError.set(error); continue; }
+
+      const preview = URL.createObjectURL(file);
+      const galleryEntry: VariantGalleryImage = {
+        url: null, publicId: null, file, preview,
+        uploading: true, error: null, isCover: false,
+        order: 0,
+      };
+
+      this.variants.update(list => list.map(v => {
+        if (v.id !== variantId) return v;
+        const gallery = [...v.gallery, galleryEntry];
+        // First image becomes cover
+        if (gallery.length === 1) gallery[0].isCover = true;
+        return { ...v, gallery };
+      }));
+
+      try {
+        const processed = await processImageForUpload(file);
+        const slotKey = 'gallery';
+        const res = await firstValueFrom(
+          this.api.uploadVariantImage(this.productId(), variantId, slotKey,
+            new File([processed.blob], file.name, { type: 'image/webp' }))
+        );
+
+        this.variants.update(list => list.map(v => {
+          if (v.id !== variantId) return v;
+          return {
+            ...v,
+            gallery: v.gallery.map(g =>
+              g.preview === preview
+                ? { ...g, url: res.url, publicId: res.publicId, file: null, uploading: false, preview: null }
+                : g
+            ),
+          };
+        }));
+        URL.revokeObjectURL(preview);
+      } catch (err: unknown) {
+        this.variants.update(list => list.map(v => {
+          if (v.id !== variantId) return v;
+          return {
+            ...v,
+            gallery: v.gallery.map(g =>
+              g.preview === preview
+                ? { ...g, uploading: false, error: err instanceof Error ? err.message : 'Upload failed' }
+                : g
+            ),
+          };
+        }));
+      }
     }
   }
 
-  removeVariantImage(variantId: string, slotKey: string): void {
-    const v = this.variants().find(x => x.id === variantId);
-    const img = v?.images[slotKey];
-    if (img?.publicId && v) {
-      this.api.deleteVariantImage(this.productId(), variantId, img.publicId).subscribe({ error: () => {} });
-    }
-    if (img?.preview?.startsWith('blob:')) URL.revokeObjectURL(img.preview);
-    this.updateVariantImage(variantId, slotKey, { url: null, publicId: null, file: null, preview: null, uploading: false, error: null });
-  }
-
-  private updateVariantImage(variantId: string, slotKey: string, patch: Partial<{ url: string | null; publicId: string | null; file: File | null; preview: string | null; uploading: boolean; error: string | null }>): void {
+  removeVariantGalleryImage(variantId: string, index: number): void {
     this.variants.update(list => list.map(v => {
       if (v.id !== variantId) return v;
-      const images = { ...v.images, [slotKey]: { ...v.images[slotKey], ...patch } };
-      return { ...v, images };
+      const img = v.gallery[index];
+      if (img?.publicId) {
+        this.api.deleteVariantImage(this.productId(), variantId, img.publicId).subscribe({ error: () => {} });
+      }
+      if (img?.preview?.startsWith('blob:')) URL.revokeObjectURL(img.preview);
+      let gallery = v.gallery.filter((_, i) => i !== index);
+      // Ensure first image is cover if cover was removed
+      if (gallery.length > 0 && !gallery.some(g => g.isCover)) {
+        gallery = gallery.map((g, i) => ({ ...g, isCover: i === 0 }));
+      }
+      return { ...v, gallery };
     }));
   }
 
-  /* ── Product Image Gallery (same as before) ── */
-
-  addFiles(files: File[]): void {
-    const remaining = MAX_IMAGES - this.images().length;
-    files.slice(0, remaining).forEach(file => {
-      const error = validateImageFile(file);
-      const entry: GalleryImageState = {
-        localId:    crypto.randomUUID(),
-        file,
-        fileName:   this.nextAvailableFileName(),
-        previewUrl: URL.createObjectURL(file),
-        status:     error ? 'error' : 'pending',
-        progress:   0,
-        error:      error ?? undefined,
+  setVariantCover(variantId: string, index: number): void {
+    this.variants.update(list => list.map(v => {
+      if (v.id !== variantId) return v;
+      return {
+        ...v,
+        gallery: v.gallery.map((g, i) => ({ ...g, isCover: i === index })),
       };
-      this.images.update(list => [...list, entry]);
-      if (!error) void this.processAndUpload(entry.localId);
-    });
+    }));
   }
 
-  private nextAvailableFileName(): string {
-    const used = new Set(this.images().map(i => i.fileName).filter((n): n is string => !!n));
-    if (!used.has('cover')) return 'cover';
-    let n = 2;
-    while (used.has(`image-${n}`)) n++;
-    return `image-${n}`;
+  moveVariantGalleryImage(variantId: string, from: number, to: number): void {
+    const variant = this.variants().find(v => v.id === variantId);
+    if (!variant || to < 0 || to >= variant.gallery.length) return;
+    this.variants.update(list => list.map(v => {
+      if (v.id !== variantId) return v;
+      const gallery = [...v.gallery];
+      const [moved] = gallery.splice(from, 1);
+      gallery.splice(to, 0, moved);
+      return { ...v, gallery };
+    }));
   }
 
-  private async processAndUpload(localId: string): Promise<void> {
-    const entry = this.images().find(i => i.localId === localId);
-    if (!entry?.file) return;
-    try {
-      const processed = await processImageForUpload(entry.file);
-      this.applyProcessedPreview(localId, processed);
-    } catch (err: unknown) {
-      const message = err instanceof CorruptImageError ? err.message : 'Could not process this image. Please try a different file.';
-      this.updateImage(localId, { status: 'error', error: message });
-      return;
-    }
-    await this.uploadOne(localId);
+  triggerVariantGalleryInput(variantId: string): void {
+    const el = document.getElementById('vg-input-' + variantId) as HTMLInputElement;
+    el?.click();
   }
 
-  private applyProcessedPreview(localId: string, processed: { blob: Blob; previewUrl: string; width: number; height: number; sizeBytes: number }): void {
-    const entry = this.images().find(i => i.localId === localId);
-    if (entry?.previewUrl.startsWith('blob:')) URL.revokeObjectURL(entry.previewUrl);
-    this.updateImage(localId, {
-      processedBlob: processed.blob,
-      previewUrl:    processed.previewUrl,
-      width:         processed.width,
-      height:        processed.height,
-      sizeBytes:     processed.sizeBytes,
-    });
+  /* ── Pricing calculation ── */
+
+  private recalcPricing(v: VariantFormData): VariantFormData {
+    const purchase = v.purchaseCost ?? 0;
+    const packaging = v.packagingCost ?? 0;
+    const commission = v.flipkartCommission ?? 0;
+    const shipping = v.shippingCharges ?? 0;
+    const marketing = v.marketingCost ?? 0;
+    const other = v.otherCharges ?? 0;
+    const profit = v.desiredProfit ?? 0;
+    const totalCost = purchase + packaging + commission + shipping + marketing + other;
+    const sellingPrice = totalCost + profit;
+    const profitMargin = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
+    const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+    return {
+      ...v,
+      pricing: { totalCost, sellingPrice, profitMargin, roi },
+    };
   }
 
-  private async uploadOne(localId: string): Promise<void> {
-    const entry = this.images().find(i => i.localId === localId);
-    if (!entry?.processedBlob) return;
-    this.updateImage(localId, { status: 'uploading', progress: 0, error: undefined });
-    try {
-      const result = await this.api.uploadImage(this.productId(), entry.processedBlob, entry.fileName, percent => {
-        this.updateImage(localId, { progress: percent });
-      });
-      this.updateImage(localId, {
-        status: 'uploaded', progress: 100, serverUrl: result.url, publicId: result.publicId, error: undefined,
-      });
-    } catch (err: unknown) {
-      this.updateImage(localId, { status: 'error', error: err instanceof Error ? err.message : 'Upload failed.' });
-    }
-  }
-
-  retryImage(localId: string): void {
-    const entry = this.images().find(i => i.localId === localId);
-    if (entry?.processedBlob) { void this.uploadOne(localId); }
-    else if (entry?.file) { void this.processAndUpload(localId); }
-  }
-
-  async removeImage(localId: string): Promise<void> {
-    const entry = this.images().find(i => i.localId === localId);
-    if (entry?.publicId) {
-      try { await this.api.deleteImage(this.productId(), entry.publicId); } catch { /* best-effort */ }
-    }
-    if (entry?.previewUrl.startsWith('blob:')) URL.revokeObjectURL(entry.previewUrl);
-    this.images.update(list => list.filter(i => i.localId !== localId));
-  }
-
-  async replaceImage(event: { localId: string; file: File }): Promise<void> {
-    const { localId, file } = event;
-    const error = validateImageFile(file);
-    if (error) { this.formError.set(error); return; }
-    const previous = this.images().find(i => i.localId === localId);
-    this.updateImage(localId, { file, processedBlob: undefined, status: 'pending', error: undefined });
-    try {
-      const processed = await processImageForUpload(file);
-      this.applyProcessedPreview(localId, processed);
-      await this.uploadOne(localId);
-      const current = this.images().find(i => i.localId === localId);
-      if (previous?.publicId && current?.publicId && previous.publicId !== current.publicId) {
-        try { await this.api.deleteImage(this.productId(), previous.publicId); } catch { /* best-effort */ }
-      }
-    } catch (err: unknown) {
-      const message = err instanceof CorruptImageError ? err.message : 'Could not process this image. Please try a different file.';
-      this.updateImage(localId, { status: 'error', error: message });
-    }
-  }
-
-  private updateImage(localId: string, patch: Partial<GalleryImageState>): void {
-    this.images.update(list => list.map(i => i.localId === localId ? { ...i, ...patch } : i));
+  onVariantPricingChange(v: VariantFormData): void {
+    this.variants.update(list => list.map(item => {
+      if (item.id !== v.id) return item;
+      return this.recalcPricing(item);
+    }));
   }
 
   /* ── Populate (edit mode) ── */
@@ -468,7 +471,6 @@ export class AdminProductFormComponent implements OnInit {
       fabric:             p.fabric ?? '',
       washCare:           p.washCare ?? '',
       sizeChart:          (p as any).sizeChart ?? '',
-      costPrice:          p.costPrice ?? null,
       tags:               p.tags.join(', '),
       featured:           p.featured,
       newArrival:         p.newArrival,
@@ -484,16 +486,6 @@ export class AdminProductFormComponent implements OnInit {
 
     this.slugTouched     = true;
     this.discountTouched = true;
-
-    this.images.set([...p.images].sort((a, b) => a.order - b.order).map((img, index) => ({
-      localId:    crypto.randomUUID(),
-      fileName:   index === 0 ? 'cover' : `image-${index + 1}`,
-      previewUrl: img.url,
-      serverUrl:  img.url,
-      publicId:   img.publicId,
-      status:     'uploaded' as const,
-      progress:   100,
-    })));
   }
 
   /* ── Submit ── */
@@ -507,38 +499,52 @@ export class AdminProductFormComponent implements OnInit {
     return this.form.dirty && !this.saved();
   }
 
-  private buildImages(): ProductImage[] {
-    return this.images()
-      .filter(i => i.status === 'uploaded' && i.serverUrl && i.publicId)
-      .map((i, order) => ({ url: i.serverUrl!, publicId: i.publicId!, order }));
-  }
-
   async submit(): Promise<void> {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
 
-    // Check product images
-    if (this.images().some(i => i.status === 'uploading')) {
-      this.formError.set('Wait for product image uploads to finish before saving.');
-      return;
-    }
-    if (this.images().some(i => i.status === 'error')) {
-      this.formError.set('Remove or retry the failed product image before saving.');
+    if (!this.hasAtLeastOneVariant()) {
+      this.formError.set('Please add at least one colour variant before saving.');
       return;
     }
 
-    // Check variant images
+    // Validate each variant has required fields
     for (const v of this.variants()) {
       if (v.isDeleted) continue;
-      for (const slot of VARIANT_IMAGE_SLOTS) {
-        const img = v.images[slot.key];
-        if (img?.uploading) {
-          this.formError.set(`Wait for "${v.colourName || 'a variant'}" — ${slot.label} upload to finish.`);
+
+      if (!v.colourName?.trim()) {
+        this.formError.set(`Enter a colour name for "${v.colourName || 'a variant'}" before saving.`);
+        return;
+      }
+
+      if (!v.gallery.some(g => g.url)) {
+        this.formError.set(`Add at least one image to "${v.colourName}" before saving.`);
+        return;
+      }
+
+      for (const img of v.gallery) {
+        if (img.uploading) {
+          this.formError.set(`Wait for "${v.colourName}" image upload to finish.`);
           return;
         }
-        if (img?.error && !img.url) {
-          this.formError.set(`Fix or remove the failed image for "${v.colourName || 'a variant'}" — ${slot.label}.`);
+        if (img.error && !img.url) {
+          this.formError.set(`Fix or remove the failed image for "${v.colourName}" before saving.`);
           return;
         }
+      }
+
+      if (!v.sizes.some(s => (s.stock || 0) > 0)) {
+        this.formError.set(`Add at least one size with quantity for "${v.colourName}" before saving.`);
+        return;
+      }
+
+      if (!(v.purchaseCost ?? 0)) {
+        this.formError.set(`Enter a purchase cost for "${v.colourName}" before saving.`);
+        return;
+      }
+
+      if (!(v.desiredProfit ?? 0)) {
+        this.formError.set(`Enter a desired profit for "${v.colourName}" before saving.`);
+        return;
       }
     }
 
@@ -546,6 +552,7 @@ export class AdminProductFormComponent implements OnInit {
     this.slugError.set(null);
     this.saving.set(true);
 
+    console.log('[Step 2] Product Form', this.form.value);
     const formVals      = this.form.getRawValue();
     const slug          = slugify(formVals.slug ?? '');
     const excludeId     = this.isEdit() ? this.productId() : undefined;
@@ -556,36 +563,40 @@ export class AdminProductFormComponent implements OnInit {
       return;
     }
 
-    const images = this.buildImages();
-    if (formVals.active && images.length === 0) {
-      this.formError.set('Add at least one product image before publishing, or uncheck "Active" to save as a draft.');
-      this.saving.set(false);
-      return;
-    }
-
     const variants: VariantRequest[] = this.variants()
       .filter(v => !v.isDeleted)
-      .map(v => ({
-        id: v.isExisting ? v.id : undefined,
-        colourName: v.colourName,
-        colourHex: v.colourHex || undefined,
-        sku: v.sku,
-        sellingPrice: v.sellingPrice ?? undefined,
-        mrp: v.mrp ?? undefined,
-        flipkartUrl: v.flipkartUrl || undefined,
-        displayOrder: 0,
-        isActive: v.isActive,
-        sizes: v.sizes.filter(s => s.stock > 0).map(s => ({ size: s.size, stock: s.stock })),
-        images: {
-          primary: v.images['primary']?.url || undefined,
-          front: v.images['front']?.url || undefined,
-          back: v.images['back']?.url || undefined,
-          left: v.images['left']?.url || undefined,
-          right: v.images['right']?.url || undefined,
-          closeup: v.images['closeup']?.url || undefined,
-          gallery: [],
-        },
-      }));
+      .map(v => {
+        const coverEntry = v.gallery.find(g => g.isCover) ?? v.gallery[0];
+        const galleryWithUrl = v.gallery.filter(g => g.url);
+        return {
+          id: v.isExisting ? v.id : undefined,
+          colourName: v.colourName,
+          colourHex: v.colourHex || undefined,
+          sku: v.sku,
+          sellingPrice: v.pricing.sellingPrice || undefined,
+          mrp: v.pricing.sellingPrice || undefined,
+          purchaseCost: v.purchaseCost ?? undefined,
+          packagingCost: v.packagingCost ?? undefined,
+          flipkartCommission: v.flipkartCommission ?? undefined,
+          shippingCharges: v.shippingCharges ?? undefined,
+          marketingCost: v.marketingCost ?? undefined,
+          otherCharges: v.otherCharges ?? undefined,
+          desiredProfit: v.desiredProfit ?? undefined,
+          flipkartUrl: v.flipkartUrl || undefined,
+          displayOrder: 0,
+          isActive: v.isActive,
+          sizes: v.sizes.filter(s => s.stock > 0).map(s => ({ size: s.size, stock: s.stock })),
+          images: {
+            primary: coverEntry?.url ? { url: coverEntry.url, publicId: coverEntry.publicId ?? undefined } : undefined,
+            front: undefined,
+            back: undefined,
+            left: undefined,
+            right: undefined,
+            closeup: undefined,
+            gallery: galleryWithUrl.map(g => ({ url: g.url!, publicId: g.publicId ?? undefined })),
+          },
+        };
+      });
 
     const input: AdminProductInput = {
       ...(this.isEdit() ? {} : { id: this.productId() }),
@@ -605,8 +616,7 @@ export class AdminProductFormComponent implements OnInit {
       displayOrder:     Number(formVals.displayOrder) || 0,
       lowStockThreshold: formVals.lowStockThreshold ?? undefined,
       autoHideWhenOutOfStock: !!formVals.autoHideWhenOutOfStock,
-      images,
-      costPrice:          formVals.costPrice ?? undefined,
+      images: [],
       brand:              formVals.brand?.trim() || undefined,
       seoTitle:           formVals.seoTitle?.trim() || undefined,
       seoDescription:     formVals.seoDescription?.trim() || undefined,
@@ -614,6 +624,8 @@ export class AdminProductFormComponent implements OnInit {
       variants,
     };
 
+    console.log('[Step 2] input.variants[0].flipkartUrl:', input.variants?.[0]?.flipkartUrl);
+    console.log('[Step 2] All variants flipkartUrl:', input.variants?.map(v => ({ id: v.id, flipkartUrl: v.flipkartUrl })));
     try {
       if (this.isEdit()) {
         await this.api.update(this.productId(), input);
@@ -629,4 +641,47 @@ export class AdminProductFormComponent implements OnInit {
       this.saving.set(false);
     }
   }
+}
+
+/* ── Standalone helper ── */
+
+function buildVariantGallery(images: any): VariantGalleryImage[] {
+  if (!images) return [];
+
+  const gallery: VariantGalleryImage[] = [];
+
+  const seen = new Set<string>();
+
+  for (const key of ['primary', 'front', 'back', 'left', 'right', 'closeup']) {
+    const slot = images[key];
+    if (!slot) continue;
+    const url = typeof slot === 'string' ? slot : slot?.url;
+    if (url && !seen.has(url)) {
+      seen.add(url);
+      gallery.push({
+        url,
+        publicId: typeof slot === 'string' ? null : (slot?.publicId ?? null),
+        file: null, preview: url,
+        uploading: false, error: null, isCover: gallery.length === 0,
+        order: gallery.length,
+      });
+    }
+  }
+
+  const extra = images.gallery ?? [];
+  for (const item of extra) {
+    const url = typeof item === 'string' ? item : item?.url;
+    if (url && !seen.has(url)) {
+      seen.add(url);
+      gallery.push({
+        url,
+        publicId: typeof item === 'string' ? null : (item?.publicId ?? null),
+        file: null, preview: url,
+        uploading: false, error: null, isCover: gallery.length === 0,
+        order: gallery.length,
+      });
+    }
+  }
+
+  return gallery;
 }

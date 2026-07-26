@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="240" height="100">
+  <defs>
+    <style>
+      .brand { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 700; fill: #0f6f84; letter-spacing: 0.32em; }
+      .tagline { font-family: 'DM Sans', system-ui, sans-serif; font-size: 9px; font-weight: 500; fill: #4d95a5; letter-spacing: 0.28em; }
+      .accent { stroke: #c9a54c; stroke-width: 1; fill: none; }
+    </style>
+  </defs>
+  <line x1="30" y1="28" x2="210" y2="28" class="accent"/>
+  <text x="120" y="60" text-anchor="middle" class="brand">VRINDAYA</text>
+  <text x="120" y="78" text-anchor="middle" class="tagline">WEAR THE GRACE</text>
+</svg>

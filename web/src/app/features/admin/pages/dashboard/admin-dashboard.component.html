@@ -1,149 +1,405 @@
 <div class="dash-page">
 
-  <!-- Page header -->
-  <div class="dash-header">
-    <div>
-      <h1 class="dash-title">Dashboard</h1>
-      @if (authSvc.currentUser(); as user) {
-        <p class="dash-welcome">Welcome back, {{ user.name || 'Admin' }}</p>
-      }
+  @if (loading()) {
+    <div class="dash-loading">
+      <div class="spinner"></div>
+      <span>Loading dashboard...</span>
     </div>
-    <div class="dash-actions">
-      <button class="btn-export" (click)="export()">
-        <i class="bi bi-download"></i> Export products.json
-      </button>
-      <a [routerLink]="BASE + '/products/new'" class="btn-add">
-        <i class="bi bi-plus-lg"></i> Add Product
-      </a>
+  } @else if (error(); as err) {
+    <div class="dash-error">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ err }}</span>
+      <button class="btn-retry" (click)="refresh()">Retry</button>
     </div>
-  </div>
+  } @else if (data(); as d) {
 
-  <!-- Stat cards -->
-  <div class="dash-stats">
-    <div class="stat-card">
-      <div class="stat-icon stat-icon--total"><i class="bi bi-bag-heart-fill"></i></div>
-      <div class="stat-body">
-        <span class="stat-value">{{ totalCount() }}</span>
-        <span class="stat-label">Total Products</span>
+    <!-- ── Page Header ── -->
+    <div class="dash-header">
+      <div>
+        <h1 class="dash-title">Dashboard</h1>
+        @if (authSvc.currentUser(); as user) {
+          <p class="dash-welcome">Welcome back, {{ user.name || 'Admin' }}</p>
+        }
+      </div>
+      <div class="dash-actions">
+        <button class="btn-export" (click)="refresh()">
+          <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+        <a [routerLink]="BASE + '/products/new'" class="btn-add">
+          <i class="bi bi-plus-lg"></i> Add Product
+        </a>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon stat-icon--new"><i class="bi bi-stars"></i></div>
-      <div class="stat-body">
-        <span class="stat-value">{{ newArrivalsCount() }}</span>
-        <span class="stat-label">New Arrivals</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon stat-icon--trend"><i class="bi bi-graph-up-arrow"></i></div>
-      <div class="stat-body">
-        <span class="stat-value">{{ trendingCount() }}</span>
-        <span class="stat-label">Trending</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon stat-icon--best"><i class="bi bi-award-fill"></i></div>
-      <div class="stat-body">
-        <span class="stat-value">{{ bestSellersCount() }}</span>
-        <span class="stat-label">Bestsellers</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Products by Lifecycle Stage -->
-  <div class="dash-section">
-    <div class="dash-section-header">
-      <h2 class="dash-section-title">Products by Status</h2>
-    </div>
-    <div class="stage-breakdown">
-      @for (row of stageBreakdown(); track row.stage) {
-        <div class="stage-chip">
-          <span class="stage-chip-count">{{ row.count }}</span>
-          <span class="stage-chip-label">{{ row.stage }}</span>
+    <!-- ── 1. Summary KPI Cards (8) ── -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-icon--teal"><i class="bi bi-box-seam-fill"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ animated().products }}</span>
+          <span class="kpi-label">Total Products</span>
         </div>
-      }
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-icon--gold"><i class="bi bi-palette-fill"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ animated().variants }}</span>
+          <span class="kpi-label">Total Variants</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-icon--green"><i class="bi bi-boxes"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ animated().units | number }}</span>
+          <span class="kpi-label">Inventory Units</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-icon--purple"><i class="bi bi-coin"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ animated().inventoryValue | currency:'INR' }}</span>
+          <span class="kpi-label">Inventory Value</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-icon--green"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ animated().revenue | currency:'INR' }}</span>
+          <span class="kpi-label">Potential Revenue</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-icon--gold"><i class="bi bi-piggy-bank-fill"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ animated().profit | currency:'INR' }}</span>
+          <span class="kpi-label">Expected Profit</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-icon--teal"><i class="bi bi-percent"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ animated().avgProfitPct | number }}%</span>
+          <span class="kpi-label">Avg Profit Margin</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon kpi-icon--purple"><i class="bi bi-bar-chart-line-fill"></i></div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ animated().avgRoiPct | number }}%</span>
+          <span class="kpi-label">Avg ROI</span>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Quick nav -->
-  <div class="dash-nav-cards">
-    <a [routerLink]="BASE + '/products'" class="nav-card">
-      <i class="bi bi-bag-heart nav-card-icon"></i>
-      <div>
-        <span class="nav-card-title">Manage Products</span>
-        <span class="nav-card-sub">Add, edit or delete products</span>
-      </div>
-      <i class="bi bi-chevron-right nav-card-arrow"></i>
-    </a>
-    <a [routerLink]="BASE + '/flipkart-ops'" class="nav-card">
-      <i class="bi bi-shop nav-card-icon"></i>
-      <div>
-        <span class="nav-card-title">Flipkart Operations</span>
-        <span class="nav-card-sub">Lifecycle stage, bulk tools, marketplace data</span>
-      </div>
-      <i class="bi bi-chevron-right nav-card-arrow"></i>
-    </a>
-    <a [routerLink]="BASE + '/popup-config'" class="nav-card">
-      <i class="bi bi-megaphone nav-card-icon"></i>
-      <div>
-        <span class="nav-card-title">Popup Campaign</span>
-        <span class="nav-card-sub">Configure promotional popups</span>
-      </div>
-      <i class="bi bi-chevron-right nav-card-arrow"></i>
-    </a>
-  </div>
-
-  <!-- Recent products -->
-  @if (recentProducts().length > 0) {
+    <!-- ── 2. Profit Analytics ── -->
     <div class="dash-section">
       <div class="dash-section-header">
-        <h2 class="dash-section-title">Recent Products</h2>
-        <a [routerLink]="BASE + '/products'" class="dash-view-all">View all <i class="bi bi-arrow-right"></i></a>
+        <h2 class="dash-section-title">Profit Analytics</h2>
       </div>
-
-      <div class="recent-table-wrap">
-        <table class="recent-table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th class="d-none d-sm-table-cell">Category</th>
-              <th>Status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of recentProducts(); track p.id) {
-              <tr>
-                <td>
-                  <div class="rt-product">
-                    <img [src]="p.image" [alt]="p.name" class="rt-thumb" loading="lazy" draggable="false" />
-                    <span class="rt-name">{{ p.name }}</span>
-                  </div>
-                </td>
-                <td class="d-none d-sm-table-cell">
-                  <span class="rt-cat">{{ p.category }}</span>
-                </td>
-                <td>
-                  <div class="rt-badges">
-                    @if (p.isNew)        { <span class="rt-badge rt-badge--new">New</span> }
-                    @if (p.isTrending)   { <span class="rt-badge rt-badge--trend">Trending</span> }
-                    @if (p.isBestSeller) { <span class="rt-badge rt-badge--best">Best</span> }
-                  </div>
-                </td>
-                <td>
-                  <a [routerLink]="BASE + '/products/' + p.id + '/edit'" class="rt-edit">
-                    <i class="bi bi-pencil"></i>
-                  </a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+      <div class="profit-grid">
+        <div class="profit-kpi">
+          <span class="profit-kpi-value">{{ d.profitAnalytics.averageProfitPercent }}%</span>
+          <span class="profit-kpi-label">Avg Profit Margin</span>
+        </div>
+        <div class="profit-kpi">
+          <span class="profit-kpi-value">{{ d.profitAnalytics.averageRoiPercent }}%</span>
+          <span class="profit-kpi-label">Avg ROI</span>
+        </div>
+        <div class="profit-kpi">
+          <span class="profit-kpi-value">{{ d.profitAnalytics.averageSellingPrice | currency:'INR' }}</span>
+          <span class="profit-kpi-label">Avg Selling Price</span>
+        </div>
+        <div class="profit-kpi">
+          <span class="profit-kpi-value">{{ d.profitAnalytics.averagePurchaseCost | currency:'INR' }}</span>
+          <span class="profit-kpi-label">Avg Purchase Cost</span>
+        </div>
+        @if (d.profitAnalytics.highestMarginProduct; as h) {
+          <div class="profit-kpi profit-kpi--good">
+            <span class="profit-kpi-value">{{ h.profitPercent }}%</span>
+            <span class="profit-kpi-label">Highest Margin: {{ h.productName }}</span>
+          </div>
+        }
+        @if (d.profitAnalytics.lowestMarginProduct; as l) {
+          <div class="profit-kpi profit-kpi--bad">
+            <span class="profit-kpi-value">{{ l.profitPercent }}%</span>
+            <span class="profit-kpi-label">Lowest Margin: {{ l.productName }}</span>
+          </div>
+        }
+        <div class="profit-kpi profit-kpi--total">
+          <span class="profit-kpi-value">{{ d.summaryCards.expectedProfit | currency:'INR' }}</span>
+          <span class="profit-kpi-label">Total Expected Profit</span>
+        </div>
       </div>
     </div>
-  }
 
+    <!-- ── 3. Pie Charts (5) ── -->
+    <div class="charts-section">
+      <div class="charts-row-3">
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Inventory by Category</h2></div>
+          <div class="chart-wrap"><canvas #pie1></canvas></div>
+        </div>
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Inventory Value by Category</h2></div>
+          <div class="chart-wrap"><canvas #pie2></canvas></div>
+        </div>
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Revenue by Category</h2></div>
+          <div class="chart-wrap"><canvas #pie3></canvas></div>
+        </div>
+      </div>
+      <div class="charts-row-2">
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Profit by Category</h2></div>
+          <div class="chart-wrap"><canvas #pie4></canvas></div>
+        </div>
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Product Status</h2></div>
+          <div class="chart-wrap"><canvas #pie5></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4. Donut Chart: Product Type Distribution ── -->
+    <div class="dash-section">
+      <div class="dash-section-header"><h2 class="dash-section-title">Product Type Distribution</h2></div>
+      <div class="chart-wrap chart-wrap--donut"><canvas #donut></canvas></div>
+    </div>
+
+    <!-- ── 5. Bar Charts (4) ── -->
+    <div class="charts-section">
+      <div class="charts-row-2">
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Top 10 Revenue Products</h2></div>
+          <div class="chart-wrap chart-wrap--bar"><canvas #bar1></canvas></div>
+        </div>
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Top 10 Most Profitable</h2></div>
+          <div class="chart-wrap chart-wrap--bar"><canvas #bar2></canvas></div>
+        </div>
+      </div>
+      <div class="charts-row-2">
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Stock per Product</h2></div>
+          <div class="chart-wrap chart-wrap--bar"><canvas #bar3></canvas></div>
+        </div>
+        <div class="dash-section chart-card">
+          <div class="dash-section-header"><h2 class="dash-section-title">Cost vs Selling Price by Category</h2></div>
+          <div class="chart-wrap chart-wrap--bar"><canvas #bar4></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 6. Category Analytics Table ── -->
+    @if (d.categoryAnalytics.length > 0) {
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <h2 class="dash-section-title">Category Analytics</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="dash-table">
+            <thead>
+              <tr><th>Category</th><th>Products</th><th>Stock</th><th>Inventory Value</th><th>Expected Profit</th></tr>
+            </thead>
+            <tbody>
+              @for (c of d.categoryAnalytics; track c.category) {
+                <tr>
+                  <td><span class="cat-badge">{{ c.category }}</span></td>
+                  <td>{{ c.productCount }}</td>
+                  <td>{{ c.totalStock | number }}</td>
+                  <td>{{ c.inventoryValue | currency:'INR' }}</td>
+                  <td class="td-profit">{{ c.expectedProfit | currency:'INR' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── 7. Low Stock Products ── -->
+    @if (d.lowStockProducts.length > 0) {
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <h2 class="dash-section-title">Low Stock Products</h2>
+          <a [routerLink]="BASE + '/inventory'" class="dash-view-all">Manage <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Price</th></tr></thead>
+            <tbody>
+              @for (p of d.lowStockProducts; track p.productId) {
+                <tr>
+                  <td>
+                    <div class="tbl-product">
+                      @if (p.imageUrl) { <img [src]="p.imageUrl" alt="" class="tbl-thumb" loading="lazy" /> }
+                      <span class="tbl-name">{{ p.productName }}</span>
+                    </div>
+                  </td>
+                  <td><span class="cat-badge">{{ p.category }}</span></td>
+                  <td><span class="stock-badge stock-badge--low">{{ p.stock }}</span></td>
+                  <td>{{ p.sellingPrice | currency:'INR' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── 8. Out of Stock Products ── -->
+    @if (d.outOfStockProducts.length > 0) {
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <h2 class="dash-section-title">Out of Stock Products ({{ d.outOfStockProducts.length }})</h2>
+          <a [routerLink]="BASE + '/inventory'" class="dash-view-all">Manage <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Stock</th></tr></thead>
+            <tbody>
+              @for (p of d.outOfStockProducts; track p.productId) {
+                <tr>
+                  <td>
+                    <div class="tbl-product">
+                      @if (p.imageUrl) { <img [src]="p.imageUrl" alt="" class="tbl-thumb" loading="lazy" /> }
+                      <span class="tbl-name">{{ p.productName || p.productId }}</span>
+                    </div>
+                  </td>
+                  <td><span class="cat-badge">{{ p.category }}</span></td>
+                  <td><span class="stock-badge stock-badge--out">0</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── 9. Top Expensive Products ── -->
+    @if (d.topExpensiveProducts.length > 0) {
+      <div class="dash-section">
+        <div class="dash-section-header"><h2 class="dash-section-title">Top Expensive Products</h2></div>
+        <div class="table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>#</th><th>Product</th><th>Category</th><th>Price</th></tr></thead>
+            <tbody>
+              @for (p of d.topExpensiveProducts; track $index) {
+                <tr>
+                  <td>{{ $index + 1 }}</td>
+                  <td>
+                    <div class="tbl-product">
+                      @if (p.imageUrl) { <img [src]="p.imageUrl" alt="" class="tbl-thumb" loading="lazy" /> }
+                      <span class="tbl-name">{{ p.productName || p.productId }}</span>
+                    </div>
+                  </td>
+                  <td><span class="cat-badge">{{ p.category }}</span></td>
+                  <td class="td-price">{{ p.sellingPrice | currency:'INR' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── 10. Most Profitable Products ── -->
+    @if (d.mostProfitableProducts.length > 0) {
+      <div class="dash-section">
+        <div class="dash-section-header"><h2 class="dash-section-title">Most Profitable Products</h2></div>
+        <div class="table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>#</th><th>Product</th><th>Price</th><th>Cost</th><th>Profit</th><th>Margin</th></tr></thead>
+            <tbody>
+              @for (p of d.mostProfitableProducts; track $index) {
+                <tr>
+                  <td>{{ $index + 1 }}</td>
+                  <td>
+                    <div class="tbl-product">
+                      @if (p.imageUrl) { <img [src]="p.imageUrl" alt="" class="tbl-thumb" loading="lazy" /> }
+                      <span class="tbl-name">{{ p.productName || p.productId }}</span>
+                    </div>
+                  </td>
+                  <td>{{ p.sellingPrice | currency:'INR' }}</td>
+                  <td>{{ p.totalCost | currency:'INR' }}</td>
+                  <td class="td-profit">{{ p.profit | currency:'INR' }}</td>
+                  <td><span class="profit-pct-badge">{{ p.profitPercent }}%</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── 11. Recently Added Products ── -->
+    @if (d.recentlyAddedProducts.length > 0) {
+      <div class="dash-section">
+        <div class="dash-section-header">
+          <h2 class="dash-section-title">Recently Added</h2>
+          <a [routerLink]="BASE + '/products'" class="dash-view-all">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Added</th></tr></thead>
+            <tbody>
+              @for (p of d.recentlyAddedProducts; track p.productId) {
+                <tr>
+                  <td>
+                    <div class="tbl-product">
+                      @if (p.imageUrl) { <img [src]="p.imageUrl" alt="" class="tbl-thumb" loading="lazy" /> }
+                      <span class="tbl-name">{{ p.productName }}</span>
+                    </div>
+                  </td>
+                  <td><span class="cat-badge">{{ p.category }}</span></td>
+                  <td>{{ p.sellingPrice | currency:'INR' }}</td>
+                  <td class="td-date">{{ p.createdAt | date:'mediumDate' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── 12. Summary Panel (Today Snapshot) ── -->
+    <div class="dash-section">
+      <div class="dash-section-header"><h2 class="dash-section-title">Summary Panel</h2></div>
+      <div class="summary-panel">
+        <div class="summary-item"><span class="summary-label">Products</span><span class="summary-value">{{ d.todaySnapshot.products }}</span></div>
+        <div class="summary-item"><span class="summary-label">Variants</span><span class="summary-value">{{ d.todaySnapshot.variants }}</span></div>
+        <div class="summary-item"><span class="summary-label">Total Units</span><span class="summary-value">{{ d.todaySnapshot.totalUnits | number }}</span></div>
+        <div class="summary-item"><span class="summary-label">Inventory Cost</span><span class="summary-value">{{ d.todaySnapshot.inventoryCost | currency:'INR' }}</span></div>
+        <div class="summary-item"><span class="summary-label">Potential Revenue</span><span class="summary-value">{{ d.todaySnapshot.potentialRevenue | currency:'INR' }}</span></div>
+        <div class="summary-item"><span class="summary-label">Expected Profit</span><span class="summary-value">{{ d.todaySnapshot.expectedProfit | currency:'INR' }}</span></div>
+        <div class="summary-item"><span class="summary-label">Avg Margin</span><span class="summary-value">{{ d.todaySnapshot.averageMarginPercent }}%</span></div>
+        <div class="summary-item"><span class="summary-label">Avg ROI</span><span class="summary-value">{{ d.todaySnapshot.averageRoiPercent }}%</span></div>
+      </div>
+    </div>
+
+    <!-- ── 13. Quick Actions ── -->
+    <div class="dash-nav-cards">
+      <a [routerLink]="BASE + '/products'" class="nav-card">
+        <i class="bi bi-bag-heart nav-card-icon"></i>
+        <div><span class="nav-card-title">Manage Products</span><span class="nav-card-sub">Add, edit or delete products</span></div>
+        <i class="bi bi-chevron-right nav-card-arrow"></i>
+      </a>
+      <a [routerLink]="BASE + '/inventory'" class="nav-card">
+        <i class="bi bi-boxes nav-card-icon"></i>
+        <div><span class="nav-card-title">Inventory</span><span class="nav-card-sub">Manage stock levels</span></div>
+        <i class="bi bi-chevron-right nav-card-arrow"></i>
+      </a>
+      <a [routerLink]="BASE + '/pricing'" class="nav-card">
+        <i class="bi bi-currency-rupee nav-card-icon"></i>
+        <div><span class="nav-card-title">Pricing Dashboard</span><span class="nav-card-sub">Review pricing &amp; profitability</span></div>
+        <i class="bi bi-chevron-right nav-card-arrow"></i>
+      </a>
+      <a [routerLink]="BASE + '/categories'" class="nav-card">
+        <i class="bi bi-tags-fill nav-card-icon"></i>
+        <div><span class="nav-card-title">Categories</span><span class="nav-card-sub">Manage product categories</span></div>
+        <i class="bi bi-chevron-right nav-card-arrow"></i>
+      </a>
+    </div>
+
+  }
 </div>

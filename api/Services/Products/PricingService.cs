@@ -53,7 +53,7 @@ public class PricingService : IPricingService
     private static ProductPricingDto ComputePricing(string id, ProductDocument doc)
     {
         var sellingPrice = doc.MarketplacePrice ?? 0;
-        var costPrice = doc.CostPrice ?? 0;
+        var costPrice = doc.Pricing?.TotalCost ?? doc.Pricing?.PurchaseCost ?? 0;
         var mrp = doc.MarketplaceMrp;
 
         // Hardcoded defaults (previously read from marketplaceSettings collection)

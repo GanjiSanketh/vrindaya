@@ -1,19 +1,10 @@
 import { Routes } from '@angular/router';
 import { APP_ROUTES } from './core/constants/routes.constants';
-import { MaintenanceGuard } from './guards/maintenance.guard';
 
 export const routes: Routes = [
-  /* ── Maintenance page (outside the public shell, no header/footer) ── */
-  {
-    path: 'maintenance',
-    loadComponent: () =>
-      import('./features/maintenance/maintenance-page.component').then(m => m.MaintenancePageComponent),
-  },
-
   /* ── Main site shell (Header + Footer via LayoutComponent) ── */
   {
     path: '',
-    canActivate: [MaintenanceGuard],
     loadComponent: () =>
       import('./layout/layout.component').then(m => m.LayoutComponent),
     children: [

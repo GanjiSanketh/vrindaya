@@ -20,6 +20,27 @@ public class ProductVariantDocument
     [FirestoreProperty("mrp")]
     public double? Mrp { get; set; }
 
+    [FirestoreProperty("purchaseCost")]
+    public double? PurchaseCost { get; set; }
+
+    [FirestoreProperty("packagingCost")]
+    public double? PackagingCost { get; set; }
+
+    [FirestoreProperty("flipkartCommission")]
+    public double? FlipkartCommission { get; set; }
+
+    [FirestoreProperty("shippingCharges")]
+    public double? ShippingCharges { get; set; }
+
+    [FirestoreProperty("marketingCost")]
+    public double? MarketingCost { get; set; }
+
+    [FirestoreProperty("otherCharges")]
+    public double? OtherCharges { get; set; }
+
+    [FirestoreProperty("desiredProfit")]
+    public double? DesiredProfit { get; set; }
+
     [FirestoreProperty("flipkartUrl")]
     public string? FlipkartUrl { get; set; }
 

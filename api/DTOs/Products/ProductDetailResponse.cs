@@ -39,7 +39,7 @@ public class ProductDetailResponse
     public DateTime UpdatedAt { get; set; }
     public List<ProductImageDto> Images { get; set; } = [];
 
-    public double? CostPrice { get; set; }
+    public PricingResponseDto? Pricing { get; set; }
     public string Brand { get; set; } = string.Empty;
     public string? FlipkartProductUrl { get; set; }
     public string? FlipkartProductId { get; set; }
@@ -74,6 +74,39 @@ public class ProductDetailResponse
     public bool IsOutOfStock { get; set; }
     public bool IsLowStock { get; set; }
 
+    /* ─── Variant denormalized fields (Phase 14) ─── */
+    public int VariantCount { get; set; }
+    public long TotalStock { get; set; }
+    public double? LowestPrice { get; set; }
+    public double? HighestPrice { get; set; }
+
     /* ─── Variants (inline) ─── */
     public List<VariantResponse> Variants { get; set; } = [];
+}
+
+public class PricingResponseDto
+{
+    public double? PurchaseCost { get; set; }
+    public double? PackagingCharges { get; set; }
+    public double? FlipkartCharges { get; set; }
+    public double? OtherCharges { get; set; }
+    public double? DesiredProfit { get; set; }
+    public double? TotalCost { get; set; }
+    public double? SellingPrice { get; set; }
+    public double? ProfitMargin { get; set; }
+    public double? Roi { get; set; }
+}
+
+/// <summary>Lightweight response for GET /products/{id}/images — variant image metadata only, no pricing/stock/description.</summary>
+public class ProductImagesResponse
+{
+    public string ProductId { get; set; } = string.Empty;
+    public List<VariantImageGroup> Variants { get; set; } = [];
+}
+
+public class VariantImageGroup
+{
+    public string VariantId { get; set; } = string.Empty;
+    public string ColourName { get; set; } = string.Empty;
+    public VariantImagesResponse Images { get; set; } = new();
 }

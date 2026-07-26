@@ -13,6 +13,6 @@ export const FLIPKART_CONFIG = {
 } as const;
 
 export const SCROLL_THRESHOLDS = {
-  NAVBAR:       60,   /* px — navbar shadow kicks in */
+  NAVBAR:       80,   /* px — navbar turns solid */
   SCROLL_TOP:   600,  /* px — scroll-to-top button shows */
 } as const;

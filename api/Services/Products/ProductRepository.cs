@@ -128,7 +128,7 @@ public class ProductRepository : IProductRepository
         }
         else if (query.InStockOnly == true)
         {
-            baseQuery = baseQuery.WhereGreaterThan("stock", 0);
+            baseQuery = baseQuery.WhereGreaterThan("totalStock", 0);
         }
 
         return baseQuery;

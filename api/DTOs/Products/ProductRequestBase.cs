@@ -47,7 +47,7 @@ public abstract class ProductRequestBase
     [MaxLength(300)]
     public string? WashCare { get; set; }
 
-    public double? CostPrice { get; set; }
+    public PricingRequestDto? Pricing { get; set; }
 
     public List<string> Tags { get; set; } = [];
 
@@ -89,4 +89,17 @@ public class CreateProductRequest : ProductRequestBase
 
 public class UpdateProductRequest : ProductRequestBase
 {
+}
+
+public class PricingRequestDto
+{
+    public double? PurchaseCost { get; set; }
+    public double? PackagingCharges { get; set; }
+    public double? FlipkartCharges { get; set; }
+    public double? OtherCharges { get; set; }
+    public double? DesiredProfit { get; set; }
+    public double? TotalCost { get; set; }
+    public double? SellingPrice { get; set; }
+    public double? ProfitMargin { get; set; }
+    public double? Roi { get; set; }
 }

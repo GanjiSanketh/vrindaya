@@ -1,28 +1,6 @@
-<!-- Sticky Navbar -->
-<header class="vr-nav" [class.scrolled]="scrolled()">
+<header class="vr-nav" [class.scrolled]="showScrolled()">
   <div class="nav-inner">
 
-    <!-- LEFT: desktop nav links -->
-    <nav class="nav-left d-none d-xl-flex" aria-label="Main navigation">
-
-      <a class="nav-link"
-         routerLink="/"
-         routerLinkActive="nav-link-active"
-         [routerLinkActiveOptions]="{ exact: true }">
-        Home
-      </a>
-
-      @for (cat of categories(); track cat.id) {
-        <a class="nav-link"
-           [routerLink]="['/category', cat.id]"
-           routerLinkActive="nav-link-active">
-          {{ cat.name }}
-        </a>
-      }
-
-    </nav>
-
-    <!-- Mobile: hamburger -->
     <button class="hamburger d-xl-none"
             (click)="toggleMenu()"
             [attr.aria-expanded]="mobileMenuOpen()"
@@ -32,27 +10,53 @@
       <span [class.open]="mobileMenuOpen()"></span>
     </button>
 
-    <!-- CENTER: logo -->
+    <nav class="nav-left d-none d-xl-flex" aria-label="Main navigation">
+      <a class="nav-link"
+         routerLink="/"
+         routerLinkActive="nav-link-active"
+         [routerLinkActiveOptions]="{ exact: true }">
+        Home
+      </a>
+      @for (cat of categories(); track cat.id; let i = $index) {
+        @if (i < 2) {
+          <a class="nav-link"
+             [routerLink]="['/category', cat.id]"
+             routerLinkActive="nav-link-active">
+            {{ cat.name }}
+          </a>
+        }
+      }
+    </nav>
+
     <a class="nav-logo" routerLink="/" aria-label="Vrindaya — go to home">
-      <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="logo-icon" draggable="false" />
-      <span class="logo-brand">VRINDAYA</span>
-      <span class="logo-tagline">WEAR THE GRACE</span>
+      <span class="logo-circle">
+        <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="logo-icon" draggable="false" />
+      </span>
     </a>
 
-    <!-- RIGHT: search + wishlist -->
     <div class="nav-right d-none d-xl-flex">
-      <button class="nav-icon nav-search-btn" (click)="openSearch()" aria-label="Search products">
-        <i class="bi bi-search"></i>
-      </button>
-      <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist">
-        <i class="bi bi-heart"></i>
-        @if (wishlist.count() > 0) {
-          <span class="nav-wish-badge">{{ wishlist.count() > 9 ? '9+' : wishlist.count() }}</span>
+      @for (cat of categories(); track cat.id; let i = $index) {
+        @if (i >= 2) {
+          <a class="nav-link"
+             [routerLink]="['/category', cat.id]"
+             routerLinkActive="nav-link-active">
+            {{ cat.name }}
+          </a>
         }
-      </a>
+      }
+      <div class="nav-icons">
+        <button class="nav-icon nav-search-btn" (click)="openSearch()" aria-label="Search products">
+          <i class="bi bi-search"></i>
+        </button>
+        <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist">
+          <i class="bi bi-heart"></i>
+          @if (wishlist.count() > 0) {
+            <span class="nav-wish-badge">{{ wishlist.count() > 9 ? '9+' : wishlist.count() }}</span>
+          }
+        </a>
+      </div>
     </div>
 
-    <!-- Mobile: search + wishlist in right slot -->
     <div class="nav-mobile-right d-xl-none">
       <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist">
         <i class="bi bi-heart"></i>
@@ -67,7 +71,6 @@
 
   </div>
 
-  <!-- Mobile drawer -->
   @if (mobileMenuOpen()) {
     <nav class="mobile-drawer" aria-label="Mobile menu">
 

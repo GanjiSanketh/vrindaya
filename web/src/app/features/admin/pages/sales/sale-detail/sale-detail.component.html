@@ -1,0 +1,67 @@
+<div class="sd-page">
+  @if (loading()) {
+    <div class="sd-loading"><div class="spinner"></div><span>Loading...</span></div>
+  } @else if (error(); as err) {
+    <div class="sd-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ err }}</div>
+  } @else if (sale(); as s) {
+    <div class="sd-header">
+      <a [routerLink]="'..'" class="sd-back"><i class="bi bi-arrow-left"></i> Back to Sales</a>
+      <div class="sd-actions">
+        <a [routerLink]="['..', s.id, 'edit']" class="sd-btn-edit"><i class="bi bi-pencil"></i> Edit</a>
+      </div>
+    </div>
+
+    <div class="sd-card">
+      <div class="sd-card-header">
+        <h2 class="sd-title">Sale Details</h2>
+        <span class="sd-date">{{ s.soldAt | date:'medium' }}</span>
+      </div>
+      <div class="sd-body">
+        <div class="sd-product-row">
+          @if (s.productImage) { <img [src]="s.productImage" alt="" class="sd-thumb" /> }
+          <div>
+            <h3 class="sd-product-name">{{ s.productName }}</h3>
+            <span class="sd-product-meta">{{ s.colourName }} — {{ s.size }} × {{ s.quantity }}</span>
+          </div>
+        </div>
+        <div class="sd-info-grid">
+          <div class="sd-info-item"><span class="sd-info-label">Channel</span><span class="sd-info-value">{{ s.saleChannel }}</span></div>
+          <div class="sd-info-item"><span class="sd-info-label">Category</span><span class="sd-info-value">{{ s.category }}</span></div>
+          <div class="sd-info-item"><span class="sd-info-label">Payment</span><span class="sd-info-value">{{ s.paymentMethod }}</span></div>
+          <div class="sd-info-item"><span class="sd-info-label">Invoice</span><span class="sd-info-value">{{ s.invoiceNumber || '-' }}</span></div>
+          <div class="sd-info-item"><span class="sd-info-label">Customer</span><span class="sd-info-value">{{ s.customerName || '-' }}</span></div>
+          <div class="sd-info-item"><span class="sd-info-label">Phone</span><span class="sd-info-value">{{ s.customerPhone || '-' }}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sd-card">
+      <div class="sd-card-header"><h2 class="sd-title">Financials</h2></div>
+      <div class="sd-body">
+        <div class="sd-fin-grid">
+          <div class="sd-fin-item"><span class="sd-fin-label">Selling Price (per unit)</span><span class="sd-fin-value">{{ s.sellingPrice | currency:'INR' }}</span></div>
+          <div class="sd-fin-item"><span class="sd-fin-label">Quantity</span><span class="sd-fin-value">{{ s.quantity }}</span></div>
+          <div class="sd-fin-item"><span class="sd-fin-label">Purchase Cost</span><span class="sd-fin-value">{{ s.purchaseCost | currency:'INR' }}</span></div>
+          <div class="sd-fin-item"><span class="sd-fin-label">Packaging Cost</span><span class="sd-fin-value">{{ s.packagingCost | currency:'INR' }}</span></div>
+          <div class="sd-fin-item"><span class="sd-fin-label">Flipkart Commission</span><span class="sd-fin-value">{{ s.flipkartCommission | currency:'INR' }}</span></div>
+          <div class="sd-fin-item"><span class="sd-fin-label">Shipping Charges</span><span class="sd-fin-value">{{ s.shippingCharges | currency:'INR' }}</span></div>
+          <div class="sd-fin-item"><span class="sd-fin-label">Marketing Cost</span><span class="sd-fin-value">{{ s.marketingCost | currency:'INR' }}</span></div>
+          <div class="sd-fin-item"><span class="sd-fin-label">Other Charges</span><span class="sd-fin-value">{{ s.otherCharges | currency:'INR' }}</span></div>
+          <div class="sd-fin-item sd-fin-item--total"><span class="sd-fin-label">Total Cost</span><span class="sd-fin-value">{{ s.totalCost | currency:'INR' }}</span></div>
+          <div class="sd-fin-item sd-fin-item--rev"><span class="sd-fin-label">Amount Received</span><span class="sd-fin-value">{{ s.amountReceived | currency:'INR' }}</span></div>
+          <div class="sd-fin-item sd-fin-item--profit" [class.sd-fin-item--loss]="s.profit < 0">
+            <span class="sd-fin-label">Profit</span>
+            <span class="sd-fin-value">{{ s.profit | currency:'INR' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (s.notes) {
+      <div class="sd-card">
+        <div class="sd-card-header"><h2 class="sd-title">Notes</h2></div>
+        <div class="sd-body"><p class="sd-notes">{{ s.notes }}</p></div>
+      </div>
+    }
+  }
+</div>

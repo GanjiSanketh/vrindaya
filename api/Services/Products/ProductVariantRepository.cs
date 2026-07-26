@@ -111,6 +111,22 @@ public class ProductVariantRepository : IProductVariantRepository
         return snapshot.Documents.Select(d => d.Id).ToList();
     }
 
+    public async Task<ProductVariantDocument?> GetFirstActiveVariantAsync(string productId, CancellationToken ct = default)
+    {
+        var snapshot = await VariantCol(productId)
+            .OrderBy("displayOrder")
+            .Limit(1)
+            .GetSnapshotAsync(ct);
+
+        var doc = snapshot.Documents.FirstOrDefault();
+        if (doc?.Exists != true) return null;
+
+        var variant = DeserializeVariantDocument(doc);
+        if (variant == null)
+            _logger.LogWarning("Failed to deserialize first variant for product {ProductId}", productId);
+        return variant?.IsActive == true ? variant : null;
+    }
+
     public async Task<bool> HasVariantsAsync(string productId, CancellationToken ct = default)
     {
         var snapshot = await VariantCol(productId).Limit(1).GetSnapshotAsync(ct);
@@ -230,6 +246,13 @@ public class ProductVariantRepository : IProductVariantRepository
                 Sku = dict.GetValueOrDefault("sku") as string ?? string.Empty,
                 SellingPrice = ToDouble(dict, "sellingPrice"),
                 Mrp = ToDouble(dict, "mrp"),
+                PurchaseCost = ToDouble(dict, "purchaseCost"),
+                PackagingCost = ToDouble(dict, "packagingCost"),
+                FlipkartCommission = ToDouble(dict, "flipkartCommission"),
+                ShippingCharges = ToDouble(dict, "shippingCharges"),
+                MarketingCost = ToDouble(dict, "marketingCost"),
+                OtherCharges = ToDouble(dict, "otherCharges"),
+                DesiredProfit = ToDouble(dict, "desiredProfit"),
                 FlipkartUrl = dict.GetValueOrDefault("flipkartUrl") as string,
                 DisplayOrder = ToInt(dict, "displayOrder"),
                 IsActive = ToBool(dict, "isActive", true),

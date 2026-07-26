@@ -143,7 +143,7 @@
                      [class.bi-chevron-down]="sortField() === 'stock' && sortDescending()"
                      [class.bi-chevron-expand]="sortField() !== 'stock'"></i>
               </th>
-              <th>Price Range</th>
+              <th class="pl-th-price">Selling Price</th>
               <th class="d-none d-lg-table-cell">Category</th>
               <th class="d-none d-xl-table-cell">Status</th>
               <th class="pl-th-actions">Actions</th>
@@ -157,14 +157,14 @@
                 </td>
                 <td>
                   <div class="pl-thumb-wrap">
-                    @if (p.image) {
-                      <img [src]="p.image" [alt]="p.name" class="pl-thumb" loading="lazy" draggable="false"
-                           (click)="openPreview(p.id)" />
-                    } @else {
-                      <div class="pl-thumb-placeholder" (click)="openPreview(p.id)">
-                        <i class="bi bi-image"></i>
-                      </div>
-                    }
+              @if (p.thumbnailUrl) {
+                <img [src]="p.thumbnailUrl" [alt]="p.name" class="pl-thumb" loading="lazy" draggable="false"
+                     (click)="openPreview(p.id)" />
+              } @else {
+                <div class="pl-thumb-placeholder" (click)="openPreview(p.id)">
+                  <i class="bi bi-image"></i>
+                </div>
+              }
                   </div>
                 </td>
                 <td>
@@ -184,7 +184,9 @@
                   }
                 </td>
                 <td>
-                  @if (p.lowestPrice != null && p.highestPrice != null) {
+                  @if (p.pricing?.sellingPrice) {
+                    <span class="pl-price">₹{{ p.pricing!.sellingPrice }}</span>
+                  } @else if (p.lowestPrice != null && p.highestPrice != null) {
                     @if (p.lowestPrice === p.highestPrice) {
                       <span class="pl-price">₹{{ p.lowestPrice }}</span>
                     } @else {
@@ -264,7 +266,7 @@
 <app-product-preview-drawer [productId]="previewId()" (closed)="closePreview()" />
 
 <!-- Delete confirmation dialog -->
-@if (canDelete() && deleteId() !== null) {
+@if (deleteId() !== null) {
   <div class="modal-backdrop" (click)="deleting() ? null : cancelDelete()">
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-icon modal-icon--danger"><i class="bi bi-exclamation-triangle-fill"></i></div>

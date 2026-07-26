@@ -1,0 +1,157 @@
+<div class="rs-page">
+  <div class="rs-header">
+    <a [routerLink]="'..'" class="rs-back"><i class="bi bi-arrow-left"></i> Back</a>
+    <h1 class="rs-title">{{ editId() ? 'Edit Sale' : 'Record Sale' }}</h1>
+  </div>
+
+  @if (error(); as err) {
+    <div class="rs-alert rs-alert--err"><i class="bi bi-exclamation-triangle-fill"></i> {{ err }}</div>
+  }
+  @if (success(); as msg) {
+    <div class="rs-alert rs-alert--ok"><i class="bi bi-check-circle-fill"></i> {{ msg }}</div>
+  }
+
+  <div class="rs-form">
+    <!-- Product Selection -->
+    <div class="rs-field">
+      <label class="rs-label">Product</label>
+      <select class="rs-select" [value]="selectedProductId()" (change)="onProductChange($any($event.target).value)">
+        <option value="">-- Select Product --</option>
+        @for (p of products(); track p.id) {
+          <option [value]="p.id">{{ p.name }} ({{ p.category }})</option>
+        }
+      </select>
+    </div>
+
+    @if (variants().length > 0) {
+      <div class="rs-field">
+        <label class="rs-label">Colour Variant</label>
+        <select class="rs-select" [value]="selectedVariantId()" (change)="onVariantChange($any($event.target).value)">
+          <option value="">-- Select Colour --</option>
+          @for (v of variants(); track v.id) {
+            <option [value]="v.id">{{ v.colourName }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    @if (sizes().length > 0) {
+      <div class="rs-field">
+        <label class="rs-label">Size</label>
+        <select class="rs-select" [value]="selectedSize()" (change)="onSizeChange($any($event.target).value)">
+          <option value="">-- Select Size --</option>
+          @for (s of sizes(); track s.size) {
+            <option [value]="s.size" [disabled]="s.stock === 0">{{ s.size }} (Stock: {{ s.stock }})</option>
+          }
+        </select>
+        @if (selectedSize()) {
+          <span class="rs-stock-info">Current Stock: <strong>{{ currentStock }}</strong></span>
+        }
+      </div>
+    }
+
+    @if (selectedSize()) {
+      <div class="rs-field">
+        <label class="rs-label">Quantity</label>
+        <input type="number" class="rs-input" [value]="quantity()" (input)="clampQuantity($any($event.target).value)" min="1" [max]="currentStock" />
+        <span class="rs-hint">Max available: {{ currentStock }}</span>
+      </div>
+
+      <div class="rs-field">
+        <label class="rs-label">Sales Channel</label>
+        <select class="rs-select" [value]="saleChannel()" (change)="saleChannel.set($any($event.target).value)">
+          @for (ch of channels; track ch) { <option [value]="ch">{{ ch }}</option> }
+        </select>
+      </div>
+
+      <div class="rs-row-2">
+        <div class="rs-field">
+          <label class="rs-label">Selling Price (per unit)</label>
+          <input type="number" class="rs-input" [value]="sellingPrice()" (input)="sellingPrice.set(parseNum($any($event.target).value))" min="0" step="0.01" />
+        </div>
+        <div class="rs-field">
+          <label class="rs-label">Flipkart Commission</label>
+          <input type="number" class="rs-input" [value]="flipkartCommission()" (input)="flipkartCommission.set(parseNum($any($event.target).value))" min="0" step="0.01" />
+        </div>
+      </div>
+
+      <div class="rs-row-3">
+        <div class="rs-field">
+          <label class="rs-label">Shipping Charges</label>
+          <input type="number" class="rs-input" [value]="shippingCharges()" (input)="shippingCharges.set(parseNum($any($event.target).value))" min="0" step="0.01" />
+        </div>
+        <div class="rs-field">
+          <label class="rs-label">Marketing Cost</label>
+          <input type="number" class="rs-input" [value]="marketingCost()" (input)="marketingCost.set(parseNum($any($event.target).value))" min="0" step="0.01" />
+        </div>
+        <div class="rs-field">
+          <label class="rs-label">Other Charges</label>
+          <input type="number" class="rs-input" [value]="otherCharges()" (input)="otherCharges.set(parseNum($any($event.target).value))" min="0" step="0.01" />
+        </div>
+      </div>
+
+      <!-- Calculated Fields -->
+      <div class="rs-calc-grid">
+        <div class="rs-calc-item">
+          <span class="rs-calc-label">Purchase Cost (per unit)</span>
+          <span class="rs-calc-value">{{ purchaseCost | currency:'INR' }}</span>
+        </div>
+        <div class="rs-calc-item">
+          <span class="rs-calc-label">Packaging Cost (per unit)</span>
+          <span class="rs-calc-value">{{ packagingCost | currency:'INR' }}</span>
+        </div>
+        <div class="rs-calc-item">
+          <span class="rs-calc-label">Total Cost ({{ quantity() }} units)</span>
+          <span class="rs-calc-value">{{ totalCost | currency:'INR' }}</span>
+        </div>
+        <div class="rs-calc-item">
+          <span class="rs-calc-label">Amount Received</span>
+          <span class="rs-calc-value rs-calc-value--rev">{{ amountReceived | currency:'INR' }}</span>
+        </div>
+        <div class="rs-calc-item rs-calc-item--profit">
+          <span class="rs-calc-label">Profit</span>
+          <span class="rs-calc-value" [class.rs-calc-value--neg]="profit < 0">{{ profit | currency:'INR' }}</span>
+        </div>
+      </div>
+
+      <div class="rs-field">
+        <label class="rs-label">Payment Method</label>
+        <select class="rs-select" [value]="paymentMethod()" (change)="paymentMethod.set($any($event.target).value)">
+          @for (pm of paymentMethods; track pm) { <option [value]="pm">{{ pm }}</option> }
+        </select>
+      </div>
+
+      <div class="rs-section-title">Customer Details</div>
+      <div class="rs-row-2">
+        <div class="rs-field">
+          <label class="rs-label">Customer Name</label>
+          <input type="text" class="rs-input" [value]="customerName()" (input)="customerName.set($any($event.target).value)" />
+        </div>
+        <div class="rs-field">
+          <label class="rs-label">Customer Phone</label>
+          <input type="text" class="rs-input" [value]="customerPhone()" (input)="customerPhone.set($any($event.target).value)" />
+        </div>
+      </div>
+
+      <div class="rs-row-2">
+        <div class="rs-field">
+          <label class="rs-label">Invoice Number</label>
+          <input type="text" class="rs-input" [value]="invoiceNumber()" (input)="invoiceNumber.set($any($event.target).value)" />
+        </div>
+        <div class="rs-field">
+          <label class="rs-label">Notes</label>
+          <input type="text" class="rs-input" [value]="notes()" (input)="notes.set($any($event.target).value)" />
+        </div>
+      </div>
+
+      <div class="rs-actions">
+        <a [routerLink]="'..'" class="rs-btn-cancel">Cancel</a>
+        <button class="rs-btn-save" (click)="save()" [disabled]="!canSave() || saving()">
+          @if (saving()) { <div class="spinner-sm"></div> Saving... }
+          @else { <i class="bi bi-check-lg"></i> {{ editId() ? 'Update Sale' : 'Record Sale' }}
+        }
+        </button>
+      </div>
+    }
+  </div>
+</div>

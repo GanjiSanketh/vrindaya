@@ -1,0 +1,77 @@
+<div class="sl-page">
+  <div class="sl-header">
+    <div>
+      <h1 class="sl-title">Sales Orders</h1>
+      @if (sales().length > 0) {
+        <p class="sl-count">{{ sales().length }} total orders</p>
+      }
+    </div>
+    <div class="sl-actions">
+      <button class="sl-btn-outline" (click)="load()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+      <a routerLink="../record" class="sl-btn-primary"><i class="bi bi-plus-lg"></i> Record Sale</a>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="sl-loading"><div class="spinner"></div><span>Loading sales...</span></div>
+  } @else if (error(); as err) {
+    <div class="sl-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ err }} <button class="sl-btn-retry" (click)="load()">Retry</button></div>
+  } @else if (sales().length === 0) {
+    <div class="sl-empty">
+      <i class="bi bi-cart-check sl-empty-icon"></i>
+      <h3>No sales recorded yet</h3>
+      <p>Record your first sale to start tracking revenue and profit.</p>
+      <a routerLink="../record" class="sl-btn-primary"><i class="bi bi-plus-lg"></i> Record Sale</a>
+    </div>
+  } @else {
+    <div class="sl-table-wrap">
+      <table class="sl-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Product</th>
+            <th>Colour</th>
+            <th>Size</th>
+            <th>Qty</th>
+            <th>Channel</th>
+            <th>Price</th>
+            <th>Total Cost</th>
+            <th>Received</th>
+            <th>Profit</th>
+            <th>Payment</th>
+            <th>Customer</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of sales(); track s.id) {
+            <tr>
+              <td class="td-date">{{ s.soldAt | date:'dd MMM yy' }}</td>
+              <td>
+                <div class="tbl-product">
+                  @if (s.productImage) { <img [src]="s.productImage" alt="" class="tbl-thumb" loading="lazy" /> }
+                  <span class="tbl-name">{{ s.productName }}</span>
+                </div>
+              </td>
+              <td>{{ s.colourName }}</td>
+              <td>{{ s.size }}</td>
+              <td>{{ s.quantity }}</td>
+              <td><span class="sl-badge" [class]="channelBadge(s.saleChannel)">{{ s.saleChannel }}</span></td>
+              <td>{{ s.sellingPrice | currency:'INR' }}</td>
+              <td>{{ s.totalCost | currency:'INR' }}</td>
+              <td class="td-profit">{{ s.amountReceived | currency:'INR' }}</td>
+              <td><span class="sl-profit" [class.sl-profit--neg]="s.profit < 0">{{ s.profit | currency:'INR' }}</span></td>
+              <td><span class="sl-pay-badge">{{ s.paymentMethod }}</span></td>
+              <td>{{ s.customerName || '-' }}</td>
+              <td class="td-actions">
+                <a [routerLink]="['../', s.id]" class="sl-action-btn" title="View"><i class="bi bi-eye"></i></a>
+                <a [routerLink]="['../', s.id, 'edit']" class="sl-action-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button class="sl-action-btn sl-action-btn--del" (click)="deleteSale(s.id)" title="Delete"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

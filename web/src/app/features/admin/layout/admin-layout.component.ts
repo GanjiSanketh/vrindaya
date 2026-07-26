@@ -35,6 +35,13 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Flipkart Ops', path: 'flipkart-ops', icon: 'bi-cart' },
     ],
   },
+  {
+    key: 'sales', label: 'Sales', icon: 'bi-graph-up-arrow',
+    items: [
+      { label: 'Sales Orders', path: 'sales/orders', icon: 'bi-cart-check' },
+      { label: 'Record Sale', path: 'sales/record', icon: 'bi-plus-circle' },
+    ],
+  },
 ];
 
 const EXPANDED_STORAGE_KEY = 'vrindaya_admin_nav_expanded';

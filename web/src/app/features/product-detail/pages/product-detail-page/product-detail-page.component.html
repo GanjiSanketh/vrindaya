@@ -28,6 +28,21 @@
     </div>
   } @else if (product(); as p) {
 
+    <div class="pd-breadcrumb">
+      <button type="button" class="pd-back" (click)="goBack()" aria-label="Back to collection">
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
+      <nav class="pd-crumbs" aria-label="Breadcrumb">
+        <a routerLink="/">Home</a>
+        @if (categoryUrl()) {
+          <i class="bi bi-chevron-right"></i>
+          <a [routerLink]="categoryUrl()">{{ p.category }}</a>
+        }
+        <i class="bi bi-chevron-right"></i>
+        <span>{{ p.name }}</span>
+      </nav>
+    </div>
+
     <div class="container-vr pd-wrap">
 
       <div class="pd-main">
@@ -58,6 +73,7 @@
         </div>
 
         <!-- Details -->
+        <div class="pd-details-wrap">
         <div class="pd-details">
 
           <h1 class="pd-name">{{ p.name }}</h1>
@@ -116,13 +132,14 @@
           <div class="pd-actions">
             @if (flipkartUrl) {
               <button type="button" class="pd-cta" (click)="shopOnFlipkart()">
-                Buy on Flipkart&nbsp;<i class="bi bi-arrow-right"></i>
+                <i class="bi bi-cart3"></i> Buy on Flipkart <i class="bi bi-arrow-right"></i>
               </button>
             } @else {
               <button type="button" class="pd-cta pd-cta--soon" disabled>Coming Soon</button>
             }
           </div>
 
+        </div>
         </div>
       </div>
 

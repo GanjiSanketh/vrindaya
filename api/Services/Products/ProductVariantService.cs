@@ -105,6 +105,13 @@ public class ProductVariantService : IProductVariantService
             Sku = request.Sku,
             SellingPrice = request.SellingPrice,
             Mrp = request.Mrp,
+            PurchaseCost = request.PurchaseCost,
+            PackagingCost = request.PackagingCost,
+            FlipkartCommission = request.FlipkartCommission,
+            ShippingCharges = request.ShippingCharges,
+            MarketingCost = request.MarketingCost,
+            OtherCharges = request.OtherCharges,
+            DesiredProfit = request.DesiredProfit,
             FlipkartUrl = request.FlipkartUrl,
             DisplayOrder = request.DisplayOrder,
             IsActive = request.IsActive,
@@ -119,6 +126,7 @@ public class ProductVariantService : IProductVariantService
         };
 
         var id = await _repo.CreateVariantAsync(productId, doc, ct);
+        await SyncFlipkartUrlToProductAsync(productId, ct);
         return MapToResponse(doc, id);
     }
 
@@ -136,6 +144,13 @@ public class ProductVariantService : IProductVariantService
         existing.Sku = request.Sku;
         existing.SellingPrice = request.SellingPrice;
         existing.Mrp = request.Mrp;
+        existing.PurchaseCost = request.PurchaseCost;
+        existing.PackagingCost = request.PackagingCost;
+        existing.FlipkartCommission = request.FlipkartCommission;
+        existing.ShippingCharges = request.ShippingCharges;
+        existing.MarketingCost = request.MarketingCost;
+        existing.OtherCharges = request.OtherCharges;
+        existing.DesiredProfit = request.DesiredProfit;
         existing.FlipkartUrl = request.FlipkartUrl;
         existing.DisplayOrder = request.DisplayOrder;
         existing.IsActive = request.IsActive;
@@ -163,6 +178,7 @@ public class ProductVariantService : IProductVariantService
         }
 
         await _repo.UpdateVariantAsync(variantId, existing, ct);
+        await SyncFlipkartUrlToProductAsync(ExtractProductId(variantId), ct);
         return MapToResponse(existing, variantId);
     }
 
@@ -189,6 +205,7 @@ public class ProductVariantService : IProductVariantService
         }
 
         await _repo.DeleteVariantAsync(variantId, ct);
+        await SyncFlipkartUrlToProductAsync(ExtractProductId(variantId), ct);
     }
 
     public async Task<string> GenerateIdAsync()
@@ -246,6 +263,28 @@ public class ProductVariantService : IProductVariantService
         return ids;
     }
 
+    /// <summary>Promotes the first non-empty variant flipkartUrl to the product-level flipkartProductUrl field so list views (ProductCard etc.) see it.</summary>
+    private async Task SyncFlipkartUrlToProductAsync(string productId, CancellationToken ct)
+    {
+        var variants = await _repo.GetVariantsAsync(productId, ct);
+        var url = variants
+            .Select(v => v.Data.FlipkartUrl)
+            .FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
+
+        await _productRepo.UpdateAsync(productId, new Dictionary<string, object?>
+        {
+            ["flipkartProductUrl"] = url
+        }, ct);
+    }
+
+    /// <summary>Extracts the product id from a Firestore document path like "products/{productId}/variants/{variantId}".</summary>
+    private static string ExtractProductId(string variantPath)
+    {
+        var parts = variantPath.Split('/');
+        return parts.Length >= 4 ? parts[1]
+            : throw new ArgumentException($"Invalid variant path: {variantPath}");
+    }
+
     private static VariantResponse MapToResponse(ProductVariantDocument doc, string? id = null)
     {
         return new VariantResponse
@@ -256,6 +295,13 @@ public class ProductVariantService : IProductVariantService
             Sku = doc.Sku,
             SellingPrice = doc.SellingPrice,
             Mrp = doc.Mrp,
+            PurchaseCost = doc.PurchaseCost,
+            PackagingCost = doc.PackagingCost,
+            FlipkartCommission = doc.FlipkartCommission,
+            ShippingCharges = doc.ShippingCharges,
+            MarketingCost = doc.MarketingCost,
+            OtherCharges = doc.OtherCharges,
+            DesiredProfit = doc.DesiredProfit,
             FlipkartUrl = doc.FlipkartUrl,
             DisplayOrder = doc.DisplayOrder,
             IsActive = doc.IsActive,
