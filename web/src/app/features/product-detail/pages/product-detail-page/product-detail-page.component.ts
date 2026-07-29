@@ -1,9 +1,8 @@
 import { Location } from '@angular/common';
-import {
-  ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subscription, firstValueFrom } from 'rxjs';
+import { switchMap, distinctUntilChanged, catchError, throwError, of, firstValueFrom } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ProductQueryService, ProductNotFoundError } from '../../../../core/services/product-query.service';
 import { VariantApiService } from '../../../../core/services/variant-api.service';
@@ -13,18 +12,19 @@ import { Product } from '../../../../core/models/product.model';
 import type { ProductVariant } from '../../../../core/models/product-variant.model';
 import { ProductCard } from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent } from '../../../../shared/components/skeleton/skeleton-grid.component';
+import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
 const RELATED_LIMIT = 8;
 
 @Component({
   selector: 'app-product-detail-page',
   standalone: true,
-  imports: [RouterLink, ProductCard, SkeletonGridComponent],
+  imports: [RouterLink, ProductCard, SkeletonGridComponent, CloudinaryUrlPipe, CloudinarySrcsetPipe],
   templateUrl: './product-detail-page.component.html',
   styleUrl: './product-detail-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductDetailPageComponent implements OnInit, OnDestroy {
+export class ProductDetailPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly query = inject(ProductQueryService);
@@ -32,7 +32,6 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
   private readonly lightbox = inject(LightboxService);
   private readonly seo = inject(SeoService);
   private readonly location = inject(Location);
-  private paramSub!: Subscription;
 
   readonly product      = signal<Product | null>(null);
   readonly loading      = signal(true);
@@ -59,54 +58,57 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
     const v = this.selectedVariant();
     if (v) {
       const imgs: string[] = [];
-      if (v.images.primary) imgs.push(v.images.primary.url);
-      if (v.images.front)   imgs.push(v.images.front.url);
-      if (v.images.back)    imgs.push(v.images.back.url);
-      if (v.images.left)    imgs.push(v.images.left.url);
-      if (v.images.right)   imgs.push(v.images.right.url);
-      imgs.push(...v.images.gallery.map(g => g.url));
+      if (v.images.primary?.url) imgs.push(v.images.primary.url);
+      if (v.images.front?.url)   imgs.push(v.images.front.url);
+      if (v.images.back?.url)    imgs.push(v.images.back.url);
+      if (v.images.left?.url)    imgs.push(v.images.left.url);
+      if (v.images.right?.url)   imgs.push(v.images.right.url);
+      imgs.push(...v.images.gallery.map(g => g.url).filter(Boolean));
       if (imgs.length) return imgs;
     }
     const p = this.product();
-    return p ? [p.image, ...(p.gallery ?? [])] : [];
+    if (!p) return [];
+    const fallback = p.image || 'assets/images/product-placeholder.svg';
+    return [fallback, ...(p.gallery ?? [])].filter(Boolean);
   });
 
-  readonly selectedImage = computed(() => this.allImages()[this.selectedIndex()] ?? this.allImages()[0] ?? '');
+  readonly selectedImage = computed(() =>
+    this.allImages()[this.selectedIndex()] ?? this.allImages()[0] ?? 'assets/images/product-placeholder.svg',
+  );
 
-  ngOnInit(): void {
-    this.paramSub = this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) void this.load(id);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.paramSub.unsubscribe();
-  }
-
-  private async load(id: string): Promise<void> {
-    this.loading.set(true);
-    this.notFound.set(false);
-    this.error.set(null);
-    this.selectedIndex.set(0);
-    this.isZoomed.set(false);
-    this.relatedProducts.set([]);
-
-    try {
-      const product = await this.query.getById(id);
+  constructor() {
+    this.route.paramMap.pipe(
+      distinctUntilChanged((a, b) => a.get('id') === b.get('id')),
+      switchMap(params => {
+        const id = params.get('id');
+        if (!id) return of(null);
+        this.loading.set(true);
+        this.notFound.set(false);
+        this.error.set(null);
+        this.selectedIndex.set(0);
+        this.isZoomed.set(false);
+        this.relatedProducts.set([]);
+        return this.query.getById$(id).pipe(
+          catchError((err: unknown) => {
+            this.loading.set(false);
+            if (err instanceof ProductNotFoundError) {
+              this.notFound.set(true);
+            } else {
+              this.error.set(err instanceof Error ? err.message : 'Could not load this product.');
+            }
+            return of(null);
+          }),
+        );
+      }),
+      takeUntilDestroyed(),
+    ).subscribe(product => {
+      if (!product) return;
       this.product.set(product);
       this.loading.set(false);
       this.applySeo(product);
       void this.loadRelated(product);
-      void this.loadVariants(id);
-    } catch (err) {
-      this.loading.set(false);
-      if (err instanceof ProductNotFoundError) {
-        this.notFound.set(true);
-      } else {
-        this.error.set(err instanceof Error ? err.message : 'Could not load this product.');
-      }
-    }
+      void this.loadVariants(product.id);
+    });
   }
 
   private async loadVariants(productId: string): Promise<void> {
@@ -169,6 +171,31 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
     if (id) void this.load(id);
   }
 
+  private async load(id: string): Promise<void> {
+    this.loading.set(true);
+    this.notFound.set(false);
+    this.error.set(null);
+    this.selectedIndex.set(0);
+    this.isZoomed.set(false);
+    this.relatedProducts.set([]);
+
+    try {
+      const product = await this.query.getById(id);
+      this.product.set(product);
+      this.loading.set(false);
+      this.applySeo(product);
+      void this.loadRelated(product);
+      void this.loadVariants(id);
+    } catch (err) {
+      this.loading.set(false);
+      if (err instanceof ProductNotFoundError) {
+        this.notFound.set(true);
+      } else {
+        this.error.set(err instanceof Error ? err.message : 'Could not load this product.');
+      }
+    }
+  }
+
   selectImage(i: number): void {
     this.selectedIndex.set(i);
   }
@@ -204,9 +231,9 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
       url: `/product/${product.id}`,
       image,
       type: 'product',
-      jsonLd: {
-        '@context': 'https://schema.org',
-        '@type': 'Product',
+      jsonLd: [
+        {
+          '@type': 'Product',
         'name': product.name,
         'image': image ? [image] : [],
         'description': product.description || product.shortDescription || '',
@@ -220,6 +247,12 @@ export class ProductDetailPageComponent implements OnInit, OnDestroy {
           'availability': product.isOutOfStock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
         },
       },
+        this.seo.breadcrumb([
+          { name: 'Home', url: '/' },
+          { name: product.category, url: `/category/${product.category}` },
+          { name: product.name, url: `/product/${product.id}` },
+        ]),
+      ],
     });
   }
 }
