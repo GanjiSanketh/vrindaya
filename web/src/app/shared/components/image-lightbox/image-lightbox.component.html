@@ -21,8 +21,9 @@
         </button>
       }
 
-      <img [src]="svc.current()" alt="Product image"
-           class="lb-img" draggable="false" loading="eager" />
+      <img [src]="svc.current() | cloudinaryUrl:1400" alt="Product image"
+           class="lb-img" draggable="false" loading="eager" decoding="async"
+           width="800" height="1067" />
 
       @if (svc.hasMultiple()) {
         <button class="lb-nav lb-nav--next" (click)="svc.next()" aria-label="Next image">
@@ -38,7 +39,7 @@
         @for (img of svc.images(); track img; let i = $index) {
           <button class="lb-thumb" [class.active]="svc.index() === i"
                   (click)="svc.goTo(i)" [attr.aria-label]="'View image ' + (i + 1)">
-            <img [src]="img" alt="" loading="lazy" draggable="false" />
+            <img [src]="img | cloudinaryUrl:120" alt="" loading="lazy" decoding="async" width="60" height="80" draggable="false" />
           </button>
         }
       </div>

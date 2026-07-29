@@ -3,7 +3,7 @@ import { isPlatformBrowser }                                 from '@angular/comm
 import { RouterLink }                                        from '@angular/router';
 import { ProductQueryService }                               from '../../../../core/services/product-query.service';
 import { Product }                                           from '../../../../core/models/product.model';
-import { ProductCard }                                       from '../../../../shared/components/product-card/product-card';
+import { ProductCardComponent }                                       from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent }                             from '../../../../shared/components/skeleton/skeleton-grid.component';
 import { SeoService }                                        from '../../../../core/services/seo.service';
 
@@ -12,7 +12,7 @@ const PAGE_SIZE = 24;
 @Component({
   selector: 'app-trending-page',
   standalone: true,
-  imports: [RouterLink, ProductCard, SkeletonGridComponent],
+  imports: [RouterLink, ProductCardComponent, SkeletonGridComponent],
   templateUrl: './trending-page.component.html',
   styleUrl: './trending-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +34,13 @@ export class TrendingPageComponent implements OnInit {
       description: 'Discover the most popular Indian ethnic wear at Vrindaya. Trending kurtas and sets loved by women across India. Free delivery.',
       keywords:    ['trending ethnic wear', 'popular kurtas', 'bestselling kurta', 'most loved ethnic wear'],
       url:         '/trending',
+      jsonLd: {
+        '@type': 'CollectionPage',
+        'name': 'Trending Ethnic Wear — Vrindaya',
+        'description': 'Discover the most popular Indian ethnic wear at Vrindaya.',
+        'url': 'https://vrindaya.in/trending',
+        'isPartOf': { '@type': 'WebSite', 'url': 'https://vrindaya.in' },
+      },
     });
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });

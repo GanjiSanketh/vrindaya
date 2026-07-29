@@ -1,7 +1,5 @@
 import { Component, ElementRef, viewChild, input, effect, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
-import { Chart, registerables } from 'chart.js';
-
-Chart.register(...registerables);
+import type { Chart } from 'chart.js';
 
 export type ChartKind = 'line' | 'bar' | 'horizontalBar' | 'doughnut';
 
@@ -50,29 +48,32 @@ export class ChartComponent implements OnDestroy {
       const kind = this.type();
       const isHorizontal = kind === 'horizontalBar';
       const isDoughnut = kind === 'doughnut';
-      const chartJsType: 'line' | 'bar' | 'doughnut' = isHorizontal ? 'bar' : (kind as 'line' | 'bar' | 'doughnut');
 
-      this.chart = new Chart(canvasEl, {
-        type: chartJsType,
-        data: {
-          labels,
-          datasets: [{
-            label: this.datasetLabel(),
-            data,
-            backgroundColor: isDoughnut ? data.map((_, i) => PALETTE[i % PALETTE.length]) : this.color(),
-            borderColor: this.color(),
-            borderWidth: kind === 'line' ? 2 : 1,
-            tension: 0.35,
-            fill: kind === 'line',
-          }],
-        },
-        options: {
-          indexAxis: isHorizontal ? 'y' : 'x',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: isDoughnut } },
-          scales: isDoughnut ? {} : { y: { beginAtZero: true } },
-        },
+      import('chart.js').then(({ Chart, registerables }) => {
+        Chart.register(...registerables);
+
+        this.chart = new Chart(canvasEl, {
+          type: isHorizontal ? 'bar' : (kind as 'line' | 'bar' | 'doughnut'),
+          data: {
+            labels,
+            datasets: [{
+              label: this.datasetLabel(),
+              data,
+              backgroundColor: isDoughnut ? data.map((_, i) => PALETTE[i % PALETTE.length]) : this.color(),
+              borderColor: this.color(),
+              borderWidth: kind === 'line' ? 2 : 1,
+              tension: 0.35,
+              fill: kind === 'line',
+            }],
+          },
+          options: {
+            indexAxis: isHorizontal ? 'y' : 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: isDoughnut } },
+            scales: isDoughnut ? {} : { y: { beginAtZero: true } },
+          },
+        });
       });
     });
   }

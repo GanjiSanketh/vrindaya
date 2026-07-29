@@ -1,7 +1,7 @@
-import { Component, inject, afterNextRender, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, afterNextRender, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd }            from '@angular/router';
 import { filter }                                         from 'rxjs/operators';
-import { Subscription }                                   from 'rxjs';
+import { takeUntilDestroyed }                             from '@angular/core/rxjs-interop';
 import { HeaderComponent }                               from './header/header.component';
 import { FooterComponent }                               from './footer/footer.component';
 import { ProductQuickViewComponent }                     from '../shared/components/product-quick-view/quick-view.component';
@@ -27,6 +27,7 @@ import { ExitIntentService }                             from '../core/services/
     UpdateNotificationComponent,
   ],
   template: `
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <app-header />
     <router-outlet />
     <app-footer />
@@ -39,22 +40,18 @@ import { ExitIntentService }                             from '../core/services/
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LayoutComponent implements OnDestroy {
+export class LayoutComponent {
   private readonly exitIntent  = inject(ExitIntentService);
   private readonly router      = inject(Router);
-  private readonly routeSub:   Subscription;
 
   constructor() {
-    // Attach DOM listeners once, after first browser render
     afterNextRender(() => this.exitIntent.init());
 
-    // Gate exit-intent on the home route only
-    this.routeSub = this.router.events.pipe(
+    this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      takeUntilDestroyed(),
     ).subscribe(e => {
       this.exitIntent.setOnHome(e.urlAfterRedirects === '/');
     });
   }
-
-  ngOnDestroy(): void { this.routeSub.unsubscribe(); }
 }

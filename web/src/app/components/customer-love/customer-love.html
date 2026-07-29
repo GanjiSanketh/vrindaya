@@ -29,7 +29,7 @@
           <span class="cl-quote"><i class="bi bi-quote"></i></span>
           <div class="cl-avatar-wrap">
             @if (!imgErrors.has(t.id)) {
-              <img [src]="t.image" [alt]="t.name" class="cl-avatar" loading="lazy"
+              <img [src]="t.image" [alt]="t.name" class="cl-avatar" loading="lazy" decoding="async" width="80" height="80"
                    (error)="onImgError(t.id)" />
             } @else {
               <span class="cl-avatar-fallback" [attr.aria-label]="t.name">{{ initials(t.name) }}</span>

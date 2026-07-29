@@ -3,11 +3,12 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LightboxService } from '../../../core/services/lightbox.service';
+import { CloudinaryUrlPipe } from '../../pipes/cloudinary-url.pipe';
 
 @Component({
   selector: 'app-image-lightbox',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CloudinaryUrlPipe],
   templateUrl: './image-lightbox.component.html',
   styleUrl:    './image-lightbox.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,7 +41,7 @@ export class ImageLightboxComponent {
   @HostListener('touchend', ['$event'])
   onTouchEnd(e: TouchEvent): void {
     const dx = e.changedTouches[0].clientX - this.touchStartX;
-    if (Math.abs(dx) > 40) { dx > 0 ? this.svc.prev() : this.svc.next(); }
+    if (Math.abs(dx) > 40) { if (dx > 0) { this.svc.prev(); } else { this.svc.next(); } }
   }
 
   onBackdropClick(e: MouseEvent): void {

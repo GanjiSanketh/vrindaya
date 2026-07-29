@@ -3,22 +3,14 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
-/**
- * Scroll-reveal directive — applies once when element enters the viewport.
- *
- * Usage:
- *   <div appScrollReveal>…</div>
- *   <div appScrollReveal [srDelay]="150" [srDistance]="40">…</div>
- *   <div appScrollReveal srVariant="fade">…</div>   (fade-only, no slide)
- */
 @Directive({
   selector: '[appScrollReveal]',
   standalone: true,
 })
 export class ScrollRevealDirective implements OnInit, OnDestroy {
-  @Input() srDelay    = 0;      // stagger delay in ms
-  @Input() srDistance = 40;     // slide-up distance in px
-  @Input() srDuration = 700;    // animation duration in ms
+  @Input() srDelay    = 0;
+  @Input() srDistance = 40;
+  @Input() srDuration = 700;
   @Input() srVariant: 'slide' | 'fade' | 'scale' = 'slide';
 
   private el         = inject(ElementRef<HTMLElement>);

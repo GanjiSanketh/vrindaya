@@ -63,6 +63,15 @@ public class CategoryController : ControllerBase
         return Ok(await _service.UpdateAsync(id, request, cancellationToken));
     }
 
+    [HttpPost("{id}/image")]
+    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
+    [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CategoryResponse>> UploadImage(string id, IFormFile file, CancellationToken cancellationToken)
+    {
+        return Ok(await _service.UploadImageAsync(id, file, cancellationToken));
+    }
+
     /// <summary>Active-only toggle — see ICategoryService.UpdateStatusAsync for why this is a dedicated endpoint rather than routing through the full PUT.</summary>
     [HttpPatch("{id}/status")]
     [Authorize(Policy = AppConstants.AdminOnlyPolicy)]

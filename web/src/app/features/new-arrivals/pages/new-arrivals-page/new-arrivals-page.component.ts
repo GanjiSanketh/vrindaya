@@ -3,7 +3,7 @@ import { isPlatformBrowser }                                 from '@angular/comm
 import { RouterLink }                                        from '@angular/router';
 import { ProductQueryService }                               from '../../../../core/services/product-query.service';
 import { Product }                                           from '../../../../core/models/product.model';
-import { ProductCard }                                       from '../../../../shared/components/product-card/product-card';
+import { ProductCardComponent }                                       from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent }                             from '../../../../shared/components/skeleton/skeleton-grid.component';
 import { SeoService }                                        from '../../../../core/services/seo.service';
 
@@ -12,7 +12,7 @@ const PAGE_SIZE = 24;
 @Component({
   selector: 'app-new-arrivals-page',
   standalone: true,
-  imports: [RouterLink, ProductCard, SkeletonGridComponent],
+  imports: [RouterLink, ProductCardComponent, SkeletonGridComponent],
   templateUrl: './new-arrivals-page.component.html',
   styleUrl: './new-arrivals-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +34,13 @@ export class NewArrivalsPageComponent implements OnInit {
       description: 'Shop the latest Indian ethnic wear at Vrindaya. Freshly added kurtas, kurta sets and sarees. Free delivery across India.',
       keywords:    ['new arrivals', 'latest kurta', 'new ethnic wear', 'new indian fashion'],
       url:         '/new-arrivals',
+      jsonLd: {
+        '@type': 'CollectionPage',
+        'name': 'New Arrivals — Vrindaya',
+        'description': 'Shop the latest Indian ethnic wear at Vrindaya. Freshly added kurtas, kurta sets and sarees.',
+        'url': 'https://vrindaya.in/new-arrivals',
+        'isPartOf': { '@type': 'WebSite', 'url': 'https://vrindaya.in' },
+      },
     });
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });

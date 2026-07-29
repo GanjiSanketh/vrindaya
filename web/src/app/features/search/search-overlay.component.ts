@@ -1,12 +1,13 @@
 import {
   Component, effect, HostListener, inject,
-  OnDestroy, OnInit, PLATFORM_ID, signal, ChangeDetectionStrategy,
+  PLATFORM_ID, signal, ChangeDetectionStrategy,
 } from '@angular/core';
 import { isPlatformBrowser }               from '@angular/common';
 import { FormsModule }                     from '@angular/forms';
 import { Router }                          from '@angular/router';
-import { Subject, Subscription }           from 'rxjs';
+import { Subject }                         from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { takeUntilDestroyed }              from '@angular/core/rxjs-interop';
 
 import { SearchService }       from '../../core/services/search.service';
 import { ProductQueryService } from '../../core/services/product-query.service';
@@ -28,7 +29,7 @@ const MAX_PRODUCT_MATCHES = 8;
   styleUrl:    './search-overlay.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SearchOverlayComponent implements OnInit, OnDestroy {
+export class SearchOverlayComponent {
   readonly svc     = inject(SearchService);
   private readonly productQuery    = inject(ProductQueryService);
   private readonly categoryQuery   = inject(CategoryService);
@@ -43,10 +44,14 @@ export class SearchOverlayComponent implements OnInit, OnDestroy {
   readonly hints = ['Floral', 'Indigo', '3-Piece', 'Kurta Set', 'Embroidered', 'Pastel'];
 
   private readonly query$ = new Subject<string>();
-  private sub!: Subscription;
 
   constructor() {
-    // Scroll-lock and autofocus when overlay opens
+    this.query$.pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      takeUntilDestroyed(),
+    ).subscribe(q => this.runSearch(q));
+
     effect(() => {
       const open = this.svc.isOpen();
       if (isPlatformBrowser(this.pid)) {
@@ -59,14 +64,6 @@ export class SearchOverlayComponent implements OnInit, OnDestroy {
       }
     });
   }
-
-  ngOnInit(): void {
-    this.sub = this.query$
-      .pipe(debounceTime(250), distinctUntilChanged())
-      .subscribe(q => this.runSearch(q));
-  }
-
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
 
   @HostListener('document:keydown.escape')
   onEsc(): void { if (this.svc.isOpen()) this.close(); }

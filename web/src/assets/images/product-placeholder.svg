@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+  <rect width="400" height="500" fill="#f5f0eb"/>
+  <g opacity=".4">
+    <path d="M160 180c0-22 18-40 40-40s40 18 40 40-18 40-40 40-40-18-40-40z" fill="none" stroke="#a09080" stroke-width="2"/>
+    <path d="M120 340c0-44 36-80 80-80s80 36 80 80" fill="none" stroke="#a09080" stroke-width="2"/>
+    <path d="M120 340h160" stroke="#a09080" stroke-width="2"/>
+  </g>
+  <text x="200" y="420" text-anchor="middle" font-family="'Cormorant Garamond',Georgia,serif" font-size="16" fill="#a09080" letter-spacing="2">VRINDAYA</text>
+</svg>

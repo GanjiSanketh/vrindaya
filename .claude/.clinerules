@@ -1,0 +1,191 @@
+# Vrindaya Admin Portal - Cline Rules
+
+You are working on the Vrindaya Admin Portal.
+
+------------------------------------------------------------
+PROJECT STRUCTURE
+------------------------------------------------------------
+
+Repository Root:
+H:\Applications\vrindaya
+
+Angular Workspace:
+H:\Applications\vrindaya\web
+
+Backend/API:
+H:\Applications\vrindaya\api
+
+The Angular application is inside the "web" folder.
+
+Always operate inside the Angular workspace unless explicitly instructed otherwise.
+
+Never assume the repository root is the Angular root.
+
+------------------------------------------------------------
+GENERAL RULES
+------------------------------------------------------------
+
+- Never redesign existing UI unless explicitly requested.
+- Preserve the existing design system.
+- Preserve the current folder structure.
+- Modify existing files instead of creating replacement files.
+- Reuse existing services whenever possible.
+- Reuse existing models and interfaces.
+- Never duplicate Firestore collections.
+- Never duplicate Signals.
+- Keep standalone Angular components.
+- Preserve lazy loading.
+- Follow SOLID principles.
+- Follow DRY principles.
+- Follow Angular style guide.
+- Never generate placeholder implementations.
+- Never generate TODO code.
+- Every feature must be production ready.
+- Never hardcode secrets or API keys.
+- Store configuration in the existing configuration system.
+- Keep builds clean after every task.
+
+------------------------------------------------------------
+ANGULAR RULES
+------------------------------------------------------------
+
+- Angular 20 application.
+- Use standalone components only.
+- Use Signals for state management.
+- Prefer computed() over duplicated state.
+- Prefer inject() instead of constructor injection where already used.
+- Reuse existing services.
+- Preserve route lazy loading.
+- Do not introduce NgModules.
+- Use OnPush change detection.
+- Clean up every RxJS subscription.
+- Prevent memory leaks.
+- Maintain accessibility.
+- Maintain responsive behaviour.
+
+------------------------------------------------------------
+MARKETPLACE RULES
+------------------------------------------------------------
+
+Marketplace architecture is provider based.
+
+AI Providers:
+
+- Implement IAIProvider.
+- Never bypass AIProviderFactory.
+- Never reference OpenAI directly outside providers.
+- Keep providers interchangeable.
+
+Marketplace Providers:
+
+- Implement IMarketplaceProvider.
+- Never hardcode Flipkart logic outside the Flipkart provider.
+- Keep architecture provider-agnostic.
+- Future providers include:
+    - Flipkart
+    - Amazon
+    - Meesho
+    - Myntra
+    - Ajio
+    - Shopify
+    - WooCommerce
+
+Never break provider abstraction.
+
+------------------------------------------------------------
+FIREBASE RULES
+------------------------------------------------------------
+
+Reuse existing Firebase collections.
+
+Never create duplicate collections.
+
+Reuse existing Firebase services.
+
+Reuse existing repositories.
+
+Batch writes where possible.
+
+Avoid unnecessary reads.
+
+Cache repeated reads when appropriate.
+
+Handle Firestore errors gracefully.
+
+------------------------------------------------------------
+BUILD RULES
+------------------------------------------------------------
+
+Before finishing every task:
+
+- Verify imports.
+- Verify routes.
+- Verify Signals.
+- Verify dependency injection.
+- Verify Firestore usage.
+- Verify provider registrations.
+- Verify lazy loading.
+- Verify TypeScript types.
+- Verify templates.
+- Ensure Angular build would succeed.
+- Resolve all compile errors introduced by the task.
+
+Never finish with known build errors.
+
+------------------------------------------------------------
+CODE GENERATION RULES
+------------------------------------------------------------
+
+Prefer editing existing files.
+
+Avoid creating new files unless required.
+
+Keep code modular.
+
+Keep functions small.
+
+Avoid duplicate logic.
+
+Extract reusable utilities.
+
+Maintain existing naming conventions.
+
+Use strict typing.
+
+Avoid "any".
+
+Avoid dead code.
+
+Remove unused imports.
+
+------------------------------------------------------------
+WORKFLOW
+------------------------------------------------------------
+
+Work on ONE ticket at a time.
+
+Do not implement future tickets unless explicitly requested.
+
+If information is missing:
+
+- Search the existing project first.
+- Reuse existing implementations.
+- Ask for clarification only if absolutely necessary.
+
+Do not redesign completed features.
+
+Do not refactor unrelated code.
+
+------------------------------------------------------------
+OUTPUT
+------------------------------------------------------------
+
+When a task is complete:
+
+1. List every modified file.
+2. Explain why each file changed.
+3. Mention any architectural decisions.
+4. Mention any assumptions.
+5. Mention any follow-up work.
+6. Confirm the Angular build would pass.
+7. Stop.

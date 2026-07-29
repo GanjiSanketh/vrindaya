@@ -1,5 +1,5 @@
 import { ApplicationConfig, ErrorHandler, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withInMemoryScrolling, withViewTransitions } from '@angular/router';
+import { provideRouter, withInMemoryScrolling, withViewTransitions, withPreloading, PreloadAllModules } from '@angular/router';
 import { provideClientHydration, withEventReplay }               from '@angular/platform-browser';
 import { provideAnimationsAsync }                                from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withFetch, withInterceptors }        from '@angular/common/http';
@@ -18,6 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(
       routes,
+      withPreloading(PreloadAllModules),
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
       withViewTransitions({ skipInitialTransition: true }),
     ),

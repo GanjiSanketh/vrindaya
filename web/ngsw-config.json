@@ -1,10 +1,13 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
+  "navigationRequestStrategy": "performance",
+
   "assetGroups": [
     {
       "name": "app-shell",
       "installMode": "prefetch",
+      "updateMode": "prefetch",
       "resources": {
         "files": [
           "/favicon.ico",
@@ -27,7 +30,46 @@
       }
     }
   ],
+
   "dataGroups": [
+    {
+      "name": "vrindaya-api",
+      "urls": [
+        "https://vrindaya-api.onrender.com/api/v1/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 100,
+        "maxAge": "7d",
+        "timeout": "10s"
+      }
+    },
+    {
+      "name": "cloudinary-images",
+      "urls": [
+        "https://res.cloudinary.com/**"
+      ],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 200,
+        "maxAge": "30d"
+      }
+    },
+    {
+      "name": "google-apis",
+      "urls": [
+        "https://apis.google.com/**",
+        "https://accounts.google.com/**",
+        "https://identitytoolkit.googleapis.com/**",
+        "https://securetoken.googleapis.com/**"
+      ],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 50,
+        "maxAge": "1d",
+        "timeout": "5s"
+      }
+    },
     {
       "name": "fonts",
       "urls": [
@@ -37,11 +79,12 @@
       "cacheConfig": {
         "strategy": "freshness",
         "maxSize": 50,
-        "timeout": "10s",
-        "maxAge": "7d"
+        "maxAge": "7d",
+        "timeout": "10s"
       }
     }
   ],
+
   "navigationUrls": [
     "/**",
     "!/**/*.*",

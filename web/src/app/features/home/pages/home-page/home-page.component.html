@@ -1,9 +1,26 @@
-<main>
+<main id="main-content" tabindex="-1">
 
   <section class="hero-section" id="hero">
-    <app-hero-sequence fallbackImg="assets/hero/hero-banner.png" />
+    <app-hero-sequence
+      fallbackImg="assets/hero/hero-banner.png"
+      (loaded)="onHeroLoaded()"
+    />
 
     <div class="hero-gradient" aria-hidden="true"></div>
+
+    @if (heroLoaded()) {
+      <div class="hero-overlay-pattern" aria-hidden="true">
+        <svg class="pattern-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <line x1="0" y1="40" x2="200" y2="40" stroke="var(--gold)" stroke-width="0.3" opacity="0.08" />
+          <line x1="0" y1="80" x2="200" y2="80" stroke="var(--gold)" stroke-width="0.3" opacity="0.06" />
+          <line x1="0" y1="120" x2="200" y2="120" stroke="var(--gold)" stroke-width="0.3" opacity="0.08" />
+          <line x1="0" y1="160" x2="200" y2="160" stroke="var(--gold)" stroke-width="0.3" opacity="0.06" />
+          <line x1="50" y1="0" x2="50" y2="200" stroke="var(--gold)" stroke-width="0.3" opacity="0.05" />
+          <line x1="100" y1="0" x2="100" y2="200" stroke="var(--gold)" stroke-width="0.3" opacity="0.05" />
+          <line x1="150" y1="0" x2="150" y2="200" stroke="var(--gold)" stroke-width="0.3" opacity="0.05" />
+        </svg>
+      </div>
+    }
 
     <div class="hero-content" data-parallax>
       <div class="hero-content-inner">
@@ -43,19 +60,31 @@
         <p class="section-desc">Explore our curated collections, crafted for every occasion.</p>
       </div>
       <div class="cat-grid">
-        @for (c of categories(); track c.id) {
-          <a [routerLink]="['/category', c.id]" class="cat-card">
-            <div class="cat-img-wrap">
-              <img [src]="c.image" [alt]="c.name" class="cat-img" loading="lazy" />
-              <div class="cat-overlay">
-                <span class="cat-cta">Shop Now <i class="bi bi-arrow-right"></i></span>
+        @if (productSvc.categoriesLoading()) {
+          @for (_ of [1,2,3,4]; track $index) {
+            <div class="cat-card">
+              <div class="skel-img shimmer" style="aspect-ratio:4/5;"></div>
+              <div class="cat-info">
+                <div class="skel-line skel-line--name shimmer" style="margin:0.5rem 0 0.3rem;width:70%;"></div>
+                <div class="skel-line skel-line--sub shimmer" style="width:50%;"></div>
               </div>
             </div>
-            <div class="cat-info">
-              <h3 class="cat-name">{{ c.name }}</h3>
-              @if (c.subtitle) { <p class="cat-subtitle">{{ c.subtitle }}</p> }
-            </div>
-          </a>
+          }
+        } @else {
+          @for (c of categories(); track c.id; let i = $index) {
+            <a [routerLink]="['/category', c.id]" class="cat-card" style="--stagger-delay: {{ i * 80 }}ms">
+              <div class="cat-img-wrap">
+                <img [src]="c.image" [alt]="c.name" class="cat-img" loading="lazy" decoding="async" width="400" height="500" />
+                <div class="cat-overlay">
+                  <span class="cat-cta">Shop Now <i class="bi bi-arrow-right"></i></span>
+                </div>
+              </div>
+              <div class="cat-info">
+                <h3 class="cat-name">{{ c.name }}</h3>
+                @if (c.subtitle) { <p class="cat-subtitle">{{ c.subtitle }}</p> }
+              </div>
+            </a>
+          }
         }
       </div>
     </div>
@@ -64,19 +93,40 @@
   @defer (on viewport) {
     <app-new-arrivals [products]="newArrivals()" />
   } @placeholder {
-    <div class="section-pad" style="min-height: 400px;"></div>
+    <div class="section-pad" style="min-height: 460px;">
+      <div class="container-vr">
+        <div class="section-header">
+          <h2 class="section-title" style="opacity:0.3;">NEW ARRIVALS</h2>
+        </div>
+        <app-skeleton-grid [count]="4" />
+      </div>
+    </div>
   }
 
   @defer (on viewport) {
     <app-trending-products [products]="trending()" />
   } @placeholder {
-    <div class="section-pad" style="min-height: 400px;"></div>
+    <div class="section-pad" style="min-height: 460px;">
+      <div class="container-vr">
+        <div class="section-header">
+          <h2 class="section-title" style="opacity:0.3;">TRENDING</h2>
+        </div>
+        <app-skeleton-grid [count]="4" />
+      </div>
+    </div>
   }
 
   @defer (on viewport) {
     <app-best-sellers [products]="bestSellers()" />
   } @placeholder {
-    <div class="section-pad" style="min-height: 400px;"></div>
+    <div class="section-pad" style="min-height: 460px;">
+      <div class="container-vr">
+        <div class="section-header">
+          <h2 class="section-title" style="opacity:0.3;">BEST SELLERS</h2>
+        </div>
+        <app-skeleton-grid [count]="4" />
+      </div>
+    </div>
   }
 
   <section class="features-section section-pad" id="why-choose">
@@ -134,7 +184,7 @@
       <div class="insta-grid">
         @for (img of ['assets/instagram/insta-1.jpg','assets/instagram/insta-2.jpg','assets/instagram/insta-3.jpg','assets/instagram/insta-4.jpg','assets/instagram/insta-5.jpg','assets/instagram/insta-6.jpg']; track img) {
           <a href="https://www.instagram.com/vrindaya.in/" target="_blank" rel="noopener noreferrer" class="insta-item">
-            <img [src]="img" alt="Instagram post" loading="lazy" class="insta-img" />
+            <img [src]="img" alt="Instagram post" loading="lazy" decoding="async" width="300" height="300" class="insta-img" />
             <div class="insta-overlay"><i class="bi bi-instagram"></i></div>
           </a>
         }
@@ -150,7 +200,20 @@
   @defer (on viewport) {
     <app-customer-love />
   } @placeholder {
-    <div class="section-pad" style="min-height: 300px;"></div>
+    <div class="section-pad" style="min-height: 320px;">
+      <div class="container-vr">
+        <div class="section-header">
+          <h2 class="section-title" style="opacity:0.3;">LOVE FROM OUR CUSTOMERS</h2>
+          <div style="display:flex;gap:1.5rem;justify-content:center;margin-top:2rem;">
+            @for (_ of [1,2,3]; track $index) {
+              <div style="flex:1;max-width:340px;">
+                <div class="shimmer" style="height:180px;border-radius:var(--r-md);"></div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
   }
 
 </main>

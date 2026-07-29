@@ -5,6 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "postbuild": "node scripts/purgecss.mjs",
+    "build:analyze": "ng build --source-map && npx source-map-explorer dist/vrindaya/browser/*.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:coverage": "ng test --watch=false",
@@ -46,8 +48,7 @@
     "firebase": "^11.10.0",
     "gsap": "^3.15.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
-    "xlsx": "^0.18.5"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular-eslint/eslint-plugin": "^18.0.0",
@@ -61,6 +62,7 @@
     "@vitest/coverage-v8": "^4.1.9",
     "eslint": "^9.0.0",
     "jsdom": "^27.1.0",
+    "purgecss": "^8.0.0",
     "sonarqube-scanner": "^4.3.8",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.0.0",

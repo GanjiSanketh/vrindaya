@@ -3,6 +3,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CategoryAdminService } from '../../services/category-admin.service';
 import { APP_ROUTES } from '../../../../core/constants/routes.constants';
+import { validateImageFile, formatFileSize } from '../../../../shared/utils/image-processing.util';
+
+const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024;
 
 @Component({
   selector:    'app-category-form',
@@ -23,6 +27,15 @@ export class CategoryFormComponent implements OnInit {
   readonly saving     = signal(false);
   readonly saved      = signal(false);
   readonly formError  = signal<string | null>(null);
+
+  readonly imageFile = signal<File | null>(null);
+  readonly imagePreview = signal<string | null>(null);
+  readonly uploadingImage = signal(false);
+  readonly removingImage = signal(false);
+  readonly imageValidationError = signal<string | null>(null);
+  readonly compressionInfo = signal<string | null>(null);
+  readonly showPreview = signal(false);
+
   private categoryId  = '';
 
   readonly imageUrl       = signal('');
@@ -40,7 +53,7 @@ export class CategoryFormComponent implements OnInit {
     seoTitle:        [''],
     seoDescription:  [''],
     seoKeywords:     [''],
-    imageUrl:        ['', Validators.required],
+    imageUrl:        [''],
     bannerImageUrl:  [''],
   });
 
@@ -61,6 +74,7 @@ export class CategoryFormComponent implements OnInit {
         seoKeywords: (cat.seoKeywords ?? []).join(', '),
         imageUrl: cat.image, bannerImageUrl: cat.bannerImage ?? '',
       });
+      this.imageUrl.set(cat.image);
       this.form.get('id')!.disable();
     }
   }
@@ -71,6 +85,12 @@ export class CategoryFormComponent implements OnInit {
     this.formError.set(null);
     this.saving.set(true);
 
+    if (this.uploadingImage()) {
+      this.formError.set('Please wait for image processing to complete.');
+      this.saving.set(false);
+      return;
+    }
+
     const v = this.form.getRawValue();
 
     const payload = {
@@ -78,7 +98,7 @@ export class CategoryFormComponent implements OnInit {
       code: v.code?.trim().toUpperCase() || undefined,
       subtitle: v.subtitle?.trim() || undefined,
       description: v.description?.trim() || undefined,
-      image: v.imageUrl!.trim(),
+      image: v.imageUrl!.trim() || this.imageUrl(),
       imagePublicId: undefined,
       bannerImage: v.bannerImageUrl?.trim() || undefined,
       bannerImagePublicId: undefined,
@@ -93,8 +113,20 @@ export class CategoryFormComponent implements OnInit {
     try {
       if (this.isEdit()) {
         await this.admin.update(this.categoryId, payload);
+        if (this.imageFile()) {
+          this.uploadingImage.set(true);
+          const updated = await this.admin.uploadImage(this.categoryId, this.imageFile()!);
+          this.imageUrl.set(updated.image);
+          this.form.patchValue({ imageUrl: updated.image });
+          this.uploadingImage.set(false);
+        }
       } else {
-        await this.admin.create({ id: v.id!.trim(), ...payload });
+        const created = await this.admin.create({ id: v.id!.trim(), ...payload });
+        if (this.imageFile()) {
+          this.uploadingImage.set(true);
+          await this.admin.uploadImage(created.id, this.imageFile()!);
+          this.uploadingImage.set(false);
+        }
       }
       this.saved.set(true);
       this.saving.set(false);
@@ -108,5 +140,74 @@ export class CategoryFormComponent implements OnInit {
   isInvalid(ctrl: string): boolean {
     const c = this.form.get(ctrl);
     return !!(c?.invalid && c?.touched);
+  }
+
+  async onImageSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+
+    this.imageValidationError.set(null);
+    this.compressionInfo.set(null);
+
+    const validationErr = validateImageFile(file);
+    if (validationErr) {
+      this.imageValidationError.set(validationErr);
+      input.value = '';
+      return;
+    }
+
+    if (!VALID_IMAGE_TYPES.includes(file.type)) {
+      this.imageValidationError.set('Please choose a JPG, PNG, or WebP image.');
+      input.value = '';
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      this.imageValidationError.set(`Image is too large (max ${MAX_IMAGE_SIZE / (1024 * 1024)} MB).`);
+      input.value = '';
+      return;
+    }
+
+    try {
+      const { processImageForUpload } = await import('../../../../shared/utils/image-processing.util');
+      const processed = await processImageForUpload(file);
+      this.imageFile.set(new File([processed.blob], file.name, { type: 'image/webp' }));
+      this.imagePreview.set(processed.previewUrl);
+      this.compressionInfo.set(`${file.type.split('/')[1].toUpperCase()} ${file.size >= 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' : Math.round(file.size / 1024) + ' KB'} → WebP ${formatFileSize(processed.sizeBytes)} (${processed.width}×${processed.height})`);
+    } catch (err) {
+      this.imageValidationError.set(err instanceof Error ? err.message : 'Invalid image');
+    }
+  }
+
+  async removeExistingImage(): Promise<void> {
+    if (!this.categoryId || this.removingImage()) return;
+    this.removingImage.set(true);
+    this.formError.set(null);
+    try {
+      await this.admin.removeImage(this.categoryId);
+      this.imageUrl.set('');
+      this.imagePreview.set(null);
+      this.imageFile.set(null);
+      this.form.patchValue({ imageUrl: '' });
+    } catch (err) {
+      this.formError.set(err instanceof Error ? err.message : 'Failed to remove image.');
+    } finally {
+      this.removingImage.set(false);
+    }
+  }
+
+  clearSelectedImage(): void {
+    this.imageFile.set(null);
+    this.imagePreview.set(null);
+    this.compressionInfo.set(null);
+    this.imageValidationError.set(null);
+  }
+
+  hasCurrentImage(): boolean {
+    return !!this.imagePreview() || !!this.imageUrl();
+  }
+
+  currentImageSrc(): string {
+    return this.imagePreview() || this.imageUrl() || '';
   }
 }

@@ -8,11 +8,12 @@ import { QuickViewService }  from '../../../core/services/quick-view.service';
 import { LightboxService }   from '../../../core/services/lightbox.service';
 import { WishlistService }   from '../../../core/services/wishlist.service';
 import { ProductService }    from '../../../core/services/product.service';
+import { CloudinaryUrlPipe } from '../../pipes/cloudinary-url.pipe';
 
 @Component({
   selector: 'app-product-quick-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CloudinaryUrlPipe],
   templateUrl: './quick-view.component.html',
   styleUrl:    './quick-view.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

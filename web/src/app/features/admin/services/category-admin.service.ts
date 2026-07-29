@@ -73,4 +73,18 @@ export class CategoryAdminService {
   async reorder(orderedIds: string[]): Promise<void> {
     await firstValueFrom(this.http.patch(`${URL}/reorder`, { orderedIds }));
   }
+
+  async uploadImage(id: string, file: File): Promise<AdminCategory> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return firstValueFrom(this.http.post<AdminCategory>(`${URL}/${id}/image`, formData));
+  }
+
+  async removeImage(id: string): Promise<AdminCategory> {
+    return firstValueFrom(this.http.delete<AdminCategory>(`${URL}/${id}/image`));
+  }
+
+  async updateImageUrl(id: string, imageUrl: string): Promise<AdminCategory> {
+    return firstValueFrom(this.http.patch<AdminCategory>(`${URL}/${id}/image-url`, { imageUrl }));
+  }
 }

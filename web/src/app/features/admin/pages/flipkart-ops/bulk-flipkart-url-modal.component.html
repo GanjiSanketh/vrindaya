@@ -44,7 +44,7 @@
     <div class="bfu-submit-row">
       <button type="button" class="bfu-cancel" (click)="cancel()">Cancel</button>
       <button type="button" class="bfu-submit" [disabled]="saving()" (click)="saveAll()">
-        @if (saving()) { Saving… } @else { Save All }
+        @if (saving()) { <span class="btn-spinner"></span> Saving… } @else { Save All }
       </button>
     </div>
 

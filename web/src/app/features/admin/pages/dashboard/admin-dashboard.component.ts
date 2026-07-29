@@ -6,10 +6,7 @@ import { ProductApiService } from '../../../../core/services/product-api.service
 import { DashboardDto } from '../../../../core/models/product-api.model';
 import { AdminAuthService } from '../../services/admin-auth.service';
 import { APP_ROUTES } from '../../../../core/constants/routes.constants';
-import { Chart, registerables } from 'chart.js';
-
-Chart.register(...registerables);
-
+import type { Chart } from 'chart.js';
 const COLORS = ['#0f6f84', '#c9a54c', '#22a34a', '#9b4fe0', '#dc2626', '#b45309', '#6b7280', '#be123c', '#0891b2', '#65a30d'];
 
 interface AnimatedValues {
@@ -149,8 +146,11 @@ export class AdminDashboardComponent implements AfterViewInit {
     requestAnimationFrame(step);
   }
 
-  private renderAllCharts(d: DashboardDto) {
+  private async renderAllCharts(d: DashboardDto) {
     this.destroyCharts();
+    const { Chart, registerables } = await import('chart.js');
+    Chart.register(...registerables);
+
     const pie = (canvas: HTMLCanvasElement | undefined, labels: string[], values: number[]) => {
       if (!canvas || !labels.length) return null;
       return new Chart(canvas, {

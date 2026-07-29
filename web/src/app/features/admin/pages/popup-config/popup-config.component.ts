@@ -1,8 +1,9 @@
-import { Component, inject, OnInit }                from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient }                                  from '@angular/common/http';
 import { RouterLink }                                  from '@angular/router';
 import { catchError, of }                              from 'rxjs';
+import { takeUntilDestroyed }                          from '@angular/core/rxjs-interop';
 
 import { PopupService }                                from '../../../../core/services/popup.service';
 import { ProductApiService }                           from '../../../../core/services/product-api.service';
@@ -15,6 +16,7 @@ import { Product }                                     from '../../../../core/mo
   imports:     [ReactiveFormsModule, RouterLink],
   templateUrl: './popup-config.component.html',
   styleUrl:    './popup-config.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PopupConfigComponent implements OnInit {
   private readonly fb        = inject(FormBuilder);
@@ -120,7 +122,7 @@ export class PopupConfigComponent implements OnInit {
 
     this.http
       .get<PopupConfig>('assets/config/popup-config.json')
-      .pipe(catchError(() => of(null)))
+      .pipe(catchError(() => of(null)), takeUntilDestroyed())
       .subscribe(cfg => { if (cfg) this.patchForm(cfg); });
   }
 

@@ -47,4 +47,27 @@
 .hbf-submit:hover:not(:disabled) { background: #0c5c6e; }
 .hbf-submit:disabled { opacity: 0.7; cursor: not-allowed; }
 
+.hbf-compress-info { font-size: 0.72rem; color: #059669; background: #f0fdf4; padding: 0.375rem 0.625rem; border-radius: 6px; margin-top: 0.375rem; }
+
+.hbf-img-wrap { position: relative; margin-top: 0.75rem; display: inline-block; max-width: 100%; }
+.hbf-img { max-width: 100%; border-radius: 8px; cursor: pointer; display: block; transition: opacity 0.15s; }
+.hbf-img:hover { opacity: 0.85; }
+.hbf-img-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
+.hbf-img-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 50%; background: rgba(0,0,0,0.55); color: #fff; cursor: pointer; font-size: 0.8rem; transition: background 0.15s; }
+.hbf-img-btn:hover { background: rgba(0,0,0,0.75); }
+.hbf-img-btn--del { background: rgba(220,38,38,0.8); }
+.hbf-img-btn--del:hover { background: rgba(220,38,38,1); }
+.hbf-img-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.hbf-img-hint { font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; cursor: pointer; }
+.hbf-img-hint:hover { color: #374151; }
+.hbf-img-uploading { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: #0f6f84; margin-top: 0.5rem; }
+
+.hbf-preview-modal { position: fixed; inset: 0; z-index: 1060; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.hbf-preview-close { position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer; opacity: 0.7; z-index: 1061; }
+.hbf-preview-close:hover { opacity: 1; }
+.hbf-preview-img { max-width: min(90vw, 900px); max-height: min(85vh, 600px); border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+
+.btn-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 @media (max-width: 900px) { .hbf-grid { grid-template-columns: 1fr; } .hbf-field-row { grid-template-columns: 1fr; } }

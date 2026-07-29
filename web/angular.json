@@ -3,7 +3,7 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": "78140a7c-0c1b-4597-ad48-e8aa761bad97"
+    "analytics": false
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -35,9 +35,7 @@
               "node_modules/bootstrap-icons/font/bootstrap-icons.min.css",
               "src/styles.css"
             ],
-            "scripts": [
-              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-            ],
+            "scripts": [],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "ssr": {
@@ -59,6 +57,11 @@
                 "output": "index.html"
               },
               "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
                 "fonts": {
                   "inline": false
                 }
@@ -66,13 +69,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2MB",
-                  "maximumError": "4MB"
+                  "maximumWarning": "1.5MB",
+                  "maximumError": "2.5MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "16kB",
-                  "maximumError": "32kB"
+                  "maximumWarning": "12kB",
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"

@@ -34,7 +34,6 @@
 .skel-line--label { width: 45%; height: 0.65rem; }
 .skel-line--btn   { width: 40%; height: 0.9rem; }
 
-/* ── Shimmer animation ── */
 .shimmer {
   background: linear-gradient(
     90deg,
@@ -43,7 +42,7 @@
     #ececec 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  animation: shimmer 1.6s ease-in-out infinite;
 }
 
 @keyframes shimmer {

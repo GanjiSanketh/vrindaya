@@ -1,0 +1,14 @@
+export { AuditTrailService } from './audit-trail.service';
+export { GlobalErrorHandlerService, type ErrorEvent } from './error-handler.service';
+export { RolePermissionsService } from './role-permissions.service';
+export { RolePermissionsGuard } from './role-permissions.guard';
+export { RateLimiterService } from './rate-limiter.service';
+export { NotificationCentreService, NotificationDataService } from './notification-centre.service';
+export type { Notification } from './production.models';
+export { HealthMonitorService } from './health-monitor.service';
+export { RequestLoggerService } from './request-logger.service';
+export { PerfMonitorService } from './perf-monitor.service';
+export { BackgroundQueueService } from './background-queue.service';
+export { RetryQueueService } from './retry-queue.service';
+export type { BackgroundJob, RetryJob, SystemHealth, HealthCheckResult, PerfMetric, RequestLog, AuditEntry, AppUser, UserRole, PermissionResource, PermissionAction } from './production.models';
+export { ROLES, ROLE_PERMISSIONS, DEFAULT_RETRY_CONFIG, DEFAULT_RATE_LIMIT_CONFIG } from './production.models';

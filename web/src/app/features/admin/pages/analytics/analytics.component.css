@@ -1,0 +1,29 @@
+.an-page { display: flex; flex-direction: column; gap: 1.5rem; }
+.an-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem; }
+.an-title { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #1a1a2e; margin: 0 0 0.25rem; }
+.an-sub { color: #6b7280; font-size: 0.875rem; margin: 0; }
+.an-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+.an-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0; margin-bottom: 1.5rem; }
+.an-tab { display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 500; color: #6b7280; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
+.an-tab:hover { color: #1a1a2e; background: #f9fafb; }
+.an-tab.active { color: #0f6f84; border-bottom-color: #0f6f84; font-weight: 600; }
+.an-tab i { font-size: 0.9rem; }
+
+.an-content { min-height: 300px; }
+
+.card { border-radius: 10px; overflow: hidden; }
+.card-header { padding: 0.75rem 1rem 0.5rem; }
+.card-body { padding: 1rem; }
+.card-header h6 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: #374151; }
+
+.table-responsive { overflow-x: auto; }
+.table th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; border-top: none; padding: 0.5rem 0.75rem; }
+.table td { padding: 0.4rem 0.75rem; font-size: 0.85rem; vertical-align: middle; }
+.badge { font-size: 0.75rem; font-weight: 500; padding: 0.25em 0.6em; }
+
+@media (max-width: 768px) {
+  .an-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .an-tab { font-size: 0.75rem; padding: 0.4rem 0.6rem; }
+  .an-tab span { display: none; }
+}

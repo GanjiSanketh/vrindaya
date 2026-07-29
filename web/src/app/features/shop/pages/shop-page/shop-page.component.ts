@@ -1,12 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef, afterNextRender, ElementRef, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { switchMap, distinctUntilChanged, of } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ProductQueryService, PUBLIC_SORT_OPTIONS } from '../../../../core/services/product-query.service';
 import { CategoryService } from '../../../../core/services/category.service';
 import { SeoService } from '../../../../core/services/seo.service';
 import { Category, Product } from '../../../../core/models/product.model';
-import { ProductCard } from '../../../../shared/components/product-card/product-card';
+import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent } from '../../../../shared/components/skeleton/skeleton-grid.component';
 
 const PAGE_SIZE = 24;
@@ -17,18 +18,17 @@ const SORT_OPTIONS = PUBLIC_SORT_OPTIONS;
 @Component({
   selector: 'app-shop-page',
   standalone: true,
-  imports: [RouterLink, ProductCard, SkeletonGridComponent],
+  imports: [RouterLink, ProductCardComponent, SkeletonGridComponent],
   templateUrl: './shop-page.component.html',
   styleUrl: './shop-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShopPageComponent implements OnInit, OnDestroy {
+export class ShopPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly query = inject(ProductQueryService);
   private readonly categoryQuery = inject(CategoryService);
   private readonly seo = inject(SeoService);
-  private querySub!: Subscription;
 
   readonly sortOptions = SORT_OPTIONS;
   readonly sortOptionKeys = Object.keys(SORT_OPTIONS) as (keyof typeof SORT_OPTIONS)[];
@@ -45,34 +45,58 @@ export class ShopPageComponent implements OnInit, OnDestroy {
   readonly loadingMore = signal(false);
   readonly error       = signal<string | null>(null);
 
-  async ngOnInit(): Promise<void> {
-    this.categories.set(await this.categoryQuery.getAll().catch(() => [] as Category[]));
+  private readonly destroyRef = inject(DestroyRef);
+  readonly sentinelEl = viewChild<ElementRef<HTMLElement>>('sentinel');
 
-    this.querySub = this.route.queryParamMap.subscribe(params => {
-      const q = params.get('q');
-      const presetFilter = params.get('filter') as ShopFilterKind | null;
-      const presetCategory = params.get('category');
+  constructor() {
+    void this.categoryQuery.getAll().then(cats => this.categories.set(cats)).catch(() => {});
 
-      this.searchTerm.set(q);
+    this.route.queryParamMap.pipe(
+      distinctUntilChanged((a, b) =>
+        a.get('q') === b.get('q') && a.get('filter') === b.get('filter') && a.get('category') === b.get('category'),
+      ),
+      switchMap(params => {
+        const q = params.get('q');
+        const presetFilter = params.get('filter') as ShopFilterKind | null;
+        const presetCategory = params.get('category');
 
-      if (!q) {
-        if (presetCategory) {
-          this.filterKind.set('category');
-          this.categoryId.set(presetCategory);
-        } else if (presetFilter && presetFilter !== 'none') {
-          this.filterKind.set(presetFilter);
-        } else {
-          this.filterKind.set('none');
+        this.searchTerm.set(q);
+
+        if (!q) {
+          if (presetCategory) {
+            this.filterKind.set('category');
+            this.categoryId.set(presetCategory);
+          } else if (presetFilter && presetFilter !== 'none') {
+            this.filterKind.set(presetFilter);
+          } else {
+            this.filterKind.set('none');
+          }
         }
-      }
 
+        this.applySeo();
+        return of(null);
+      }),
+      takeUntilDestroyed(),
+    ).subscribe(() => {
       void this.resetAndLoad();
-      this.applySeo();
     });
-  }
 
-  ngOnDestroy(): void {
-    this.querySub.unsubscribe();
+    if (typeof window !== 'undefined') {
+      afterNextRender(() => {
+        const sentinel = this.sentinelEl()?.nativeElement;
+        if (!sentinel) return;
+        const observer = new IntersectionObserver(
+          entries => {
+            if (entries[0]?.isIntersecting && this.nextCursor() && !this.loadingMore()) {
+              void this.loadMore();
+            }
+          },
+          { rootMargin: '400px' },
+        );
+        observer.observe(sentinel);
+        this.destroyRef.onDestroy(() => observer.disconnect());
+      });
+    }
   }
 
   private applySeo(): void {
@@ -84,6 +108,14 @@ export class ShopPageComponent implements OnInit, OnDestroy {
         ? `Search results for "${q}" at Vrindaya — premium Indian ethnic wear.`
         : 'Browse the full Vrindaya catalogue — kurtas, kurta sets and more, filterable by category and availability.',
       url: '/shop',
+      jsonLd: {
+        '@type': 'WebPage',
+        'name': title,
+        'url': 'https://vrindaya.in/shop',
+        'description': q
+          ? `Search results for "${q}" at Vrindaya`
+          : 'Browse the full Vrindaya catalogue — kurtas, kurta sets and more.',
+      },
     });
   }
 
@@ -91,12 +123,14 @@ export class ShopPageComponent implements OnInit, OnDestroy {
     if (this.searchTerm()) void this.clearSearch();
     this.filterKind.set(kind);
     if (kind !== 'category') this.categoryId.set('');
+    this.sortKey.set('displayOrder');
     void this.resetAndLoad();
   }
 
   setCategory(id: string): void {
     this.filterKind.set(id ? 'category' : 'none');
     this.categoryId.set(id);
+    this.sortKey.set('displayOrder');
     void this.resetAndLoad();
   }
 

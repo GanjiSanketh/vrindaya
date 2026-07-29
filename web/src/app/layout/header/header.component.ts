@@ -1,7 +1,7 @@
-import { Component, HostListener, inject, signal, computed, PLATFORM_ID, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
+import { Component, HostListener, inject, signal, computed, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, isPlatformBrowser }                       from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd }   from '@angular/router';
-import { Subscription }                                          from 'rxjs';
+import { takeUntilDestroyed }                                    from '@angular/core/rxjs-interop';
 import { ProductService }                                        from '../../core/services/product.service';
 import { SearchService }                                         from '../../core/services/search.service';
 import { WishlistService }                                       from '../../core/services/wishlist.service';
@@ -15,12 +15,11 @@ import { SCROLL_THRESHOLDS }                                     from '../../cor
   styleUrl: './header.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HeaderComponent implements OnDestroy {
+export class HeaderComponent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly prodSvc    = inject(ProductService);
   private readonly searchSvc  = inject(SearchService);
   private readonly router     = inject(Router);
-  private routerSub?:         Subscription;
   readonly wishlist           = inject(WishlistService);
 
   readonly categories     = this.prodSvc.categories;
@@ -32,7 +31,9 @@ export class HeaderComponent implements OnDestroy {
 
   constructor() {
     this.isHomePage.set(this.router.url.split('?')[0] === '/');
-    this.routerSub = this.router.events.subscribe(event => {
+    this.router.events.pipe(
+      takeUntilDestroyed(),
+    ).subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.isHomePage.set(this.router.url.split('?')[0] === '/');
       }
@@ -49,8 +50,4 @@ export class HeaderComponent implements OnDestroy {
   toggleMenu():  void { this.mobileMenuOpen.update(v => !v); }
   closeMenu():   void { this.mobileMenuOpen.set(false); }
   openSearch():  void { this.searchSvc.open(); }
-
-  ngOnDestroy(): void {
-    this.routerSub?.unsubscribe();
-  }
 }

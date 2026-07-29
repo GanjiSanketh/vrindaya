@@ -1,6 +1,7 @@
 import { Component, inject, input, output, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductApiService } from '../../../../core/services/product-api.service';
 import { LIFECYCLE_STAGES, LifecycleStageValue } from '../../../../core/constants/lifecycle-stage.constants';
 import { FlipkartOpsInput } from '../../../../core/models/product-api.model';
@@ -48,8 +49,8 @@ export class FlipkartOpsEditModalComponent implements OnInit {
   readonly lastClickAt = signal<string | null>(null);
 
   constructor() {
-    this.form.get('marketplacePrice')!.valueChanges.subscribe(() => this.recomputeDiscount());
-    this.form.get('marketplaceMrp')!.valueChanges.subscribe(() => this.recomputeDiscount());
+    this.form.get('marketplacePrice')!.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.recomputeDiscount());
+    this.form.get('marketplaceMrp')!.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.recomputeDiscount());
   }
 
   ngOnInit(): void {

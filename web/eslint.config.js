@@ -44,7 +44,8 @@ module.exports = tseslint.config(
       parser: angularTemplateParser,
     },
     rules: {
-      '@angular-eslint/template/banana-in-a-box':      'error',
+      '@angular-eslint/template/banana-in-box':         'error',
+      '@angular-eslint/template/use-track-by-function': 'warn',
       '@angular-eslint/template/no-negated-async':     'warn',
       '@angular-eslint/template/eqeqeq':               'warn',
       '@angular-eslint/template/no-duplicate-attributes': 'error',

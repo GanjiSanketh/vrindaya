@@ -6,15 +6,6 @@ import { ProductAnalyticsService } from './product-analytics.service';
 
 export type SortOrder = 'default' | 'rating';
 
-/**
- * Public storefront facade — same public method/signal names as before
- * (Firestore-realtime era), so `categories.ts`, `new-arrivals.ts`,
- * `trending-products.ts`, `customer-love.ts` need zero changes. Internally,
- * every signal is now populated by dedicated ProductQueryService/
- * CategoryService REST calls instead of one big Firestore `onSnapshot`
- * listener — Featured Products, New Arrivals, and Categories each hit their
- * own API query, matching the Phase 4 architecture.
- */
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly productQuery = inject(ProductQueryService);
@@ -24,28 +15,42 @@ export class ProductService {
   readonly loading = signal(true);
   readonly error   = signal<string | null>(null);
 
-  readonly trending    = signal<Product[]>([]);
-  readonly newArrivals = signal<Product[]>([]);
-  readonly bestSellers = signal<Product[]>([]);
-  readonly categories  = signal<Category[]>([]);
+  readonly trending       = signal<Product[]>([]);
+  readonly newArrivals    = signal<Product[]>([]);
+  readonly bestSellers    = signal<Product[]>([]);
+  readonly categories     = signal<Category[]>([]);
+
+  readonly trendingLoading       = signal(false);
+  readonly newArrivalsLoading    = signal(false);
+  readonly bestSellersLoading    = signal(false);
+  readonly categoriesLoading     = signal(false);
 
   readonly searchQuery      = signal('');
   readonly selectedCategory = signal('All');
   readonly sortOrder        = signal<SortOrder>('default');
 
-  /** Union of everything fetched so far — best-effort cache for the lookups below (not an exhaustive catalog anymore; see fetchById for a reliable single-product fetch). */
   private readonly allLoaded = computed(() => {
     const byId = new Map<string, Product>();
     for (const p of [...this.trending(), ...this.newArrivals(), ...this.bestSellers()]) byId.set(p.id, p);
     return [...byId.values()];
   });
 
-  constructor() {
-    void this.loadHomeData();
+  private homeDataLoaded = false;
+
+  /** Ensures home page data is loaded (lazy — no constructor call). Safe to call multiple times; subsequent calls are no-ops. */
+  async ensureHomeDataLoaded(): Promise<void> {
+    if (this.homeDataLoaded) return;
+    this.homeDataLoaded = true;
+    return this.loadHomeData();
   }
 
   private async loadHomeData(): Promise<void> {
     this.loading.set(true);
+
+    this.trendingLoading.set(true);
+    this.newArrivalsLoading.set(true);
+    this.bestSellersLoading.set(true);
+    this.categoriesLoading.set(true);
 
     const [featured, newArrivals, bestSellers, categories] = await Promise.allSettled([
       this.productQuery.getFeatured(12),
@@ -54,23 +59,24 @@ export class ProductService {
       this.categoryQuery.getAll(),
     ]);
 
-    if (featured.status === 'fulfilled')    this.trending.set(featured.value.items);
-    if (newArrivals.status === 'fulfilled') this.newArrivals.set(newArrivals.value.items);
-    if (bestSellers.status === 'fulfilled') this.bestSellers.set(bestSellers.value.items);
-    if (categories.status === 'fulfilled')  this.categories.set(categories.value);
+    if (featured.status === 'fulfilled')    { this.trending.set(featured.value.items);    this.trendingLoading.set(false); }
+    else                                    { this.trendingLoading.set(false); }
+    if (newArrivals.status === 'fulfilled') { this.newArrivals.set(newArrivals.value.items); this.newArrivalsLoading.set(false); }
+    else                                    { this.newArrivalsLoading.set(false); }
+    if (bestSellers.status === 'fulfilled') { this.bestSellers.set(bestSellers.value.items); this.bestSellersLoading.set(false); }
+    else                                    { this.bestSellersLoading.set(false); }
+    if (categories.status === 'fulfilled')  { this.categories.set(categories.value);     this.categoriesLoading.set(false); }
+    else                                    { this.categoriesLoading.set(false); }
 
     const anyFailed = [featured, newArrivals, bestSellers, categories].some(r => r.status === 'rejected');
     this.error.set(anyFailed ? 'Some content could not be loaded right now.' : null);
     this.loading.set(false);
   }
 
-  /* ── Lookups (best-effort, over whatever's already been fetched — see fetchById for a guaranteed fetch) ── */
-
   getById(id: string): Product | undefined {
-    return this.allLoaded().find(p => p.id === id);
+    return this.productQuery.getCachedProduct(id) ?? this.allLoaded().find(p => p.id === id);
   }
 
-  /** Reliable single-product fetch — always hits the API (cached/retried internally), used wherever a lookup must not silently miss (e.g. wishlist). */
   async fetchById(id: string): Promise<Product | null> {
     try {
       return await this.productQuery.getById(id);
@@ -79,14 +85,6 @@ export class ProductService {
     }
   }
 
-  /**
-   * Best-effort snapshot for PopupService (trending/new-arrival/best-seller
-   * campaign lookups — all backed by the same fetched buckets as
-   * trending()/newArrivals()/bestSellers()). PopupService's arbitrary
-   * "specific product id" campaign case isn't guaranteed to be covered by
-   * this snapshot (see Pending Work) — a targeted follow-up should switch
-   * that one lookup to fetchById().
-   */
   get allProducts(): Product[] { return this.allLoaded(); }
 
   getBySlug(slug: string): Product | undefined {
@@ -121,7 +119,6 @@ export class ProductService {
   setSearch(q: string):    void { this.searchQuery.set(q); }
   setSort(o: SortOrder):   void { this.sortOrder.set(o); }
 
-  /** Single choke point for the "Buy on Flipkart" CTA — fires click tracking, then opens the link. No-ops (no "Coming Soon" here — that's a template-level gate) when the product has no Flipkart URL yet. */
   openProduct(product: Product): void {
     if (typeof window === 'undefined' || !product.flipkartUrl) return;
     this.productAnalytics.recordClick(product.id);
@@ -132,7 +129,6 @@ export class ProductService {
     return this.categories().find(c => c.id === categoryId)?.name ?? categoryId;
   }
 
-  /* ── Static site content — unchanged, not products/categories, out of scope ── */
   readonly testimonials: Testimonial[] = [
     { id: 1, name: 'Priya Sharma', location: 'Hyderabad', rating: 5, review: 'The fabric is so soft and comfortable. Perfect fit and exactly as shown in the pictures. Totally in love!', image: 'assets/images/testimonials/priya-sharma.jpg' },
     { id: 2, name: 'Sneha Iyer',   location: 'Bangalore', rating: 5, review: 'Beautiful design and amazing quality. I received so many compliments when I wore it!',                       image: 'assets/images/testimonials/sneha-iyer.jpg'  },

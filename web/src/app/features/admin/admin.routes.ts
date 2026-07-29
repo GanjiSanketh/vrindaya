@@ -32,7 +32,9 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'flipkart-ops', loadComponent: () => import('./pages/flipkart-ops/flipkart-ops-list.component').then(m => m.FlipkartOpsListComponent) },
       { path: 'popup-config', loadComponent: () => import('./pages/popup-config/popup-config.component').then(m => m.PopupConfigComponent) },
       { path: 'exit-intent', loadComponent: () => import('./pages/exit-intent-config/exit-intent-config.component').then(m => m.ExitIntentConfigComponent) },
-      { path: 'analytics', loadComponent: () => import('./pages/analytics/admin-analytics.component').then(m => m.AdminAnalyticsComponent) },
+      { path: 'analytics', loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent) },
+
+      { path: 'marketplace', loadChildren: () => import('./marketplace/marketplace.routes').then(m => m.MARKETPLACE_ROUTES) },
       { path: '**', redirectTo: 'products' },
     ],
   },

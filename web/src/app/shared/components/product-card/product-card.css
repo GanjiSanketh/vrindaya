@@ -1,6 +1,3 @@
-/* ═══════════════════════════════════
-   PRODUCT CARD — Luxury fashion style
-   ═══════════════════════════════════ */
 .pc-card {
   background: var(--white);
   border-radius: var(--r-md);
@@ -22,12 +19,34 @@
   }
 }
 
-/* ── Image ── */
+.pc-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 .pc-img-wrap {
   position: relative;
   aspect-ratio: 3 / 4;
   overflow: hidden;
   background: #f5f5f5;
+}
+
+.pc-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%);
+  background-size: 200% 100%;
+  background-position: 200% center;
+  transition: background-position 0s;
+}
+
+@media (hover: hover) {
+  .pc-card:hover .pc-shine {
+    background-position: -200% center;
+    transition: background-position 0.7s ease;
+  }
 }
 
 .pc-img {
@@ -41,9 +60,16 @@
 }
 
 .pc-img--primary {
-  opacity: 1;
+  opacity: 0;
   z-index: 1;
-  transition: opacity 0.42s ease, transform 0.42s ease;
+  filter: blur(8px);
+  transition: opacity 0.42s ease, transform 0.42s ease, filter 0.42s ease;
+  will-change: opacity;
+}
+
+.pc-img-loaded .pc-img--primary {
+  opacity: 1;
+  filter: blur(0);
 }
 
 .pc-img--hover {
@@ -56,12 +82,10 @@
 @media (hover: hover) {
   .pc-card:hover .pc-img--primary { opacity: 0; transform: scale(1.03); }
   .pc-card:hover .pc-img--hover   { opacity: 1; transform: scale(1.05); }
-  /* Keep primary visible when no hover image exists */
   .pc-img-wrap:not(.has-hover) .pc-img--primary,
   .pc-card:hover .pc-img-wrap:not(.has-hover) .pc-img--primary { opacity: 1; }
 }
 
-/* Placeholder */
 .pc-img-placeholder {
   width: 100%; height: 100%;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -70,12 +94,6 @@
 .pc-img-placeholder i    { font-size: 2rem; opacity: 0.3; color: var(--gold); }
 .pc-img-placeholder span { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.5; }
 
-/* ══════════════════════════════════════════════════
-   OVERLAY POSITIONING SYSTEM — reusable slot anchors
-   All slots position within .pc-img-wrap (position:relative)
-   ══════════════════════════════════════════════════ */
-
-/* Top-left: badges, labels */
 .pc-slot--tl {
   position: absolute;
   top: 0.75rem;
@@ -84,7 +102,6 @@
   pointer-events: none;
 }
 
-/* Top-right: primary action (wishlist) */
 .pc-slot--tr {
   position: absolute;
   top: 0.75rem;
@@ -92,7 +109,6 @@
   z-index: 5;
 }
 
-/* Top-right secondary: second action (quick view), stacked below primary */
 .pc-slot--tr-2 {
   position: absolute;
   top: calc(0.75rem + 36px + 0.5rem);
@@ -100,10 +116,6 @@
   z-index: 4;
 }
 
-/* ══════════════════════════════════════════════════
-   ACTION BUTTON BASE — reusable circular icon button
-   Use on any .pc-img-wrap child paired with a slot class
-   ══════════════════════════════════════════════════ */
 .pc-action-btn {
   width: 36px;
   height: 36px;
@@ -123,6 +135,8 @@
     transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
     color 0.18s ease,
     box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 @media (hover: hover) {
@@ -131,13 +145,16 @@
   .pc-action-btn:hover               { transform: scale(1.12); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); }
 }
 
-/* Always visible on touch screens */
+.pc-action-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 @media (max-width: 768px) {
   .pc-action-btn { opacity: 1; transform: scale(1); }
 }
 
-/* ── Badges ── */
-.pc-badges { /* layout only — pc-slot--tl handles position on image */ }
+.pc-badges { }
 
 .pc-badges--info {
   position: static;
@@ -159,7 +176,6 @@
 .pc-badge-new { background: var(--gold); color: var(--text); }
 .pc-badge-oos { background: #4b4b4b; color: #fff; }
 
-/* ── Wishlist heart — color + state only ── */
 .pc-wish-btn { color: var(--text-muted); }
 
 .pc-wish-btn.wishlisted {
@@ -172,7 +188,6 @@
   .pc-wish-btn:hover { color: #e53935; }
 }
 
-/* ── Hover CTA overlay ── */
 .pc-overlay {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -200,7 +215,6 @@
 
 .pc-overlay-cta--soon { opacity: 0.75; }
 
-/* ── Quick View button — color + state only ── */
 .pc-qv-btn { color: var(--text); font-size: 0.95rem; }
 
 @media (hover: hover) {
@@ -209,7 +223,6 @@
 
 @media (max-width: 768px) { .pc-qv-btn { display: none; } }
 
-/* ── Info panel ── */
 .pc-info {
   padding: 1.125rem 1rem 1.25rem;
   display: flex;
@@ -278,12 +291,10 @@
 .pc-link--soon { color: var(--text-muted); cursor: not-allowed; }
 .pc-link--soon:hover { color: var(--text-muted); gap: 0.4rem; }
 
-/* Touch devices — show overlay persistently */
 @media (hover: none) and (min-width: 769px) {
   .pc-overlay { transform: translateY(0); }
 }
 
-/* ── Mobile ── */
 @media (max-width: 768px) {
   .pc-overlay     { display: none; }
   .pc-img--hover  { display: none; }
@@ -302,7 +313,6 @@
   .pc-cta-label { font-size: 0.65rem; }
 }
 
-/* ── Very small screens (≤480px) ── */
 @media (max-width: 480px) {
   .pc-card { min-width: 0; }
 

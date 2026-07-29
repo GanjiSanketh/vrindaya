@@ -5,7 +5,7 @@
 
     <!-- Logo -->
     <div class="al-logo">
-      <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="al-logo-img" draggable="false" />
+      <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="al-logo-img" decoding="async" width="120" height="58" draggable="false" />
       <div class="al-logo-text">
         <span class="al-brand">VRINDAYA</span>
         <span class="al-subtitle">Admin Portal</span>
@@ -86,7 +86,7 @@
     @if (auth.currentUser(); as user) {
       <div class="al-user">
         @if (user.photoURL) {
-          <img [src]="user.photoURL" [alt]="user.name || 'Admin'" class="al-avatar" referrerpolicy="no-referrer" />
+          <img [src]="user.photoURL" [alt]="user.name || 'Admin'" class="al-avatar" decoding="async" width="36" height="36" referrerpolicy="no-referrer" />
         } @else {
           <div class="al-avatar al-avatar--placeholder"><i class="bi bi-person-fill"></i></div>
         }
@@ -118,11 +118,36 @@
         <i class="bi bi-list"></i>
       </button>
       <span class="al-topbar-title">Vrindaya Admin</span>
-      @if (auth.currentUser(); as user) {
-        <button class="al-topbar-signout" (click)="signOut()" title="Sign out">
-          <i class="bi bi-box-arrow-right"></i>
-        </button>
-      }
+      <div class="al-topbar-end">
+        @if (autosave.saving()) {
+          <span class="al-autosave al-autosave--saving" title="Saving..."><i class="bi bi-arrow-repeat"></i></span>
+        } @else if (autosave.lastSaved(); as last) {
+          <span class="al-autosave al-autosave--saved" title="Auto-saved {{ last | date:'HH:mm:ss' }}"><i class="bi bi-check-circle-fill"></i></span>
+        }
+        @if (recent.items().length > 0) {
+          <div class="al-recent-wrap">
+            <button class="al-topbar-btn" (click)="toggleRecent()" title="Recently Opened"><i class="bi bi-clock-history"></i></button>
+            @if (showRecent()) {
+              <div class="al-recent-dropdown">
+                <div class="al-recent-header">Recently Opened</div>
+                @for (item of recent.items(); track item.id) {
+                  <button class="al-recent-item" (click)="goToRecent(item)">
+                    <i class="bi {{ item.icon }}"></i>
+                    <span>{{ item.label }}</span>
+                    <small>{{ item.subtitle }}</small>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+        <button class="al-topbar-btn" (click)="openSearch()" title="Search (Ctrl+K)"><i class="bi bi-search"></i></button>
+        @if (auth.currentUser(); as user) {
+          <button class="al-topbar-signout" (click)="signOut()" title="Sign out">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        }
+      </div>
     </header>
 
     <!-- Page content -->
@@ -132,4 +157,101 @@
 
   </main>
 
+  <!-- ── Draft Recovery Toast ── -->
+  @if (drafts.showRecovery() && drafts.pendingDrafts().length > 0) {
+    <div class="ux-toast ux-toast--draft">
+      <div class="ux-toast-body">
+        <i class="bi bi-file-earmark-text"></i>
+        <span>{{ drafts.pendingDrafts().length }} unsaved draft(s) found</span>
+      </div>
+      <div class="ux-toast-actions">
+        <button class="ux-btn ux-btn--sm" (click)="dismissAllDrafts()">Dismiss all</button>
+      </div>
+    </div>
+  }
+
 </div>
+
+<!-- ── Global Search Overlay ── -->
+@if (kbd.showSearch()) {
+  <div class="ux-overlay" (click)="closeSearch()">
+    <div class="ux-modal ux-modal--search" (click)="$event.stopPropagation()">
+      <div class="ux-search-header">
+        <i class="bi bi-search"></i>
+        <input
+          #searchInput
+          class="ux-search-input"
+          placeholder="Search pages, products, listings..."
+          [value]="searchQuery"
+          (input)="onSearchInput($any($event.target).value)"
+          (keydown)="onSearchKeydown($event)"
+          autofocus
+        />
+        <kbd class="ux-kbd">ESC</kbd>
+      </div>
+      <div class="ux-search-results">
+        @for (r of search.results(); track r.path; let idx = $index) {
+          <button class="ux-search-item" [class.ux-search-item--selected]="search.selectedIndex() === idx" (click)="goToSearchResult(idx)" (mouseenter)="search.selectedIndex.set(idx)">
+            <i class="bi {{ r.icon }}"></i>
+            <div class="ux-search-item-text">
+              <span class="ux-search-item-label">{{ r.label }}</span>
+              <span class="ux-search-item-section">{{ r.section }}</span>
+            </div>
+          </button>
+        }
+        @if (search.results().length === 0) {
+          <div class="ux-search-empty">No results found</div>
+        }
+      </div>
+      <div class="ux-search-footer">
+        <span><kbd class="ux-kbd">↑↓</kbd> Navigate</span>
+        <span><kbd class="ux-kbd">↵</kbd> Open</span>
+        <span><kbd class="ux-kbd">ESC</kbd> Close</span>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Command Palette ── -->
+@if (kbd.showCommandPalette()) {
+  <div class="ux-overlay" (click)="kbd.showCommandPalette.set(false)">
+    <div class="ux-modal ux-modal--palette" (click)="$event.stopPropagation()">
+      <div class="ux-palette-header">
+        <i class="bi bi-terminal"></i>
+        <span>Command Palette</span>
+        <kbd class="ux-kbd">ESC</kbd>
+      </div>
+      <div class="ux-palette-commands">
+        <button class="ux-palette-item" (click)="runCommand('search')"><i class="bi bi-search"></i> Global Search <kbd class="ux-kbd">Ctrl+K</kbd></button>
+        <button class="ux-palette-item" (click)="runCommand('quicknav')"><i class="bi bi-compass"></i> Quick Navigation <kbd class="ux-kbd">Ctrl+P</kbd></button>
+        <button class="ux-palette-item" (click)="runCommand('help')"><i class="bi bi-question-circle"></i> Keyboard Shortcuts <kbd class="ux-kbd">?</kbd></button>
+        <button class="ux-palette-item" (click)="runCommand('undo')"><i class="bi bi-arrow-return-left"></i> Undo <kbd class="ux-kbd">Ctrl+Z</kbd></button>
+        <button class="ux-palette-item" (click)="runCommand('redo')"><i class="bi bi-arrow-return-right"></i> Redo <kbd class="ux-kbd">Ctrl+Shift+Z</kbd></button>
+        <button class="ux-palette-item" (click)="runCommand('save')"><i class="bi bi-floppy"></i> Save <kbd class="ux-kbd">Ctrl+S</kbd></button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Keyboard Shortcut Help ── -->
+@if (kbd.showHelp()) {
+  <div class="ux-overlay" (click)="kbd.showHelp.set(false)">
+    <div class="ux-modal ux-modal--help" (click)="$event.stopPropagation()">
+      <div class="ux-help-header">
+        <i class="bi bi-keyboard"></i>
+        <span>Keyboard Shortcuts</span>
+        <kbd class="ux-kbd">ESC</kbd>
+      </div>
+      <div class="ux-help-body">
+        <table class="ux-help-table">
+          <thead><tr><th>Shortcut</th><th>Action</th><th>Category</th></tr></thead>
+          <tbody>
+            @for (s of kbd.shortcuts(); track s.keys) {
+              <tr><td><kbd class="ux-kbd">{{ s.keys }}</kbd></td><td>{{ s.description }}</td><td><span class="ux-cat-badge">{{ s.category }}</span></td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+}

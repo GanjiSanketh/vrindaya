@@ -20,4 +20,6 @@ public interface ICategoryService
     Task DeleteAsync(string id, CancellationToken cancellationToken);
 
     Task ReorderAsync(List<string> orderedIds, CancellationToken cancellationToken);
+
+    Task<CategoryResponse> UploadImageAsync(string id, Microsoft.AspNetCore.Http.IFormFile file, CancellationToken cancellationToken);
 }

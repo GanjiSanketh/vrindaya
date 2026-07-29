@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, isDevMode, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormBuilder, ReactiveFormsModule, Validators, AbstractControl,
 } from '@angular/forms';
@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ProductApiService }                  from '../../../../core/services/product-api.service';
 import { AdminProductInput, VariantRequest }  from '../../../../core/models/product-api.model';
@@ -169,7 +170,9 @@ export class AdminProductFormComponent implements OnInit {
   get f(): { [key: string]: AbstractControl } { return this.form.controls; }
 
   constructor() {
-    this.form.get('name')!.valueChanges.subscribe(name => {
+    this.form.get('name')!.valueChanges.pipe(
+      takeUntilDestroyed(),
+    ).subscribe(name => {
       if (this.slugTouched) return;
       this.form.get('slug')!.setValue(slugify(name ?? ''), { emitEvent: false });
     });
@@ -267,7 +270,7 @@ export class AdminProductFormComponent implements OnInit {
   toggleVariant(id: string): void {
     this.expandedVariantIds.update(s => {
       const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
+      if (n.has(id)) { n.delete(id); } else { n.add(id); }
       return n;
     });
   }
@@ -391,7 +394,7 @@ export class AdminProductFormComponent implements OnInit {
       if (v.id !== variantId) return v;
       const img = v.gallery[index];
       if (img?.publicId) {
-        this.api.deleteVariantImage(this.productId(), variantId, img.publicId).subscribe({ error: () => {} });
+        firstValueFrom(this.api.deleteVariantImage(this.productId(), variantId, img.publicId)).catch(() => {});
       }
       if (img?.preview?.startsWith('blob:')) URL.revokeObjectURL(img.preview);
       let gallery = v.gallery.filter((_, i) => i !== index);
@@ -552,7 +555,7 @@ export class AdminProductFormComponent implements OnInit {
     this.slugError.set(null);
     this.saving.set(true);
 
-    console.log('[Step 2] Product Form', this.form.value);
+    if (isDevMode()) console.log('[Step 2] Product Form', this.form.value);
     const formVals      = this.form.getRawValue();
     const slug          = slugify(formVals.slug ?? '');
     const excludeId     = this.isEdit() ? this.productId() : undefined;
@@ -624,8 +627,10 @@ export class AdminProductFormComponent implements OnInit {
       variants,
     };
 
-    console.log('[Step 2] input.variants[0].flipkartUrl:', input.variants?.[0]?.flipkartUrl);
-    console.log('[Step 2] All variants flipkartUrl:', input.variants?.map(v => ({ id: v.id, flipkartUrl: v.flipkartUrl })));
+    if (isDevMode()) {
+      console.log('[Step 2] input.variants[0].flipkartUrl:', input.variants?.[0]?.flipkartUrl);
+      console.log('[Step 2] All variants flipkartUrl:', input.variants?.map(v => ({ id: v.id, flipkartUrl: v.flipkartUrl })));
+    }
     try {
       if (this.isEdit()) {
         await this.api.update(this.productId(), input);

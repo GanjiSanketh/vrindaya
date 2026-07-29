@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit, PLATFORM_ID, ChangeDetectionStrategy
 import { isPlatformBrowser }                               from '@angular/common';
 import { SwUpdate }                                        from '@angular/service-worker';
 import { filter, interval }                                from 'rxjs';
+import { takeUntilDestroyed }                              from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-update-notification',
@@ -21,11 +22,13 @@ export class UpdateNotificationComponent implements OnInit {
     if (!isPlatformBrowser(this.pid) || !this.swUpdate.isEnabled) return;
 
     this.swUpdate.versionUpdates.pipe(
-      filter(e => e.type === 'VERSION_READY')
+      filter(e => e.type === 'VERSION_READY'),
+      takeUntilDestroyed(),
     ).subscribe(() => this.showUpdate.set(true));
 
-    // Check every 6 hours
-    interval(6 * 60 * 60 * 1000).subscribe(() => this.swUpdate.checkForUpdate());
+    interval(6 * 60 * 60 * 1000).pipe(
+      takeUntilDestroyed(),
+    ).subscribe(() => this.swUpdate.checkForUpdate());
   }
 
   async reload(): Promise<void> {

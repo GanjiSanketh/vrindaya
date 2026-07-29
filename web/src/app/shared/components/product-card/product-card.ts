@@ -8,16 +8,20 @@ import { ProductService }         from '../../../core/services/product.service';
 import { QuickViewService }       from '../../../core/services/quick-view.service';
 import { WishlistService }        from '../../../core/services/wishlist.service';
 import { RecentlyViewedService }  from '../../../core/services/recently-viewed.service';
+import { CloudinaryUrlPipe, CloudinarySrcsetPipe }
+  from '../../pipes/cloudinary-url.pipe';
+
+const PLACEHOLDER = 'assets/images/product-placeholder.svg';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CloudinaryUrlPipe, CloudinarySrcsetPipe],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductCard {
+export class ProductCardComponent {
   private readonly productService  = inject(ProductService);
   private readonly quickView       = inject(QuickViewService);
   readonly wishlist                = inject(WishlistService);
@@ -26,20 +30,16 @@ export class ProductCard {
 
   product = input.required<Product>();
 
-  readonly imgError      = signal(false);
-  readonly hoverImgError = signal(false);
-  readonly isWishlisted  = computed(() => this.wishlist.has(this.product().id));
+  readonly imgError       = signal(false);
+  readonly hoverImgError  = signal(false);
+  readonly primaryLoaded  = signal(false);
+  readonly isWishlisted   = computed(() => this.wishlist.has(this.product().id));
 
-  /**
-   * Resolved hover image: explicit hoverImage field → gallery[0] → null (no hover).
-   * gallery[0] is the first alternate-angle shot, distinct from the cover.
-   */
   readonly hoverImage = computed<string | null>(() => {
     const p = this.product();
     return p.hoverImage ?? p.gallery?.[0] ?? null;
   });
 
-  /** True when no second image exists or the hover image failed to load. */
   readonly noHover = computed(() => {
     if (this.hoverImgError()) return true;
     return !this.hoverImage();
@@ -49,7 +49,14 @@ export class ProductCard {
     if (isDevMode()) {
       effect(() => {
         const p = this.product();
-        console.log('[PRODUCT]', { id: p.id, name: p.name, flipkartUrl: p.flipkartUrl, flipkartProductUrl: p.flipkartProductUrl });
+        console.log('[PRODUCT]', {
+          id: p.id, name: p.name,
+          image: p.image, thumbUrl: p.thumbnailUrl,
+          hoverImage: p.hoverImage,
+          gallery: p.gallery,
+          flipkartUrl: p.flipkartUrl,
+          flipkartProductUrl: p.flipkartProductUrl,
+        });
       });
     }
 
@@ -78,13 +85,19 @@ export class ProductCard {
     this.wishlist.toggle(this.product().id);
   }
 
-  onImgError(): void {
-    if (isDevMode()) console.warn('[IMAGE] Cover image failed:', this.product().image);
+  onPrimaryLoad(): void {
+    this.primaryLoaded.set(true);
+  }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (isDevMode()) console.warn('[IMAGE] Cover image failed:', img.src);
     this.imgError.set(true);
   }
 
-  onHoverImgError(): void {
-    if (isDevMode()) console.warn('[IMAGE] Hover image failed — falling back to cover:', this.hoverImage());
+  onHoverImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (isDevMode()) console.warn('[IMAGE] Hover image failed:', img.src);
     this.hoverImgError.set(true);
   }
 }

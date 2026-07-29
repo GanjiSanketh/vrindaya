@@ -1,12 +1,12 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ProductCard } from '../../shared/components/product-card/product-card';
+import { ProductCardComponent } from '../../shared/components/product-card/product-card';
 import { Product } from '../../core/models/product.model';
 
 @Component({
   selector: 'app-best-sellers',
   standalone: true,
-  imports: [ProductCard, RouterLink],
+  imports: [ProductCardComponent, RouterLink],
   templateUrl: './best-sellers.html',
   styleUrl: './best-sellers.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

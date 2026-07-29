@@ -56,7 +56,7 @@
               <td>{{ s.colourName }}</td>
               <td>{{ s.size }}</td>
               <td>{{ s.quantity }}</td>
-              <td><span class="sl-badge" [class]="channelBadge(s.saleChannel)">{{ s.saleChannel }}</span></td>
+              <td><span [class]="'sl-badge ' + channelBadge(s.saleChannel)">{{ s.saleChannel }}</span></td>
               <td>{{ s.sellingPrice | currency:'INR' }}</td>
               <td>{{ s.totalCost | currency:'INR' }}</td>
               <td class="td-profit">{{ s.amountReceived | currency:'INR' }}</td>

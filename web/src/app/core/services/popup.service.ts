@@ -1,7 +1,8 @@
 import { HttpClient }                       from '@angular/common/http';
-import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject, signal, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { isPlatformBrowser }               from '@angular/common';
-import { catchError, of }                  from 'rxjs';
+import { catchError, of, Observable }      from 'rxjs';
+import { takeUntilDestroyed }              from '@angular/core/rxjs-interop';
 
 import { PopupConfig, CampaignType } from '../models/popup.model';
 import { Product }                   from '../models/product.model';
@@ -14,6 +15,7 @@ const STORAGE_KEY = 'vrindaya_popup_config';
 export class PopupService {
   private readonly http          = inject(HttpClient);
   private readonly platformId    = inject(PLATFORM_ID);
+  private readonly destroyRef    = inject(DestroyRef);
   private readonly productService = inject(ProductService);
 
   readonly floatingCard = signal(false);
@@ -45,7 +47,8 @@ export class PopupService {
 
     this.http
       .get<PopupConfig>('assets/config/popup-config.json')
-      .pipe(catchError(() => of(null)))
+      .pipe(catchError((): Observable<PopupConfig | null> => of(null)))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(cfg => {
         if (cfg) {
           this.config = cfg;

@@ -4,18 +4,27 @@
 @let wishlisted = isWishlisted();
 
 <div class="pc-card" (click)="openFlipart($event)" role="button" tabindex="0"
-     (keydown.enter)="openFlipart($event)" [attr.aria-label]="p.name">
+     (keydown.enter)="openFlipart($event)" [attr.aria-label]="'View ' + p.name">
 
-  <div class="pc-img-wrap" [class.has-hover]="!noHoverImg">
+  <div class="pc-img-wrap" [class.has-hover]="!noHoverImg" [class.pc-img-loaded]="primaryLoaded()">
+    <div class="pc-shine" aria-hidden="true"></div>
+
     @if (!imgError()) {
-      <img [src]="p.image || ''" [alt]="p.name"
-           class="pc-img pc-img--primary" loading="lazy"
-           draggable="false" (error)="onImgError()" />
+      <img [src]="(p.image || 'assets/images/product-placeholder.svg') | cloudinaryUrl:400"
+           [srcset]="(p.image || '') | cloudinarySrcset"
+           sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 25vw"
+           [alt]="p.name"
+           class="pc-img pc-img--primary" loading="lazy" decoding="async"
+           width="400" height="533"
+           draggable="false" (error)="onImgError($event)" (load)="onPrimaryLoad()" />
       @if (hoverImg && !hoverImgError()) {
-        <img [src]="hoverImg" [alt]="p.name"
-             class="pc-img pc-img--hover" loading="lazy"
+        <img [src]="hoverImg | cloudinaryUrl:400"
+             [srcset]="hoverImg | cloudinarySrcset"
+             sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 25vw"
+             alt="" class="pc-img pc-img--hover" loading="lazy" decoding="async"
+             width="400" height="533"
              draggable="false" aria-hidden="true"
-             (error)="onHoverImgError()" />
+             (error)="onHoverImgError($event)" />
       }
     } @else {
       <div class="pc-img-placeholder">

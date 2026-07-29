@@ -170,13 +170,13 @@
                 <td>
                   <div class="pl-product-name pl-link" (click)="openPreview(p.id)">{{ p.name }}</div>
                   <div class="pl-product-meta">
-                    <span class="pl-variant-meta">{{ p.variantCount ?? 0 }} color{{ (p.variantCount ?? 0) !== 1 ? 's' : '' }}</span>
+                    <span class="pl-variant-meta">{{ p.variantCount }} color{{ p.variantCount !== 1 ? 's' : '' }}</span>
                     <span class="pl-meta-dot"></span>
-                    <span>{{ p.totalStock ?? 0 }} total stock</span>
+                    <span>{{ p.totalStock }} total stock</span>
                   </div>
                 </td>
                 <td>
-                  <span class="pl-stock-value">{{ p.totalStock ?? 0 }}</span>
+                  <span class="pl-stock-value">{{ p.totalStock }}</span>
                   @if (p.totalStock <= 0) {
                     <span class="pl-badge-stock pl-stock-out">Out</span>
                   } @else if (p.isLowStock) {

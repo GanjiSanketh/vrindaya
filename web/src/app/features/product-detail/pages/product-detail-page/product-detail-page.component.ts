@@ -10,7 +10,7 @@ import { LightboxService } from '../../../../core/services/lightbox.service';
 import { SeoService } from '../../../../core/services/seo.service';
 import { Product } from '../../../../core/models/product.model';
 import type { ProductVariant } from '../../../../core/models/product-variant.model';
-import { ProductCard } from '../../../../shared/components/product-card/product-card';
+import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent } from '../../../../shared/components/skeleton/skeleton-grid.component';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
@@ -19,7 +19,7 @@ const RELATED_LIMIT = 8;
 @Component({
   selector: 'app-product-detail-page',
   standalone: true,
-  imports: [RouterLink, ProductCard, SkeletonGridComponent, CloudinaryUrlPipe, CloudinarySrcsetPipe],
+  imports: [RouterLink, ProductCardComponent, SkeletonGridComponent, CloudinaryUrlPipe, CloudinarySrcsetPipe],
   templateUrl: './product-detail-page.component.html',
   styleUrl: './product-detail-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

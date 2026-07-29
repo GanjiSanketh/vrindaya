@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, computed, isDevMode, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProductApiService } from '../../../../core/services/product-api.service';
@@ -256,7 +256,7 @@ export class AdminProductListComponent {
   toggleSelect(id: string): void {
     this.selectedIds.update(set => {
       const next = new Set(set);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
       return next;
     });
   }
@@ -306,12 +306,12 @@ export class AdminProductListComponent {
 
   /* ── Single-row actions ── */
 
-  confirmDelete(id: string): void { console.log("Delete clicked", id); this.deleteId.set(id); this.deleteError.set(null); }
+  confirmDelete(id: string): void { if (isDevMode()) console.log("Delete clicked", id); this.deleteId.set(id); this.deleteError.set(null); }
   cancelDelete():            void { this.deleteId.set(null); this.deleteError.set(null); }
 
   async doDelete(): Promise<void> {
     const id = this.deleteId();
-    console.log("doDelete called for", id);
+    if (isDevMode()) console.log("doDelete called for", id);
     if (id === null) return;
     this.deleting.set(true);
     this.deleteError.set(null);

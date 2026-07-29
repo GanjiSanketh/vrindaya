@@ -1,10 +1,11 @@
-import { Component, inject, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy, DestroyRef, afterNextRender, ElementRef, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink }                             from '@angular/router';
-import { Subscription }                                           from 'rxjs';
+import { switchMap, distinctUntilChanged }                        from 'rxjs';
+import { takeUntilDestroyed }                                     from '@angular/core/rxjs-interop';
 import { ProductQueryService, PUBLIC_SORT_OPTIONS }               from '../../../../core/services/product-query.service';
 import { CategoryService }                                        from '../../../../core/services/category.service';
 import { Category, Product }                                      from '../../../../core/models/product.model';
-import { ProductCard }                                            from '../../../../shared/components/product-card/product-card';
+import { ProductCardComponent }                                            from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent }                                  from '../../../../shared/components/skeleton/skeleton-grid.component';
 import { SeoService }                                             from '../../../../core/services/seo.service';
 
@@ -14,17 +15,16 @@ const SORT_OPTIONS = PUBLIC_SORT_OPTIONS;
 @Component({
   selector: 'app-product-listing',
   standalone: true,
-  imports: [RouterLink, ProductCard, SkeletonGridComponent],
+  imports: [RouterLink, ProductCardComponent, SkeletonGridComponent],
   templateUrl: './product-listing.component.html',
   styleUrl: './product-listing.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductListingComponent implements OnInit, OnDestroy {
+export class ProductListingComponent {
   private readonly route  = inject(ActivatedRoute);
   private readonly categoryQuery = inject(CategoryService);
   private readonly query  = inject(ProductQueryService);
   private readonly seo    = inject(SeoService);
-  private paramSub!: Subscription;
 
   readonly categoryId = signal('');
   readonly sortOptions = SORT_OPTIONS;
@@ -38,18 +38,25 @@ export class ProductListingComponent implements OnInit, OnDestroy {
   readonly loadingMore = signal(false);
   readonly error       = signal<string | null>(null);
 
-  /** Server-side sorted (see load()) — items() is already in the right order. */
   readonly products = this.items;
 
-  ngOnInit(): void {
-    this.paramSub = this.route.paramMap.subscribe(async params => {
-      const id = params.get('id') ?? '';
+  private readonly destroyRef = inject(DestroyRef);
+  readonly sentinelEl = viewChild<ElementRef<HTMLElement>>('sentinel');
 
-      // CategoryService caches this (5 min TTL / in-flight de-dupe) — cheap even though ProductService already fetched it once at app start.
-      const categories = await this.categoryQuery.getAll().catch(() => [] as Category[]);
-      const cat = categories.find(c => c.id === id);
-      if (!cat) return;
-
+  constructor() {
+    this.route.paramMap.pipe(
+      distinctUntilChanged((a, b) => a.get('id') === b.get('id')),
+      switchMap(async params => {
+        const id = params.get('id') ?? '';
+        const categories = await this.categoryQuery.getAll().catch(() => [] as Category[]);
+        const cat = categories.find(c => c.id === id);
+        if (!cat) return;
+        return { id, cat };
+      }),
+      takeUntilDestroyed(),
+    ).subscribe(async result => {
+      if (!result) return;
+      const { id, cat } = result;
       this.categoryId.set(id);
       this.category.set(cat);
       this.sortKey.set('displayOrder');
@@ -61,19 +68,39 @@ export class ProductListingComponent implements OnInit, OnDestroy {
         keywords:    cat.seoKeywords?.length ? cat.seoKeywords : [cat.name.toLowerCase(), cat.id.replace(/-/g, ' '), 'ethnic wear', 'buy online india'],
         url:         `/category/${id}`,
         image:       cat.bannerImage || cat.image,
-        jsonLd: {
-          '@context': 'https://schema.org',
-          '@type': 'CollectionPage',
-          'name': cat.name,
-          'url': `https://vrindaya.in/category/${id}`,
-          'description': cat.description || `Shop ${cat.name} — ${cat.subtitle} at Vrindaya`,
-          'isPartOf': { '@type': 'WebSite', 'url': 'https://vrindaya.in' },
-        },
+        jsonLd: [
+          {
+            '@type': 'CollectionPage',
+            'name': cat.name,
+            'url': `https://vrindaya.in/category/${id}`,
+            'description': cat.description || `Shop ${cat.name} — ${cat.subtitle} at Vrindaya`,
+            'isPartOf': { '@type': 'WebSite', 'url': 'https://vrindaya.in' },
+          },
+          this.seo.breadcrumb([
+            { name: 'Home', url: '/' },
+            { name: cat.name, url: `/category/${id}` },
+          ]),
+        ],
       });
     });
-  }
 
-  ngOnDestroy(): void { this.paramSub.unsubscribe(); }
+    if (typeof window !== 'undefined') {
+      afterNextRender(() => {
+        const sentinel = this.sentinelEl()?.nativeElement;
+        if (!sentinel) return;
+        const observer = new IntersectionObserver(
+          entries => {
+            if (entries[0]?.isIntersecting && this.nextCursor() && !this.loadingMore()) {
+              void this.loadMore();
+            }
+          },
+          { rootMargin: '400px' },
+        );
+        observer.observe(sentinel);
+        this.destroyRef.onDestroy(() => observer.disconnect());
+      });
+    }
+  }
 
   private async load(): Promise<void> {
     this.loading.set(true);

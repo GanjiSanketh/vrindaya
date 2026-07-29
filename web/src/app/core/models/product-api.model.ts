@@ -1,3 +1,4 @@
+import { isDevMode } from '@angular/core';
 import { Product, ProductImage, ProductSize } from './product.model';
 
 /** Wire shapes returned by the ASP.NET Core API (System.Text.Json camelCase). */
@@ -502,7 +503,12 @@ function toProductImage(img: ApiProductImage): ProductImage {
 
 /** Admin list rows only ever come from ApiProductSummary — sizes/images/description are intentionally blank (not needed for list display; the form fetches full detail separately). */
 export function apiSummaryToProduct(dto: ApiProductSummary): Product {
-  console.log('[apiSummaryToProduct]', { id: dto.id, name: dto.name, flipkartProductUrl: dto.flipkartProductUrl });
+  if (isDevMode()) console.log('[apiSummaryToProduct]', {
+    id: dto.id, name: dto.name,
+    thumbnail: dto.thumbnail,
+    imageUrl: dto.thumbnail?.url ?? '(none)',
+    flipkartProductUrl: dto.flipkartProductUrl,
+  });
   const images = dto.thumbnail ? [toProductImage(dto.thumbnail)] : [];
 
   return {
@@ -571,6 +577,13 @@ export function apiSummaryToProduct(dto: ApiProductSummary): Product {
 
 /** Same but falls back to any variant's flipkartUrl when the product-level field is empty (defence-in-depth — the backend sync should keep them in sync). */
 export function apiDetailToProduct(dto: ApiProductDetail): Product {
+  if (isDevMode()) console.log('[apiDetailToProduct]', {
+    id: dto.id, name: dto.name,
+    thumbnail: dto.thumbnail,
+    imageCount: dto.images?.length ?? 0,
+    firstImageUrl: dto.images?.[0]?.url ?? '(none)',
+    allImageUrls: dto.images?.map(i => i.url),
+  });
   // Derive flipkartUrl from the first variant that has one when the product-level field is empty
   const flipkartUrl = dto.flipkartProductUrl
     ?? dto.variants?.find(v => v.flipkartUrl)?.flipkartUrl

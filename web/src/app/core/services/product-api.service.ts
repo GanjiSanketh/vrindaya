@@ -210,9 +210,7 @@ export class ProductApiService {
 
   /** Permanently deletes the product, all variants, and all Cloudinary images. Returns the response so the caller can show a success message. */
   async delete(id: string): Promise<{ success: boolean; message: string }> {
-    console.log("ProductApiService.delete: Calling DELETE", `${BASE}/${id}`);
     const res = await firstValueFrom(this.http.delete<{ success: boolean; message: string }>(`${BASE}/${id}`));
-    console.log("ProductApiService.delete: Response", res);
     this.products.update(list => list.filter(p => p.id !== id));
     return res;
   }

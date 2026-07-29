@@ -1,5 +1,6 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-not-found',
@@ -9,4 +10,14 @@ import { RouterLink } from '@angular/router';
   styleUrl: './not-found.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NotFoundComponent {}
+export class NotFoundComponent {
+  private readonly seo = inject(SeoService);
+
+  constructor() {
+    this.seo.setPage({
+      title: 'Page Not Found',
+      description: 'The page you are looking for does not exist or has been moved. Browse Vrindaya — premium Indian ethnic wear.',
+      url: '/not-found',
+    });
+  }
+}

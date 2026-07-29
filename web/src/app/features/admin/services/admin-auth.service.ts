@@ -1,8 +1,9 @@
-import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../../environments/environment';
 import { LoggerService } from '../../../core/services/logger.service';
 import { APP_ROUTES } from '../../../core/constants/routes.constants';
@@ -33,6 +34,7 @@ export class AdminAuthService {
   private readonly http = inject(HttpClient);
   private readonly productApi = inject(ProductApiService);
   private readonly tokenStorage = inject(AuthTokenStorageService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly currentUser = signal<AdminUser | null>(null);
   readonly isLoading = signal(true);
@@ -44,7 +46,7 @@ export class AdminAuthService {
     if (isPlatformBrowser(this.pid)) {
       this.restoreSession();
       void this.initFirebaseBackground();
-      this.tokenStorage.changedInAnotherTab$.subscribe(session => this.onExternalSessionChange(session));
+      this.tokenStorage.changedInAnotherTab$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(session => this.onExternalSessionChange(session));
     } else {
       this.isLoading.set(false);
     }

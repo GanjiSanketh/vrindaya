@@ -6,6 +6,27 @@
   height: calc(100% - 50px);
   overflow: hidden;
   background: #2a2520;
+  perspective: 1200px;
+}
+
+.hero-sequence-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #2a2520 25%, #3d352f 50%, #2a2520 75%);
+  background-size: 200% 100%;
+  animation: hero-shimmer 1.8s ease-in-out infinite;
+  z-index: 0;
+}
+
+.hero-sequence-container.loaded::before {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+@keyframes hero-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
 
 .hero-image {
@@ -14,14 +35,16 @@
   height: 100%;
   object-fit: cover;
   object-position: center center;
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
   opacity: 0;
-  transition: opacity 0.6s ease;
+  filter: blur(12px);
+  transition: opacity 0.8s ease, filter 0.8s ease;
   transform: scale(1.08);
 }
 
 .hero-image--loaded {
   opacity: 1;
+  filter: blur(0);
   animation: hero-kenburns 1.2s ease-out forwards;
 }
 
@@ -45,10 +68,77 @@
   );
 }
 
+.decorative-layers {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.floating-el {
+  position: absolute;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  animation: float-var var(--float-duration, 8s) ease-in-out var(--float-delay, 0s) infinite;
+}
+
+.floating-el.el-diamond {
+  animation-name: float-diamond;
+}
+
+.floating-el.el-ring {
+  animation-name: float-ring;
+}
+
+.floating-el.el-dot {
+  animation-name: float-dot;
+}
+
+.floating-el.el-line {
+  animation-name: float-line;
+}
+
+.depth-1 { z-index: 1; }
+.depth-2 { z-index: 2; }
+.depth-3 { z-index: 3; }
+
+@keyframes float-diamond {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33%      { transform: translate3d(4px, -12px, 0) rotate(3deg); }
+  66%      { transform: translate3d(-3px, -6px, 0) rotate(-2deg); }
+}
+
+@keyframes float-ring {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-5px, -10px, 0) scale(1.04); }
+}
+
+@keyframes float-dot {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  25%      { transform: translate3d(6px, -8px, 0); }
+  75%      { transform: translate3d(-4px, -4px, 0); }
+}
+
+@keyframes float-line {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%      { transform: translate3d(8px, -6px, 0) rotate(2deg); }
+}
+
+@media (max-width: 768px) {
+  .decorative-layers { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-image {
     animation: none;
     transform: none;
     opacity: 1;
+    filter: blur(0);
+  }
+
+  .floating-el {
+    animation: none;
+    display: none;
   }
 }

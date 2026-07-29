@@ -321,7 +321,7 @@
                         @for (img of v.gallery; track trackByGalleryIndex($index, img); let idx = $index) {
                           <div class="vg-item" [class.vg-item--cover]="img.isCover">
                             <div class="vg-img-wrap">
-                              <img [src]="img.preview || img.url" class="vg-img" loading="lazy" />
+                              <img [src]="img.preview || img.url" class="vg-img" loading="lazy" alt="Variant image" />
                               @if (img.uploading) {
                                 <div class="vg-overlay"><div class="pf-spinner"></div></div>
                               }

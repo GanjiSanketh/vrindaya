@@ -13,11 +13,13 @@ public class CategoryService : ICategoryService
 
     private readonly ICategoryRepository _repository;
     private readonly IMemoryCache _memoryCache;
+    private readonly ICloudinaryService _cloudinary;
 
-    public CategoryService(ICategoryRepository repository, IMemoryCache memoryCache)
+    public CategoryService(ICategoryRepository repository, IMemoryCache memoryCache, ICloudinaryService cloudinary)
     {
         _repository = repository;
         _memoryCache = memoryCache;
+        _cloudinary = cloudinary;
     }
 
     public async Task<List<CategoryResponse>> GetActiveAsync(CancellationToken cancellationToken)
@@ -124,6 +126,34 @@ public class CategoryService : ICategoryService
     {
         await _repository.ReorderAsync(orderedIds, cancellationToken);
         _memoryCache.Remove(AppConstants.CategoriesActiveCacheKey);
+    }
+
+    public async Task<CategoryResponse> UploadImageAsync(string id, Microsoft.AspNetCore.Http.IFormFile file, CancellationToken cancellationToken)
+    {
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Category", id);
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms, cancellationToken);
+        var bytes = ms.ToArray();
+        var extension = Path.GetExtension(file.FileName)?.TrimStart('.') ?? "jpg";
+        
+        var uploadResult = await _cloudinary.ReplaceImageAsync(
+            "categories",
+            existing.ImagePublicId,
+            bytes,
+            file.ContentType,
+            extension,
+            file.FileName,
+            cancellationToken);
+
+        existing.Image = uploadResult.SecureUrl;
+        existing.ImagePublicId = uploadResult.PublicId;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        await _repository.UpdateAsync(id, existing, cancellationToken);
+        _memoryCache.Remove(AppConstants.CategoriesActiveCacheKey);
+        
+        return ToResponse(id, existing);
     }
 
     private static CategoryResponse ToResponse(string id, CategoryDocument doc) => new()

@@ -27,8 +27,9 @@
 
         <div class="qv-main-wrap" (click)="openLightbox()" title="Click to zoom"
              (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()">
-          <img [src]="selectedImage()" [alt]="product.name"
-               class="qv-main-img" loading="eager" draggable="false"
+          <img [src]="selectedImage() | cloudinaryUrl:800" [alt]="product.name"
+               class="qv-main-img" loading="eager" decoding="async"
+               width="600" height="800" draggable="false"
                [style.transform-origin]="transformOrigin()"
                [class.zoomed]="isZoomed()" />
           <div class="qv-zoom-hint"><i class="bi bi-zoom-in"></i></div>
@@ -40,8 +41,8 @@
               <button class="qv-thumb" [class.active]="selectedIndex() === i"
                       (click)="selectedIndex.set(i)"
                       [attr.aria-label]="'View image ' + (i + 1)">
-                <img [src]="img" [alt]="product.name + ' view ' + (i + 1)"
-                     loading="lazy" draggable="false" />
+                <img [src]="img | cloudinaryUrl:150" [alt]="product.name + ' view ' + (i + 1)"
+                     loading="lazy" decoding="async" width="75" height="100" draggable="false" />
               </button>
             }
           </div>

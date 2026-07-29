@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, isDevMode } from '@angular/core';
 import { HERO_CONFIG } from './hero.config';
 
 export interface PreloadProgress {
@@ -36,7 +36,7 @@ export class HeroPreloadService {
         };
         img.onerror = () => {
           const url = HERO_CONFIG.frames.getUrl(i + 1);
-          console.error('[HeroPreload] Failed to load frame:', url);
+          if (isDevMode()) console.error('[HeroPreload] Failed to load frame:', url);
           this.cache.set(i, img);
           this.progress.update(p => ({
             ...p,
@@ -47,7 +47,7 @@ export class HeroPreloadService {
         };
         const src = HERO_CONFIG.frames.getUrl(i + 1);
         if (typeof src !== 'string' || !src) {
-          console.error('[HeroPreload] Null or invalid image URL at index', i + 1);
+          if (isDevMode()) console.error('[HeroPreload] Null or invalid image URL at index', i + 1);
         }
         img.src = src;
       });

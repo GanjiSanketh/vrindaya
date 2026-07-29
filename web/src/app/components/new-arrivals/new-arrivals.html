@@ -1,8 +1,7 @@
 <section class="na-section section-pad" id="new-arrivals">
   <div class="container-vr">
 
-    <!-- Header -->
-    <div class="section-header">
+    <div class="section-header" data-reveal>
       <svg class="lotus-icon" viewBox="0 0 40 32" xmlns="http://www.w3.org/2000/svg" width="40" height="32">
         <path d="M20 4C20 4 11 11 11 20C11 25 14.8 29 20 29C25.2 29 29 25 29 20C29 11 20 4 20 4Z" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
         <path d="M20 10C13 8 7 12 6 18" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
@@ -20,14 +19,12 @@
       <p class="section-desc">Fresh styles just in — discover the latest additions to our collection.</p>
     </div>
 
-    <!-- Product grid (homepage: top 4 only) -->
     <div class="na-grid">
-      @for (p of preview(); track p.id) {
-        <app-product-card [product]="p" />
+      @for (p of preview(); track p.id; let i = $index) {
+        <app-product-card [product]="p" style="--stagger-delay: {{ i * 60 }}ms" />
       }
     </div>
 
-    <!-- View All CTA -->
     <div class="na-cta">
       <a routerLink="/new-arrivals" class="btn-outline">
         View All New Arrivals <i class="bi bi-arrow-right"></i>

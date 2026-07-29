@@ -5,10 +5,14 @@
   "theme_color": "#0f6f84",
   "background_color": "#ffffff",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "scope": "/",
   "start_url": "/",
+  "lang": "en",
   "categories": ["shopping", "lifestyle"],
+  "prefer_related_applications": false,
+  "related_applications": [],
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",

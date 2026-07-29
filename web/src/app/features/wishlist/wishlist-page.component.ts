@@ -4,7 +4,7 @@ import { RouterLink }                from '@angular/router';
 import { WishlistService }           from '../../core/services/wishlist.service';
 import { ProductService }            from '../../core/services/product.service';
 import { Product }                   from '../../core/models/product.model';
-import { ProductCard }               from '../../shared/components/product-card/product-card';
+import { ProductCardComponent }               from '../../shared/components/product-card/product-card';
 import { SkeletonGridComponent }     from '../../shared/components/skeleton/skeleton-grid.component';
 import { ScrollRevealDirective }     from '../../shared/directives/scroll-reveal.directive';
 import { SeoService }                from '../../core/services/seo.service';
@@ -12,7 +12,7 @@ import { SeoService }                from '../../core/services/seo.service';
 @Component({
   selector: 'app-wishlist-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, ProductCard, SkeletonGridComponent, ScrollRevealDirective],
+  imports: [CommonModule, RouterLink, ProductCardComponent, SkeletonGridComponent, ScrollRevealDirective],
   templateUrl: './wishlist-page.component.html',
   styleUrl: './wishlist-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,6 +52,12 @@ export class WishlistPageComponent implements OnInit {
       description: 'Your saved Vrindaya pieces — curated with love.',
       keywords: ['wishlist', 'saved products', 'vrindaya favourites'],
       url: '/wishlist',
+      jsonLd: {
+        '@type': 'WebPage',
+        'name': 'My Wishlist — Vrindaya',
+        'url': 'https://vrindaya.in/wishlist',
+        'description': 'Your saved Vrindaya pieces — curated with love.',
+      },
     });
   }
 }
