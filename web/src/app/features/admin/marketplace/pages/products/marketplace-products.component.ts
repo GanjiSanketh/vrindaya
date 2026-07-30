@@ -152,7 +152,7 @@ const PUBLISH_STATUS_ORDER: Record<string, number> = { published: 0, pending_rev
                   <td><input type="checkbox" class="form-check-input" [checked]="row.product.id ? selectedIds().has(row.product.id) : false" (change)="row.product.id && toggleSelection(row.product.id)" /></td>
                   <td>
                     @if (row.imageUrl) {
-                      <img [src]="row.imageUrl" alt="" class="rounded" style="width:36px;height:36px;object-fit:cover" referrerpolicy="no-referrer" />
+                      <img [src]="row.imageUrl" alt="" class="rounded" loading="lazy" style="width:36px;height:36px;object-fit:cover" referrerpolicy="no-referrer" />
                     }
                   </td>
                   <td class="fw-medium text-truncate" style="max-width:180px" [title]="row.product.name">{{ row.product.name }}</td>

@@ -5,7 +5,7 @@
 
     <!-- Logo -->
     <div class="al-logo">
-      <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="al-logo-img" decoding="async" width="120" height="58" draggable="false" />
+      <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="al-logo-img" loading="lazy" decoding="async" width="120" height="58" draggable="false" />
       <div class="al-logo-text">
         <span class="al-brand">VRINDAYA</span>
         <span class="al-subtitle">Admin Portal</span>
@@ -37,7 +37,7 @@
                   (click)="toggleSection(section.key)"
                   (keydown)="handleKeydown($event, section.key)"
                   attr.aria-controls="section-{{ section.key }}-panel">
-            <i class="bi" [class]="section.icon"></i>
+            <i [class]="'bi ' + section.icon"></i>
             <span>{{ section.label }}</span>
             <i class="bi bi-chevron-right al-tree-chevron"></i>
           </button>
@@ -51,7 +51,7 @@
               @for (item of section.items; track item.label) {
                   @if (item.comingSoon) {
                     <span class="al-nav-item al-nav-item--soon" role="treeitem">
-                      <i class="bi" [class]="item.icon"></i>
+                      <i [class]="'bi ' + item.icon"></i>
                       <span>{{ item.label }}</span>
                       <span class="al-soon-badge">Soon</span>
                     </span>
@@ -63,7 +63,7 @@
                        [class.al-nav-item--indent]="true"
                        role="treeitem"
                        (click)="closeSide()">
-                      <i class="bi" [class]="item.icon"></i>
+                      <i [class]="'bi ' + item.icon"></i>
                       <span>{{ item.label }}</span>
                     </a>
                   }
@@ -86,7 +86,7 @@
     @if (auth.currentUser(); as user) {
       <div class="al-user">
         @if (user.photoURL) {
-          <img [src]="user.photoURL" [alt]="user.name || 'Admin'" class="al-avatar" decoding="async" width="36" height="36" referrerpolicy="no-referrer" />
+          <img [src]="user.photoURL" [alt]="user.name || 'Admin'" class="al-avatar" loading="lazy" decoding="async" width="36" height="36" referrerpolicy="no-referrer" />
         } @else {
           <div class="al-avatar al-avatar--placeholder"><i class="bi bi-person-fill"></i></div>
         }

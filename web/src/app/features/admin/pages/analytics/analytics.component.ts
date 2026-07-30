@@ -2,7 +2,6 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { ChartComponent } from '../../../../shared/components/chart/chart.component';
 import { AnalyticsService } from '../../services/analytics.service';
-import type { ChartDataset } from '../../marketplace/models/chart.model';
 
 type TabId = 'sales' | 'products' | 'categories' | 'marketplace' | 'ai' | 'traffic' | 'conversion' | 'performance';
 

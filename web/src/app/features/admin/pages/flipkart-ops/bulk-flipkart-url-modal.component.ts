@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, input, output, signal, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { ProductApiService } from '../../../../core/services/product-api.service';
 
 interface UrlRow {
@@ -76,6 +76,9 @@ export class BulkFlipkartUrlModalComponent implements OnInit {
   }
 
   cancel(): void { this.closed.emit(); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.cancel(); }
 
   trackById(_: number, r: UrlRow): string { return r.id; }
 }

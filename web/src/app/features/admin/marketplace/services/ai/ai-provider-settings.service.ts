@@ -104,7 +104,7 @@ export class AIProviderSettingsService {
 
       localStorage.setItem(STORAGE_TEMP_KEY, JSON.stringify(settings));
 
-      instance.generate('Respond with only the word CONNECTED if you can read this.').subscribe({
+      const innerSub = instance.generate('Respond with only the word CONNECTED if you can read this.').subscribe({
         next: (res: GenerateResponse) => {
           localStorage.removeItem(STORAGE_TEMP_KEY);
           sub.next(res.text.trim());
@@ -115,6 +115,7 @@ export class AIProviderSettingsService {
           sub.error(err);
         },
       });
+      sub.add(innerSub);
     });
   }
 

@@ -10,7 +10,7 @@ import { PwaInstallService } from '../../services/pwa-install.service';
       <div class="ip-overlay" (click)="installSvc.dismiss()">
         <div class="ip-card" (click)="$event.stopPropagation()">
           <div class="ip-header">
-            <img class="ip-icon" src="assets/icons/icon-192x192.png" alt="Vrindaya" width="48" height="48" />
+            <img class="ip-icon" src="assets/icons/icon-192x192.png" alt="Vrindaya" width="48" height="48" loading="lazy" />
             <div class="ip-info">
               <strong class="ip-name">Vrindaya</strong>
               <span class="ip-desc">Premium Indian Ethnic Wear</span>

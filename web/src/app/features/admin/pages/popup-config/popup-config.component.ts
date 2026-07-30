@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, computed, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient }                                  from '@angular/common/http';
 import { RouterLink }                                  from '@angular/router';
@@ -61,23 +61,23 @@ export class PopupConfigComponent implements OnInit {
     this.loadCurrentConfig();
   }
 
-  isManualProduct(): boolean { return this.form.value.campaignType === 'MANUAL_PRODUCT'; }
+readonly isManualProduct = computed(() => this.form.value.campaignType === 'MANUAL_PRODUCT');
 
-  showScrollField(): boolean {
+readonly showScrollField = computed(() => {
     const t = this.form.value.triggerType;
     return t === 'SCROLL_OR_TIME' || t === 'SCROLL_ONLY';
-  }
+  });
 
-  showTimeField(): boolean {
+readonly showTimeField = computed(() => {
     const t = this.form.value.triggerType;
     return t === 'SCROLL_OR_TIME' || t === 'TIME_ONLY';
-  }
+  });
 
-  getCampaignHint(): string {
+readonly getCampaignHint = computed(() => {
     return this.campaignOptions.find(o => o.value === this.form.value.campaignType)?.hint ?? '';
-  }
+  });
 
-  getCampaignProduct(): Product | undefined {
+readonly campaignProduct = computed(() => {
     const type = this.form.value.campaignType as CampaignType;
     switch (type) {
       case 'TRENDING':     return this.products.find(p => p.isTrending);
@@ -85,7 +85,7 @@ export class PopupConfigComponent implements OnInit {
       case 'BEST_SELLER':  return this.products.find(p => p.isBestSeller);
       default:             return this.products.find(p => p.id === this.form.value.productId);
     }
-  }
+  });
 
   save(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }

@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { AutomationQueueService } from './automation-queue.service';
 import { MarketplaceLogService } from '../marketplace-log.service';
-import type { AutomationTask, AutomationAction } from './models/automation-task.model';
+import type { AutomationAction } from './models/automation-task.model';
 
 export interface ScheduleEntry {
   id: string;

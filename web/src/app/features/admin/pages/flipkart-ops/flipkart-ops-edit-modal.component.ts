@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, input, output, signal, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -128,6 +128,9 @@ export class FlipkartOpsEditModalComponent implements OnInit {
   }
 
   cancel(): void { this.closed.emit(); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.cancel(); }
 }
 
 function toDateInputValue(iso: string | null | undefined): string {

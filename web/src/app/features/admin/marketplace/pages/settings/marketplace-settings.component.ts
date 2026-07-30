@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MarketplaceLayoutComponent } from '../../layouts/marketplace-layout.component';
 import { AIProviderSettingsService } from '../../services/ai/ai-provider-settings.service';
 import { AIService } from '../../services/ai.service';
-import { AIProviderType, AIProviderConfig, ALL_PROVIDERS, providerLabel } from '../../services/ai/ai-settings.model';
+import { AIProviderType, AIProviderConfig, providerLabel } from '../../services/ai/ai-settings.model';
 
 interface ProviderMeta { type: AIProviderType; label: string; accent: string; icon: string; docUrl: string }
 

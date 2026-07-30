@@ -21,7 +21,7 @@
           <div class="ppd-gallery">
             @if (p.images.length) {
               <div class="ppd-main-image">
-                <img [src]="p.images[activeImageIndex()]?.url ?? p.images[0].url" [alt]="p.name" decoding="async" width="400" height="500" />
+                <img [src]="p.images[activeImageIndex()]?.url ?? p.images[0].url" [alt]="p.name" loading="lazy" decoding="async" width="400" height="500" />
               </div>
               @if (p.images.length > 1) {
                 <div class="ppd-thumbs">

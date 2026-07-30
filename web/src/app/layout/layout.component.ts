@@ -9,7 +9,6 @@ import { SearchOverlayComponent }                        from '../features/searc
 import { ImageLightboxComponent }                        from '../shared/components/image-lightbox/image-lightbox.component';
 import { ExitIntentPopupComponent }                      from '../shared/components/exit-intent-popup/exit-intent-popup.component';
 import { InstallPromptComponent }                        from '../shared/components/install-prompt/install-prompt.component';
-import { UpdateNotificationComponent }                   from '../shared/components/update-notification/update-notification.component';
 import { ExitIntentService }                             from '../core/services/exit-intent.service';
 
 @Component({
@@ -24,7 +23,6 @@ import { ExitIntentService }                             from '../core/services/
     ImageLightboxComponent,
     ExitIntentPopupComponent,
     InstallPromptComponent,
-    UpdateNotificationComponent,
   ],
   template: `
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -36,7 +34,6 @@ import { ExitIntentService }                             from '../core/services/
     <app-image-lightbox />
     <app-exit-intent-popup />
     <app-install-prompt />
-    <app-update-notification />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -82,7 +82,7 @@ const PROMPT_TEMPLATES: PromptTemplate[] = [
               <div class="d-flex flex-wrap gap-2 mb-2">
                 @for (url of imageUrls(); track url; let i = $index) {
                   <div class="position-relative" style="width:72px;height:72px">
-                    <img [src]="url" alt="" class="rounded border" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer" />
+                    <img [src]="url" alt="" class="rounded border" loading="lazy" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer" />
                     <button class="position-absolute top-0 end-0 btn p-0 lh-1 text-danger bg-white rounded-circle" style="font-size:.7rem;width:16px;height:16px" (click)="removeImage(i)">&times;</button>
                   </div>
                 }

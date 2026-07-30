@@ -202,7 +202,7 @@ interface SyncRow {
             <div class="card-body py-2 px-3 d-flex align-items-center gap-3" style="cursor:pointer" (click)="row._expanded = !row._expanded">
               <input type="checkbox" class="form-check-input" (click)="$event.stopPropagation()" (change)="toggleSelect(row.product.id!)" [checked]="selectedIds().has(row.product.id!)" />
               @if (row.product.images.length) {
-                <img [src]="(row.product.images.find(i=>i.isPrimary)||row.product.images[0])!.url" alt="" class="rounded border" style="width:36px;height:36px;object-fit:cover" referrerpolicy="no-referrer" />
+                <img [src]="(row.product.images.find(i=>i.isPrimary)||row.product.images[0])!.url" alt="" class="rounded border" loading="lazy" style="width:36px;height:36px;object-fit:cover" referrerpolicy="no-referrer" />
               } @else {
                 <div class="rounded border bg-light d-flex align-items-center justify-content-center" style="width:36px;height:36px">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>

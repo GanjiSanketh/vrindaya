@@ -1,5 +1,3 @@
-import type { StockStatus } from './marketplace-inventory.model';
-
 export type StockChangeType = 'sale' | 'return' | 'restock' | 'adjustment' | 'damage' | 'reservation' | 'release' | 'sync';
 
 export interface StockLog {

@@ -1,8 +1,6 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { MarketplaceBaseService, type DocData } from '../marketplace-base.service';
 import type { BackgroundJob } from './production.models';
-import { PerfMonitorService } from './perf-monitor.service';
-import { RequestLoggerService } from './request-logger.service';
 
 @Injectable({ providedIn: 'root' })
 export class BackgroundQueueService extends MarketplaceBaseService<BackgroundJob> {

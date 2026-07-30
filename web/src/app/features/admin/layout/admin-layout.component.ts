@@ -1,4 +1,4 @@
-import { Component, inject, signal, isDevMode, PLATFORM_ID, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, inject, signal, PLATFORM_ID, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { isPlatformBrowser, DatePipe } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { AdminAuthService } from '../services/admin-auth.service';
@@ -203,17 +203,14 @@ export class AdminLayoutComponent {
   }
 
   handleUndo(): void {
-    const state = this.undoRedo.undo();
-    if (state && isDevMode()) console.log('[Undo]', state.label);
+    this.undoRedo.undo();
   }
 
   handleRedo(): void {
-    const state = this.undoRedo.redo();
-    if (state && isDevMode()) console.log('[Redo]', state.label);
+    this.undoRedo.redo();
   }
 
   handleSave(): void {
-    if (isDevMode()) console.log('[Save] Triggered');
   }
 
   runCommand(cmd: string): void {
@@ -239,8 +236,7 @@ export class AdminLayoutComponent {
   handleDismiss(key: string): void { this.drafts.dismiss(key); }
 
   restoreDraft(key: string): void {
-    const entry = this.drafts.restore(key);
-    if (entry && isDevMode()) console.log('[Draft Restored]', entry.label);
+    this.drafts.restore(key);
   }
 
   dismissAllDrafts(): void { this.drafts.dismissAll(); }

@@ -14,7 +14,7 @@ export class AmazonProvider extends BaseMarketplaceProvider {
   getListingUrl(id: string): string { return `https://sellercentral.amazon.in/inventory/manage-inventory?search=${id}`; }
   getLoginUrl(): string { return 'https://sellercentral.amazon.in/ap/login'; }
 
-  protected executePublish(product: MarketplaceProduct, listing: Partial<MarketplaceListing>): Observable<PublishResult> {
+  protected executePublish(product: MarketplaceProduct, _listing: Partial<MarketplaceListing>): Observable<PublishResult> {
     const sku = this.buildSku(product, 'amazon');
     return of({
       success: true, marketplaceListingId: `AMZ-${Date.now()}`, listingUrl: `https://www.amazon.in/dp/AMZ${Date.now()}`,
@@ -22,16 +22,16 @@ export class AmazonProvider extends BaseMarketplaceProvider {
     });
   }
 
-  protected executeUpdate(listing: MarketplaceListing, changes: Partial<MarketplaceListing>): Observable<UpdateResult> {
+  protected executeUpdate(_listing: MarketplaceListing, changes: Partial<MarketplaceListing>): Observable<UpdateResult> {
     const fields = Object.keys(changes).filter(k => k !== 'id' && k !== 'platform');
     return of({ success: true, updatedFields: fields, errors: [] });
   }
 
-  protected executeDelete(listing: MarketplaceListing): Observable<DeleteResult> {
+  protected executeDelete(_listing: MarketplaceListing): Observable<DeleteResult> {
     return of({ success: true, errors: [] });
   }
 
-  protected executeSync(listing: MarketplaceListing): Observable<SyncResult> {
+  protected executeSync(_listing: MarketplaceListing): Observable<SyncResult> {
     return of({ success: true, changes: [], errors: [] });
   }
 

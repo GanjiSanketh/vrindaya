@@ -1,4 +1,4 @@
-import { Component, input, output, signal, isDevMode, ChangeDetectionStrategy, OnInit, PLATFORM_ID, inject, effect, ElementRef } from '@angular/core';
+import { Component, input, output, signal, isDevMode, ChangeDetectionStrategy, OnInit, PLATFORM_ID, inject, effect, ElementRef, DestroyRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
@@ -96,6 +96,7 @@ export class HeroSequenceComponent implements OnInit {
   private retried = false;
   private readonly platformId = inject(PLATFORM_ID);
   private readonly el = inject(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -133,7 +134,7 @@ export class HeroSequenceComponent implements OnInit {
     const hostEl = this.el.nativeElement as HTMLElement;
     let ticking = false;
 
-    hostEl.addEventListener('mousemove', (e: MouseEvent) => {
+    const onMouseMove = (e: MouseEvent) => {
       if (!ticking) {
         requestAnimationFrame(() => {
           const rect = hostEl.getBoundingClientRect();
@@ -144,7 +145,13 @@ export class HeroSequenceComponent implements OnInit {
         });
         ticking = true;
       }
-    }, { passive: true });
+    };
+
+    hostEl.addEventListener('mousemove', onMouseMove, { passive: true });
+
+    this.destroyRef.onDestroy(() => {
+      hostEl.removeEventListener('mousemove', onMouseMove);
+    });
   }
 
   onLoadSuccess(): void {

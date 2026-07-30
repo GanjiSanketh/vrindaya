@@ -10,6 +10,7 @@ import { ProductService } from '../../core/services/product.service';
   styleUrl: './customer-love.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class CustomerLove {
   readonly testimonials = inject(ProductService).testimonials;
 

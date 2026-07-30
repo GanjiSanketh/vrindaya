@@ -1,10 +1,10 @@
-import { Component, signal, computed, inject, ChangeDetectionStrategy, OnDestroy, effect } from '@angular/core';
+import { Component, signal, computed, inject, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MarketplaceLayoutComponent } from '../../layouts/marketplace-layout.component';
-import { InventoryAutomationService, InventoryJobService, StockLogService, InventoryNotificationService } from '../../services/inventory/inventory-automation.service';
+import { InventoryAutomationService } from '../../services/inventory/inventory-automation.service';
 import type { MarketplaceListing } from '../../models/marketplace-listing.model';
-import type { StockLog, InventoryNotification, InventoryJob } from '../../models/inventory-automation.model';
+import type { InventoryNotification } from '../../models/inventory-automation.model';
 
 type Tab = 'overview' | 'stock' | 'warehouses' | 'notifications' | 'jobs';
 

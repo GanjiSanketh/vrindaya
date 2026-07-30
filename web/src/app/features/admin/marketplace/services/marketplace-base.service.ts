@@ -198,8 +198,16 @@ export abstract class MarketplaceBaseService<T extends BaseDocument> {
       }
       raw['updatedAt'] = this.now();
       await updateDoc(r, raw);
-      const snap = await getDoc(r);
-      const result = this.toModel(snap.id, snap.data() as DocData);
+
+      let result: T;
+      const existing = this.items().find(i => i.id === id);
+      if (existing) {
+        result = { ...existing, ...data, id, updatedAt: new Date() } as T;
+      } else {
+        const snap = await getDoc(r);
+        result = this.toModel(snap.id, snap.data() as DocData);
+      }
+
       this.items.update(items => items.map(i => (i.id === id ? result : i)));
       return result;
     } catch (e) {
@@ -243,19 +251,84 @@ export abstract class MarketplaceBaseService<T extends BaseDocument> {
   }
 
   async bulkCreate(items: Array<Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'version'>>): Promise<T[]> {
-    const results: T[] = [];
-    for (const item of items) {
-      results.push(await this.create(item));
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const db = await this.fb.getFirestore();
+      const c = await this.col();
+      const batch = writeBatch(db);
+      const now = this.now();
+      const results: { ref: DocumentReference; payload: DocData }[] = [];
+
+      for (const item of items) {
+        const ref = doc(c);
+        const payload: DocData = {
+          ...this.toDoc(item as Partial<T>),
+          createdAt: now,
+          updatedAt: now,
+          version: 1,
+          isArchived: false,
+        };
+        batch.set(ref, payload);
+        results.push({ ref, payload });
+      }
+
+      await batch.commit();
+      const output: T[] = results.map(r => this.toModel(r.ref.id, r.payload));
+      this.items.update(current => [...output, ...current]);
+      return output;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      this.error.set(msg);
+      throw e;
+    } finally {
+      this.loading.set(false);
     }
-    return results;
   }
 
   async bulkUpdate(updates: { id: string; data: Partial<T> }[]): Promise<T[]> {
-    const results: T[] = [];
-    for (const u of updates) {
-      results.push(await this.update(u.id, u.data));
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const db = await this.fb.getFirestore();
+      const batch = writeBatch(db);
+      const ts = this.now();
+
+      for (const u of updates) {
+        const r = await this.docRef(u.id);
+        const raw: DocData = {};
+        const docData = this.toDoc(u.data);
+        for (const key of Object.keys(docData)) {
+          if (key !== 'id' && key !== 'createdAt') {
+            raw[key] = docData[key];
+          }
+        }
+        raw['updatedAt'] = ts;
+        batch.update(r, raw);
+      }
+
+      await batch.commit();
+
+      const results: T[] = [];
+      for (const u of updates) {
+        const snap = await getDoc(await this.docRef(u.id));
+        if (snap.exists()) {
+          results.push(this.toModel(snap.id, snap.data() as DocData));
+        }
+      }
+
+      this.items.update(current => current.map(i => {
+        const updated = results.find(r => r.id === i.id);
+        return updated ?? i;
+      }));
+      return results;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Unknown error';
+      this.error.set(msg);
+      throw e;
+    } finally {
+      this.loading.set(false);
     }
-    return results;
   }
 
   async bulkDelete(ids: string[]): Promise<void> {

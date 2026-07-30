@@ -19,3 +19,11 @@ export type { MarketplaceInventory, StockStatus } from './marketplace-inventory.
 export type { MarketplaceSync, SyncAction, SyncStatus, SyncTrigger } from './marketplace-sync.model';
 
 export type { MarketplaceLog, LogType } from './marketplace-log.model';
+export type { ChartDataset } from './chart.model';
+export type { StockLog, InventoryNotification, InventoryJob, InventorySummary, StockChangeType, JobStatus, JobType } from './inventory-automation.model';
+export type { GenerationType, VersionEntry } from './version-history.model';
+export type { VisionAnalysisResult } from './vision-analysis.model';
+export { EMPTY_VISION_RESULT } from './vision-analysis.model';
+export type { PromptTemplate, PromptTemplateVersion, PromptCategory, PromptMarketplace, PromptVariable } from './prompt-template.model';
+export { GENERATION_TYPE_LABELS, STORAGE_KEY_VERSIONS } from './version-history.model';
+export { PROMPT_MARKETPLACES, PROMPT_MARKETPLACE_LABELS, PROMPT_CATEGORIES, PROMPT_CATEGORY_LABELS, PROMPT_VARIABLES, PROMPT_VARIABLE_LABELS, createPromptTemplate, STORAGE_KEY_PROMPTS, DEFAULT_PROMPTS } from './prompt-template.model';

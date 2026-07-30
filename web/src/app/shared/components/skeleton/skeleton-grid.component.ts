@@ -1,4 +1,4 @@
-import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule }    from '@angular/common';
 import { ProductCardSkeletonComponent } from './product-card-skeleton.component';
 
@@ -18,5 +18,5 @@ import { ProductCardSkeletonComponent } from './product-card-skeleton.component'
 })
 export class SkeletonGridComponent {
   readonly count = input<number>(8);
-  readonly items = () => Array.from({ length: this.count() });
+  readonly items = computed(() => Array.from({ length: this.count() }));
 }

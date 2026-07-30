@@ -21,9 +21,9 @@
         <img [src]="hoverImg | cloudinaryUrl:400"
              [srcset]="hoverImg | cloudinarySrcset"
              sizes="(max-width: 600px) 50vw, (max-width: 900px) 33vw, 25vw"
-             alt="" class="pc-img pc-img--hover" loading="lazy" decoding="async"
+             [alt]="p.name" class="pc-img pc-img--hover" loading="lazy" decoding="async"
              width="400" height="533"
-             draggable="false" aria-hidden="true"
+             draggable="false"
              (error)="onHoverImgError($event)" />
       }
     } @else {

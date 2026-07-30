@@ -1,5 +1,3 @@
-import type { LogType } from '../../models/marketplace-log.model';
-
 export type AuditAction = 'create' | 'update' | 'delete' | 'archive' | 'restore' | 'publish' | 'unpublish' | 'sync' | 'bulk_create' | 'bulk_update' | 'bulk_delete' | 'bulk_archive' | 'bulk_restore' | 'enqueue' | 'login' | 'logout' | 'export' | 'import';
 export type AuditSeverity = 'info' | 'warning' | 'error' | 'critical';
 export type AuditStatus = 'success' | 'failure' | 'pending';

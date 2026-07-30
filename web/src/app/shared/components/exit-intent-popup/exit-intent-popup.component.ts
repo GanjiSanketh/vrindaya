@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { Router }              from '@angular/router';
 import { ExitIntentService }   from '../../../core/services/exit-intent.service';
 import { APP_ROUTES }          from '../../../core/constants/routes.constants';
@@ -20,4 +20,7 @@ export class ExitIntentPopupComponent {
   }
 
   dismiss(): void { this.svc.dismiss(); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.dismiss(); }
 }

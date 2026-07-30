@@ -1,5 +1,5 @@
 import {
-  Component, input, inject, signal, computed, effect, isDevMode, PLATFORM_ID, ChangeDetectionStrategy,
+  Component, input, inject, signal, computed, effect, PLATFORM_ID, ChangeDetectionStrategy,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule }           from '@angular/common';
@@ -8,6 +8,7 @@ import { ProductService }         from '../../../core/services/product.service';
 import { QuickViewService }       from '../../../core/services/quick-view.service';
 import { WishlistService }        from '../../../core/services/wishlist.service';
 import { RecentlyViewedService }  from '../../../core/services/recently-viewed.service';
+import { LoggerService }          from '../../../core/services/logger.service';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe }
   from '../../pipes/cloudinary-url.pipe';
 
@@ -27,6 +28,7 @@ export class ProductCardComponent {
   readonly wishlist                = inject(WishlistService);
   private readonly recentlyViewed  = inject(RecentlyViewedService);
   private readonly platformId      = inject(PLATFORM_ID);
+  private readonly logger          = inject(LoggerService);
 
   product = input.required<Product>();
 
@@ -46,20 +48,6 @@ export class ProductCardComponent {
   });
 
   constructor() {
-    if (isDevMode()) {
-      effect(() => {
-        const p = this.product();
-        console.log('[PRODUCT]', {
-          id: p.id, name: p.name,
-          image: p.image, thumbUrl: p.thumbnailUrl,
-          hoverImage: p.hoverImage,
-          gallery: p.gallery,
-          flipkartUrl: p.flipkartUrl,
-          flipkartProductUrl: p.flipkartProductUrl,
-        });
-      });
-    }
-
     effect(() => {
       const src = this.hoverImage();
       if (!isPlatformBrowser(this.platformId) || !src) return;
@@ -91,13 +79,13 @@ export class ProductCardComponent {
 
   onImgError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    if (isDevMode()) console.warn('[IMAGE] Cover image failed:', img.src);
+    this.logger.warn('[IMAGE] Cover image failed:', img.src);
     this.imgError.set(true);
   }
 
   onHoverImgError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    if (isDevMode()) console.warn('[IMAGE] Hover image failed:', img.src);
+    this.logger.warn('[IMAGE] Hover image failed:', img.src);
     this.hoverImgError.set(true);
   }
 }

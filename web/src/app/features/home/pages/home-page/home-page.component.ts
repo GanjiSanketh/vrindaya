@@ -98,7 +98,7 @@ export class HomePageComponent {
     if (!hero) return;
 
     let ticking = false;
-    hero.addEventListener('mousemove', (e: MouseEvent) => {
+    const onMouseMove = (e: MouseEvent) => {
       if (!ticking) {
         requestAnimationFrame(() => {
           const rect = hero.getBoundingClientRect();
@@ -109,11 +109,18 @@ export class HomePageComponent {
         });
         ticking = true;
       }
-    }, { passive: true });
-
-    hero.addEventListener('mouseleave', () => {
+    };
+    const onMouseLeave = () => {
       this.applyParallax(hero, 0, 0);
-    }, { passive: true });
+    };
+
+    hero.addEventListener('mousemove', onMouseMove, { passive: true });
+    hero.addEventListener('mouseleave', onMouseLeave, { passive: true });
+
+    this.destroyRef.onDestroy(() => {
+      hero.removeEventListener('mousemove', onMouseMove);
+      hero.removeEventListener('mouseleave', onMouseLeave);
+    });
   }
 
   private applyParallax(container: HTMLElement, x: number, y: number): void {

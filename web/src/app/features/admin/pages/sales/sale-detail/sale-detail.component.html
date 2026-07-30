@@ -18,7 +18,7 @@
       </div>
       <div class="sd-body">
         <div class="sd-product-row">
-          @if (s.productImage) { <img [src]="s.productImage" alt="" class="sd-thumb" /> }
+          @if (s.productImage) { <img [src]="s.productImage" alt="Product image" class="sd-thumb" loading="lazy" /> }
           <div>
             <h3 class="sd-product-name">{{ s.productName }}</h3>
             <span class="sd-product-meta">{{ s.colourName }} — {{ s.size }} × {{ s.quantity }}</span>

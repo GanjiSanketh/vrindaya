@@ -147,7 +147,7 @@ import type { AutomationScreenshot } from '../../services/automation/models/auto
                     <div class="d-flex gap-2 overflow-auto" style="padding-bottom:4px">
                       @for (ss of active.screenshots; track ss.id) {
                         <div class="screenshot-thumb" (click)="previewScreenshot.set(ss)">
-                          <img [src]="ss.dataUrl" alt="" />
+                          <img [src]="ss.dataUrl" alt="" loading="lazy" />
                           <div class="small text-muted text-truncate" style="font-size:.65rem;max-width:120px">{{ ss.label }}</div>
                         </div>
                       }
@@ -334,7 +334,7 @@ import type { AutomationScreenshot } from '../../services/automation/models/auto
               <button class="btn-close" (click)="previewScreenshot.set(null)"></button>
             </div>
             <div class="modal-body p-2 text-center">
-              <img [src]="ss.dataUrl" alt="" style="max-width:100%;border-radius:6px" />
+              <img [src]="ss.dataUrl" alt="" loading="lazy" style="max-width:100%;border-radius:6px" />
             </div>
           </div>
         </div>

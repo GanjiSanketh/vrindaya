@@ -1,4 +1,4 @@
-import { Component, inject, effect, isDevMode, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, effect, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser }                       from '@angular/common';
 import { Router }                                  from '@angular/router';
 import { AdminAuthService }                        from '../../services/admin-auth.service';
@@ -21,7 +21,7 @@ export class AdminLoginComponent {
     // Redirect to dashboard as soon as Firebase confirms an authorised session.
     effect(() => {
       if (!this.auth.isLoading() && this.auth.isAuthenticated()) {
-        if (isDevMode()) console.log('[AUTH] Navigation to Dashboard');
+
         this.router.navigate([`${this.BASE}/dashboard`]);
       }
     });

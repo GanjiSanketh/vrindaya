@@ -1,4 +1,4 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { MarketplaceBaseService } from '../marketplace-base.service';
 import type { DocData } from '../marketplace-base.service';
 import type { SyncScope, ConflictStrategy, SyncOpStatus } from './models/sync-comparison.model';

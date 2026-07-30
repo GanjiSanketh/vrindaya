@@ -4,7 +4,6 @@ import { MarketplaceListingService } from '../marketplace-listing.service';
 import { SyncComparatorService } from './sync-comparator.service';
 import { SyncAuditService } from './sync-audit.service';
 import { AutomationService } from '../automation/automation.service';
-import type { MarketplaceProduct } from '../../models/marketplace-product.model';
 import type { MarketplaceListing } from '../../models/marketplace-listing.model';
 import type {
   ListingComparison, FieldDiff, ConflictStrategy, SyncScope, SyncSnapshot,

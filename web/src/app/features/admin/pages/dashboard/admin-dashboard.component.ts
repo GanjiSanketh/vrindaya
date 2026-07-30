@@ -1,4 +1,4 @@
-import { Component, inject, signal, ElementRef, viewChild, ChangeDetectionStrategy, AfterViewInit } from '@angular/core';
+import { Component, inject, signal, ElementRef, viewChild, ChangeDetectionStrategy, AfterViewInit, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
@@ -28,7 +28,7 @@ interface AnimatedValues {
   styleUrl: './admin-dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminDashboardComponent implements AfterViewInit {
+export class AdminDashboardComponent implements AfterViewInit, OnDestroy {
   readonly productApi = inject(ProductApiService);
   readonly authSvc = inject(AdminAuthService);
   readonly BASE = `/${APP_ROUTES.ADMIN}`;
@@ -43,6 +43,7 @@ export class AdminDashboardComponent implements AfterViewInit {
 
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
   private viewReady = false;
+  private timeouts: ReturnType<typeof setTimeout>[] = [];
 
   readonly pie1 = viewChild<ElementRef<HTMLCanvasElement>>('pie1');
   readonly pie2 = viewChild<ElementRef<HTMLCanvasElement>>('pie2');
@@ -66,10 +67,10 @@ export class AdminDashboardComponent implements AfterViewInit {
     this.viewReady = true;
     const d = this.data();
     if (d) {
-      setTimeout(() => {
+      this.timeouts.push(setTimeout(() => {
         this.renderAllCharts(d);
         this.animateCounters(d);
-      }, 200);
+      }, 200));
     }
   }
 
@@ -78,10 +79,10 @@ export class AdminDashboardComponent implements AfterViewInit {
       const d = await firstValueFrom(this.productApi.getDashboard());
       this.data.set(d!);
       if (this.viewReady) {
-        setTimeout(() => {
+        this.timeouts.push(setTimeout(() => {
           this.renderAllCharts(d!);
           this.animateCounters(d!);
-        }, 200);
+        }, 200));
       }
       this.startAutoRefresh();
     } catch (e: any) {
@@ -218,6 +219,12 @@ export class AdminDashboardComponent implements AfterViewInit {
   private destroyCharts() {
     this.charts.forEach(c => c.destroy());
     this.charts = [];
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.timeouts.forEach(t => clearTimeout(t));
+    this.destroyCharts();
   }
 
   refresh() {

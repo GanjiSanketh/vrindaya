@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { MarketplaceBaseService, type DocData } from '../marketplace-base.service';
 import type { RetryJob } from './production.models';
 import { DEFAULT_RETRY_CONFIG } from './production.models';

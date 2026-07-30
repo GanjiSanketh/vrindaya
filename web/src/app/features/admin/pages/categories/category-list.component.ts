@@ -1,4 +1,4 @@
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CategoryAdminService, AdminCategory } from '../../services/category-admin.service';
 import { APP_ROUTES } from '../../../../core/constants/routes.constants';
@@ -65,6 +65,9 @@ export class CategoryListComponent {
 
   confirmDelete(id: string): void { this.deleteId.set(id); }
   cancelDelete():            void { this.deleteId.set(null); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.cancelDelete(); }
 
   async doDelete(): Promise<void> {
     const id = this.deleteId();

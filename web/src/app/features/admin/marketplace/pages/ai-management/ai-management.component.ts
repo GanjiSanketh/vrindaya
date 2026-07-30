@@ -12,8 +12,8 @@ import { VersionHistoryService } from '../../services/version-history.service';
 import { ChartComponent } from '../../../../../shared/components/chart/chart.component';
 import {
   PROMPT_CATEGORIES, PROMPT_CATEGORY_LABELS, PROMPT_MARKETPLACES,
-  PROMPT_MARKETPLACE_LABELS, PROMPT_VARIABLES, PROMPT_VARIABLE_LABELS,
-  DEFAULT_PROMPTS, type PromptTemplate, type PromptTemplateVersion,
+  PROMPT_MARKETPLACE_LABELS, PROMPT_VARIABLES,
+  type PromptTemplate, type PromptTemplateVersion,
   type PromptMarketplace, type PromptCategory,
 } from '../../models/prompt-template.model';
 import type { MarketplaceLog } from '../../models/marketplace-log.model';

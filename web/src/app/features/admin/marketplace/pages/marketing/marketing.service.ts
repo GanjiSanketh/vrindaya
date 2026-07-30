@@ -1,9 +1,8 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { Observable, isObservable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AIService } from '../../services/ai.service';
-import type { GenerateOptions } from '../../services/ai/iai-provider';
-import type { MarketingCampaign, MarketingTool } from './models/marketing-campaign.model';
+import type { MarketingCampaign } from './models/marketing-campaign.model';
 
 export interface GenerateResult {
   text: string;

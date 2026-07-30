@@ -7,9 +7,23 @@ const angularTemplateParser     = require('@angular-eslint/template-parser');
 module.exports = tseslint.config(
   { ignores: ['dist/', 'node_modules/', 'coverage/', 'test-results/'] },
 
+  // ── TypeScript spec/test files (no project parser ─ avoids TS error) ───
+  {
+    files: ['**/*.spec.ts', '**/*.d.ts'],
+    extends: [...tseslint.configs.recommended],
+    plugins: { '@angular-eslint': angularEslint },
+    rules: {
+      'no-console':                         'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars':  'warn',
+      '@angular-eslint/component-class-suffix': 'off',
+    },
+  },
+
   // ── TypeScript source files ─────────────────────────────────────────────
   {
     files: ['**/*.ts'],
+    ignores: ['**/*.spec.ts', '**/*.d.ts'],
     extends: [...tseslint.configs.recommended],
     plugins: {
       '@angular-eslint': angularEslint,
@@ -19,7 +33,7 @@ module.exports = tseslint.config(
     },
     rules: {
       // General quality
-      'no-console':  'error',
+      'no-console':  ['error', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
       '@typescript-eslint/no-unused-vars':  ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',

@@ -14,7 +14,7 @@ export class AjioProvider extends BaseMarketplaceProvider {
   getListingUrl(id: string): string { return `https://seller.ajio.com/catalog/products/${id}`; }
   getLoginUrl(): string { return 'https://seller.ajio.com/login'; }
 
-  protected executePublish(product: MarketplaceProduct, listing: Partial<MarketplaceListing>): Observable<PublishResult> {
+  protected executePublish(product: MarketplaceProduct, _listing: Partial<MarketplaceListing>): Observable<PublishResult> {
     const sku = this.buildSku(product, 'ajio');
     return of({
       success: true, marketplaceListingId: `AJ-${Date.now()}`, listingUrl: `https://www.ajio.com/product/${Date.now()}`,
@@ -22,16 +22,16 @@ export class AjioProvider extends BaseMarketplaceProvider {
     });
   }
 
-  protected executeUpdate(listing: MarketplaceListing, changes: Partial<MarketplaceListing>): Observable<UpdateResult> {
+  protected executeUpdate(_listing: MarketplaceListing, changes: Partial<MarketplaceListing>): Observable<UpdateResult> {
     const fields = Object.keys(changes).filter(k => k !== 'id' && k !== 'platform');
     return of({ success: true, updatedFields: fields, errors: [] });
   }
 
-  protected executeDelete(listing: MarketplaceListing): Observable<DeleteResult> {
+  protected executeDelete(_listing: MarketplaceListing): Observable<DeleteResult> {
     return of({ success: true, errors: [] });
   }
 
-  protected executeSync(listing: MarketplaceListing): Observable<SyncResult> {
+  protected executeSync(_listing: MarketplaceListing): Observable<SyncResult> {
     return of({ success: true, changes: [], errors: [] });
   }
 

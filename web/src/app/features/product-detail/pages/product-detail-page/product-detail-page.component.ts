@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { switchMap, distinctUntilChanged, catchError, throwError, of, firstValueFrom } from 'rxjs';
+import { switchMap, distinctUntilChanged, catchError, of, firstValueFrom } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ProductQueryService, ProductNotFoundError } from '../../../../core/services/product-query.service';
@@ -64,12 +64,12 @@ export class ProductDetailPageComponent {
       if (v.images.left?.url)    imgs.push(v.images.left.url);
       if (v.images.right?.url)   imgs.push(v.images.right.url);
       imgs.push(...v.images.gallery.map(g => g.url).filter(Boolean));
-      if (imgs.length) return imgs;
+      if (imgs.length) return [...new Set(imgs)];
     }
     const p = this.product();
     if (!p) return [];
     const fallback = p.image || 'assets/images/product-placeholder.svg';
-    return [fallback, ...(p.gallery ?? [])].filter(Boolean);
+    return [...new Set([fallback, ...(p.gallery ?? [])].filter(Boolean))];
   });
 
   readonly selectedImage = computed(() =>
@@ -132,13 +132,13 @@ export class ProductDetailPageComponent {
     this.selectedIndex.set(0);
   }
 
-  get sizes(): ProductVariant['sizes'] {
+readonly sizes = computed(() => {
     return this.selectedVariant()?.sizes ?? this.product()?.sizes ?? [];
-  }
+  });
 
-  get flipkartUrl(): string | null {
+readonly flipkartUrl = computed(() => {
     return this.selectedVariant()?.flipkartUrl ?? this.product()?.flipkartUrl ?? null;
-  }
+  });
 
   private async loadRelated(product: Product): Promise<void> {
     this.relatedLoading.set(true);
@@ -218,7 +218,7 @@ export class ProductDetailPageComponent {
   }
 
   shopOnFlipkart(): void {
-    const url = this.flipkartUrl;
+    const url = this.flipkartUrl();
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }
 

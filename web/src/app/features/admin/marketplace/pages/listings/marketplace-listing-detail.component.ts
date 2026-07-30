@@ -41,7 +41,7 @@ import { MARKETPLACE_LABELS } from '../../models/marketplace-platform.model';
               <div class="card-body text-center">
                 @if (product(); as p) {
                   @if (p.images.length) {
-                    <img [src]="(p.images.find(i=>i.isPrimary)||p.images[0])!.url" alt="" class="rounded border mb-2" style="max-width:100%;height:120px;object-fit:cover" referrerpolicy="no-referrer" />
+                    <img [src]="(p.images.find(i=>i.isPrimary)||p.images[0])!.url" alt="" class="rounded border mb-2" loading="lazy" style="max-width:100%;height:120px;object-fit:cover" referrerpolicy="no-referrer" />
                   }
                   <h6 class="mb-1">{{ p.name }}</h6>
                   <div class="small text-muted mb-1">{{ p.brand }} {{ p.category ? '&middot; ' + p.category : '' }}</div>

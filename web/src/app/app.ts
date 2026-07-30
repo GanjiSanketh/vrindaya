@@ -30,6 +30,7 @@ import { UpdatePromptComponent }   from './shared/components/update-prompt/updat
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class App {
   private readonly popupService = inject(PopupService);
   private readonly router       = inject(Router);

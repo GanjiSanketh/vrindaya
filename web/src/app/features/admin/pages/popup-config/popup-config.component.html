@@ -181,14 +181,14 @@
       <aside class="pca-aside">
 
         <!-- Live preview card -->
-        @if (getCampaignProduct(); as p) {
+        @if (campaignProduct(); as p) {
           <section class="pca-card pca-preview-card">
             <h2 class="pca-card-title">Live Preview</h2>
             <p class="pca-hint" style="margin-bottom:0.75rem">
               This is the product that will appear in the floating card and modal.
             </p>
             <div class="pca-preview">
-              <img [src]="p.image" [alt]="p.name" class="pca-preview-img" />
+              <img [src]="p.image" [alt]="p.name" class="pca-preview-img" loading="lazy" />
               <div class="pca-preview-body">
                 <span class="pca-preview-eyebrow">{{ form.value.title }}</span>
                 <p   class="pca-preview-subtitle">{{ form.value.subtitle }}</p>

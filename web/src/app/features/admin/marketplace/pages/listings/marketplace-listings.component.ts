@@ -104,7 +104,7 @@ interface ListingRow {
                   <td><input type="checkbox" class="form-check-input" [checked]="selectedIds().has(row.listing.id!)" (change)="toggleSelect(row.listing.id!)" /></td>
                   <td>
                     @if (primaryImage(row); as img) {
-                      <img [src]="img" alt="" class="rounded border" style="width:40px;height:40px;object-fit:cover" referrerpolicy="no-referrer" />
+                      <img [src]="img" alt="" class="rounded border" loading="lazy" style="width:40px;height:40px;object-fit:cover" referrerpolicy="no-referrer" />
                     } @else {
                       <div class="rounded border bg-light d-flex align-items-center justify-content-center" style="width:40px;height:40px">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>

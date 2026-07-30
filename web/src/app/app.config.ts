@@ -8,7 +8,7 @@ import { provideServiceWorker }                                  from '@angular/
 import { routes } from './app.routes';
 import { GlobalErrorHandlerService } from './core/services/error-handler.service';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
-import { authErrorInterceptor } from './core/interceptors/auth-error.interceptor';
+import { authErrorInterceptor } from './features/admin/interceptors/auth-error.interceptor';
 import { retryInterceptor } from './core/interceptors/retry.interceptor';
 import { timeoutInterceptor } from './core/interceptors/timeout.interceptor';
 

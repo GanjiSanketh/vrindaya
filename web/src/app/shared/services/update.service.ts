@@ -1,7 +1,7 @@
 import { Injectable, signal, inject, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
-import { filter, map } from 'rxjs/operators';
+import { filter, interval } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable({ providedIn: 'root' })
@@ -10,7 +10,6 @@ export class UpdateService {
   private readonly swUpdate = inject(SwUpdate);
   private readonly destroyRef = inject(DestroyRef);
 
-  /** Whether a new version is available and awaiting activation */
   readonly updateAvailable = signal(false);
 
   constructor() {
@@ -18,7 +17,6 @@ export class UpdateService {
 
     this.swUpdate.versionUpdates.pipe(
       filter((e): e is VersionReadyEvent => e.type === 'VERSION_READY'),
-      map(e => ({ current: e.currentVersion, latest: e.latestVersion })),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => {
       this.updateAvailable.set(true);
@@ -28,6 +26,12 @@ export class UpdateService {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => {
       document.location.reload();
+    });
+
+    interval(60 * 60 * 1000).pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => {
+      this.swUpdate.checkForUpdate();
     });
   }
 

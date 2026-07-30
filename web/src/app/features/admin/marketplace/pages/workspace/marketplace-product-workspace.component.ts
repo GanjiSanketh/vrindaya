@@ -1,9 +1,8 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject, ChangeDetectionStrategy, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, isDevMode, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subject, Subscription, takeUntil } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { Subject, takeUntil } from 'rxjs';
 import { MarketplaceProductService } from '../../services/marketplace-product.service';
 import { MarketplaceListingService } from '../../services/marketplace-listing.service';
 import { SyncEngineService } from '../../services/sync/sync-engine.service';
@@ -13,15 +12,15 @@ import { AITestingService, type ListingInput, type GeneratedContent } from '../.
 import { VisionAnalysisService } from '../../services/vision-analysis.service';
 import { MarketplaceOperationService } from '../../services/providers/marketplace-operation.service';
 import type { MarketplaceProduct } from '../../models/marketplace-product.model';
-import type { MarketplaceListing, ListingStatus, AiStatus } from '../../models/marketplace-listing.model';
-import type { MarketplacePlatformType, PublishStatus } from '../../models/marketplace-platform.model';
-import type { MarketplaceImage, ImageType } from '../../models/marketplace-image.model';
+import type { MarketplaceListing } from '../../models/marketplace-listing.model';
+import type { MarketplacePlatformType } from '../../models/marketplace-platform.model';
+import type { MarketplaceImage } from '../../models/marketplace-image.model';
 import type { MarketplaceSync } from '../../models/marketplace-sync.model';
 import type { MarketplaceLog } from '../../models/marketplace-log.model';
 import type { VisionAnalysisResult } from '../../models/vision-analysis.model';
 import type { MarketplaceAttribute } from '../../models/marketplace-attribute.model';
 import type { ContentVersion } from '../../services/ai-listing.service';
-import { MARKETPLACE_LABELS, MARKETPLACE_PLATFORMS } from '../../models/marketplace-platform.model';
+import { MARKETPLACE_LABELS } from '../../models/marketplace-platform.model';
 
 type RightTab = 'general' | 'flipkart' | 'meesho' | 'amazon' | 'seo' | 'ai' | 'history';
 
@@ -82,7 +81,7 @@ type RightTab = 'general' | 'flipkart' | 'meesho' | 'amazon' | 'seo' | 'ai' | 'h
                 <div class="d-flex flex-wrap gap-2">
                   @for (img of productImages(); track img.url; let i = $index) {
                     <div class="position-relative" style="width:72px;height:72px">
-                      <img [src]="img.url" [alt]="img.altText" class="rounded border" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer" (click)="setPrimaryImage(i)" />
+                      <img [src]="img.url" [alt]="img.altText" class="rounded border" loading="lazy" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer" (click)="setPrimaryImage(i)" />
                       @if (img.isPrimary) {
                         <span class="position-absolute top-0 start-0 badge bg-primary bg-opacity-75 px-1" style="font-size:.6rem">P</span>
                       }
@@ -769,7 +768,7 @@ export class MarketplaceProductWorkspaceComponent implements OnInit, OnDestroy {
         if (result.category) this.updateProduct('category', result.category);
       }
     } catch (e) {
-      console.error('Vision analysis failed', e);
+      if (isDevMode()) console.error('Vision analysis failed', e);
     } finally {
       this.analyzing.set(false);
     }
@@ -813,7 +812,7 @@ export class MarketplaceProductWorkspaceComponent implements OnInit, OnDestroy {
         }
       }
     } catch (e) {
-      console.error('AI generation failed', e);
+      if (isDevMode()) console.error('AI generation failed', e);
     } finally {
       this.generating.set(false);
     }

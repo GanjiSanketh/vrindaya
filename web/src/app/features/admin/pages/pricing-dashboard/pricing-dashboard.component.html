@@ -111,7 +111,7 @@
               <tr [class.pdash-row-loss]="p.isLoss">
                 <td class="pdash-cell-name">
                   @if (p.productImage) {
-                    <img [src]="p.productImage" alt="" class="pdash-tbl-thumb" />
+                    <img [src]="p.productImage" alt="Product image" class="pdash-tbl-thumb" loading="lazy" />
                   }
                   <span>{{ p.productName }}</span>
                 </td>

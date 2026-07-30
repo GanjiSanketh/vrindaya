@@ -10,7 +10,7 @@ export class RolePermissionsGuard implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): boolean {
     const requiredResource = route.data['resource'] as PermissionResource;
     const requiredAction = route.data['action'] as PermissionAction;
-    if (!requiredResource || !requiredAction) return true;
+    if (!requiredResource || !requiredAction) return false;
     return this.perms.hasPermission(requiredResource, requiredAction);
   }
 }

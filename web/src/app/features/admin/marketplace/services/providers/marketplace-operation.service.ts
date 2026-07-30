@@ -4,7 +4,6 @@ import { MarketplaceProviderFactory } from './marketplace-provider.factory';
 import { MarketplaceListingService } from '../marketplace-listing.service';
 import { MarketplaceLogService } from '../marketplace-log.service';
 import { MarketplaceSyncService } from '../marketplace-sync.service';
-import type { IMarketplaceProvider } from './marketplace-provider.interface';
 import type { MarketplacePlatformType } from '../../models/marketplace-platform.model';
 import type { MarketplaceProduct } from '../../models/marketplace-product.model';
 import type { MarketplaceListing } from '../../models/marketplace-listing.model';

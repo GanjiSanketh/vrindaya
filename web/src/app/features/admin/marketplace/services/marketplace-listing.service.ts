@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { Timestamp, writeBatch } from 'firebase/firestore';
 import type { DocData } from './marketplace-base.service';
 import { MarketplaceBaseService } from './marketplace-base.service';
 import { MarketplaceLogService } from './marketplace-log.service';
@@ -112,18 +113,34 @@ export class MarketplaceListingService extends MarketplaceBaseService<Marketplac
   }
 
   async bulkPublish(ids: string[]): Promise<MarketplaceListing[]> {
-    const results: MarketplaceListing[] = [];
+    const db = await this.fb.getFirestore();
+    const batch = writeBatch(db);
+    const ts = Timestamp.fromDate(new Date());
+    const nowDate = new Date();
     for (const id of ids) {
-      results.push(await this.updatePublishStatus(id, 'published'));
+      const r = await this.docRef(id);
+      batch.update(r, { publishStatus: 'published', publishedAt: ts, updatedAt: ts });
     }
-    return results;
+    await batch.commit();
+    this.items.update(items => items.map(i =>
+      ids.includes(i.id!) ? { ...i, publishStatus: 'published', publishedAt: nowDate, updatedAt: nowDate } as unknown as MarketplaceListing : i,
+    ));
+    return [];
   }
 
   async bulkUnpublish(ids: string[]): Promise<MarketplaceListing[]> {
-    const results: MarketplaceListing[] = [];
+    const db = await this.fb.getFirestore();
+    const batch = writeBatch(db);
+    const ts = Timestamp.fromDate(new Date());
+    const nowDate = new Date();
     for (const id of ids) {
-      results.push(await this.updatePublishStatus(id, 'unpublished'));
+      const r = await this.docRef(id);
+      batch.update(r, { publishStatus: 'unpublished', updatedAt: ts });
     }
-    return results;
+    await batch.commit();
+    this.items.update(items => items.map(i =>
+      ids.includes(i.id!) ? { ...i, publishStatus: 'unpublished', updatedAt: nowDate } as unknown as MarketplaceListing : i,
+    ));
+    return [];
   }
 }

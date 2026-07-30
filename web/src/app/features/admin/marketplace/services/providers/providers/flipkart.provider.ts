@@ -14,7 +14,7 @@ export class FlipkartProvider extends BaseMarketplaceProvider {
   getListingUrl(id: string): string { return `https://seller.flipkart.com/listings/manage?listingId=${id}`; }
   getLoginUrl(): string { return 'https://seller.flipkart.com/login'; }
 
-  protected executePublish(product: MarketplaceProduct, listing: Partial<MarketplaceListing>): Observable<PublishResult> {
+  protected executePublish(product: MarketplaceProduct, _listing: Partial<MarketplaceListing>): Observable<PublishResult> {
     const sku = this.buildSku(product, 'flipkart');
     return of({
       success: true, marketplaceListingId: `FK-${Date.now()}`, listingUrl: `https://www.flipkart.com/product/p/${Date.now()}`,
@@ -22,16 +22,16 @@ export class FlipkartProvider extends BaseMarketplaceProvider {
     });
   }
 
-  protected executeUpdate(listing: MarketplaceListing, changes: Partial<MarketplaceListing>): Observable<UpdateResult> {
+  protected executeUpdate(_listing: MarketplaceListing, changes: Partial<MarketplaceListing>): Observable<UpdateResult> {
     const fields = Object.keys(changes).filter(k => k !== 'id' && k !== 'platform');
     return of({ success: true, updatedFields: fields, errors: [] });
   }
 
-  protected executeDelete(listing: MarketplaceListing): Observable<DeleteResult> {
+  protected executeDelete(_listing: MarketplaceListing): Observable<DeleteResult> {
     return of({ success: true, errors: [] });
   }
 
-  protected executeSync(listing: MarketplaceListing): Observable<SyncResult> {
+  protected executeSync(_listing: MarketplaceListing): Observable<SyncResult> {
     return of({ success: true, changes: [], errors: [] });
   }
 

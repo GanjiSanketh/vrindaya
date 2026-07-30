@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { MarketplaceBaseService, type DocData } from '../marketplace-base.service';
 import type { AuditEntry, AuditAction, AuditSeverity, AuditStatus } from './production.models';
 

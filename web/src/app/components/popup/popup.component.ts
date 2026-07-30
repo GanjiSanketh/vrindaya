@@ -1,4 +1,4 @@
-import { Component, effect, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
+import { Component, effect, inject, PLATFORM_ID, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 import { PopupService }   from '../../core/services/popup.service';
@@ -54,6 +54,9 @@ export class PopupComponent {
       window.location.href = '/new-arrivals';
     }
   }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.closeModal(); }
 
   onBackdropClick(event: MouseEvent): void {
     if ((event.target as HTMLElement).classList.contains('pu-backdrop')) {

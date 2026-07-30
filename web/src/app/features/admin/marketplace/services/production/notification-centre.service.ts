@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { MarketplaceBaseService, type DocData } from '../marketplace-base.service';
 import { MarketplaceLogService } from '../marketplace-log.service';
-import type { Notification, Notification as NotificationModel, UserRole } from './production.models';
+import type { Notification as NotificationModel, UserRole } from './production.models';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationDataService extends MarketplaceBaseService<NotificationModel> {

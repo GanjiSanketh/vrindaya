@@ -61,8 +61,8 @@
 .so-input::-webkit-search-cancel-button { display: none; }
 
 .so-close {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: none;
   background: var(--cream-mid, #f0f0f0);
   border-radius: 50%;

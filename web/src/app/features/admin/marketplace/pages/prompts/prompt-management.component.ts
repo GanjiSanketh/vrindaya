@@ -6,7 +6,7 @@ import { PromptManagementService } from '../../services/prompt-management.servic
 import {
   PromptMarketplace, PromptCategory, PromptTemplate, PromptTemplateVersion,
   PROMPT_MARKETPLACES, PROMPT_MARKETPLACE_LABELS, PROMPT_CATEGORIES, PROMPT_CATEGORY_LABELS,
-  PROMPT_VARIABLES, PROMPT_VARIABLE_LABELS, DEFAULT_PROMPTS,
+  PROMPT_VARIABLES, PROMPT_VARIABLE_LABELS,
 } from '../../models/prompt-template.model';
 
 const SAMPLE_VALUES: Record<string, string> = {

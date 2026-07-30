@@ -104,7 +104,7 @@
 
             @if (imagePreview() || imageUrl()) {
               <div class="hbf-img-wrap">
-                <img [src]="currentImageSrc()" alt="Preview" class="hbf-img" (click)="showPreview.set(true)" />
+                <img [src]="currentImageSrc()" alt="Preview" class="hbf-img" loading="lazy" (click)="showPreview.set(true)" />
                 <div class="hbf-img-actions">
                   @if (imagePreview()) {
                     <button type="button" class="hbf-img-btn" (click)="clearSelectedImage()" title="Cancel upload">✕</button>
@@ -143,13 +143,13 @@
 
             @if (imagePreview()) {
               <div class="hbf-img-wrap">
-                <img [src]="imagePreview()" alt="Preview" class="hbf-img" (click)="showPreview.set(true)" />
+                <img [src]="imagePreview()" alt="Preview" class="hbf-img" loading="lazy" (click)="showPreview.set(true)" />
                 <button type="button" class="hbf-img-btn" (click)="clearSelectedImage()" title="Cancel upload">✕</button>
               </div>
               <div class="hbf-img-hint" (click)="showPreview.set(true)">Click to preview</div>
             } @else if (form.value.imageUrl) {
               <div class="hbf-img-wrap">
-                <img [src]="form.value.imageUrl" alt="Preview" class="hbf-img" (click)="showPreview.set(true)" />
+                <img [src]="form.value.imageUrl" alt="Preview" class="hbf-img" loading="lazy" (click)="showPreview.set(true)" />
               </div>
               <div class="hbf-img-hint" (click)="showPreview.set(true)">Click to preview</div>
             }
@@ -168,7 +168,7 @@
           </div>
           @if (form.value.bannerImageUrl) {
             <div class="hbf-img-wrap">
-              <img [src]="form.value.bannerImageUrl" alt="Banner preview" class="hbf-img" (click)="showPreview.set(true)" />
+              <img [src]="form.value.bannerImageUrl" alt="Banner preview" class="hbf-img" loading="lazy" (click)="showPreview.set(true)" />
             </div>
           }
         </div>
@@ -186,10 +186,11 @@
 </div>
 
 @if (showPreview() && currentImageSrc()) {
-  <div class="modal-backdrop" (click)="showPreview.set(false)">
+  <div class="modal-backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'cp-title'" (click)="showPreview.set(false)">
     <div class="hbf-preview-modal" (click)="$event.stopPropagation()">
+      <h2 id="cp-title" hidden>Image Preview</h2>
       <button type="button" class="hbf-preview-close" (click)="showPreview.set(false)">×</button>
-      <img [src]="currentImageSrc()" alt="Full preview" class="hbf-preview-img" />
+      <img [src]="currentImageSrc()" alt="Full preview" class="hbf-preview-img" loading="lazy" />
     </div>
   </div>
 }

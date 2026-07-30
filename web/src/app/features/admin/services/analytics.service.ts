@@ -272,7 +272,7 @@ export class AnalyticsService implements OnDestroy {
           this.productStats.update(s => ({ ...s, totalProducts: snap.size }));
         }),
       );
-    } catch (e) {
+    } catch (_e) {
     } finally {
       this.loading.set(false);
     }

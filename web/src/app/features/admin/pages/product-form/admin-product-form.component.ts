@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, isDevMode, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormBuilder, ReactiveFormsModule, Validators, AbstractControl,
 } from '@angular/forms';
@@ -11,7 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductApiService }                  from '../../../../core/services/product-api.service';
 import { AdminProductInput, VariantRequest }  from '../../../../core/models/product-api.model';
 import { APP_ROUTES }                         from '../../../../core/constants/routes.constants';
-import { Product, ProductImage }              from '../../../../core/models/product.model';
+import { Product }              from '../../../../core/models/product.model';
 import { slugify }                            from '../../../../shared/utils/slugify.util';
 import { validateImageFile, processImageForUpload } from '../../../../shared/utils/image-processing.util';
 
@@ -555,7 +555,7 @@ export class AdminProductFormComponent implements OnInit {
     this.slugError.set(null);
     this.saving.set(true);
 
-    if (isDevMode()) console.log('[Step 2] Product Form', this.form.value);
+
     const formVals      = this.form.getRawValue();
     const slug          = slugify(formVals.slug ?? '');
     const excludeId     = this.isEdit() ? this.productId() : undefined;
@@ -596,7 +596,9 @@ export class AdminProductFormComponent implements OnInit {
             left: undefined,
             right: undefined,
             closeup: undefined,
-            gallery: galleryWithUrl.map(g => ({ url: g.url!, publicId: g.publicId ?? undefined })),
+            gallery: galleryWithUrl
+              .filter(g => !(coverEntry?.url && g === coverEntry))
+              .map(g => ({ url: g.url!, publicId: g.publicId ?? undefined })),
           },
         };
       });
@@ -627,10 +629,7 @@ export class AdminProductFormComponent implements OnInit {
       variants,
     };
 
-    if (isDevMode()) {
-      console.log('[Step 2] input.variants[0].flipkartUrl:', input.variants?.[0]?.flipkartUrl);
-      console.log('[Step 2] All variants flipkartUrl:', input.variants?.map(v => ({ id: v.id, flipkartUrl: v.flipkartUrl })));
-    }
+
     try {
       if (this.isEdit()) {
         await this.api.update(this.productId(), input);

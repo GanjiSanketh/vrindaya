@@ -1,4 +1,4 @@
-import { Component, inject, input, output, effect, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, input, output, effect, signal, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductApiService } from '../../../../core/services/product-api.service';
@@ -61,6 +61,9 @@ export class ProductPreviewDrawerComponent {
   selectImage(index: number): void { this.activeImageIndex.set(index); }
 
   close(): void { this.closed.emit(); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.close(); }
 
   onBackdropClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) this.close();

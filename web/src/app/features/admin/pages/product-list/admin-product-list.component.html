@@ -267,10 +267,10 @@
 
 <!-- Delete confirmation dialog -->
 @if (deleteId() !== null) {
-  <div class="modal-backdrop" (click)="deleting() ? null : cancelDelete()">
+  <div class="modal-backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'ad-title'" (click)="deleting() ? null : cancelDelete()">
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-icon modal-icon--danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
-      <h3 class="modal-title">Delete Product</h3>
+      <h3 class="modal-title" id="ad-title">Delete Product</h3>
       <p class="modal-body">Are you sure you want to permanently delete</p>
       <p class="modal-product-name">"{{ items().find(p => p.id === deleteId())?.name }}"</p>
       <p class="modal-body">This action cannot be undone.</p>

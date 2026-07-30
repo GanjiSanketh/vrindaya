@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, signal, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CategoryAdminService } from '../../services/category-admin.service';
@@ -206,6 +206,9 @@ export class CategoryFormComponent implements OnInit {
   hasCurrentImage(): boolean {
     return !!this.imagePreview() || !!this.imageUrl();
   }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.showPreview.set(false); }
 
   currentImageSrc(): string {
     return this.imagePreview() || this.imageUrl() || '';

@@ -62,7 +62,7 @@ const FIELDS: FieldDef[] = [
                   <div class="d-flex flex-wrap gap-2">
                     @for (src of previews(); track src; let i = $index) {
                       <div class="position-relative" style="width:72px;height:72px">
-                        <img [src]="src" alt="" class="rounded border" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer" />
+                        <img [src]="src" alt="" class="rounded border" loading="lazy" style="width:100%;height:100%;object-fit:cover" referrerpolicy="no-referrer" />
                         <button class="position-absolute top-0 end-0 btn p-0 lh-1 bg-white rounded-circle shadow-sm" style="font-size:.65rem;width:18px;height:18px" (click)="removePreview(i);$event.stopPropagation()">&times;</button>
                       </div>
                     }
@@ -94,7 +94,7 @@ const FIELDS: FieldDef[] = [
               @for (item of history(); track item.createdAt; let i = $index) {
                 <div class="history-row p-2 border-bottom d-flex align-items-center gap-2" (click)="selectResult(item)" [class.active]="selectedResult() === item">
                   @if (item.imageUrls.length) {
-                    <img [src]="item.imageUrls[0]" alt="" class="rounded" style="width:36px;height:36px;object-fit:cover" referrerpolicy="no-referrer" />
+                    <img [src]="item.imageUrls[0]" alt="" class="rounded" loading="lazy" style="width:36px;height:36px;object-fit:cover" referrerpolicy="no-referrer" />
                   }
                   <div class="flex-fill min-width-0">
                     <div class="small fw-medium text-truncate">{{ item.category || 'Uncategorized' }}</div>

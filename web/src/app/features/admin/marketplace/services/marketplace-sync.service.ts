@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { Timestamp, writeBatch } from 'firebase/firestore';
 import type { DocData } from './marketplace-base.service';
 import { MarketplaceBaseService } from './marketplace-base.service';
 import { MarketplaceLogService } from './marketplace-log.service';
@@ -144,19 +145,35 @@ export class MarketplaceSyncService extends MarketplaceBaseService<MarketplaceSy
   }
 
   async bulkRetry(ids: string[]): Promise<MarketplaceSync[]> {
-    const results: MarketplaceSync[] = [];
+    const db = await this.fb.getFirestore();
+    const batch = writeBatch(db);
+    const ts = Timestamp.fromDate(new Date());
+    const nowDate = new Date();
     for (const id of ids) {
-      results.push(await this.retrySync(id));
+      const r = await this.docRef(id);
+      batch.update(r, { status: 'pending', errorMessage: null, errorCode: null, completedAt: null, updatedAt: ts });
     }
-    return results;
+    await batch.commit();
+    this.items.update(items => items.map(i =>
+      ids.includes(i.id!) ? { ...i, status: 'pending' as SyncStatus, errorMessage: undefined, errorCode: undefined, completedAt: undefined, updatedAt: nowDate } as unknown as MarketplaceSync : i,
+    ));
+    return [];
   }
 
   async bulkCancel(ids: string[]): Promise<MarketplaceSync[]> {
-    const results: MarketplaceSync[] = [];
+    const db = await this.fb.getFirestore();
+    const batch = writeBatch(db);
+    const ts = Timestamp.fromDate(new Date());
+    const nowDate = new Date();
     for (const id of ids) {
-      results.push(await this.cancelSync(id));
+      const r = await this.docRef(id);
+      batch.update(r, { status: 'cancelled', completedAt: ts, updatedAt: ts });
     }
-    return results;
+    await batch.commit();
+    this.items.update(items => items.map(i =>
+      ids.includes(i.id!) ? { ...i, status: 'cancelled' as SyncStatus, completedAt: nowDate, updatedAt: nowDate } as unknown as MarketplaceSync : i,
+    ));
+    return [];
   }
 
   resetProgress(): void {

@@ -27,7 +27,7 @@
                   <button type="button" aria-label="Move down" [disabled]="i === categories().length - 1" (click)="moveDown(i)"><i class="bi bi-chevron-down"></i></button>
                 </div>
               </td>
-              <td><img [src]="c.image" [alt]="c.name" class="hbl-thumb" /></td>
+              <td><img [src]="c.image" [alt]="c.name" class="hbl-thumb" loading="lazy" /></td>
               <td>
                 <div class="hbl-name">{{ c.name }}</div>
                 @if (c.subtitle) { <div class="hbl-sub">{{ c.subtitle }}</div> }
@@ -51,10 +51,10 @@
 </div>
 
 @if (deleteId() !== null) {
-  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal-backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'cd-title'" (click)="cancelDelete()">
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-icon"><i class="bi bi-trash3-fill"></i></div>
-      <h3 class="modal-title">Delete Category?</h3>
+      <h3 class="modal-title" id="cd-title">Delete Category?</h3>
       <p class="modal-body">Products already assigned to this category keep their category value — only the category's own listing/nav entry is removed.</p>
       <div class="modal-actions">
         <button class="modal-cancel" (click)="cancelDelete()">Cancel</button>

@@ -1,4 +1,4 @@
-<main class="pd-page">
+<main class="pd-page" id="main-content" tabindex="-1">
 
   @if (loading()) {
     <div class="container-vr pd-wrap">
@@ -110,11 +110,11 @@
             </div>
           }
 
-          @if (sizes.length) {
+          @if (sizes().length) {
             <div class="pd-block">
               <h3 class="pd-block-title">Available Sizes</h3>
               <div class="pd-sizes">
-                @for (s of sizes; track s.size) {
+                @for (s of sizes(); track s.size) {
                   <span class="pd-size-chip" [class.pd-size-chip--out]="s.stock <= 0">
                     {{ s.size }} @if (s.stock <= 0) { <small>(Out of stock)</small> }
                   </span>
@@ -136,7 +136,7 @@
           <div class="pd-rule"></div>
 
           <div class="pd-actions">
-            @if (flipkartUrl) {
+            @if (flipkartUrl()) {
               <button type="button" class="pd-cta" (click)="shopOnFlipkart()">
                 <i class="bi bi-cart3"></i> Buy on Flipkart <i class="bi bi-arrow-right"></i>
               </button>

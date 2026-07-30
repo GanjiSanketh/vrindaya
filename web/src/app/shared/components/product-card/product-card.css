@@ -1,7 +1,6 @@
 .pc-card {
   background: var(--white);
   border-radius: var(--r-md);
-  overflow: hidden;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -98,8 +97,10 @@
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
+  right: 4.5rem;
   z-index: 4;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .pc-slot--tr {
@@ -117,8 +118,8 @@
 }
 
 .pc-action-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border: none;
   border-radius: 50%;
   background: #fff;

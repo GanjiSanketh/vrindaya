@@ -11,6 +11,7 @@ import { Product } from '../../core/models/product.model';
   styleUrl: './best-sellers.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class BestSellers {
   /** Supplied by the home page's single GET /homepage fetch — see HomepageService. */
   readonly products = input<Product[]>([]);
