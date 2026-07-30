@@ -95,9 +95,9 @@
 
 .pc-slot--tl {
   position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  right: 4.5rem;
+  top: 1rem;
+  left: 1rem;
+  right: 5rem;
   z-index: 4;
   pointer-events: none;
   overflow: hidden;
@@ -105,15 +105,15 @@
 
 .pc-slot--tr {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 1rem;
+  right: 1rem;
   z-index: 5;
 }
 
 .pc-slot--tr-2 {
   position: absolute;
-  top: calc(0.75rem + 36px + 0.5rem);
-  right: 0.75rem;
+  top: calc(1rem + 44px + 0.75rem);
+  right: 1rem;
   z-index: 4;
 }
 
@@ -130,7 +130,7 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   opacity: 0;
-  transform: scale(0.85);
+  transform: scale(0.85) translateX(10px);
   transition:
     opacity 0.22s ease,
     transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -141,9 +141,9 @@
 }
 
 @media (hover: hover) {
-  .pc-card:hover .pc-wish-btn        { opacity: 1; transform: scale(1); transition-delay: 0s; }
-  .pc-card:hover .pc-qv-btn          { opacity: 1; transform: scale(1); transition-delay: 0.06s; }
-  .pc-action-btn:hover               { transform: scale(1.12); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); }
+  .pc-card:hover .pc-wish-btn        { opacity: 1; transform: scale(1) translateX(0); transition-delay: 0s; }
+  .pc-card:hover .pc-qv-btn          { opacity: 1; transform: scale(1) translateX(0); transition-delay: 0.06s; }
+  .pc-action-btn:hover               { transform: scale(1.12) translateX(0); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); }
 }
 
 .pc-action-btn:focus-visible {
@@ -152,7 +152,7 @@
 }
 
 @media (max-width: 768px) {
-  .pc-action-btn { opacity: 1; transform: scale(1); }
+  .pc-action-btn { opacity: 1; transform: scale(1) translateX(0); }
 }
 
 .pc-badges { }
@@ -181,7 +181,7 @@
 
 .pc-wish-btn.wishlisted {
   opacity: 1;
-  transform: scale(1);
+  transform: scale(1) translateX(0);
   color: #e53935;
 }
 

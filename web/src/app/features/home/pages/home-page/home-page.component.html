@@ -91,7 +91,18 @@
   </section>
 
   @defer (on viewport) {
-    <app-new-arrivals [products]="newArrivals()" />
+    @if (newArrivals().length) {
+      <app-new-arrivals [products]="newArrivals()" />
+    } @else {
+      <div class="section-pad" style="min-height: 460px;">
+        <div class="container-vr">
+          <div class="section-header">
+            <h2 class="section-title" style="opacity:0.3;">NEW ARRIVALS</h2>
+          </div>
+          <app-skeleton-grid [count]="4" />
+        </div>
+      </div>
+    }
   } @placeholder {
     <div class="section-pad" style="min-height: 460px;">
       <div class="container-vr">
@@ -104,7 +115,18 @@
   }
 
   @defer (on viewport) {
-    <app-trending-products [products]="trending()" />
+    @if (trending().length) {
+      <app-trending-products [products]="trending()" />
+    } @else {
+      <div class="section-pad" style="min-height: 460px;">
+        <div class="container-vr">
+          <div class="section-header">
+            <h2 class="section-title" style="opacity:0.3;">TRENDING</h2>
+          </div>
+          <app-skeleton-grid [count]="4" />
+        </div>
+      </div>
+    }
   } @placeholder {
     <div class="section-pad" style="min-height: 460px;">
       <div class="container-vr">
@@ -117,7 +139,18 @@
   }
 
   @defer (on viewport) {
-    <app-best-sellers [products]="bestSellers()" />
+    @if (bestSellers().length) {
+      <app-best-sellers [products]="bestSellers()" />
+    } @else {
+      <div class="section-pad" style="min-height: 460px;">
+        <div class="container-vr">
+          <div class="section-header">
+            <h2 class="section-title" style="opacity:0.3;">BEST SELLERS</h2>
+          </div>
+          <app-skeleton-grid [count]="4" />
+        </div>
+      </div>
+    }
   } @placeholder {
     <div class="section-pad" style="min-height: 460px;">
       <div class="container-vr">
