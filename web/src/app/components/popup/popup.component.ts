@@ -5,6 +5,7 @@ import { PopupService }   from '../../core/services/popup.service';
 import { PopupConfig }    from '../../core/models/popup.model';
 import { Product }        from '../../core/models/product.model';
 import { ProductService } from '../../core/services/product.service';
+import { ProductAnalyticsService } from '../../core/analytics/product-analytics.service';
 
 @Component({
   selector:    'app-popup',
@@ -17,6 +18,7 @@ export class PopupComponent {
   private readonly svc            = inject(PopupService);
   private readonly platformId     = inject(PLATFORM_ID);
   private readonly productService = inject(ProductService);
+  private readonly analytics = inject(ProductAnalyticsService);
 
   readonly cardVisible  = this.svc.floatingCard.asReadonly();
   readonly modalVisible = this.svc.fullPopup.asReadonly();
@@ -45,7 +47,10 @@ export class PopupComponent {
   shopNow(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.svc.closeFullPopup();
-    if (this.product) this.productService.openProduct(this.product);
+    if (this.product) {
+      this.analytics.recordFlipkartClick(this.product.id);
+      this.productService.openProduct(this.product);
+    }
   }
 
   viewCollection(): void {

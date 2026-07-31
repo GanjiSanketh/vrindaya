@@ -8,6 +8,7 @@ import { QuickViewService }  from '../../../core/services/quick-view.service';
 import { LightboxService }   from '../../../core/services/lightbox.service';
 import { WishlistService }   from '../../../core/services/wishlist.service';
 import { ProductService }    from '../../../core/services/product.service';
+import { ProductAnalyticsService } from '../../../core/analytics/product-analytics.service';
 import { CloudinaryUrlPipe } from '../../pipes/cloudinary-url.pipe';
 
 @Component({
@@ -24,6 +25,7 @@ export class ProductQuickViewComponent {
   private readonly wl   = inject(WishlistService);
   private readonly pid  = inject(PLATFORM_ID);
   private readonly productService = inject(ProductService);
+  private readonly analytics = inject(ProductAnalyticsService);
   private readonly router = inject(Router);
 
   readonly selectedIndex  = signal(0);
@@ -87,7 +89,10 @@ export class ProductQuickViewComponent {
 
   shopOnFlipkart(): void {
     const p = this.svc.product();
-    if (p) this.productService.openProduct(p);
+    if (p) {
+      this.analytics.recordFlipkartClick(p.id);
+      this.productService.openProduct(p);
+    }
     this.close();
   }
 
@@ -98,6 +103,7 @@ export class ProductQuickViewComponent {
   viewFullDetails(): void {
     const p = this.svc.product();
     if (!p) return;
+    this.analytics.recordDetailClick(p.id);
     this.close();
     void this.router.navigate(['/product', p.id]);
   }

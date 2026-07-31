@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Product, Category, Testimonial, LookItem, FeatureItem } from '../models/product.model';
 import { ProductQueryService } from './product-query.service';
 import { CategoryService } from './category.service';
-import { ProductAnalyticsService } from './product-analytics.service';
+import { ProductAnalyticsService } from '../analytics/product-analytics.service';
 
 export type SortOrder = 'default' | 'rating';
 

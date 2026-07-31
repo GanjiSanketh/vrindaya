@@ -2,11 +2,12 @@ import { Component, computed, input, ChangeDetectionStrategy } from '@angular/co
 import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card';
 import { Product } from '../../core/models/product.model';
+import { RevealDirective } from '../../features/home/directives/reveal.directive';
 
 @Component({
   selector: 'app-new-arrivals',
   standalone: true,
-  imports: [ProductCardComponent, RouterLink],
+  imports: [ProductCardComponent, RouterLink, RevealDirective],
   templateUrl: './new-arrivals.html',
   styleUrl: './new-arrivals.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

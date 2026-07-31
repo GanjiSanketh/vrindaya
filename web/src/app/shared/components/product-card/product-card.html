@@ -32,24 +32,26 @@
       </div>
     }
 
-    <div class="pc-slot--tl pc-badges pc-badges--img">
+    <div class="pc-overlay-left pc-badges pc-badges--img">
       @if (p.isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
       @else if (p.isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
       @else if (p.isTrending) { <span class="pc-badge">FEATURED</span> }
       @else if (p.isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
     </div>
 
-    <button class="pc-slot--tr pc-action-btn pc-wish-btn"
-            (click)="toggleWishlist($event)"
-            [class.wishlisted]="wishlisted"
-            [attr.aria-label]="wishlisted ? 'Remove from wishlist' : 'Add to wishlist'">
-      <i class="bi" [class.bi-heart-fill]="wishlisted" [class.bi-heart]="!wishlisted"></i>
-    </button>
+    <div class="pc-overlay-right">
+      <button class="pc-action-btn pc-wish-btn"
+              (click)="toggleWishlist($event)"
+              [class.wishlisted]="wishlisted"
+              [attr.aria-label]="wishlisted ? 'Remove from wishlist' : 'Add to wishlist'">
+        <i class="bi" [class.bi-heart-fill]="wishlisted" [class.bi-heart]="!wishlisted"></i>
+      </button>
 
-    <button class="pc-slot--tr-2 pc-action-btn pc-qv-btn"
-            (click)="openQuickView($event)" aria-label="Quick view">
-      <i class="bi bi-eye"></i>
-    </button>
+      <button class="pc-action-btn pc-qv-btn"
+              (click)="openQuickView($event)" aria-label="Quick view">
+        <i class="bi bi-eye"></i>
+      </button>
+    </div>
 
     <div class="pc-overlay">
       @if (p.flipkartUrl) {

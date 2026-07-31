@@ -51,6 +51,20 @@ service cloud.firestore {
       allow write: if isAdminUser();
     }
 
+    // Product Analytics — anonymous visitors / customer users (unauthenticated)
+    // increment counters. Admin sessions are denied at the rules level so admin
+    // browsing can never pollute metrics, even if a client-side check is missed.
+    match /analytics/productAnalytics/{productId} {
+      allow read: if isAdminUser();
+      allow create, update: if request.auth == null || !isAdminUser();
+      allow delete: if isAdminUser();
+      match /daily/{day} {
+        allow read: if isAdminUser();
+        allow create, update: if request.auth == null || !isAdminUser();
+        allow delete: if isAdminUser();
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

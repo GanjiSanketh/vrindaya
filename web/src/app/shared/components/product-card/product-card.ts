@@ -11,8 +11,7 @@ import { RecentlyViewedService }  from '../../../core/services/recently-viewed.s
 import { LoggerService }          from '../../../core/services/logger.service';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe }
   from '../../pipes/cloudinary-url.pipe';
-
-const PLACEHOLDER = 'assets/images/product-placeholder.svg';
+import { ProductAnalyticsService } from '../../../core/analytics/product-analytics.service';
 
 @Component({
   selector: 'app-product-card',
@@ -25,6 +24,7 @@ const PLACEHOLDER = 'assets/images/product-placeholder.svg';
 export class ProductCardComponent {
   private readonly productService  = inject(ProductService);
   private readonly quickView       = inject(QuickViewService);
+  private readonly analytics       = inject(ProductAnalyticsService);
   readonly wishlist                = inject(WishlistService);
   private readonly recentlyViewed  = inject(RecentlyViewedService);
   private readonly platformId      = inject(PLATFORM_ID);
@@ -58,14 +58,18 @@ export class ProductCardComponent {
 
   openFlipart(e: Event): void {
     e.stopPropagation();
-    this.recentlyViewed.track(this.product());
-    this.productService.openProduct(this.product());
+    const p = this.product();
+    if (p.flipkartUrl) this.analytics.recordFlipkartClick(p.id);
+    this.recentlyViewed.track(p);
+    this.productService.openProduct(p);
   }
 
   openQuickView(e: Event): void {
     e.stopPropagation();
-    this.recentlyViewed.track(this.product());
-    this.quickView.open(this.product());
+    const p = this.product();
+    this.analytics.recordDetailClick(p.id);
+    this.recentlyViewed.track(p);
+    this.quickView.open(p);
   }
 
   toggleWishlist(e: Event): void {

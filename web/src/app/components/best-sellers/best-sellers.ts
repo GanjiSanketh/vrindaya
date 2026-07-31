@@ -2,11 +2,12 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card';
 import { Product } from '../../core/models/product.model';
+import { RevealDirective } from '../../features/home/directives/reveal.directive';
 
 @Component({
   selector: 'app-best-sellers',
   standalone: true,
-  imports: [ProductCardComponent, RouterLink],
+  imports: [ProductCardComponent, RouterLink, RevealDirective],
   templateUrl: './best-sellers.html',
   styleUrl: './best-sellers.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
