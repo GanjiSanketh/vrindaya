@@ -9,14 +9,13 @@ const EXCLUDED_ROLES = ['SuperAdmin', 'Admin'];
 
 /** Firestore path segments for the product analytics collection. */
 export const ANALYTICS_ROOT = 'analytics';
-export const ANALYTICS_PRODUCT_COLLECTION = 'productAnalytics';
 export const ANALYTICS_PRODUCT_DAILY_SUB = 'daily';
 
 /** Path segments for a product's totals doc and its `YYYY-MM-DD` daily doc. */
 export function productAnalyticsPaths(productId: string, dateKey: string): { totals: string[]; daily: string[] } {
   return {
-    totals: [ANALYTICS_ROOT, ANALYTICS_PRODUCT_COLLECTION, productId],
-    daily: [ANALYTICS_ROOT, ANALYTICS_PRODUCT_COLLECTION, productId, ANALYTICS_PRODUCT_DAILY_SUB, dateKey],
+    totals: [ANALYTICS_ROOT, productId],
+    daily: [ANALYTICS_ROOT, productId, ANALYTICS_PRODUCT_DAILY_SUB, dateKey],
   };
 }
 
@@ -57,8 +56,8 @@ export class AnalyticsFirestoreService {
   ): Promise<{ totals: DocumentReference; daily: DocumentReference }> {
     const { doc } = await import('firebase/firestore');
     return {
-      totals: doc(db, ANALYTICS_ROOT, ANALYTICS_PRODUCT_COLLECTION, productId),
-      daily: doc(db, ANALYTICS_ROOT, ANALYTICS_PRODUCT_COLLECTION, productId, ANALYTICS_PRODUCT_DAILY_SUB, dateKey),
+      totals: doc(db, ANALYTICS_ROOT, productId),
+      daily: doc(db, ANALYTICS_ROOT, productId, ANALYTICS_PRODUCT_DAILY_SUB, dateKey),
     };
   }
 

@@ -22,6 +22,16 @@
 .table td { padding: 0.4rem 0.75rem; font-size: 0.85rem; vertical-align: middle; }
 .badge { font-size: 0.75rem; font-weight: 500; padding: 0.25em 0.6em; }
 
+.an-thumb {
+  width: 40px; height: 40px; object-fit: cover; border-radius: 8px;
+  background: #f3f4f6; display: inline-flex; align-items: center; justify-content: center;
+}
+.an-thumb-empty { color: #9ca3af; font-size: 1rem; }
+.an-link {
+  color: #0f6f84; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.an-link:hover { text-decoration: underline; color: #0a4c5c; }
+
 @media (max-width: 768px) {
   .an-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
   .an-tab { font-size: 0.75rem; padding: 0.4rem 0.6rem; }

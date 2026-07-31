@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AnalyticsFirestoreService, ANALYTICS_ROOT, ANALYTICS_PRODUCT_COLLECTION, ANALYTICS_PRODUCT_DAILY_SUB } from './analytics-firestore.service';
+import { AnalyticsFirestoreService, ANALYTICS_ROOT, ANALYTICS_PRODUCT_DAILY_SUB } from './analytics-firestore.service';
 import {
   DailyProductAnalytics,
   ProductMetric,
@@ -19,13 +19,17 @@ const LEGACY_BASE = `${environment.apiBaseUrl}/analytics`;
  *
  * Firestore schema (atomic increments, created on first touch):
  *
- *   analytics/productAnalytics/{productId}
+ *   analytics/{productId}
  *     totalDetailClicks, totalFlipkartClicks, totalWishlistClicks,
  *     totalCartClicks, totalPurchases
  *     createdAt, updatedAt, lastClickedAt
  *     daily/{YYYY-MM-DD}
  *       detailClicks, flipkartClicks, wishlistClicks, cartClicks, purchases
  *       createdAt, lastClickedAt
+ *
+ * Document paths must carry an even number of segments (collection/doc
+ * alternating), so the totals doc lives directly at `analytics/{productId}`
+ * and the daily doc at `analytics/{productId}/daily/{YYYY-MM-DD}`.
  *
  * Only anonymous visitors and customer users contribute events; Admin /
  * Super Admin sessions are excluded (see AnalyticsFirestoreService).
@@ -86,7 +90,7 @@ export class ProductAnalyticsService {
   async getProductTotals(productId: string): Promise<ProductAnalyticsTotals | null> {
     const { doc, getDoc } = await import('firebase/firestore');
     const db = await this.store.getFirestore();
-    const snap = await getDoc(doc(db, ANALYTICS_ROOT, ANALYTICS_PRODUCT_COLLECTION, productId));
+    const snap = await getDoc(doc(db, ANALYTICS_ROOT, productId));
     return snap.exists() ? (snap.data() as ProductAnalyticsTotals) : null;
   }
 
@@ -94,7 +98,7 @@ export class ProductAnalyticsService {
   async getDailyRange(productId: string, from: string, to: string): Promise<DailyProductAnalytics[]> {
     const { collection, query, where, orderBy, limit, getDocs, documentId } = await import('firebase/firestore');
     const db = await this.store.getFirestore();
-    const dailyCol = collection(db, ANALYTICS_ROOT, ANALYTICS_PRODUCT_COLLECTION, productId, ANALYTICS_PRODUCT_DAILY_SUB);
+    const dailyCol = collection(db, ANALYTICS_ROOT, productId, ANALYTICS_PRODUCT_DAILY_SUB);
     const snap = await getDocs(
       query(
         dailyCol,

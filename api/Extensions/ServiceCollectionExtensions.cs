@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
 
         // Product module
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductAnalyticsRepository, ProductAnalyticsRepository>();
         services.AddScoped<IProductValidationService, ProductValidationService>();
         services.AddScoped<ILifecycleService, LifecycleService>();
         services.AddScoped<IImageCompressionService, ImageCompressionService>();

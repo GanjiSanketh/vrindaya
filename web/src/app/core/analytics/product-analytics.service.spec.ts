@@ -19,13 +19,13 @@ function refs(_db: unknown, productId: string, dateKey: string) {
 }
 
 describe('productAnalyticsPaths', () => {
-  it('points the totals doc at analytics/productAnalytics/{productId}', () => {
-    expect(productAnalyticsPaths('p1', '2026-07-31').totals).toEqual(['analytics', 'productAnalytics', 'p1']);
+  it('points the totals doc at analytics/{productId} (even segment count)', () => {
+    expect(productAnalyticsPaths('p1', '2026-07-31').totals).toEqual(['analytics', 'p1']);
   });
 
-  it('points the daily doc at analytics/productAnalytics/{productId}/daily/{YYYY-MM-DD}', () => {
+  it('points the daily doc at analytics/{productId}/daily/{YYYY-MM-DD}', () => {
     expect(productAnalyticsPaths('p1', '2026-07-31').daily).toEqual([
-      'analytics', 'productAnalytics', 'p1', 'daily', '2026-07-31',
+      'analytics', 'p1', 'daily', '2026-07-31',
     ]);
   });
 });

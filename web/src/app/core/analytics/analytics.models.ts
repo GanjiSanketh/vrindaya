@@ -10,7 +10,7 @@ import type { Timestamp } from 'firebase/firestore';
  */
 export type ProductMetric = 'detail' | 'flipkart' | 'wishlist' | 'cart' | 'purchase';
 
-/** Metric → field name on the `analytics/productAnalytics/{productId}` totals document. */
+/** Metric → field name on the `analytics/{productId}` totals document. */
 export const PRODUCT_METRIC_TOTALS_FIELD: Record<ProductMetric, string> = {
   detail:   'totalDetailClicks',
   flipkart: 'totalFlipkartClicks',
@@ -28,7 +28,7 @@ export const PRODUCT_METRIC_DAILY_FIELD: Record<ProductMetric, string> = {
   purchase: 'purchases',
 };
 
-/** Shape of `analytics/productAnalytics/{productId}`. */
+/** Shape of `analytics/{productId}`. */
 export interface ProductAnalyticsTotals {
   totalDetailClicks: number;
   totalFlipkartClicks: number;
@@ -40,7 +40,7 @@ export interface ProductAnalyticsTotals {
   lastClickedAt?: Timestamp;
 }
 
-/** Shape of `analytics/productAnalytics/{productId}/daily/{YYYY-MM-DD}`. `date` is the document id. */
+/** Shape of `analytics/{productId}/daily/{YYYY-MM-DD}`. `date` is the document id. */
 export interface DailyProductAnalytics {
   date: string;
   detailClicks: number;
