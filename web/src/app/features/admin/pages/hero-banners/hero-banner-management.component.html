@@ -1,0 +1,195 @@
+<div class="hbm-page">
+
+  <!-- ── Header ── -->
+  <header class="hbm-header">
+    <div class="hbm-header-inner">
+      <div>
+        <span class="hbm-breadcrumb">
+          <a routerLink="/" class="hbm-bc-link">Home</a>
+          <i class="bi bi-chevron-right hbm-bc-sep"></i>
+          <span>Admin</span>
+          <i class="bi bi-chevron-right hbm-bc-sep"></i>
+          <span>Hero Banners</span>
+        </span>
+        <h1 class="hbm-heading">Hero Banner Management</h1>
+      </div>
+      <a routerLink="/" class="hbm-preview-link">
+        <i class="bi bi-eye"></i> Preview Site
+      </a>
+    </div>
+  </header>
+
+  <main class="hbm-main">
+    @if (loading()) {
+      <div class="hbm-card hbm-loading">
+        <span class="btn-spinner"></span> Loading banner…
+      </div>
+    } @else {
+      <div class="hbm-grid">
+
+        <!-- ── Left column: previews ── -->
+        <div class="hbm-column">
+
+          <section class="hbm-card">
+            <div class="hbm-card-head">
+              <h2 class="hbm-card-title"><i class="bi bi-display"></i> Desktop Preview</h2>
+              <span class="hbm-chip" [class.hbm-chip--live]="hasPublishedBanner()">
+                {{ hasPublishedBanner() ? 'Published' : 'Not published' }}
+              </span>
+            </div>
+
+            <div class="hbm-preview hbm-preview--desktop">
+              @if (desktopSrc(); as src) {
+                <img [src]="src" alt="Desktop banner preview" class="hbm-preview-img" loading="lazy" decoding="async" />
+              } @else {
+                <div class="hbm-preview-empty">
+                  <i class="bi bi-image"></i>
+                  <span>No desktop banner yet</span>
+                </div>
+              }
+              @if (uploadingDesktop()) {
+                <div class="hbm-preview-overlay">
+                  <span class="btn-spinner"></span> Uploading…
+                </div>
+              }
+            </div>
+
+            @if (desktopHint()) {
+              <p class="hbm-info"><i class="bi bi-info-circle"></i> {{ desktopHint() }}</p>
+            }
+
+            <div class="hbm-upload-row">
+              <input #desktopFile type="file" accept="image/jpeg,image/png,image/webp" hidden
+                     (change)="onDesktopFileSelected($event)" [disabled]="uploadingDesktop()" />
+              <button type="button" class="hbm-btn hbm-btn--outline" (click)="desktopFile.click()" [disabled]="uploadingDesktop()">
+                <i class="bi bi-upload"></i> Upload Desktop Banner
+              </button>
+              <span class="hbm-upload-hint">JPG, PNG or WebP · max 10 MB</span>
+            </div>
+          </section>
+
+          <section class="hbm-card">
+            <div class="hbm-card-head">
+              <h2 class="hbm-card-title"><i class="bi bi-phone"></i> Mobile Preview</h2>
+            </div>
+
+            <div class="hbm-preview hbm-preview--mobile">
+              @if (mobileSrc(); as src) {
+                <img [src]="src" alt="Mobile banner preview" class="hbm-preview-img" loading="lazy" decoding="async" />
+              } @else {
+                <div class="hbm-preview-empty">
+                  <i class="bi bi-image"></i>
+                  <span>No mobile banner yet</span>
+                </div>
+              }
+              @if (uploadingMobile()) {
+                <div class="hbm-preview-overlay">
+                  <span class="btn-spinner"></span> Uploading…
+                </div>
+              }
+            </div>
+
+            @if (mobileHint()) {
+              <p class="hbm-info"><i class="bi bi-info-circle"></i> {{ mobileHint() }}</p>
+            }
+
+            <div class="hbm-upload-row">
+              <input #mobileFile type="file" accept="image/jpeg,image/png,image/webp" hidden
+                     (change)="onMobileFileSelected($event)" [disabled]="uploadingMobile()" />
+              <button type="button" class="hbm-btn hbm-btn--outline" (click)="mobileFile.click()" [disabled]="uploadingMobile()">
+                <i class="bi bi-upload"></i> Upload Mobile Banner
+              </button>
+              <span class="hbm-upload-hint">JPG, PNG or WebP · max 10 MB</span>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- ── Right column: status + actions ── -->
+        <div class="hbm-column">
+
+          <section class="hbm-card hbm-status-card">
+            <h2 class="hbm-card-title"><i class="bi bi-info-circle"></i> Current Banner</h2>
+            @if (current(); as banner) {
+              <ul class="hbm-status-list">
+                <li>
+                  <span>State</span>
+                  <strong class="hbm-state" [class.hbm-state--live]="banner.isPublished">
+                    <i class="bi {{ banner.isPublished ? 'bi-check-circle-fill' : 'bi-clock' }}"></i>
+                    {{ banner.isPublished ? 'Published' : 'Draft' }}
+                  </strong>
+                </li>
+                <li><span>Last updated</span><strong>{{ banner.updatedAt ? (banner.updatedAt | date:'medium') : '—' }}</strong></li>
+                <li><span>Updated by</span><strong>{{ banner.updatedBy || '—' }}</strong></li>
+              </ul>
+            } @else {
+              <p class="hbm-hint">No banner has been saved yet. Upload an image, then Save or Publish.</p>
+            }
+
+            @if (hasPending()) {
+              <div class="hbm-unsaved-badge">
+                <i class="bi bi-exclamation-triangle-fill"></i> Unsaved uploads — nothing is live until you Save or Publish.
+              </div>
+            }
+          </section>
+
+          <section class="hbm-card hbm-actions-card">
+            <h2 class="hbm-card-title"><i class="bi bi-sliders"></i> Actions</h2>
+            <p class="hbm-hint">Uploads go to storage only. Save Changes keeps the current publish state; Publish goes live immediately.</p>
+
+            <button type="button" class="hbm-btn hbm-btn--ghost" (click)="replaceBanner()"
+                    [disabled]="!hasPending() || saving() || publishing()">
+              <i class="bi bi-arrow-counterclockwise"></i> Replace Banner
+            </button>
+
+            <button type="button" class="hbm-btn hbm-btn--save" (click)="saveChanges()"
+                    [disabled]="saving() || publishing()">
+              @if (saving()) {
+                <span class="btn-spinner"></span> Saving…
+              } @else {
+                <i class="bi bi-floppy"></i> Save Changes
+              }
+            </button>
+
+            <button type="button" class="hbm-btn hbm-btn--publish" (click)="publish()"
+                    [disabled]="saving() || publishing()">
+              @if (publishing()) {
+                <span class="btn-spinner"></span> Publishing…
+              } @else {
+                <i class="bi bi-rocket-takeoff"></i> Publish
+              }
+            </button>
+          </section>
+
+          @if (error()) {
+            <div class="hbm-banner hbm-banner--error">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              {{ error() }}
+              <button type="button" class="hbm-banner-close" (click)="error.set(null)">×</button>
+            </div>
+          }
+
+          @if (message()) {
+            <div class="hbm-banner hbm-banner--success">
+              <i class="bi bi-check-circle-fill"></i>
+              {{ message() }}
+            </div>
+          }
+
+          <section class="hbm-card hbm-info-box">
+            <h2 class="hbm-card-title"><i class="bi bi-lightbulb"></i> How It Works</h2>
+            <ul class="hbm-info-list">
+              <li>Only one active hero banner exists — publishing always replaces it.</li>
+              <li>The storefront reads the banner straight from Firestore, so a publish goes live with no code changes.</li>
+              <li>While no banner is published, the website keeps showing the default banner from assets.</li>
+              <li>Only Admin and Super Admin accounts can update banners.</li>
+            </ul>
+          </section>
+
+        </div>
+
+      </div>
+    }
+  </main>
+
+</div>

@@ -7,6 +7,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SCROLL_THRESHOLDS } from '../../../../core/constants/app.constants';
 import { SeoService } from '../../../../core/services/seo.service';
 import { ProductService } from '../../../../core/services/product.service';
+import { HeroBannerService } from '../../../../core/services/hero-banner.service';
 import { HeroSequenceComponent } from '../../components/hero-sequence/hero-sequence.component';
 import { RevealDirective } from '../../directives/reveal.directive';
 import { NewArrivals } from '../../../../components/new-arrivals/new-arrivals';
@@ -35,6 +36,7 @@ export class HomePageComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly el = inject(ElementRef);
   readonly productSvc = inject(ProductService);
+  private readonly heroBanner = inject(HeroBannerService);
 
   readonly showScrollTop = signal(false);
   readonly heroLoaded = signal(false);
@@ -42,6 +44,10 @@ export class HomePageComponent {
   readonly mouseY = signal(0);
 
   protected readonly heroSequence = viewChild.required(HeroSequenceComponent);
+
+  /** Wide/narrow banner URLs from the Firestore-driven HeroBannerService (asset fallback until/unless published). */
+  readonly heroDesktop = this.heroBanner.desktopSrc;
+  readonly heroMobile = this.heroBanner.mobileSrc;
 
   readonly categories = this.productSvc.categories;
   readonly newArrivals = this.productSvc.newArrivals;
@@ -66,6 +72,7 @@ export class HomePageComponent {
     void this.productSvc.ensureHomeDataLoaded();
 
     if (isPlatformBrowser(this.platformId)) {
+      void this.heroBanner.ensureLoaded();
       this.initScrollHandler();
       this.initMouseParallax();
     }

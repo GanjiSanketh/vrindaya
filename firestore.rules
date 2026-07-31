@@ -51,6 +51,17 @@ service cloud.firestore {
       allow write: if isAdminUser();
     }
 
+    /**
+     * Hero banners — the homepage reads the active banner straight from
+     * Firestore, so reads must be public. Only Admin / Super Admin may
+     * write (uploaded image URLs + publish state), matching the
+     * AdminOnly authorization policy on the API endpoints.
+     */
+    match /heroBanners/{docId} {
+      allow read: if true;
+      allow write: if isAdminUser();
+    }
+
     // Product Analytics — anonymous visitors / customer users (unauthenticated)
     // increment counters. Admin sessions are denied at the rules level so admin
     // browsing can never pollute metrics, even if a client-side check is missed.

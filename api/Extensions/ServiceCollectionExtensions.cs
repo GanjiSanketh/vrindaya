@@ -14,6 +14,7 @@ using Vrindaya.Api.Constants;
 using Vrindaya.Api.Helpers;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Services;
+using Vrindaya.Api.Services.HeroBanners;
 using Vrindaya.Api.Services.Homepage;
 using Vrindaya.Api.Services.Products;
 using Vrindaya.Api.Services.Sales;
@@ -68,6 +69,9 @@ public static class ServiceCollectionExtensions
         services.AddMemoryCache();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICategoryService, CategoryService>();
+
+        // Hero banners
+        services.AddScoped<IHeroBannerService, HeroBannerService>();
 
         return services;
     }

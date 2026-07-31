@@ -31,6 +31,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'sales/:id/edit', loadComponent: () => import('./pages/sales/record-sale/record-sale.component').then(m => m.RecordSaleComponent) },
       { path: 'flipkart-ops', loadComponent: () => import('./pages/flipkart-ops/flipkart-ops-list.component').then(m => m.FlipkartOpsListComponent) },
       { path: 'popup-config', loadComponent: () => import('./pages/popup-config/popup-config.component').then(m => m.PopupConfigComponent) },
+      { path: 'hero-banners', loadComponent: () => import('./pages/hero-banners/hero-banner-management.component').then(m => m.HeroBannerManagementComponent) },
       { path: 'exit-intent', loadComponent: () => import('./pages/exit-intent-config/exit-intent-config.component').then(m => m.ExitIntentConfigComponent) },
       { path: 'analytics', loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent) },
       { path: 'analytics/product/:id', loadComponent: () => import('./pages/analytics/product-analytics-detail.component').then(m => m.ProductAnalyticsDetailComponent) },

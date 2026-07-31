@@ -2,7 +2,8 @@
 
   <section class="hero-section" id="hero">
     <app-hero-sequence
-      fallbackImg="assets/hero/hero-banner.png"
+      [desktopImg]="heroDesktop()"
+      [mobileImg]="heroMobile()"
       (loaded)="onHeroLoaded()"
     />
 

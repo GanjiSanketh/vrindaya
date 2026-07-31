@@ -48,7 +48,13 @@ EagerInitialize(app.Services);
 // the old format (plain URL strings) to the current object format
 // ({ url, publicId, width, height, alt }). The repository reads both formats
 // transparently, so this is optional — run it once to clean up Firestore data.
-_ = RunVariantImageMigrationAsync(app.Services);
+// Run as a fire-and-forget background task that respects application shutdown.
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+_ = Task.Run(async () =>
+{
+    using var scope = app.Services.CreateScope();
+    await RunVariantImageMigrationAsync(scope.ServiceProvider, lifetime.ApplicationStopping);
+}, lifetime.ApplicationStopping);
 
 // ── Request pipeline ──────────────────────────────────────────────────────────
 // Order matters: exception handling wraps everything, forwarded headers
@@ -166,9 +172,9 @@ static void EagerInitialize(IServiceProvider services)
 /// One-time migration from old image schema (string URLs) to new image schema
 /// (VariantImageSlotDocument objects). Runs in the background so it doesn't
 /// block the first request. Migration is idempotent — documents already in the
-/// new format are skipped.
+/// new format are skipped. Respects the provided cancellation token for graceful shutdown.
 /// </summary>
-static async Task RunVariantImageMigrationAsync(IServiceProvider services)
+static async Task RunVariantImageMigrationAsync(IServiceProvider services, CancellationToken cancellationToken)
 {
     try
     {
@@ -176,8 +182,12 @@ static async Task RunVariantImageMigrationAsync(IServiceProvider services)
         var logger = services.GetRequiredService<ILogger<Program>>();
 
         logger.LogInformation("[STARTUP] Checking for variant image schema migration...");
-        await repo.MigrateAllVariantsImagesAsync();
+        await repo.MigrateAllVariantsImagesAsync(cancellationToken);
         logger.LogInformation("[STARTUP] Variant image migration check complete.");
+    }
+    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+    {
+        // Expected during shutdown — not an error.
     }
     catch (Exception ex)
     {

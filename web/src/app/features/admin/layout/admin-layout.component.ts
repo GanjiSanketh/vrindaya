@@ -32,7 +32,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Products', path: 'products', icon: 'bi-box-seam' },
       { label: 'Inventory', path: 'inventory', icon: 'bi-boxes' },
       { label: 'Pricing', path: 'pricing', icon: 'bi-currency-rupee' },
-      { label: 'Categories', path: 'categories', icon: 'bi-tags' },
     ],
   },
   {
@@ -52,6 +51,13 @@ export const NAV_SECTIONS: NavSection[] = [
     key: 'analytics', label: 'Analytics', icon: 'bi-graph-up-arrow',
     items: [
       { label: 'Dashboard', path: 'analytics', icon: 'bi-speedometer2', exact: false },
+    ],
+  },
+  {
+    key: 'site', label: 'Site Content', icon: 'bi-window',
+    items: [
+      { label: 'Hero Banners', path: 'hero-banners', icon: 'bi-image' },
+      { label: 'Categories', path: 'categories', icon: 'bi-tags' },
     ],
   },
   {

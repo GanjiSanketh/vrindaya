@@ -1,6 +1,9 @@
-import { Component, input, output, signal, isDevMode, ChangeDetectionStrategy, OnInit, PLATFORM_ID, inject, effect, ElementRef, DestroyRef } from '@angular/core';
+import { Component, input, output, signal, computed, isDevMode, ChangeDetectionStrategy, PLATFORM_ID, inject, effect, ElementRef, DestroyRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
+
+/** The packaged default banner — shown until (and whenever there is no) published Firestore banner. */
+const DEFAULT_HERO_ASSET = 'assets/hero/hero-banner.png';
 
 interface FloatingElement {
   id: number;
@@ -83,37 +86,66 @@ interface FloatingElement {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HeroSequenceComponent implements OnInit {
-  readonly fallbackImg = input<string>('');
+export class HeroSequenceComponent {
+  /** Wide-screen banner URL (published Firestore desktop image, or the packaged asset fallback). */
+  readonly desktopImg = input<string>(DEFAULT_HERO_ASSET);
+  /** Narrow-screen banner URL — used on small viewports when a distinct mobile image is configured. */
+  readonly mobileImg = input<string>('');
   readonly loaded = output<void>();
   readonly mousePos = output<{ x: number; y: number }>();
 
-  readonly currentSrc = signal<string>('');
+  /** The effective image URL — retry override, then mobile/desktop selection. */
+  readonly currentSrc = computed<string>(() => {
+    const override = this.overrideSrc();
+    if (override) return override;
+
+    const mobile = this.mobileImg();
+    if (this.isMobile() && mobile) return mobile;
+
+    const desktop = this.desktopImg();
+    return desktop || DEFAULT_HERO_ASSET;
+  });
+
   readonly loading = signal(true);
   readonly showFallback = signal(false);
   readonly elements = signal<FloatingElement[]>([]);
 
+  private readonly isMobile = signal(false);
+  private readonly overrideSrc = signal<string | null>(null);
   private retried = false;
+  private mouseTrackingInitialized = false;
+
   private readonly platformId = inject(PLATFORM_ID);
   private readonly el = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
+    this.generateElements();
+
     if (isPlatformBrowser(this.platformId)) {
       effect(() => {
+        this.desktopImg();
+        this.mobileImg();
+        // Inputs changed (e.g. the Firestore banner arrived): drop any retry
+        // override so the freshly supplied URL is the one that renders.
+        this.overrideSrc.set(null);
+        this.retried = false;
+
         if (!this.loading()) {
           this.initMouseTracking();
         }
       });
+
+      this.initResponsiveSource();
     }
   }
 
-  ngOnInit(): void {
-    const src = this.fallbackImg();
-    if (src) {
-      this.currentSrc.set(src);
-    }
-    this.generateElements();
+  private initResponsiveSource(): void {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const apply = () => this.isMobile.set(mediaQuery.matches);
+    apply();
+    mediaQuery.addEventListener('change', apply);
+    this.destroyRef.onDestroy(() => mediaQuery.removeEventListener('change', apply));
   }
 
   private generateElements(): void {
@@ -131,6 +163,9 @@ export class HeroSequenceComponent implements OnInit {
   }
 
   private initMouseTracking(): void {
+    if (this.mouseTrackingInitialized) return;
+    this.mouseTrackingInitialized = true;
+
     const hostEl = this.el.nativeElement as HTMLElement;
     let ticking = false;
 
@@ -164,10 +199,12 @@ export class HeroSequenceComponent implements OnInit {
     const currentUrl = this.currentSrc();
     if (isDevMode()) console.error('[HeroSequence] Failed to load image:', currentUrl);
 
-    if (!this.retried) {
+    // Retry once with the packaged default banner before falling back to a
+    // neutral background — protects against a broken published URL while
+    // keeping the site presentable offline.
+    if (!this.retried && currentUrl !== DEFAULT_HERO_ASSET) {
       this.retried = true;
-      const fallbackUrl = 'assets/hero/hero-fallback.png';
-      this.currentSrc.set(fallbackUrl);
+      this.overrideSrc.set(DEFAULT_HERO_ASSET);
     } else {
       if (isDevMode()) console.error('[HeroSequence] Fallback image also failed. Showing neutral background.');
       this.loading.set(false);
