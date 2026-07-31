@@ -67,10 +67,23 @@ export class ProductAnalyticsService {
   recordPurchase(productId: string): void { this.record(productId, 'purchase'); }
 
   private record(productId: string, metric: ProductMetric): void {
-    if (!this.store.isEligibleUser()) return;
+    this.diag('Entering record() — click event', { productId, metric });
+    if (!this.store.isEligibleUser()) {
+      this.diag('Analytics SKIPPED — role not eligible (Admin/SuperAdmin/SSR)', { productId, metric });
+      return;
+    }
     const seedCreatedAt = !this.seeded.has(productId);
     if (seedCreatedAt) this.seeded.add(productId);
-    void this.commit(productId, metric, seedCreatedAt).catch(() => {});
+    void this.commit(productId, metric, seedCreatedAt).catch(err => {
+      // eslint-disable-next-line no-console
+      console.error('[Analytics DIAG] commit() rejected — full exception:', err);
+    });
+  }
+
+  /** TEMP DIAG — structured console logging for the analytics write path. Remove after verification. */
+  private diag(message: string, data: Record<string, unknown> = {}): void {
+    // eslint-disable-next-line no-console
+    console.log('[Analytics DIAG]', message, JSON.stringify(data));
   }
 
   private async commit(productId: string, metric: ProductMetric, seedCreatedAt: boolean): Promise<void> {
