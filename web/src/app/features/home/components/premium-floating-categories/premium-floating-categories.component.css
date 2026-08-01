@@ -1,0 +1,318 @@
+.pfc-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 132px 0 96px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ── Background: cream gradient + soft decorative shapes ── */
+.pfc-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pfc-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1100px 760px at 88% -12%, rgba(232, 213, 163, 0.34), transparent 62%),
+    radial-gradient(900px 700px at -12% 112%, rgba(240, 230, 216, 0.55), transparent 58%),
+    linear-gradient(165deg, #fdfaf3 0%, #f6ede0 46%, #fbf6ec 100%);
+}
+
+.pfc-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(64px);
+  opacity: 0.55;
+  transform: translate3d(0, 0, 0);
+}
+
+.pfc-blob-1 {
+  width: 440px;
+  height: 440px;
+  top: -130px;
+  right: -90px;
+  background: radial-gradient(circle, rgba(232, 213, 163, 0.9), transparent 70%);
+}
+
+.pfc-blob-2 {
+  width: 400px;
+  height: 400px;
+  bottom: -150px;
+  left: -110px;
+  background: radial-gradient(circle, rgba(240, 230, 216, 0.95), transparent 70%);
+}
+
+.pfc-blob-3 {
+  width: 260px;
+  height: 260px;
+  top: 42%;
+  left: 56%;
+  background: radial-gradient(circle, rgba(250, 245, 232, 0.9), transparent 70%);
+}
+
+.pfc-arch {
+  position: absolute;
+  pointer-events: none;
+}
+
+.pfc-arch-left {
+  top: 0;
+  left: 0;
+  width: 46%;
+  max-width: 520px;
+  height: 70%;
+}
+
+.pfc-arch-right {
+  right: 0;
+  bottom: 0;
+  width: 46%;
+  max-width: 520px;
+  height: 70%;
+}
+
+.pfc-leaf {
+  position: absolute;
+  width: 56px;
+  height: 96px;
+  opacity: 0.08;
+}
+
+.pfc-leaf-1 {
+  top: 18%;
+  right: 12%;
+  transform: rotate(24deg);
+}
+
+.pfc-leaf-2 {
+  bottom: 14%;
+  left: 8%;
+  transform: rotate(-20deg) scaleX(-1);
+}
+
+/* ── Content ── */
+.pfc-content {
+  position: relative;
+  width: 100%;
+}
+
+.pfc-intro {
+  text-align: center;
+  margin-bottom: 3.25rem;
+}
+
+.pfc-heading {
+  font-family: var(--font-serif);
+  font-size: clamp(2.75rem, 5.5vw, 4.75rem);
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin: 0 0 1rem;
+  opacity: 0;
+  animation: pfc-rise 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.15s forwards;
+}
+
+.pfc-sub {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+  line-height: 1.7;
+  max-width: 520px;
+  margin: 0 auto;
+  opacity: 0;
+  animation: pfc-rise 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.4s forwards;
+}
+
+/* ── Grid ── */
+.pfc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.75rem;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* ── Card ── */
+.pfc-card {
+  display: block;
+  position: relative;
+  border-radius: var(--r-lg, 20px);
+  outline: none;
+  opacity: 0;
+  animation: pfc-card-enter 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) calc(var(--stagger, 0) * 100ms + 600ms) forwards;
+}
+
+.pfc-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+
+.pfc-card:hover .pfc-inner {
+  transform: translate3d(0, -8px, 0) scale(1.02);
+  box-shadow: 0 24px 48px rgba(161, 137, 90, 0.28);
+}
+
+/* Continuous gentle float — transform isolated so it never fights hover/parallax. */
+.pfc-float {
+  will-change: transform;
+  animation: pfc-float var(--float-duration, 6s) ease-in-out var(--float-delay, 0s) infinite;
+}
+
+/* Mouse parallax — driven inline by the component, transitioned for a premium glide. */
+.pfc-parallax {
+  will-change: transform;
+  transition: transform 0.18s ease-out;
+}
+
+.pfc-inner {
+  position: relative;
+  background: #fff;
+  border-radius: var(--r-lg, 20px);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.4s ease;
+}
+
+.pfc-media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.pfc-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.6s ease;
+}
+
+.pfc-card:hover .pfc-img {
+  transform: scale(1.08);
+}
+
+.pfc-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem 1.25rem;
+}
+
+.pfc-title {
+  min-width: 0;
+}
+
+.pfc-name {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+  margin: 0 0 0.25rem;
+}
+
+.pfc-subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.pfc-arrow {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: transform 0.4s ease, background 0.4s ease, color 0.4s ease;
+}
+
+.pfc-card:hover .pfc-arrow {
+  transform: translateX(6px);
+  background: var(--gold);
+  color: #fff;
+}
+
+/* ── Skeleton state ── */
+.pfc-skeleton-card {
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Entrance keyframes ── */
+@keyframes pfc-rise {
+  from { opacity: 0; transform: translate3d(0, 28px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes pfc-card-enter {
+  from { opacity: 0; transform: translate3d(0, 32px, 0) scale(0.96); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes pfc-float {
+  0%, 100% { transform: translate3d(0, -6px, 0); }
+  50%      { transform: translate3d(0, 6px, 0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .pfc-hero { padding: 120px 0 72px; }
+  .pfc-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+}
+
+@media (max-width: 768px) {
+  .pfc-hero { padding: 100px 0 56px; }
+  .pfc-intro { margin-bottom: 2.25rem; }
+  .pfc-grid { gap: 1rem; }
+  .pfc-name { font-size: 1.1rem; }
+  .pfc-subtitle { font-size: 0.78rem; }
+  .pfc-arrow { width: 36px; height: 36px; font-size: 0.95rem; }
+  .pfc-body { padding: 0.9rem 1rem 1rem; }
+  .pfc-leaf { opacity: 0.05; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .pfc-heading,
+  .pfc-sub,
+  .pfc-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .pfc-float {
+    animation: none;
+  }
+
+  .pfc-parallax {
+    transition: none;
+  }
+
+  .pfc-inner {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .pfc-img,
+  .pfc-arrow {
+    transition: none;
+  }
+}

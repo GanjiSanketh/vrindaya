@@ -1,5 +1,15 @@
 <main id="main-content" tabindex="-1">
 
+  @if (useProductShowcase()) {
+    <app-premium-product-showcase />
+  } @else if (usePremiumHero()) {
+    <app-premium-floating-categories
+      [categories]="categories()"
+      [loading]="categoriesLoading()"
+    />
+  } @else if (heroShowcaseEnabled()) {
+    <app-hero-showcase [config]="heroShowcaseConfig()!" />
+  } @else {
   <section class="hero-section" id="hero">
     <app-hero-sequence
       [desktopImg]="heroDesktop()"
@@ -40,6 +50,7 @@
       <span class="hero-scroll-line"></span>
     </div>
   </section>
+  }
 
   <section class="cat-section section-pad" id="categories">
     <div class="container-vr">

@@ -8,7 +8,11 @@ import { SCROLL_THRESHOLDS } from '../../../../core/constants/app.constants';
 import { SeoService } from '../../../../core/services/seo.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { HeroBannerService } from '../../../../core/services/hero-banner.service';
+import { HeroShowcaseService } from '../../../../core/services/hero-showcase.service';
 import { HeroSequenceComponent } from '../../components/hero-sequence/hero-sequence.component';
+import { HeroShowcaseComponent } from '../../components/hero-showcase/hero-showcase.component';
+import { PremiumFloatingCategoriesComponent } from '../../components/premium-floating-categories/premium-floating-categories.component';
+import { PremiumProductShowcaseComponent } from '../../components/premium-product-showcase/premium-product-showcase.component';
 import { RevealDirective } from '../../directives/reveal.directive';
 import { NewArrivals } from '../../../../components/new-arrivals/new-arrivals';
 import { TrendingProducts } from '../../../../components/trending-products/trending-products';
@@ -22,6 +26,9 @@ import { SkeletonGridComponent } from '../../../../shared/components/skeleton/sk
   imports: [
     CommonModule, RouterLink,
     HeroSequenceComponent,
+    HeroShowcaseComponent,
+    PremiumFloatingCategoriesComponent,
+    PremiumProductShowcaseComponent,
     RevealDirective,
     NewArrivals, TrendingProducts, BestSellers, CustomerLove,
     SkeletonGridComponent,
@@ -37,11 +44,28 @@ export class HomePageComponent {
   private readonly el = inject(ElementRef);
   readonly productSvc = inject(ProductService);
   private readonly heroBanner = inject(HeroBannerService);
+  private readonly heroShowcaseSvc = inject(HeroShowcaseService);
 
   readonly showScrollTop = signal(false);
   readonly heroLoaded = signal(false);
   readonly mouseX = signal(0);
   readonly mouseY = signal(0);
+
+  /**
+   * Hero resolution (most-specific first):
+   *   1. Premium Product Showcase / Floating Categories — legacy premium hero
+   *      experiments, kept intact and switchable at any time.
+   *   2. Hero Showcase — the CMS-driven hero (homepageConfig/active) rendered
+   *      whenever it is enabled and has at least one enabled item.
+   *   3. Hero Banner — the classic Firestore-driven banner, the fallback when
+   *      the Hero Showcase is disabled (backward compatibility, never deleted).
+   */
+  readonly usePremiumHero = signal(false);
+  readonly useProductShowcase = signal(false);
+
+  /** The persisted Hero Showcase configuration + whether it is live. */
+  readonly heroShowcaseConfig = this.heroShowcaseSvc.config;
+  readonly heroShowcaseEnabled = this.heroShowcaseSvc.enabled;
 
   protected readonly heroSequence = viewChild.required(HeroSequenceComponent);
 
@@ -50,6 +74,7 @@ export class HomePageComponent {
   readonly heroMobile = this.heroBanner.mobileSrc;
 
   readonly categories = this.productSvc.categories;
+  readonly categoriesLoading = this.productSvc.categoriesLoading;
   readonly newArrivals = this.productSvc.newArrivals;
   readonly trending = this.productSvc.trending;
   readonly bestSellers = this.productSvc.bestSellers;
@@ -73,6 +98,7 @@ export class HomePageComponent {
 
     if (isPlatformBrowser(this.platformId)) {
       void this.heroBanner.ensureLoaded();
+      void this.heroShowcaseSvc.ensureLoaded();
       this.initScrollHandler();
       this.initMouseParallax();
     }

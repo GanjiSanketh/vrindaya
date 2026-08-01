@@ -20,7 +20,7 @@ export class GlobalSearchService {
     { label: 'Sales Orders', path: 'sales/orders', icon: 'bi-cart-check', section: 'Sales', type: 'page' },
     { label: 'Record Sale', path: 'sales/record', icon: 'bi-plus-circle', section: 'Sales', type: 'page' },
     { label: 'Analytics Dashboard', path: 'analytics', icon: 'bi-speedometer2', section: 'Analytics', type: 'page' },
-    { label: 'Hero Banners', path: 'hero-banners', icon: 'bi-image', section: 'Site Content', type: 'page' },
+    { label: 'Hero Showcase', path: 'hero-showcase', icon: 'bi-images', section: 'Site Content', type: 'page' },
     { label: 'Marketplace Dashboard', path: 'marketplace/dashboard', icon: 'bi-speedometer2', section: 'Marketplace', type: 'page' },
     { label: 'Marketplace Products', path: 'marketplace/products', icon: 'bi-box-seam', section: 'Marketplace', type: 'page' },
     { label: 'Marketplace Listings', path: 'marketplace/listings', icon: 'bi-card-list', section: 'Marketplace', type: 'page' },

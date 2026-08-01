@@ -56,7 +56,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     key: 'site', label: 'Site Content', icon: 'bi-window',
     items: [
-      { label: 'Hero Banners', path: 'hero-banners', icon: 'bi-image' },
+      { label: 'Hero Showcase', path: 'hero-showcase', icon: 'bi-images' },
       { label: 'Categories', path: 'categories', icon: 'bi-tags' },
     ],
   },

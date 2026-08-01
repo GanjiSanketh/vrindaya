@@ -62,6 +62,17 @@ service cloud.firestore {
       allow write: if isAdminUser();
     }
 
+    /**
+     * Homepage configuration (homepageConfig/active) — the CMS record that
+     * drives the homepage. Public reads (the storefront hero showcase reads
+     * it straight from Firestore, exactly like heroBanners); writes only by
+     * Admin / Super Admin via the AdminOnly policy on the API.
+     */
+    match /homepageConfig/{docId} {
+      allow read: if true;
+      allow write: if isAdminUser();
+    }
+
     // Product Analytics — anonymous visitors / customer users (unauthenticated)
     // increment counters. Admin sessions are denied at the rules level so admin
     // browsing can never pollute metrics, even if a client-side check is missed.

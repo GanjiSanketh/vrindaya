@@ -70,8 +70,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICategoryService, CategoryService>();
 
-        // Hero banners
+        // Hero banners (legacy fallback — kept intact for backward compatibility)
         services.AddScoped<IHeroBannerService, HeroBannerService>();
+
+        // Hero showcase (CMS-driven homepage hero, nested under homepageConfig/active)
+        services.AddScoped<IHeroShowcaseService, HeroShowcaseService>();
 
         return services;
     }

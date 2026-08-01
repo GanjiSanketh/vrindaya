@@ -1,0 +1,75 @@
+<section class="hsc-hero" aria-label="Vrindaya hero showcase">
+
+  <div class="hsc-bg" aria-hidden="true">
+    <div class="hsc-bg-gradient"></div>
+    <div class="hsc-blur hsc-blur-1"></div>
+    <div class="hsc-blur hsc-blur-2"></div>
+    <div class="hsc-blur hsc-blur-3"></div>
+    <div class="hsc-shape hsc-shape-left"></div>
+    <div class="hsc-shape hsc-shape-right"></div>
+  </div>
+
+  <div class="hsc-grid container-vr">
+    <div class="hsc-copy">
+      <p class="hsc-brand">Vrindaya</p>
+      @if (current(); as slide) {
+        <h1 class="hsc-title" [attr.key]="slide.itemId">{{ slide.title || 'Wear the Grace' }}</h1>
+        <p class="hsc-subtitle">{{ slide.subtitle }}</p>
+        <div class="hsc-cta">
+          @if (isExternalLink()) {
+            <a class="hsc-cta-btn" [href]="buttonLink()" target="_blank" rel="noopener noreferrer">
+              {{ buttonText() }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+          } @else {
+            <a class="hsc-cta-btn" [routerLink]="buttonLink()">
+              {{ buttonText() }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+          }
+        </div>
+      }
+
+      @if (rotates()) {
+        <div class="hsc-dots" role="tablist" aria-label="Showcase slides">
+          @for (item of items(); track item.itemId; let i = $index) {
+            <button type="button"
+                    class="hsc-dot"
+                    [class.hsc-dot--active]="i === index()"
+                    [attr.aria-label]="'Go to slide ' + (i + 1)"
+                    [attr.aria-selected]="i === index()"
+                    role="tab"
+                    (click)="select(i)"></button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="hsc-showcase">
+      <div class="hsc-glow" aria-hidden="true"></div>
+      <div class="hsc-stage">
+        <div class="hsc-float">
+          <div class="hsc-tilt">
+            @for (item of displayList(); track item.itemId) {
+              <figure class="hsc-slide" [class.hsc-slide--fade]="transition() === 'fade'">
+                <img
+                  [src]="image() | cloudinaryUrl:800"
+                  [srcset]="image() | cloudinarySrcset"
+                  sizes="(max-width: 820px) 86vw, 480px"
+                  [alt]="item.title || 'Vrindaya showcase'"
+                  class="hsc-img"
+                  loading="eager"
+                  decoding="async"
+                  width="800" height="1000"
+                  fetchpriority="high"
+                />
+                @if (item.title) {
+                  <figcaption class="hsc-caption" aria-hidden="true">{{ item.title }}</figcaption>
+                }
+              </figure>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
