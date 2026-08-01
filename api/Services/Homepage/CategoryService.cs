@@ -156,6 +156,66 @@ public class CategoryService : ICategoryService
         return ToResponse(id, existing);
     }
 
+    public async Task<CategoryResponse> UploadBannerImageAsync(string id, Microsoft.AspNetCore.Http.IFormFile file, CancellationToken cancellationToken)
+    {
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Category", id);
+
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms, cancellationToken);
+        var bytes = ms.ToArray();
+        var extension = Path.GetExtension(file.FileName)?.TrimStart('.') ?? "jpg";
+        
+        var uploadResult = await _cloudinary.ReplaceImageAsync(
+            "categories/banners",
+            existing.BannerImagePublicId,
+            bytes,
+            file.ContentType,
+            extension,
+            file.FileName,
+            cancellationToken);
+
+        existing.BannerImage = uploadResult.SecureUrl;
+        existing.BannerImagePublicId = uploadResult.PublicId;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        await _repository.UpdateAsync(id, existing, cancellationToken);
+        _memoryCache.Remove(AppConstants.CategoriesActiveCacheKey);
+        
+        return ToResponse(id, existing);
+    }
+
+    public async Task<CategoryResponse> RemoveBannerImageAsync(string id, CancellationToken cancellationToken)
+    {
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Category", id);
+
+        if (!string.IsNullOrWhiteSpace(existing.BannerImagePublicId))
+        {
+            await _cloudinary.DeleteImageAsync(existing.BannerImagePublicId, cancellationToken);
+        }
+
+        existing.BannerImage = string.Empty;
+        existing.BannerImagePublicId = string.Empty;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        await _repository.UpdateAsync(id, existing, cancellationToken);
+        _memoryCache.Remove(AppConstants.CategoriesActiveCacheKey);
+        
+        return ToResponse(id, existing);
+    }
+
+    public async Task<CategoryResponse> UpdateBannerImageUrlAsync(string id, string bannerImageUrl, CancellationToken cancellationToken)
+    {
+        var existing = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Category", id);
+
+        existing.BannerImage = bannerImageUrl;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        await _repository.UpdateAsync(id, existing, cancellationToken);
+        _memoryCache.Remove(AppConstants.CategoriesActiveCacheKey);
+        
+        return ToResponse(id, existing);
+    }
+
     private static CategoryResponse ToResponse(string id, CategoryDocument doc) => new()
     {
         Id = id,

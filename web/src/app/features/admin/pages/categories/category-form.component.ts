@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CategoryAdminService } from '../../services/category-admin.service';
 import { APP_ROUTES } from '../../../../core/constants/routes.constants';
 import { validateImageFile, formatFileSize } from '../../../../shared/utils/image-processing.util';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE = 15 * 1024 * 1024;
@@ -21,6 +22,7 @@ export class CategoryFormComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route  = inject(ActivatedRoute);
   private readonly admin  = inject(CategoryAdminService);
+  private readonly toast  = inject(ToastService);
 
   readonly BASE      = `/${APP_ROUTES.ADMIN}/categories`;
   readonly isEdit     = signal(false);
@@ -34,6 +36,14 @@ export class CategoryFormComponent implements OnInit {
   readonly removingImage = signal(false);
   readonly imageValidationError = signal<string | null>(null);
   readonly compressionInfo = signal<string | null>(null);
+
+  readonly bannerImageFile = signal<File | null>(null);
+  readonly bannerImagePreview = signal<string | null>(null);
+  readonly uploadingBannerImage = signal(false);
+  readonly removingBannerImage = signal(false);
+  readonly bannerImageValidationError = signal<string | null>(null);
+  readonly bannerCompressionInfo = signal<string | null>(null);
+
   readonly showPreview = signal(false);
 
   private categoryId  = '';
@@ -85,7 +95,7 @@ export class CategoryFormComponent implements OnInit {
     this.formError.set(null);
     this.saving.set(true);
 
-    if (this.uploadingImage()) {
+    if (this.uploadingImage() || this.uploadingBannerImage()) {
       this.formError.set('Please wait for image processing to complete.');
       this.saving.set(false);
       return;
@@ -120,12 +130,24 @@ export class CategoryFormComponent implements OnInit {
           this.form.patchValue({ imageUrl: updated.image });
           this.uploadingImage.set(false);
         }
+        if (this.bannerImageFile()) {
+          this.uploadingBannerImage.set(true);
+          const updated = await this.admin.uploadBannerImage(this.categoryId, this.bannerImageFile()!);
+          this.bannerImageUrl.set(updated.bannerImage ?? '');
+          this.form.patchValue({ bannerImageUrl: updated.bannerImage ?? '' });
+          this.uploadingBannerImage.set(false);
+        }
       } else {
         const created = await this.admin.create({ id: v.id!.trim(), ...payload });
         if (this.imageFile()) {
           this.uploadingImage.set(true);
           await this.admin.uploadImage(created.id, this.imageFile()!);
           this.uploadingImage.set(false);
+        }
+        if (this.bannerImageFile()) {
+          this.uploadingBannerImage.set(true);
+          await this.admin.uploadBannerImage(created.id, this.bannerImageFile()!);
+          this.uploadingBannerImage.set(false);
         }
       }
       this.saved.set(true);
@@ -203,6 +225,73 @@ export class CategoryFormComponent implements OnInit {
     this.imageValidationError.set(null);
   }
 
+  async onBannerImageSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+
+    this.bannerImageValidationError.set(null);
+    this.bannerCompressionInfo.set(null);
+
+    const validationErr = validateImageFile(file);
+    if (validationErr) {
+      this.bannerImageValidationError.set(validationErr);
+      input.value = '';
+      return;
+    }
+
+    if (!VALID_IMAGE_TYPES.includes(file.type)) {
+      this.bannerImageValidationError.set('Please choose a JPG, PNG, or WebP image.');
+      input.value = '';
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      this.bannerImageValidationError.set(`Image is too large (max ${MAX_IMAGE_SIZE / (1024 * 1024)} MB).`);
+      input.value = '';
+      return;
+    }
+
+    try {
+      const { processImageForUpload } = await import('../../../../shared/utils/image-processing.util');
+      const processed = await processImageForUpload(file);
+      this.bannerImageFile.set(new File([processed.blob], file.name, { type: 'image/webp' }));
+      this.bannerImagePreview.set(processed.previewUrl);
+      this.bannerCompressionInfo.set(`${file.type.split('/')[1].toUpperCase()} ${file.size >= 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' : Math.round(file.size / 1024) + ' KB'} → WebP ${formatFileSize(processed.sizeBytes)} (${processed.width}×${processed.height})`);
+    } catch (err) {
+      this.bannerImageValidationError.set(err instanceof Error ? err.message : 'Invalid image');
+    }
+  }
+
+  async removeExistingBannerImage(): Promise<void> {
+    if (!this.categoryId || this.removingBannerImage()) return;
+    this.removingBannerImage.set(true);
+    this.formError.set(null);
+    try {
+      await this.admin.removeBannerImage(this.categoryId);
+      this.bannerImageUrl.set('');
+      this.bannerImagePreview.set(null);
+      this.bannerImageFile.set(null);
+      this.form.patchValue({ bannerImageUrl: '' });
+      this.toast.success('Banner image removed');
+    } catch (err) {
+      this.formError.set(err instanceof Error ? err.message : 'Failed to remove banner image.');
+      this.toast.error('Failed to remove banner image');
+    } finally {
+      this.removingBannerImage.set(false);
+    }
+  }
+
+  clearSelectedBannerImage(): void {
+    this.bannerImageFile.set(null);
+    this.bannerImagePreview.set(null);
+    this.bannerCompressionInfo.set(null);
+    this.bannerImageValidationError.set(null);
+  }
+
+  hasCurrentBannerImage(): boolean {
+    return !!this.bannerImagePreview() || !!this.bannerImageUrl();
+  }
+
   hasCurrentImage(): boolean {
     return !!this.imagePreview() || !!this.imageUrl();
   }
@@ -212,5 +301,9 @@ export class CategoryFormComponent implements OnInit {
 
   currentImageSrc(): string {
     return this.imagePreview() || this.imageUrl() || '';
+  }
+
+  currentBannerImageSrc(): string {
+    return this.bannerImagePreview() || this.bannerImageUrl() || '';
   }
 }

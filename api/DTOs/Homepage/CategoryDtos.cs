@@ -74,3 +74,9 @@ public class ReorderCategoriesRequest
     [Required, MinLength(1)]
     public List<string> OrderedIds { get; set; } = [];
 }
+
+public class UpdateBannerImageUrlRequest
+{
+    [Url]
+    public string BannerImageUrl { get; set; } = string.Empty;
+}

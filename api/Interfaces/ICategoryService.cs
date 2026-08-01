@@ -22,4 +22,10 @@ public interface ICategoryService
     Task ReorderAsync(List<string> orderedIds, CancellationToken cancellationToken);
 
     Task<CategoryResponse> UploadImageAsync(string id, Microsoft.AspNetCore.Http.IFormFile file, CancellationToken cancellationToken);
+
+    Task<CategoryResponse> UploadBannerImageAsync(string id, Microsoft.AspNetCore.Http.IFormFile file, CancellationToken cancellationToken);
+
+    Task<CategoryResponse> RemoveBannerImageAsync(string id, CancellationToken cancellationToken);
+
+    Task<CategoryResponse> UpdateBannerImageUrlAsync(string id, string bannerImageUrl, CancellationToken cancellationToken);
 }

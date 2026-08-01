@@ -162,15 +162,53 @@
 
         <div class="hbf-section">
           <h2 class="hbf-section-title">Banner Image</h2>
+
           <div class="hbf-field">
             <label class="hbf-label">Banner Image URL</label>
             <input class="hbf-input" formControlName="bannerImageUrl" type="url" placeholder="https://..." />
           </div>
-          @if (form.value.bannerImageUrl) {
+
+          <div class="hbf-field">
+            <label class="hbf-label">Or Upload Banner Image</label>
+            <input type="file" accept="image/jpeg,image/png,image/webp" class="hbf-input" (change)="onBannerImageSelected($event)" [disabled]="uploadingBannerImage()" />
+          </div>
+
+          @if (bannerImageValidationError()) {
+            <div class="hbf-err">{{ bannerImageValidationError() }}</div>
+          }
+
+          @if (bannerCompressionInfo()) {
+            <div class="hbf-compress-info">{{ bannerCompressionInfo() }}</div>
+          }
+
+          @if (bannerImagePreview() || bannerImageUrl()) {
+            <div class="hbf-img-wrap">
+              <img [src]="currentBannerImageSrc()" alt="Banner preview" class="hbf-img" loading="lazy" (click)="showPreview.set(true)" />
+              <div class="hbf-img-actions">
+                @if (bannerImagePreview()) {
+                  <button type="button" class="hbf-img-btn" (click)="clearSelectedBannerImage()" title="Cancel upload">✕</button>
+                }
+                @if (bannerImageUrl() && !bannerImagePreview()) {
+                  <button type="button" class="hbf-img-btn hbf-img-btn--del" (click)="removeExistingBannerImage()" [disabled]="removingBannerImage()" title="Remove banner image">
+                    @if (removingBannerImage()) { <span class="btn-spinner"></span> } @else { <i class="bi bi-trash3"></i> }
+                  </button>
+                  <button type="button" class="hbf-img-btn" (click)="bannerFile.click()" [disabled]="uploadingBannerImage()" title="Replace banner image"><i class="bi bi-arrow-repeat"></i></button>
+                }
+              </div>
+            </div>
+            <div class="hbf-img-hint" (click)="showPreview.set(true)">Click to preview</div>
+          } @else if (form.value.bannerImageUrl) {
             <div class="hbf-img-wrap">
               <img [src]="form.value.bannerImageUrl" alt="Banner preview" class="hbf-img" loading="lazy" (click)="showPreview.set(true)" />
             </div>
+            <div class="hbf-img-hint" (click)="showPreview.set(true)">Click to preview</div>
           }
+
+          @if (uploadingBannerImage()) {
+            <div class="hbf-img-uploading"><span class="btn-spinner"></span> Uploading…</div>
+          }
+
+          <input #bannerFile type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onBannerImageSelected($event)" [disabled]="uploadingBannerImage()" />
         </div>
       </div>
 

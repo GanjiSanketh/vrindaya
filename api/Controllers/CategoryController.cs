@@ -72,6 +72,33 @@ public class CategoryController : ControllerBase
         return Ok(await _service.UploadImageAsync(id, file, cancellationToken));
     }
 
+    [HttpPost("{id}/banner-image")]
+    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
+    [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CategoryResponse>> UploadBannerImage(string id, IFormFile file, CancellationToken cancellationToken)
+    {
+        return Ok(await _service.UploadBannerImageAsync(id, file, cancellationToken));
+    }
+
+    [HttpDelete("{id}/banner-image")]
+    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
+    [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CategoryResponse>> RemoveBannerImage(string id, CancellationToken cancellationToken)
+    {
+        return Ok(await _service.RemoveBannerImageAsync(id, cancellationToken));
+    }
+
+    [HttpPatch("{id}/banner-image-url")]
+    [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
+    [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CategoryResponse>> UpdateBannerImageUrl(string id, [FromBody] UpdateBannerImageUrlRequest request, CancellationToken cancellationToken)
+    {
+        return Ok(await _service.UpdateBannerImageUrlAsync(id, request.BannerImageUrl, cancellationToken));
+    }
+
     /// <summary>Active-only toggle — see ICategoryService.UpdateStatusAsync for why this is a dedicated endpoint rather than routing through the full PUT.</summary>
     [HttpPatch("{id}/status")]
     [Authorize(Policy = AppConstants.AdminOnlyPolicy)]

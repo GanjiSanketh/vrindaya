@@ -87,4 +87,14 @@ export class CategoryAdminService {
   async updateImageUrl(id: string, imageUrl: string): Promise<AdminCategory> {
     return firstValueFrom(this.http.patch<AdminCategory>(`${URL}/${id}/image-url`, { imageUrl }));
   }
+
+  async uploadBannerImage(id: string, file: File): Promise<AdminCategory> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return firstValueFrom(this.http.post<AdminCategory>(`${URL}/${id}/banner-image`, formData));
+  }
+
+  async removeBannerImage(id: string): Promise<AdminCategory> {
+    return firstValueFrom(this.http.delete<AdminCategory>(`${URL}/${id}/banner-image`));
+  }
 }
