@@ -8,6 +8,7 @@ import { interval } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HeroShowcase, HeroShowcaseItem } from '../../../../core/models/hero-showcase.model';
 import { CloudinaryImageService } from '../../../../core/services/cloudinary-image.service';
+import { LcpReadyService } from '../../../../core/services/lcp-ready.service';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
 /** Mouse tilt limits — 6deg rotation, 20px movement (same spec as the premium hero). */
@@ -43,6 +44,7 @@ export class HeroShowcaseComponent implements OnInit, AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(Document);
   private readonly cloudinary = inject(CloudinaryImageService);
+  private readonly lcpReady = inject(LcpReadyService);
 
   /** Index of the active slide. */
   readonly index = signal(0);
@@ -123,6 +125,11 @@ export class HeroShowcaseComponent implements OnInit, AfterViewInit {
     if (isPlatformBrowser(this.platformId)) {
       this.initShowcaseMotion();
     }
+  }
+
+  /** The LCP hero image finished painting — lets the first-visit splash reveal the page. */
+  onImageLoad(): void {
+    this.lcpReady.markHeroLoaded();
   }
 
   /** Jumps to a specific slide (indicator dots). */

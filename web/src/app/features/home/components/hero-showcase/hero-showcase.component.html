@@ -60,6 +60,7 @@
                   decoding="async"
                   width="800" height="1000"
                   fetchpriority="high"
+                  (load)="onImageLoad()"
                 />
                 @if (item.title) {
                   <figcaption class="hsc-caption" aria-hidden="true">{{ item.title }}</figcaption>

@@ -1,5 +1,6 @@
 import { Component, input, output, signal, computed, isDevMode, ChangeDetectionStrategy, PLATFORM_ID, inject, effect, ElementRef, DestroyRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { LcpReadyService } from '../../../../core/services/lcp-ready.service';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
 /** The packaged default banner — shown until (and whenever there is no) published Firestore banner. */
@@ -118,6 +119,7 @@ export class HeroSequenceComponent {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly el = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly lcpReady = inject(LcpReadyService);
 
   constructor() {
     this.generateElements();
@@ -192,6 +194,7 @@ export class HeroSequenceComponent {
   onLoadSuccess(): void {
     this.loading.set(false);
     this.showFallback.set(false);
+    this.lcpReady.markHeroLoaded();
     this.loaded.emit();
   }
 
