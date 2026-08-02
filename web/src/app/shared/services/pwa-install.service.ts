@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent, merge } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PwaInstallService {
@@ -22,6 +23,11 @@ export class PwaInstallService {
 
   constructor() {
     if (!isPlatformBrowser(this.platformId)) return;
+
+    // Feature flag — when disabled, no `beforeinstallprompt`/`appinstalled`
+    // listeners are registered and no install prompt can appear. Set
+    // `environment.features.enableInstallPrompt = true` to re-enable.
+    if (!environment.features.enableInstallPrompt) return;
 
     merge(
       fromEvent<Event>(window, 'beforeinstallprompt').pipe(

@@ -1,5 +1,6 @@
 import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser }                        from '@angular/common';
+import { environment }                              from '../../../environments/environment';
 
 export interface ExitIntentConfig {
   enabled: boolean;
@@ -32,6 +33,12 @@ export class ExitIntentService {
    */
   init(): void {
     if (!isPlatformBrowser(this.pid)) return;
+
+    // Feature flag — when disabled, no mouse-leave / visibilitychange /
+    // inactivity listeners are registered, so the popup can never appear.
+    // Set `environment.features.enableExitIntentPopup = true` to re-enable.
+    if (!environment.features.enableExitIntentPopup) return;
+
     if (this._initialized) return;
     this._initialized = true;
 
@@ -74,6 +81,8 @@ export class ExitIntentService {
   }
 
   trigger(): void {
+    // Master switch — guard every path so the popup can never be shown while disabled.
+    if (!environment.features.enableExitIntentPopup) return;
     if (!this._onHome) return;
     if (sessionStorage.getItem(SHOWN_KEY) === '1') return;
     if (!this.config().enabled) return;

@@ -1,12 +1,13 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PwaInstallService } from '../../services/pwa-install.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-install-prompt',
   standalone: true,
   imports: [],
   template: `
-    @if (installSvc.showPrompt()) {
+    @if (enableInstallPrompt && installSvc.showPrompt()) {
       <div class="ip-overlay" (click)="installSvc.dismiss()">
         <div class="ip-card" (click)="$event.stopPropagation()">
           <div class="ip-header">
@@ -84,4 +85,7 @@ import { PwaInstallService } from '../../services/pwa-install.service';
 })
 export class InstallPromptComponent {
   readonly installSvc = inject(PwaInstallService);
+
+  /** Set `environment.features.enableInstallPrompt = true` to show the prompt again. */
+  readonly enableInstallPrompt = environment.features.enableInstallPrompt;
 }

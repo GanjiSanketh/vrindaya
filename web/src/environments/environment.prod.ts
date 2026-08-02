@@ -3,6 +3,12 @@ export const environment = {
   maintenanceMode: false,
   adminEmail:   'gsanketh7121@gmail.com',
   apiBaseUrl:   'https://vrindaya-api.onrender.com/api/v1',
+  features: {
+    /** PWA "Install the app" prompt (native + custom modal). */
+    enableInstallPrompt: false,
+    /** Exit-intent / "Before You Go" popup. */
+    enableExitIntentPopup: false,
+  },
   firebase: {
     apiKey:            'AIzaSyAGIZzyi-1o4kR86IYbWLRaCExH343sJUY',
     authDomain:        'vrindaya-ad7b0.firebaseapp.com',
