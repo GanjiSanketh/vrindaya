@@ -41,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();
+        services.AddScoped<IAnalyticsSettingsService, AnalyticsSettingsService>();
 
         // Singleton: wraps one lazily built, reused FirestoreDb client.
         services.AddSingleton<IFirebaseService, FirebaseService>();

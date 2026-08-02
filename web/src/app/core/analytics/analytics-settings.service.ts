@@ -1,7 +1,9 @@
 import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { MarketplaceFirebaseService } from '../../features/admin/marketplace/services/marketplace-firebase.service';
-import { AuthTokenStorageService } from '../services/auth-token-storage.service';
 import {
   AnalyticsSettings,
   DEFAULT_ANALYTICS_SETTINGS,
@@ -9,6 +11,9 @@ import {
 
 export const ANALYTICS_SETTINGS_ROOT = 'analyticsSettings';
 export const ANALYTICS_SETTINGS_DOC_ID = 'website';
+
+/** Admin-only save endpoint. PUT is the single enforcement boundary for changes — the browser never writes analyticsSettings directly. */
+const SETTINGS_URL = `${environment.apiBaseUrl}/analytics-settings`;
 
 /**
  * Singleton owner of the website analytics configuration.
@@ -19,15 +24,15 @@ export const ANALYTICS_SETTINGS_DOC_ID = 'website';
  * touches the network; server renders fall back to the packaged defaults
  * and the browser hydrates the real settings as soon as they arrive.
  *
- * Write access is admin-only and enforced twice: the admin page sits behind
- * the adminAuthGuard, and the Firestore security rules reject any
- * non-admin write.
+ * Write access is admin-only and enforced by the backend: the admin page
+ * sits behind the adminAuthGuard, and saving goes through the admin-only API
+ * endpoint, never through a direct browser Firestore write.
  */
 @Injectable({ providedIn: 'root' })
 export class AnalyticsSettingsService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly firebase = inject(MarketplaceFirebaseService);
-  private readonly tokenStorage = inject(AuthTokenStorageService);
+  private readonly http = inject(HttpClient);
 
   private readonly settingsState = signal<AnalyticsSettings>(DEFAULT_ANALYTICS_SETTINGS);
   private readonly loadedState = signal(false);
@@ -64,23 +69,14 @@ export class AnalyticsSettingsService {
   }
 
   /**
-   * Persists only the supplied fields (plus `updatedAt`/`updatedBy`) onto
-   * the existing document. The cache is refreshed with the result so the
+   * Persists the full toggle state through the admin-only API endpoint
+   * (authTokenInterceptor attaches the AppJwt Bearer header; the backend
+   * enforces the AdminOnly policy and stamps updatedAt/updatedBy from the
+   * authenticated identity). The cache is refreshed with the result so the
    * storefront picks up the change without a second read.
    */
-  async save(patch: Partial<AnalyticsSettings>, updatedBy: string): Promise<AnalyticsSettings> {
-    const db = await this.firebase.getFirestore();
-    const { doc, setDoc } = await import('firebase/firestore');
-
-    const updated: AnalyticsSettings = {
-      ...DEFAULT_ANALYTICS_SETTINGS,
-      ...this.settingsState(),
-      ...patch,
-      updatedAt: new Date().toISOString(),
-      updatedBy: updatedBy || this.defaultUpdatedBy(),
-    };
-
-    await setDoc(doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID), updated, { merge: true });
+  async save(payload: Omit<AnalyticsSettings, 'updatedAt' | 'updatedBy'>): Promise<AnalyticsSettings> {
+    const updated = await firstValueFrom(this.http.put<AnalyticsSettings>(SETTINGS_URL, payload));
     this.applyToCache(updated);
     return updated;
   }
@@ -129,10 +125,5 @@ export class AnalyticsSettingsService {
 
   private string(value: unknown): string {
     return typeof value === 'string' ? value : '';
-  }
-
-  private defaultUpdatedBy(): string {
-    const session = this.tokenStorage.getSession();
-    return session?.user?.email ?? '';
   }
 }
