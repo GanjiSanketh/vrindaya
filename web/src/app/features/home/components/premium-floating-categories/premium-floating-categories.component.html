@@ -60,7 +60,9 @@
               <div class="pfc-parallax" [style.transform]="parallaxTransform(i)">
                 <div class="pfc-inner">
                   <div class="pfc-media">
-                    <img [src]="c.image" [alt]="c.name" class="pfc-img" loading="lazy" decoding="async" width="600" height="750" />
+                    <img [src]="c.image | cloudinaryUrl:600" [srcset]="c.image | cloudinarySrcset"
+                         sizes="(max-width: 600px) 50vw, (max-width: 992px) 25vw, 25vw"
+                         [alt]="c.name" class="pfc-img" loading="lazy" decoding="async" width="600" height="750" />
                   </div>
                   <div class="pfc-body">
                     <div class="pfc-title">

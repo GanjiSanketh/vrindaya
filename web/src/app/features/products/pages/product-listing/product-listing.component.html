@@ -3,7 +3,8 @@
 
   @if (category()?.bannerImage) {
     <div class="cl-banner">
-      <img [src]="category()!.bannerImage" [alt]="category()!.name" class="cl-banner-img" loading="lazy" decoding="async" width="1200" height="400" />
+      <img [src]="category()!.bannerImage | cloudinaryUrl:1200" [srcset]="category()!.bannerImage | cloudinarySrcset"
+           sizes="100vw" [alt]="category()!.name" class="cl-banner-img" loading="lazy" decoding="async" width="1200" height="400" />
       <div class="cl-banner-overlay">
         <h1 class="cl-banner-title">{{ category()!.name }}</h1>
         @if (category()!.description) { <p class="cl-banner-desc">{{ category()!.description }}</p> }

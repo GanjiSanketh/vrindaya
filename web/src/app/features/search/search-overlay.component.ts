@@ -13,6 +13,7 @@ import { SearchService }       from '../../core/services/search.service';
 import { ProductQueryService } from '../../core/services/product-query.service';
 import { CategoryService }     from '../../core/services/category.service';
 import { Product, Category }   from '../../core/models/product.model';
+import { CloudinaryUrlPipe }   from '../../shared/pipes/cloudinary-url.pipe';
 
 export type SearchResultItem =
   | { kind: 'product'; product: Product }
@@ -24,7 +25,7 @@ const MAX_PRODUCT_MATCHES = 8;
 @Component({
   selector: 'app-search-overlay',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CloudinaryUrlPipe],
   templateUrl: './search-overlay.component.html',
   styleUrl:    './search-overlay.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

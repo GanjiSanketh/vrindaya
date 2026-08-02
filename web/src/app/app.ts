@@ -20,13 +20,11 @@ import { UpdatePromptComponent }   from './shared/components/update-prompt/updat
   template: `
     <app-route-loading-bar />
     <app-loading-screen (done)="appReady.set(true)" />
-    @if (appReady()) {
-      <router-outlet />
-      <app-popup />
-      <app-toast />
-      <app-install-prompt />
-      <app-update-prompt />
-    }
+    <router-outlet />
+    <app-popup />
+    <app-toast />
+    <app-install-prompt />
+    <app-update-prompt />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -41,7 +41,7 @@
               <button class="qv-thumb" [class.active]="selectedIndex() === i"
                       (click)="selectedIndex.set(i)"
                       [attr.aria-label]="'View image ' + (i + 1)">
-                <img [src]="img | cloudinaryUrl:150" [alt]="product.name + ' view ' + (i + 1)"
+                <img [src]="img | cloudinaryUrl:300" [alt]="product.name + ' view ' + (i + 1)"
                      loading="lazy" decoding="async" width="75" height="100" draggable="false" />
               </button>
             }

@@ -38,9 +38,9 @@
             <li class="so-result" role="option" (click)="navigate(item)"
                 [attr.aria-label]="resultName(item) + ', ' + resultSubLabel(item)">
               @if (item.kind === 'product') {
-                <img [src]="item.product.image" [alt]="item.product.name" class="so-thumb" loading="lazy" decoding="async" width="60" height="75" draggable="false" />
+                <img [src]="item.product.image | cloudinaryUrl:300" [alt]="item.product.name" class="so-thumb" loading="lazy" decoding="async" width="60" height="75" draggable="false" />
               } @else if (item.kind === 'category') {
-                <img [src]="item.category.image" [alt]="item.category.name" class="so-thumb" loading="lazy" decoding="async" width="60" height="75" draggable="false" />
+                <img [src]="item.category.image | cloudinaryUrl:300" [alt]="item.category.name" class="so-thumb" loading="lazy" decoding="async" width="60" height="75" draggable="false" />
               } @else {
                 <span class="so-thumb so-thumb--icon"><i class="bi bi-collection"></i></span>
               }

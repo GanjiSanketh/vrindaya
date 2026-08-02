@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
 /** The packaged default banner — shown until (and whenever there is no) published Firestore banner. */
-const DEFAULT_HERO_ASSET = 'assets/hero/hero-banner.png';
+const DEFAULT_HERO_ASSET = 'assets/hero/hero-banner.webp';
 
 interface FloatingElement {
   id: number;
@@ -27,7 +27,7 @@ interface FloatingElement {
     }
 
     <img
-      [src]="currentSrc() | cloudinaryUrl:1920"
+      [src]="currentSrc() | cloudinaryUrl:1920:'fill'"
       [srcset]="currentSrc() | cloudinarySrcset"
       sizes="100vw"
       alt="Vrindaya — Wear The Grace"

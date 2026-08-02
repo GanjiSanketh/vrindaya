@@ -1,28 +1,24 @@
-import { Pipe, PipeTransform } from '@angular/core';
-
-const CLOUDINARY_REGEX = /^(https?:\/\/res\.cloudinary\.com\/[\w-]+\/image\/upload)\/(.+)$/;
+import { inject, Pipe, PipeTransform } from '@angular/core';
+import { CloudinaryImageService, RESPONSIVE_WIDTHS } from '../../core/services/cloudinary-image.service';
 
 /**
  * Transforms image URLs for optimal delivery.
  *
- * - **Cloudinary URLs**: converts to WebP with auto quality (`f_webp,q_auto`),
- *   and optionally resizes to a given width (`w_{width}`).
+ * - **Cloudinary URLs**: converts to `f_auto,q_auto` (browser picks AVIF/WebP,
+ *   Cloudinary auto-balances quality vs. size) and optionally resizes to a
+ *   given width and/or applies a crop.
  * - **Non-Cloudinary URLs** (local assets, placeholders): returned unchanged.
  *
  * Usage:  {{ product.image | cloudinaryUrl }}
- *         {{ product.image | cloudinaryUrl:400 }}
+ *         {{ product.image | cloudinaryUrl:600 }}
+ *         {{ hero.image | cloudinaryUrl:1920:'fill' }}
  */
 @Pipe({ name: 'cloudinaryUrl', pure: true, standalone: true })
 export class CloudinaryUrlPipe implements PipeTransform {
-  transform(url: string | null | undefined, width?: number): string {
-    if (!url) return '';
-    const match = url.match(CLOUDINARY_REGEX);
-    if (!match) return url;
+  private readonly service = inject(CloudinaryImageService);
 
-    const [, base, path] = match;
-    const transforms = [`f_webp`, `q_auto`];
-    if (width) transforms.push(`w_${width}`);
-    return `${base}/${transforms.join(',')}/${path}`;
+  transform(url: string | null | undefined, width?: number, crop?: 'fill'): string {
+    return this.service.optimize(url, { width, crop });
   }
 }
 
@@ -30,22 +26,15 @@ export class CloudinaryUrlPipe implements PipeTransform {
  * Generates a `srcset` string with multiple widths for responsive images.
  * Only works for Cloudinary URLs; returns empty string for local/placeholder images.
  *
- * Width breakpoints: 300w, 600w, 900w, 1200w.
+ * Width breakpoints: 320w, 480w, 768w, 1024w, 1440w, 1920w.
  *
  * Usage:  {{ product.image | cloudinarySrcset }}
  */
 @Pipe({ name: 'cloudinarySrcset', pure: true, standalone: true })
 export class CloudinarySrcsetPipe implements PipeTransform {
-  private readonly BREAKPOINTS = [300, 600, 900, 1200];
+  private readonly service = inject(CloudinaryImageService);
 
-  transform(url: string | null | undefined): string {
-    if (!url) return '';
-    const match = url.match(CLOUDINARY_REGEX);
-    if (!match) return '';
-
-    const [, base, path] = match;
-    return this.BREAKPOINTS
-      .map(w => `${base}/f_webp,q_auto,w_${w}/${path} ${w}w`)
-      .join(', ');
+  transform(url: string | null | undefined, widths: readonly number[] = RESPONSIVE_WIDTHS): string {
+    return this.service.srcset(url, widths);
   }
 }

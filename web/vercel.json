@@ -18,6 +18,12 @@
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
+    },
+    {
+      "source": "/(.*)\\.(?:js|css|woff2?|ttf|otf|svg|webp|avif|png|jpg|jpeg|gif|ico)(?:\\?.*)?$",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
     }
   ],
   "rewrites": [

@@ -86,7 +86,9 @@
           @for (c of categories(); track c.id; let i = $index) {
             <a [routerLink]="['/category', c.id]" class="cat-card" style="--stagger-delay: {{ i * 80 }}ms">
               <div class="cat-img-wrap">
-                <img [src]="c.image" [alt]="c.name" class="cat-img" loading="lazy" decoding="async" width="400" height="500" />
+                <img [src]="c.image | cloudinaryUrl:600" [srcset]="c.image | cloudinarySrcset"
+                     sizes="(max-width: 600px) 50vw, (max-width: 992px) 33vw, 25vw"
+                     [alt]="c.name" class="cat-img" loading="lazy" decoding="async" width="600" height="750" />
                 <div class="cat-overlay">
                   <span class="cat-cta">Shop Now <i class="bi bi-arrow-right"></i></span>
                 </div>

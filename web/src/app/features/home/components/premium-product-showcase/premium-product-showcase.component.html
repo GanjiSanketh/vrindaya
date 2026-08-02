@@ -59,14 +59,14 @@
                     <a class="pis-media-link" [routerLink]="['/product', p.id]" [attr.aria-label]="'View ' + p.name">
                       <div class="pis-media">
                         <img
-                          [src]="image() | cloudinaryUrl:700"
+                          [src]="image() | cloudinaryUrl:600"
                           [srcset]="image() | cloudinarySrcset"
                           sizes="(max-width: 820px) 92vw, 460px"
                           [alt]="p.name"
                           class="pis-img"
                           loading="eager"
                           decoding="async"
-                          width="700" height="875"
+                          width="600" height="750"
                           fetchpriority="high"
                         />
                       </div>

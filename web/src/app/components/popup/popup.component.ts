@@ -6,10 +6,12 @@ import { PopupConfig }    from '../../core/models/popup.model';
 import { Product }        from '../../core/models/product.model';
 import { ProductService } from '../../core/services/product.service';
 import { ProductAnalyticsService } from '../../core/analytics/product-analytics.service';
+import { CloudinaryUrlPipe } from '../../shared/pipes/cloudinary-url.pipe';
 
 @Component({
   selector:    'app-popup',
   standalone:  true,
+  imports: [CloudinaryUrlPipe],
   templateUrl: './popup.component.html',
   styleUrl:    './popup.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

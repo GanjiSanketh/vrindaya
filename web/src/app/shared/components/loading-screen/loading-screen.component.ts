@@ -4,6 +4,10 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 
 const STORAGE_KEY = 'vrindaya_visited';
+/** The brand splash never flashes by — it always shows for at least this long. */
+const MIN_DISPLAY_MS = 1200;
+/** Hard cap — never longer than the previous fixed 2.6s splash. */
+const MAX_DISPLAY_MS = 2600;
 
 @Component({
   selector: 'app-loading-screen',
@@ -33,7 +37,26 @@ export class LoadingScreenComponent implements OnInit, OnDestroy {
     sessionStorage.setItem(STORAGE_KEY, '1');
     this.visible.set(true);
 
-    this.timeouts.push(setTimeout(() => this.dismiss(), 2600));
+    const startedAt = Date.now();
+
+    // The hero (LCP) image is preloaded from <head>, so `window.load` firing
+    // means the above-the-fold content is already painted behind the splash.
+    // Reveal as soon as that happens (after the minimum brand-display time)
+    // instead of always waiting the full fixed duration.
+    const onPageLoaded = () => {
+      if (Date.now() - startedAt >= MIN_DISPLAY_MS) {
+        this.dismiss();
+      }
+    };
+    if (document.readyState === 'complete') {
+      onPageLoaded();
+    } else {
+      window.addEventListener('load', onPageLoaded, { once: true });
+      this.timeouts.push(setTimeout(() => window.removeEventListener('load', onPageLoaded), MAX_DISPLAY_MS + 1000));
+    }
+
+    // Hard cap — never blocks longer than the previous fixed splash.
+    this.timeouts.push(setTimeout(() => this.dismiss(), MAX_DISPLAY_MS));
   }
 
   dismiss(): void {

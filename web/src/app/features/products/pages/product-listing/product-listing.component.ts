@@ -8,6 +8,7 @@ import { Category, Product }                                      from '../../..
 import { ProductCardComponent }                                            from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent }                                  from '../../../../shared/components/skeleton/skeleton-grid.component';
 import { SeoService }                                             from '../../../../core/services/seo.service';
+import { CloudinaryUrlPipe, CloudinarySrcsetPipe }                from '../../../../shared/pipes/cloudinary-url.pipe';
 
 const PAGE_SIZE = 24;
 const SORT_OPTIONS = PUBLIC_SORT_OPTIONS;
@@ -15,7 +16,7 @@ const SORT_OPTIONS = PUBLIC_SORT_OPTIONS;
 @Component({
   selector: 'app-product-listing',
   standalone: true,
-  imports: [RouterLink, ProductCardComponent, SkeletonGridComponent],
+  imports: [RouterLink, ProductCardComponent, SkeletonGridComponent, CloudinaryUrlPipe, CloudinarySrcsetPipe],
   templateUrl: './product-listing.component.html',
   styleUrl: './product-listing.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

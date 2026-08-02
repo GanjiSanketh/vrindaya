@@ -4,7 +4,7 @@ import { MarketplaceFirebaseService } from '../../features/admin/marketplace/ser
 import { HeroBanner } from '../models/hero-banner.model';
 
 /** The storefront fallback banner shown while no published Firestore banner exists (or until it loads). */
-export const DEFAULT_HERO_DESKTOP = 'assets/hero/hero-banner.png';
+export const DEFAULT_HERO_DESKTOP = 'assets/hero/hero-banner.webp';
 
 /**
  * Storefront hero banner provider.

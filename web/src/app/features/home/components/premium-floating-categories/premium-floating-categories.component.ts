@@ -5,6 +5,7 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Category } from '../../../../core/models/product.model';
+import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
 /** A single floating category tile rendered by the hero. */
 export interface FloatingCategoryItem {
@@ -42,7 +43,7 @@ const FLOAT_DELAYS = [0, 0.8, 1.6, 2.4];
 @Component({
   selector: 'app-premium-floating-categories',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, CloudinaryUrlPipe, CloudinarySrcsetPipe],
   templateUrl: './premium-floating-categories.component.html',
   styleUrl: './premium-floating-categories.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -19,7 +19,7 @@
 
       <!-- Product image -->
       <div class="fc-img-wrap">
-        <img [src]="product.image" [alt]="product.name"
+        <img [src]="product.image | cloudinaryUrl:600" [alt]="product.name"
              class="fc-img" loading="lazy" decoding="async" width="400" height="500" draggable="false" />
         <span class="fc-badge">Flipkart Exclusive</span>
       </div>
@@ -54,7 +54,7 @@
 
       <!-- ── Left: Product image ── -->
       <div class="pu-img-side">
-        <img [src]="product.image" [alt]="product.name"
+        <img [src]="product.image | cloudinaryUrl:600" [alt]="product.name"
              class="pu-img" loading="lazy" decoding="async" width="500" height="625" draggable="false" />
         <span class="pu-img-badge">Flipkart Exclusive</span>
       </div>

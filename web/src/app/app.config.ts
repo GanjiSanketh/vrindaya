@@ -1,11 +1,12 @@
 import { ApplicationConfig, ErrorHandler, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withInMemoryScrolling, withViewTransitions, withPreloading, PreloadAllModules } from '@angular/router';
+import { provideRouter, withInMemoryScrolling, withViewTransitions, withPreloading } from '@angular/router';
 import { provideClientHydration, withEventReplay }               from '@angular/platform-browser';
 import { provideAnimationsAsync }                                from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withFetch, withInterceptors }        from '@angular/common/http';
 import { provideServiceWorker }                                  from '@angular/service-worker';
 
 import { routes } from './app.routes';
+import { StorefrontPreloadStrategy } from './core/router/storefront-preload.strategy';
 import { GlobalErrorHandlerService } from './core/services/error-handler.service';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
 import { authErrorInterceptor } from './features/admin/interceptors/auth-error.interceptor';
@@ -18,7 +19,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(
       routes,
-      withPreloading(PreloadAllModules),
+      withPreloading(StorefrontPreloadStrategy),
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
       withViewTransitions({ skipInitialTransition: true }),
     ),

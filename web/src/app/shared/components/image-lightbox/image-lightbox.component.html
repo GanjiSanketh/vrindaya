@@ -39,7 +39,7 @@
         @for (img of svc.images(); track img; let i = $index) {
           <button class="lb-thumb" [class.active]="svc.index() === i"
                   (click)="svc.goTo(i)" [attr.aria-label]="'View image ' + (i + 1)">
-            <img [src]="img | cloudinaryUrl:120" alt="" loading="lazy" decoding="async" width="60" height="80" draggable="false" />
+            <img [src]="img | cloudinaryUrl:300" alt="" loading="lazy" decoding="async" width="60" height="80" draggable="false" />
           </button>
         }
       </div>

@@ -4,7 +4,6 @@ import { provideRouter } from '@angular/router';
 import { provideLocationMocks } from '@angular/common/testing';
 import { HeroShowcaseComponent } from './hero-showcase.component';
 import { HeroShowcase, HeroShowcaseItem } from '../../../../core/models/hero-showcase.model';
-
 function item(id: string, overrides: Partial<HeroShowcaseItem> = {}): HeroShowcaseItem {
   return {
     itemId: id,
@@ -44,6 +43,7 @@ describe('HeroShowcaseComponent', () => {
       imports: [HeroShowcaseComponent],
       providers: [
         { provide: PLATFORM_ID, useValue: 'server' },
+        { provide: Document, useValue: document },
         provideRouter([]),
         provideLocationMocks(),
       ],
@@ -64,7 +64,7 @@ describe('HeroShowcaseComponent', () => {
   it('renders the active item image through the Cloudinary pipe', () => {
     const { el } = setup(config({ items: [item('img1', { imageUrl: 'https://res.cloudinary.com/vrindaya/image/upload/img1.jpg' })] }));
     const src = el.querySelector('.hsc-img')?.getAttribute('src') ?? '';
-    expect(src).toContain('f_webp,q_auto');
+    expect(src).toContain('f_auto,q_auto');
     expect(src).toContain('img1');
   });
 

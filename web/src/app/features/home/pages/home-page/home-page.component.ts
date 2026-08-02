@@ -19,6 +19,7 @@ import { TrendingProducts } from '../../../../components/trending-products/trend
 import { BestSellers } from '../../../../components/best-sellers/best-sellers';
 import { CustomerLove } from '../../../../components/customer-love/customer-love';
 import { SkeletonGridComponent } from '../../../../shared/components/skeleton/skeleton-grid.component';
+import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
 @Component({
   selector: 'app-home-page',
@@ -32,6 +33,7 @@ import { SkeletonGridComponent } from '../../../../shared/components/skeleton/sk
     RevealDirective,
     NewArrivals, TrendingProducts, BestSellers, CustomerLove,
     SkeletonGridComponent,
+    CloudinaryUrlPipe, CloudinarySrcsetPipe,
   ],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.css',

@@ -1,5 +1,5 @@
 import {
-  Component, Input, inject, signal, computed,
+  Component, Input, inject, signal, computed, effect,
   ChangeDetectionStrategy, PLATFORM_ID, ElementRef, DestroyRef, OnInit, AfterViewInit,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { interval } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HeroShowcase, HeroShowcaseItem } from '../../../../core/models/hero-showcase.model';
+import { CloudinaryImageService } from '../../../../core/services/cloudinary-image.service';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
 
 /** Mouse tilt limits — 6deg rotation, 20px movement (same spec as the premium hero). */
@@ -15,6 +16,8 @@ const MAX_TRANSLATE_PX = 20;
 const DEFAULT_BUTTON_TEXT = 'Shop Now';
 const DEFAULT_BUTTON_LINK = '/shop';
 const IMAGE_FALLBACK = 'assets/images/product-placeholder.svg';
+/** Must mirror the `<img sizes>` in the template so the preload hint matches what renders. */
+const IMAGE_SIZES = '(max-width: 820px) 86vw, 480px';
 
 /**
  * CMS-driven homepage hero. Renders the Hero Showcase configuration exactly
@@ -38,6 +41,8 @@ export class HeroShowcaseComponent implements OnInit, AfterViewInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly el = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly document = inject(Document);
+  private readonly cloudinary = inject(CloudinaryImageService);
 
   /** Index of the active slide. */
   readonly index = signal(0);
@@ -77,6 +82,34 @@ export class HeroShowcaseComponent implements OnInit, AfterViewInit {
     ? this.config.transition
     : 'fade'));
 
+  /** `<link rel="preload" as="image">` for the FIRST slide only — never one per slide. */
+  private preloadLink: HTMLLinkElement | null = null;
+  /** In-flight preload of the NEXT slide while auto-rotating (replaced, never accumulated). */
+  private nextImage: HTMLImageElement | null = null;
+
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      // Preload hint for the first slide, mirroring the rendered <img> exactly.
+      effect(() => {
+        const first = this.items()[0];
+        this.updatePreloadLink(first?.imageUrl?.trim());
+      });
+      // Warm only the upcoming slide during rotation; the previous preload is dropped.
+      effect(() => {
+        const list = this.items();
+        if (list.length < 2) {
+          this.nextImage = null;
+          return;
+        }
+        const next = list[(this.index() + 1) % list.length];
+        const url = next?.imageUrl?.trim();
+        this.nextImage = url
+          ? this.prepareNextImage(this.cloudinary.heroDesktop(url))
+          : null;
+      });
+    }
+  }
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId) && this.autoplay()) {
       const intervalMs = (this.config?.rotationIntervalSeconds ?? 8) * 1000;
@@ -103,6 +136,38 @@ export class HeroShowcaseComponent implements OnInit, AfterViewInit {
     if (!this.rotates()) return;
     if (this.config?.pauseOnHover === true && this.paused()) return;
     this.index.update(i => (i + 1) % this.items().length);
+  }
+
+  /** Keeps a single live preload hint in <head> pointing at the first slide. */
+  private updatePreloadLink(rawUrl: string | undefined): void {
+    if (!rawUrl) return;
+    const head = this.document?.head;
+    if (!head) return;
+
+    if (!this.preloadLink) {
+      const link = this.document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      head.appendChild(link);
+      this.preloadLink = link;
+      this.destroyRef.onDestroy(() => {
+        if (this.preloadLink?.isConnected) this.preloadLink.remove();
+        this.preloadLink = null;
+        this.nextImage = null;
+      });
+    }
+
+    this.preloadLink.href = this.cloudinary.heroDesktop(rawUrl);
+    this.preloadLink.setAttribute('imagesrcset', this.cloudinary.srcset(rawUrl));
+    this.preloadLink.setAttribute('imagesizes', IMAGE_SIZES);
+  }
+
+  /** Preloads one image without keeping every previous slide in memory. */
+  private prepareNextImage(src: string): HTMLImageElement {
+    this.nextImage?.removeAttribute('src');
+    const img = new Image();
+    img.src = src;
+    return img;
   }
 
   /** Mouse parallax (tilt + translate) + pause-on-hover. Transform-only, rAF-throttled, reduced-motion aware. */

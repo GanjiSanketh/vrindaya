@@ -68,7 +68,7 @@
               @for (img of allImages(); track img; let i = $index) {
                 <button type="button" class="pd-thumb" [class.active]="selectedIndex() === i"
                         (click)="selectImage(i)" [attr.aria-label]="'View image ' + (i + 1)">
-                  <img [src]="img | cloudinaryUrl:200" [alt]="p.name + ' view ' + (i + 1)"
+                  <img [src]="img | cloudinaryUrl:300" [alt]="p.name + ' view ' + (i + 1)"
                        loading="lazy" decoding="async" width="100" height="133" draggable="false" />
                 </button>
               }
