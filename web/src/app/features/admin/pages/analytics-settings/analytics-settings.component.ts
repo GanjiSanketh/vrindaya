@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AnalyticsSettingsService } from '../../../../core/analytics/analytics-settings.service';
-import { AnalyticsSettings } from '../../../../core/analytics/analytics-settings.model';
+import { AnalyticsSettings, ANALYTICS_SETTING_FIELDS } from '../../../../core/analytics/analytics-settings.model';
 import { AdminAuthService } from '../../services/admin-auth.service';
 
 /** Boolean toggle keys on the analytics settings document (excludes updatedAt / updatedBy). */
@@ -105,6 +105,12 @@ export class AnalyticsSettingsComponent implements OnInit {
   /** The settings currently persisted in Firestore (baseline for diffs). */
   readonly saved = signal<AnalyticsSettings | null>(null);
 
+  /** Deep snapshot of the settings as last loaded / saved — the dirty-check baseline. */
+  private readonly original = signal<AnalyticsSettings | null>(null);
+
+  /** True whenever the form differs from {@link original} — including all-off configurations. */
+  readonly unsaved = signal(false);
+
   readonly form = this.fb.group({
     trackingEnabled: [true],
     productClicks: [true],
@@ -125,15 +131,11 @@ export class AnalyticsSettingsComponent implements OnInit {
 
   readonly lastSavedBy = computed(() => this.saved()?.updatedBy ?? null);
 
-  /** True whenever any toggle differs from the persisted settings. */
-  readonly unsaved = computed(() => {
-    const saved = this.saved();
-    if (!saved) return false;
-    return ANALYTICS_FIELD_META.some(f => this.form.get(f.key)?.value !== saved[f.key]);
-  });
-
   constructor() {
-    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => this.saveSuccess.set(false));
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.saveSuccess.set(false);
+      this.unsaved.set(this.isDirty());
+    });
   }
 
   ngOnInit(): void {
@@ -146,6 +148,7 @@ export class AnalyticsSettingsComponent implements OnInit {
     try {
       const settings = await this.settingsSvc.loadFresh();
       this.saved.set(settings);
+      this.original.set({ ...settings });
       this.form.patchValue({
         trackingEnabled: settings.trackingEnabled,
         productClicks: settings.productClicks,
@@ -158,6 +161,7 @@ export class AnalyticsSettingsComponent implements OnInit {
         scrollTracking: settings.scrollTracking,
         performanceTracking: settings.performanceTracking,
       });
+      this.unsaved.set(this.isDirty());
     } catch {
       this.loadError.set('Failed to load analytics settings. Check your connection and try again.');
     } finally {
@@ -170,9 +174,10 @@ export class AnalyticsSettingsComponent implements OnInit {
 
     const patch: Partial<AnalyticsSettings> = {};
     let modified = false;
+    const baseline = this.original();
     for (const field of ANALYTICS_FIELD_META) {
       const next = this.form.get(field.key)?.value as boolean;
-      if (next !== this.saved()?.[field.key]) {
+      if (next !== baseline?.[field.key]) {
         patch[field.key] = next;
         modified = true;
       }
@@ -186,11 +191,31 @@ export class AnalyticsSettingsComponent implements OnInit {
       const adminEmail = this.auth.currentUser()?.email ?? '';
       const updated = await this.settingsSvc.save(patch, adminEmail);
       this.saved.set(updated);
+      this.original.set({ ...updated });
+      this.unsaved.set(false);
       this.saveSuccess.set(true);
     } catch {
       this.saveError.set('Could not save. You need Admin access — please sign in again and retry.');
     } finally {
       this.saving.set(false);
     }
+  }
+
+  /** Ordered boolean-toggle snapshot used for a deterministic deep comparison. */
+  private pickToggles(source: Partial<AnalyticsSettings>): Record<string, boolean> {
+    const toggles: Record<string, boolean> = {};
+    for (const key of ANALYTICS_SETTING_FIELDS) toggles[key] = Boolean(source[key]);
+    return toggles;
+  }
+
+  /**
+   * Dirty-state detection: true as soon as ANY toggle differs from the
+   * original — including when every toggle is switched off.
+   */
+  private isDirty(): boolean {
+    const baseline = this.original();
+    if (!baseline) return false;
+    const current = this.form.getRawValue() as Partial<AnalyticsSettings>;
+    return JSON.stringify(this.pickToggles(current)) !== JSON.stringify(this.pickToggles(baseline));
   }
 }
