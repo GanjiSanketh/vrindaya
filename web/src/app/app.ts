@@ -5,6 +5,7 @@ import { takeUntilDestroyed }                   from '@angular/core/rxjs-interop
 
 import { PopupComponent }          from './components/popup/popup.component';
 import { PopupService }            from './core/services/popup.service';
+import { AnalyticsService }        from './core/analytics/analytics.service';
 import { LoadingScreenComponent }  from './shared/components/loading-screen/loading-screen.component';
 import { ToastComponent }          from './shared/components/toast/toast.component';
 import { RouteLoadingBarComponent } from './shared/components/route-loading-bar/route-loading-bar.component';
@@ -37,9 +38,16 @@ export class App {
   private readonly pwaInstallSvc = inject(PwaInstallService);
   private readonly updateSvc     = inject(UpdateService);
 
+  /** Inject to fetch + cache analytics settings once at startup. */
+  private readonly analytics = inject(AnalyticsService);
+
   readonly appReady = signal(false);
 
   constructor() {
+    // Fetch the analytics configuration a single time and cache it locally —
+    // every tracking check reads this cached copy, never Firestore.
+    void this.analytics.ensureLoaded();
+
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       takeUntilDestroyed(),

@@ -87,6 +87,43 @@ service cloud.firestore {
       }
     }
 
+    /**
+     * Website analytics configuration (analyticsSettings/website) — the
+     * storefront reads it once at startup (public read), only Admin /
+     * Super Admin may modify it.
+     */
+    match /analyticsSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdminUser();
+    }
+
+    /**
+     * Site-wide analytics (hero/category/collection/nav/footer clicks, page
+     * views, scroll + search events). Anonymous visitors / customer users
+     * increment the counters; admin sessions are denied at the rules level
+     * so admin browsing can never pollute metrics.
+     */
+    match /siteAnalytics/{docId} {
+      allow read: if isAdminUser();
+      allow create, update: if request.auth == null || !isAdminUser();
+      allow delete: if isAdminUser();
+      match /daily/{day} {
+        allow read: if isAdminUser();
+        allow create, update: if request.auth == null || !isAdminUser();
+        allow delete: if isAdminUser();
+      }
+      match /searches/{key} {
+        allow read: if isAdminUser();
+        allow create, update: if request.auth == null || !isAdminUser();
+        allow delete: if isAdminUser();
+      }
+      match /performance/{day} {
+        allow read: if isAdminUser();
+        allow create, update: if request.auth == null || !isAdminUser();
+        allow delete: if isAdminUser();
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

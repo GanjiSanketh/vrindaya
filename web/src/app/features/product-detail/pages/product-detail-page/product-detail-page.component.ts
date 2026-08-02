@@ -13,7 +13,7 @@ import type { ProductVariant } from '../../../../core/models/product-variant.mod
 import { ProductCardComponent } from '../../../../shared/components/product-card/product-card';
 import { SkeletonGridComponent } from '../../../../shared/components/skeleton/skeleton-grid.component';
 import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipes/cloudinary-url.pipe';
-import { ProductAnalyticsService } from '../../../../core/analytics/product-analytics.service';
+import { AnalyticsService } from '../../../../core/analytics/analytics.service';
 
 const RELATED_LIMIT = 8;
 
@@ -33,7 +33,7 @@ export class ProductDetailPageComponent {
   private readonly lightbox = inject(LightboxService);
   private readonly seo = inject(SeoService);
   private readonly location = inject(Location);
-  private readonly analytics = inject(ProductAnalyticsService);
+  private readonly analytics = inject(AnalyticsService);
 
   readonly product      = signal<Product | null>(null);
   readonly loading      = signal(true);
@@ -107,7 +107,7 @@ export class ProductDetailPageComponent {
       if (!product) return;
       this.product.set(product);
       this.loading.set(false);
-      this.analytics.recordDetailClick(product.id);
+      this.analytics.trackProductView(product.id);
       this.applySeo(product);
       void this.loadRelated(product);
       void this.loadVariants(product.id);
@@ -186,7 +186,7 @@ readonly flipkartUrl = computed(() => {
       const product = await this.query.getById(id);
       this.product.set(product);
       this.loading.set(false);
-      this.analytics.recordDetailClick(id);
+      this.analytics.trackProductView(id);
       this.applySeo(product);
       void this.loadRelated(product);
       void this.loadVariants(id);
@@ -225,7 +225,7 @@ readonly flipkartUrl = computed(() => {
     const url = this.flipkartUrl();
     if (!url) return;
     const p = this.product();
-    if (p) this.analytics.recordFlipkartClick(p.id);
+    if (p) this.analytics.trackFlipkartClick(p.id);
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 

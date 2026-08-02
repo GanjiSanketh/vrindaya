@@ -9,6 +9,7 @@ import { SeoService } from '../../../../core/services/seo.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { HeroBannerService } from '../../../../core/services/hero-banner.service';
 import { HeroShowcaseService } from '../../../../core/services/hero-showcase.service';
+import { AnalyticsService } from '../../../../core/analytics/analytics.service';
 import { HeroSequenceComponent } from '../../components/hero-sequence/hero-sequence.component';
 import { HeroShowcaseComponent } from '../../components/hero-showcase/hero-showcase.component';
 import { PremiumFloatingCategoriesComponent } from '../../components/premium-floating-categories/premium-floating-categories.component';
@@ -47,6 +48,7 @@ export class HomePageComponent {
   readonly productSvc = inject(ProductService);
   private readonly heroBanner = inject(HeroBannerService);
   private readonly heroShowcaseSvc = inject(HeroShowcaseService);
+  private readonly analytics = inject(AnalyticsService);
 
   readonly showScrollTop = signal(false);
   readonly heroLoaded = signal(false);
@@ -108,6 +110,18 @@ export class HomePageComponent {
 
   onHeroLoaded(): void {
     this.heroLoaded.set(true);
+  }
+
+  trackHero(label: string): void {
+    this.analytics.trackHeroClick(label);
+  }
+
+  trackCategoryClick(id: string): void {
+    this.analytics.trackCategoryClick(id);
+  }
+
+  trackCollection(id: string): void {
+    this.analytics.trackCollectionClick(id);
   }
 
   private initScrollHandler(): void {

@@ -1,8 +1,9 @@
-import { Component, computed, input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, input, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card';
 import { Product } from '../../core/models/product.model';
 import { RevealDirective } from '../../features/home/directives/reveal.directive';
+import { AnalyticsService } from '../../core/analytics/analytics.service';
 
 @Component({
   selector: 'app-new-arrivals',
@@ -14,9 +15,15 @@ import { RevealDirective } from '../../features/home/directives/reveal.directive
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export class NewArrivals {
+  private readonly analytics = inject(AnalyticsService);
+
   /** Supplied by the home page's single GET /homepage fetch, already correctly ordered (automatic latest-active, or the admin's manual override) — no client-side re-sort needed. */
   readonly products = input<Product[]>([]);
 
   /** Homepage preview: first 4 only. */
   readonly preview = computed(() => this.products().slice(0, 4));
+
+  onViewAll(): void {
+    this.analytics.trackCollectionClick('new-arrivals');
+  }
 }

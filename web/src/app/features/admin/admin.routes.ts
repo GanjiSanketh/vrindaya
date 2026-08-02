@@ -34,6 +34,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'hero-banners', loadComponent: () => import('./pages/hero-banners/hero-banner-management.component').then(m => m.HeroBannerManagementComponent) },
       { path: 'hero-showcase', loadComponent: () => import('./pages/hero-showcase/hero-showcase-management.component').then(m => m.HeroShowcaseManagementComponent) },
       { path: 'exit-intent', loadComponent: () => import('./pages/exit-intent-config/exit-intent-config.component').then(m => m.ExitIntentConfigComponent) },
+      { path: 'analytics-settings', loadComponent: () => import('./pages/analytics-settings/analytics-settings.component').then(m => m.AnalyticsSettingsComponent) },
       { path: 'analytics', loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent) },
       { path: 'analytics/product/:id', loadComponent: () => import('./pages/analytics/product-analytics-detail.component').then(m => m.ProductAnalyticsDetailComponent) },
 

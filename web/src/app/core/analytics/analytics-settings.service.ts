@@ -1,0 +1,138 @@
+import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { MarketplaceFirebaseService } from '../../features/admin/marketplace/services/marketplace-firebase.service';
+import { AuthTokenStorageService } from '../services/auth-token-storage.service';
+import {
+  AnalyticsSettings,
+  DEFAULT_ANALYTICS_SETTINGS,
+} from './analytics-settings.model';
+
+export const ANALYTICS_SETTINGS_ROOT = 'analyticsSettings';
+export const ANALYTICS_SETTINGS_DOC_ID = 'website';
+
+/**
+ * Singleton owner of the website analytics configuration.
+ *
+ * `analyticsSettings/website` is read exactly ONCE per browser session
+ * (kicked off at app startup) and cached in memory — every tracking check
+ * afterwards reads the cached signal, never Firestore. SSR/prerender never
+ * touches the network; server renders fall back to the packaged defaults
+ * and the browser hydrates the real settings as soon as they arrive.
+ *
+ * Write access is admin-only and enforced twice: the admin page sits behind
+ * the adminAuthGuard, and the Firestore security rules reject any
+ * non-admin write.
+ */
+@Injectable({ providedIn: 'root' })
+export class AnalyticsSettingsService {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly firebase = inject(MarketplaceFirebaseService);
+  private readonly tokenStorage = inject(AuthTokenStorageService);
+
+  private readonly settingsState = signal<AnalyticsSettings>(DEFAULT_ANALYTICS_SETTINGS);
+  private readonly loadedState = signal(false);
+  private loadPromise: Promise<AnalyticsSettings> | null = null;
+
+  /** Cached settings — the single source of truth for every tracking check. */
+  readonly settings = this.settingsState.asReadonly();
+  /** True once the one-time Firestore read has settled (success or failure). */
+  readonly loaded = this.loadedState.asReadonly();
+
+  /**
+   * Fetches the settings once. Safe to call from anywhere, any number of
+   * times — only the first call touches the network. Returns immediately
+   * (no-op) during SSR/prerender.
+   */
+  ensureLoaded(): Promise<AnalyticsSettings> {
+    if (this.loadPromise) return this.loadPromise;
+    if (!isPlatformBrowser(this.platformId)) {
+      return Promise.resolve(this.settingsState());
+    }
+    this.loadPromise = this.read();
+    return this.loadPromise;
+  }
+
+  /**
+   * Always reads `analyticsSettings/website` from Firestore, bypassing the
+   * startup cache. Used by the admin settings page so it always shows the
+   * current persisted state even if it was changed in another tab.
+   */
+  async loadFresh(): Promise<AnalyticsSettings> {
+    const snapshot = await this.read();
+    this.applyToCache(snapshot);
+    return snapshot;
+  }
+
+  /**
+   * Persists only the supplied fields (plus `updatedAt`/`updatedBy`) onto
+   * the existing document. The cache is refreshed with the result so the
+   * storefront picks up the change without a second read.
+   */
+  async save(patch: Partial<AnalyticsSettings>, updatedBy: string): Promise<AnalyticsSettings> {
+    const db = await this.firebase.getFirestore();
+    const { doc, setDoc } = await import('firebase/firestore');
+
+    const updated: AnalyticsSettings = {
+      ...DEFAULT_ANALYTICS_SETTINGS,
+      ...this.settingsState(),
+      ...patch,
+      updatedAt: new Date().toISOString(),
+      updatedBy: updatedBy || this.defaultUpdatedBy(),
+    };
+
+    await setDoc(doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID), updated, { merge: true });
+    this.applyToCache(updated);
+    return updated;
+  }
+
+  private async read(): Promise<AnalyticsSettings> {
+    try {
+      const db = await this.firebase.getFirestore();
+      const { getDoc, doc } = await import('firebase/firestore');
+      const snapshot = await getDoc(doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID));
+      const data = snapshot.exists() ? snapshot.data() : {};
+      return this.toSettings(data);
+    } catch {
+      // Read failed (offline / first-run / permissions) — keep the documented
+      // defaults so tracking behaviour is predictable instead of silently off.
+      return DEFAULT_ANALYTICS_SETTINGS;
+    } finally {
+      this.loadedState.set(true);
+    }
+  }
+
+  private toSettings(data: Record<string, unknown>): AnalyticsSettings {
+    return {
+      trackingEnabled: this.bool(data['trackingEnabled'], DEFAULT_ANALYTICS_SETTINGS.trackingEnabled),
+      heroClicks: this.bool(data['heroClicks'], DEFAULT_ANALYTICS_SETTINGS.heroClicks),
+      productClicks: this.bool(data['productClicks'], DEFAULT_ANALYTICS_SETTINGS.productClicks),
+      categoryClicks: this.bool(data['categoryClicks'], DEFAULT_ANALYTICS_SETTINGS.categoryClicks),
+      searchTracking: this.bool(data['searchTracking'], DEFAULT_ANALYTICS_SETTINGS.searchTracking),
+      wishlistTracking: this.bool(data['wishlistTracking'], DEFAULT_ANALYTICS_SETTINGS.wishlistTracking),
+      collectionClicks: this.bool(data['collectionClicks'], DEFAULT_ANALYTICS_SETTINGS.collectionClicks),
+      pageViews: this.bool(data['pageViews'], DEFAULT_ANALYTICS_SETTINGS.pageViews),
+      scrollTracking: this.bool(data['scrollTracking'], DEFAULT_ANALYTICS_SETTINGS.scrollTracking),
+      performanceTracking: this.bool(data['performanceTracking'], DEFAULT_ANALYTICS_SETTINGS.performanceTracking),
+      updatedAt: this.string(data['updatedAt']),
+      updatedBy: this.string(data['updatedBy']),
+    };
+  }
+
+  private applyToCache(settings: AnalyticsSettings): void {
+    this.settingsState.set(settings);
+    this.loadedState.set(true);
+  }
+
+  private bool(value: unknown, fallback: boolean): boolean {
+    return typeof value === 'boolean' ? value : fallback;
+  }
+
+  private string(value: unknown): string {
+    return typeof value === 'string' ? value : '';
+  }
+
+  private defaultUpdatedBy(): string {
+    const session = this.tokenStorage.getSession();
+    return session?.user?.email ?? '';
+  }
+}

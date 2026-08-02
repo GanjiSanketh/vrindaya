@@ -11,11 +11,30 @@ const EXCLUDED_ROLES = ['SuperAdmin', 'Admin'];
 export const ANALYTICS_ROOT = 'analytics';
 export const ANALYTICS_PRODUCT_DAILY_SUB = 'daily';
 
+/** Firestore path segments for the site-wide (non-product) analytics collection. */
+export const SITE_ANALYTICS_ROOT = 'siteAnalytics';
+export const SITE_ANALYTICS_TOTALS_ID = 'totals';
+export const SITE_ANALYTICS_DAILY_SUB = 'daily';
+export const SITE_ANALYTICS_SEARCHES_SUB = 'searches';
+export const SITE_ANALYTICS_PERFORMANCE_SUB = 'performance';
+
 /** Path segments for a product's totals doc and its `YYYY-MM-DD` daily doc. */
 export function productAnalyticsPaths(productId: string, dateKey: string): { totals: string[]; daily: string[] } {
   return {
     totals: [ANALYTICS_ROOT, productId],
     daily: [ANALYTICS_ROOT, productId, ANALYTICS_PRODUCT_DAILY_SUB, dateKey],
+  };
+}
+
+/**
+ * Path segments for the site-wide totals doc and its `YYYY-MM-DD` daily doc.
+ * Totals live at `siteAnalytics/totals`, daily at
+ * `siteAnalytics/daily/{YYYY-MM-DD}`.
+ */
+export function siteAnalyticsPaths(dateKey: string): { totals: string[]; daily: string[] } {
+  return {
+    totals: [SITE_ANALYTICS_ROOT, SITE_ANALYTICS_TOTALS_ID],
+    daily: [SITE_ANALYTICS_ROOT, SITE_ANALYTICS_DAILY_SUB, dateKey],
   };
 }
 

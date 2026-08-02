@@ -5,6 +5,7 @@ import { takeUntilDestroyed }                                    from '@angular/
 import { ProductService }                                        from '../../core/services/product.service';
 import { SearchService }                                         from '../../core/services/search.service';
 import { WishlistService }                                       from '../../core/services/wishlist.service';
+import { AnalyticsService }                                      from '../../core/analytics/analytics.service';
 import { SCROLL_THRESHOLDS }                                     from '../../core/constants/app.constants';
 
 @Component({
@@ -20,6 +21,7 @@ export class HeaderComponent {
   private readonly prodSvc    = inject(ProductService);
   private readonly searchSvc  = inject(SearchService);
   private readonly router     = inject(Router);
+  private readonly analytics  = inject(AnalyticsService);
   readonly wishlist           = inject(WishlistService);
 
   readonly categories     = this.prodSvc.categories;
@@ -50,4 +52,18 @@ export class HeaderComponent {
   toggleMenu():  void { this.mobileMenuOpen.update(v => !v); }
   closeMenu():   void { this.mobileMenuOpen.set(false); }
   openSearch():  void { this.searchSvc.open(); }
+
+  onNavClick(label: string): void {
+    this.analytics.trackNavClick(label);
+  }
+
+  onCategoryNavClick(id: string, label: string): void {
+    this.analytics.trackCategoryClick(id);
+    this.analytics.trackNavClick(label);
+  }
+
+  onSearchOpen(): void {
+    this.analytics.trackNavClick('Search');
+    this.searchSvc.open();
+  }
 }

@@ -12,6 +12,7 @@ import { takeUntilDestroyed }              from '@angular/core/rxjs-interop';
 import { SearchService }       from '../../core/services/search.service';
 import { ProductQueryService } from '../../core/services/product-query.service';
 import { CategoryService }     from '../../core/services/category.service';
+import { AnalyticsService }    from '../../core/analytics/analytics.service';
 import { Product, Category }   from '../../core/models/product.model';
 import { CloudinaryUrlPipe }   from '../../shared/pipes/cloudinary-url.pipe';
 
@@ -34,6 +35,7 @@ export class SearchOverlayComponent {
   readonly svc     = inject(SearchService);
   private readonly productQuery    = inject(ProductQueryService);
   private readonly categoryQuery   = inject(CategoryService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly router  = inject(Router);
   private readonly pid     = inject(PLATFORM_ID);
 
@@ -96,6 +98,7 @@ export class SearchOverlayComponent {
       const productMatches: SearchResultItem[] = productPage.items.map(product => ({ kind: 'product', product }));
 
       this.results.set([...categoryMatches, ...productMatches]);
+      this.analytics.trackSearch(trimmed);
     } catch (err) {
       this.results.set([]);
       this.error.set(err instanceof Error ? err.message : 'Search unavailable.');
@@ -130,6 +133,7 @@ export class SearchOverlayComponent {
   }
 
   navigate(item: SearchResultItem): void {
+    this.analytics.trackSearchResultClick(this.query().trim());
     switch (item.kind) {
       case 'product':    this.router.navigate(['/product', item.product.id]); break;
       case 'category':   this.router.navigate(['/category', item.category.id]); break;
@@ -140,6 +144,7 @@ export class SearchOverlayComponent {
   viewAllResults(): void {
     const q = this.query().trim();
     if (!q) return;
+    this.analytics.trackSearchResultClick(q);
     this.router.navigate(['/shop'], { queryParams: { q } });
     this.close();
   }

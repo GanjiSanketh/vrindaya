@@ -22,10 +22,10 @@
         </p>
 
         <div class="ft-social">
-          <a href="https://www.instagram.com/vrindaya.co" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
+          <a href="https://www.instagram.com/vrindaya.co" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" (click)="onLinkClick('Instagram')">
             <i class="bi bi-instagram" aria-hidden="true"></i>
           </a>
-          <a href="https://www.flipkart.com/vrindaya" target="_blank" rel="noopener noreferrer" aria-label="Visit our Flipkart store">
+          <a href="https://www.flipkart.com/vrindaya" target="_blank" rel="noopener noreferrer" aria-label="Visit our Flipkart store" (click)="onLinkClick('Flipkart Store')">
             <i class="bi bi-shop" aria-hidden="true"></i>
           </a>
         </div>
@@ -39,10 +39,10 @@
           <h3 class="ft-col-title">SHOP</h3>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
-            <li><a routerLink="/category/long-kurtas" routerLinkActive="ft-link-active">Long Kurtas</a></li>
-            <li><a routerLink="/category/short-kurtas" routerLinkActive="ft-link-active">Short Kurtas</a></li>
-            <li><a routerLink="/category/2-piece-sets" routerLinkActive="ft-link-active">2-Piece Sets</a></li>
-            <li><a routerLink="/category/3-piece-sets" routerLinkActive="ft-link-active">3-Piece Sets</a></li>
+            <li><a routerLink="/category/long-kurtas" routerLinkActive="ft-link-active" (click)="onLinkClick('Long Kurtas')">Long Kurtas</a></li>
+            <li><a routerLink="/category/short-kurtas" routerLinkActive="ft-link-active" (click)="onLinkClick('Short Kurtas')">Short Kurtas</a></li>
+            <li><a routerLink="/category/2-piece-sets" routerLinkActive="ft-link-active" (click)="onLinkClick('2-Piece Sets')">2-Piece Sets</a></li>
+            <li><a routerLink="/category/3-piece-sets" routerLinkActive="ft-link-active" (click)="onLinkClick('3-Piece Sets')">3-Piece Sets</a></li>
           </ul>
         </div>
 
@@ -50,11 +50,11 @@
           <h3 class="ft-col-title">QUICK LINKS</h3>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
-            <li><a routerLink="/about" routerLinkActive="ft-link-active">About Us</a></li>
-            <li><a routerLink="/contact" routerLinkActive="ft-link-active">Contact</a></li>
-            <li><a routerLink="/faq" routerLinkActive="ft-link-active">FAQs</a></li>
-            <li><a routerLink="/new-arrivals" routerLinkActive="ft-link-active">New Arrivals</a></li>
-            <li><a routerLink="/trending" routerLinkActive="ft-link-active">Trending Collection</a></li>
+            <li><a routerLink="/about" routerLinkActive="ft-link-active" (click)="onLinkClick('About Us')">About Us</a></li>
+            <li><a routerLink="/contact" routerLinkActive="ft-link-active" (click)="onLinkClick('Contact')">Contact</a></li>
+            <li><a routerLink="/faq" routerLinkActive="ft-link-active" (click)="onLinkClick('FAQs')">FAQs</a></li>
+            <li><a routerLink="/new-arrivals" routerLinkActive="ft-link-active" (click)="onLinkClick('New Arrivals')">New Arrivals</a></li>
+            <li><a routerLink="/trending" routerLinkActive="ft-link-active" (click)="onLinkClick('Trending Collection')">Trending Collection</a></li>
           </ul>
         </div>
 

@@ -1,0 +1,143 @@
+<div class="ans-page">
+
+  <!-- Header -->
+  <header class="ans-header">
+    <div class="ans-header-inner">
+      <div>
+        <span class="ans-breadcrumb">
+          <a routerLink="/" class="ans-bc-link">Home</a>
+          <i class="bi bi-chevron-right ans-bc-sep"></i>
+          <span>Admin</span>
+          <i class="bi bi-chevron-right ans-bc-sep"></i>
+          <span>Site Content</span>
+          <i class="bi bi-chevron-right ans-bc-sep"></i>
+          <span>Analytics Settings</span>
+        </span>
+        <h1 class="ans-heading">Analytics Settings</h1>
+        <p class="ans-subtitle">Control which customer interactions are recorded across the website.</p>
+      </div>
+      <a routerLink="/" class="ans-preview-link">
+        <i class="bi bi-eye"></i> Preview Site
+      </a>
+    </div>
+  </header>
+
+  <main class="ans-main">
+    <div class="ans-grid">
+
+      <!-- ── Settings card ── -->
+      <section class="ans-card" aria-busy="loading()">
+
+        @if (loading()) {
+          <div class="ans-loading">
+            <span class="ans-spinner"></span>
+            <span>Loading analytics settings…</span>
+          </div>
+        } @else if (loadError()) {
+          <div class="ans-banner ans-banner-error">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ loadError() }}</span>
+          </div>
+          <div class="ans-actions">
+            <button type="button" class="ans-btn-save" (click)="load()">
+              <i class="bi bi-arrow-clockwise"></i> Retry
+            </button>
+          </div>
+        } @else {
+
+          <div class="ans-card-head">
+            <div class="ans-card-title-row">
+              <i class="bi bi-bar-chart-line ans-card-icon"></i>
+              <h2 class="ans-card-title">Website Analytics</h2>
+            </div>
+            <p class="ans-card-desc">Each switch below is checked before any customer event is saved.</p>
+          </div>
+
+          <form [formGroup]="form" novalidate>
+            @for (field of fields; track field.key) {
+              <div class="ans-field ans-toggle-row">
+                <div class="ans-toggle-copy">
+                  <span class="ans-toggle-label">
+                    <i [class]="'bi ' + field.icon" aria-hidden="true"></i>
+                    {{ field.label }}
+                  </span>
+                  <p class="ans-toggle-hint">{{ field.hint }}</p>
+                </div>
+                <label class="ans-switch" [attr.aria-label]="field.label">
+                  <input type="checkbox" [formControlName]="field.key" />
+                  <span class="ans-slider"></span>
+                </label>
+              </div>
+            }
+          </form>
+
+          <div class="ans-footer">
+            <div class="ans-status">
+              @if (saving()) {
+                <span class="ans-chip ans-chip-saving">
+                  <i class="bi bi-arrow-repeat ans-spin"></i> Saving…
+                </span>
+              } @else if (saveSuccess()) {
+                <span class="ans-chip ans-chip-success">
+                  <i class="bi bi-check-circle-fill"></i> Saved Successfully
+                </span>
+              } @else if (unsaved()) {
+                <span class="ans-chip ans-chip-unsaved">
+                  <i class="bi bi-exclamation-circle"></i> Unsaved Changes
+                </span>
+              }
+              @if (saveError()) {
+                <span class="ans-chip ans-chip-error">
+                  <i class="bi bi-exclamation-triangle-fill"></i> {{ saveError() }}
+                </span>
+              }
+            </div>
+
+            <button type="button" class="ans-btn-save" (click)="save()" [disabled]="saving() || !unsaved()">
+              @if (saving()) {
+                <i class="bi bi-arrow-repeat ans-spin"></i> Saving…
+              } @else {
+                <i class="bi bi-floppy"></i> Save Changes
+              }
+            </button>
+          </div>
+
+        }
+      </section>
+
+      <!-- ── Side info ── -->
+      <aside class="ans-aside">
+
+        <section class="ans-card ans-info-box">
+          <h2 class="ans-card-title"><i class="bi bi-info-circle"></i> How It Works</h2>
+          <ul class="ans-info-list">
+            <li>Settings are fetched <strong>once</strong> when the website loads and cached — clicks never trigger a database read.</li>
+            <li>When <strong>Website Tracking</strong> is off, nothing is recorded at all.</li>
+            <li>Each event is saved only when its own switch is on.</li>
+            <li>Admins and store staff browsing the site are never counted.</li>
+            <li>Changes apply to the live storefront immediately after saving.</li>
+          </ul>
+        </section>
+
+        @if (lastSavedAt()) {
+          <section class="ans-card ans-save-meta">
+            <h2 class="ans-card-title"><i class="bi bi-clock-history"></i> Last Updated</h2>
+            <div class="ans-meta-row">
+              <span class="ans-meta-label">When</span>
+              <span class="ans-meta-value">{{ lastSavedAt() }}</span>
+            </div>
+            @if (lastSavedBy()) {
+              <div class="ans-meta-row">
+                <span class="ans-meta-label">By</span>
+                <span class="ans-meta-value">{{ lastSavedBy() }}</span>
+              </div>
+            }
+          </section>
+        }
+
+      </aside>
+
+    </div>
+  </main>
+
+</div>

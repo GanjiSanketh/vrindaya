@@ -17,11 +17,11 @@
         <p class="hsc-subtitle">{{ slide.subtitle }}</p>
         <div class="hsc-cta">
           @if (isExternalLink()) {
-            <a class="hsc-cta-btn" [href]="buttonLink()" target="_blank" rel="noopener noreferrer">
+            <a class="hsc-cta-btn" [href]="buttonLink()" target="_blank" rel="noopener noreferrer" (click)="onCtaClick()">
               {{ buttonText() }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </a>
           } @else {
-            <a class="hsc-cta-btn" [routerLink]="buttonLink()">
+            <a class="hsc-cta-btn" [routerLink]="buttonLink()" (click)="onCtaClick()">
               {{ buttonText() }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </a>
           }

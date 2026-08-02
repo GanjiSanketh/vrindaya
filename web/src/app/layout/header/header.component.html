@@ -14,14 +14,16 @@
       <a class="nav-link"
          routerLink="/"
          routerLinkActive="nav-link-active"
-         [routerLinkActiveOptions]="{ exact: true }">
+         [routerLinkActiveOptions]="{ exact: true }"
+         (click)="onNavClick('Home')">
         Home
       </a>
       @for (cat of categories(); track cat.id; let i = $index) {
         @if (i < 2) {
           <a class="nav-link"
              [routerLink]="['/category', cat.id]"
-             routerLinkActive="nav-link-active">
+             routerLinkActive="nav-link-active"
+             (click)="onCategoryNavClick(cat.id, cat.name)">
             {{ cat.name }}
           </a>
         }
@@ -39,16 +41,17 @@
         @if (i >= 2) {
           <a class="nav-link"
              [routerLink]="['/category', cat.id]"
-             routerLinkActive="nav-link-active">
+             routerLinkActive="nav-link-active"
+             (click)="onCategoryNavClick(cat.id, cat.name)">
             {{ cat.name }}
           </a>
         }
       }
       <div class="nav-icons">
-        <button class="nav-icon nav-search-btn" (click)="openSearch()" aria-label="Search products">
+        <button class="nav-icon nav-search-btn" (click)="onSearchOpen()" aria-label="Search products">
           <i class="bi bi-search"></i>
         </button>
-        <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist">
+        <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist" (click)="onNavClick('Wishlist')">
           <i class="bi bi-heart"></i>
           @if (wishlist.count() > 0) {
             <span class="nav-wish-badge">{{ wishlist.count() > 9 ? '9+' : wishlist.count() }}</span>
@@ -58,13 +61,13 @@
     </div>
 
     <div class="nav-mobile-right d-xl-none">
-      <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist">
+      <a class="nav-icon nav-wish-icon" routerLink="/wishlist" aria-label="My wishlist" (click)="onNavClick('Wishlist')">
         <i class="bi bi-heart"></i>
         @if (wishlist.count() > 0) {
           <span class="nav-wish-badge">{{ wishlist.count() > 9 ? '9+' : wishlist.count() }}</span>
         }
       </a>
-      <button class="nav-icon" (click)="openSearch()" aria-label="Search products">
+      <button class="nav-icon" (click)="onSearchOpen()" aria-label="Search products">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -78,7 +81,7 @@
          routerLink="/"
          routerLinkActive="drawer-link-active"
          [routerLinkActiveOptions]="{ exact: true }"
-         (click)="closeMenu()">
+         (click)="closeMenu(); onNavClick('Home')">
         Home
       </a>
 
@@ -89,7 +92,7 @@
         <a class="drawer-link"
            [routerLink]="['/category', cat.id]"
            routerLinkActive="drawer-link-active"
-           (click)="closeMenu()">
+           (click)="closeMenu(); onCategoryNavClick(cat.id, cat.name)">
           {{ cat.name }}
         </a>
       }

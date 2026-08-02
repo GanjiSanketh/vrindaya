@@ -39,8 +39,8 @@
         <h1 class="hero-heading">Wear The Grace</h1>
         <p class="hero-sub">Timeless Indian ethnic wear for the modern woman</p>
         <div class="hero-actions">
-          <a routerLink="/shop" class="btn-hero-primary">Explore Collection</a>
-          <a routerLink="/new-arrivals" class="btn-hero-secondary">New Arrivals</a>
+          <a routerLink="/shop" class="btn-hero-primary" (click)="trackHero('Explore Collection')">Explore Collection</a>
+          <a routerLink="/new-arrivals" class="btn-hero-secondary" (click)="trackHero('New Arrivals')">New Arrivals</a>
         </div>
       </div>
     </div>
@@ -85,7 +85,7 @@
               }
             } @else {
               @for (c of categories(); track c.id; let i = $index) {
-                <a [routerLink]="['/category', c.id]" class="cat-card" style="--stagger-delay: {{ i * 80 }}ms">
+                <a [routerLink]="['/category', c.id]" class="cat-card" (click)="trackCategoryClick(c.id)" style="--stagger-delay: {{ i * 80 }}ms">
                   <div class="cat-img-wrap">
                     <img [src]="c.image | cloudinaryUrl:600" [srcset]="c.image | cloudinarySrcset"
                          sizes="(max-width: 600px) 50vw, (max-width: 992px) 33vw, 25vw"

@@ -1,8 +1,9 @@
-import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card';
 import { Product } from '../../core/models/product.model';
 import { RevealDirective } from '../../features/home/directives/reveal.directive';
+import { AnalyticsService } from '../../core/analytics/analytics.service';
 
 @Component({
   selector: 'app-trending-products',
@@ -14,6 +15,12 @@ import { RevealDirective } from '../../features/home/directives/reveal.directive
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export class TrendingProducts {
+  private readonly analytics = inject(AnalyticsService);
+
   /** Supplied by the home page's single GET /homepage fetch — see HomepageService. */
   readonly products = input<Product[]>([]);
+
+  onViewAll(): void {
+    this.analytics.trackCollectionClick('trending');
+  }
 }

@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Product, Category, Testimonial, LookItem, FeatureItem } from '../models/product.model';
 import { ProductQueryService } from './product-query.service';
 import { CategoryService } from './category.service';
-import { ProductAnalyticsService } from '../analytics/product-analytics.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 export type SortOrder = 'default' | 'rating';
 
@@ -10,7 +10,7 @@ export type SortOrder = 'default' | 'rating';
 export class ProductService {
   private readonly productQuery = inject(ProductQueryService);
   private readonly categoryQuery = inject(CategoryService);
-  private readonly productAnalytics = inject(ProductAnalyticsService);
+  private readonly analytics = inject(AnalyticsService);
 
   readonly loading = signal(true);
   readonly error   = signal<string | null>(null);
@@ -121,7 +121,7 @@ export class ProductService {
 
   openProduct(product: Product): void {
     if (typeof window === 'undefined' || !product.flipkartUrl) return;
-    this.productAnalytics.recordClick(product.id);
+    this.analytics.trackLegacyClick(product.id);
     window.open(product.flipkartUrl, '_blank', 'noopener,noreferrer');
   }
 
