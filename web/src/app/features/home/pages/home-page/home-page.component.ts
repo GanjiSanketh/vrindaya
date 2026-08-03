@@ -98,13 +98,15 @@ export class HomePageComponent {
         'description': 'Discover timeless ethnic wear at Vrindaya. Shop kurtas, kurta sets, and more.',
       },
     });
-    void this.productSvc.ensureHomeDataLoaded();
 
     if (isPlatformBrowser(this.platformId)) {
+      void this.productSvc.ensureHomeDataLoaded();
       void this.heroBanner.ensureLoaded();
       void this.heroShowcaseSvc.ensureLoaded();
       this.initScrollHandler();
       this.initMouseParallax();
+    } else {
+      console.warn('[HomePage] SSR/prerender — skipping browser-only data loads (products, hero banner, hero showcase).');
     }
   }
 

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { MarketplaceFirebaseService } from '../../features/admin/marketplace/services/marketplace-firebase.service';
 import {
@@ -14,6 +14,11 @@ export const ANALYTICS_SETTINGS_DOC_ID = 'website';
 
 /** Admin-only save endpoint. PUT is the single enforcement boundary for changes — the browser never writes analyticsSettings directly. */
 const SETTINGS_URL = `${environment.apiBaseUrl}/analytics-settings`;
+
+/** Ceiling on the API read/write so settings can never wait indefinitely. */
+const SETTINGS_REQUEST_TIMEOUT_MS = 5_000;
+/** Ceiling on the startup Firestore read — the browser defaults kick in on timeout. */
+const FIRESTORE_READ_TIMEOUT_MS = 8_000;
 
 /** Raw DTO shape returned by the API — accepts camelCase or PascalCase variants. */
 interface AnalyticsSettingsDto {
@@ -92,7 +97,21 @@ export class AnalyticsSettingsService {
    * was changed in another tab.
    */
   async loadFresh(): Promise<AnalyticsSettings> {
-    const dto = await firstValueFrom(this.http.get<AnalyticsSettingsDto>(SETTINGS_URL));
+    // Never runs on the server — the admin routes are RenderMode.Client, but
+    // guard anyway so no SSR path can ever block on this network call.
+    if (!isPlatformBrowser(this.platformId)) {
+      console.warn('[AnalyticsSettingsService] loadFresh() skipped during SSR/prerender — returning defaults.');
+      return DEFAULT_ANALYTICS_SETTINGS;
+    }
+    const dto = await firstValueFrom(
+      this.http.get<AnalyticsSettingsDto>(SETTINGS_URL).pipe(
+        timeout(SETTINGS_REQUEST_TIMEOUT_MS),
+        catchError(() => {
+          console.warn('[AnalyticsSettingsService] loadFresh() failed or timed out — returning defaults.');
+          return of<AnalyticsSettingsDto>({ ...DEFAULT_ANALYTICS_SETTINGS });
+        }),
+      ),
+    );
     const settings = this.mapDtoToSettings(dto);
     this.applyToCache(settings);
     return settings;
@@ -106,12 +125,16 @@ export class AnalyticsSettingsService {
     try {
       const db = await this.firebase.getFirestore();
       const { getDoc, doc } = await import('firebase/firestore');
-      const snapshot = await getDoc(doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID));
+      const snapshot = await this.withTimeout(
+        'analyticsSettings/website Firestore read',
+        getDoc(doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID)),
+      );
       const data = snapshot.exists() ? snapshot.data() : {};
       return this.toSettings(data);
     } catch {
-      // Read failed (offline / first-run / permissions) — keep the documented
-      // defaults so tracking behaviour is predictable instead of silently off.
+      // Read failed (offline / first-run / permissions / timeout) — keep the
+      // documented defaults so tracking behaviour is predictable instead of
+      // silently off.
       return DEFAULT_ANALYTICS_SETTINGS;
     } finally {
       this.loadedState.set(true);
@@ -126,9 +149,27 @@ export class AnalyticsSettingsService {
    * storefront picks up the change without a second read.
    */
   async save(payload: Omit<AnalyticsSettings, 'updatedAt' | 'updatedBy'>): Promise<AnalyticsSettings> {
-    const updated = await firstValueFrom(this.http.put<AnalyticsSettings>(SETTINGS_URL, payload));
+    // No catchError fallback here: a failed save MUST surface as an error so
+    // the admin page can show it — the timeout below is the only bound needed.
+    const updated = await firstValueFrom(
+      this.http.put<AnalyticsSettings>(SETTINGS_URL, payload).pipe(timeout(SETTINGS_REQUEST_TIMEOUT_MS)),
+    );
     this.applyToCache(updated);
     return updated;
+  }
+
+  /** Rejects after `ms` if the given promise has not settled — keeps reads from waiting forever. */
+  private withTimeout<T>(label: string, promise: Promise<T>, ms = FIRESTORE_READ_TIMEOUT_MS): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        console.warn(`[AnalyticsSettingsService] "${label}" did not settle within ${ms}ms — using defaults.`);
+        reject(new Error(`${label} timed out`));
+      }, ms);
+      promise.then(
+        value => { clearTimeout(timer); resolve(value); },
+        error => { clearTimeout(timer); reject(error); },
+      );
+    });
   }
 
   private mapDtoToSettings(dto: AnalyticsSettingsDto): AnalyticsSettings {

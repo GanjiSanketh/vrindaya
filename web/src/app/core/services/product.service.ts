@@ -1,4 +1,5 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Product, Category, Testimonial, LookItem, FeatureItem } from '../models/product.model';
 import { ProductQueryService } from './product-query.service';
 import { CategoryService } from './category.service';
@@ -6,8 +7,14 @@ import { AnalyticsService } from '../analytics/analytics.service';
 
 export type SortOrder = 'default' | 'rating';
 
+/** Hard ceiling for a single home-page data fetch. The global timeoutInterceptor
+ *  already bounds every request to 30s; this guarantees the aggregated
+ *  Promise.allSettled below can never hang the loading state indefinitely. */
+const HOME_DATA_TIMEOUT_MS = 20_000;
+
 @Injectable({ providedIn: 'root' })
 export class ProductService {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly productQuery = inject(ProductQueryService);
   private readonly categoryQuery = inject(CategoryService);
   private readonly analytics = inject(AnalyticsService);
@@ -40,6 +47,16 @@ export class ProductService {
   /** Ensures home page data is loaded (lazy — no constructor call). Safe to call multiple times; subsequent calls are no-ops. */
   async ensureHomeDataLoaded(): Promise<void> {
     if (this.homeDataLoaded) return;
+
+    // SSR/prerender must NEVER hit the network: the prerender framework waits
+    // for the app to become stable and aborts (default 10s) while these
+    // requests are still pending — exactly what broke the Vercel build.
+    // Leave the flag unset so the browser still loads the data after hydration.
+    if (!isPlatformBrowser(this.platformId)) {
+      console.warn('[ProductService] ensureHomeDataLoaded() skipped during SSR/prerender — data loads in the browser.');
+      return;
+    }
+
     this.homeDataLoaded = true;
     return this.loadHomeData();
   }
@@ -53,10 +70,10 @@ export class ProductService {
     this.categoriesLoading.set(true);
 
     const [featured, newArrivals, bestSellers, categories] = await Promise.allSettled([
-      this.productQuery.getFeatured(12),
-      this.productQuery.getNewArrivals(12),
-      this.productQuery.getBestSellers(12),
-      this.categoryQuery.getAll(),
+      this.withTimeout('featured', this.productQuery.getFeatured(12)),
+      this.withTimeout('newArrivals', this.productQuery.getNewArrivals(12)),
+      this.withTimeout('bestSellers', this.productQuery.getBestSellers(12)),
+      this.withTimeout('categories', this.categoryQuery.getAll()),
     ]);
 
     if (featured.status === 'fulfilled')    { this.trending.set(featured.value.items);    this.trendingLoading.set(false); }
@@ -71,6 +88,24 @@ export class ProductService {
     const anyFailed = [featured, newArrivals, bestSellers, categories].some(r => r.status === 'rejected');
     this.error.set(anyFailed ? 'Some content could not be loaded right now.' : null);
     this.loading.set(false);
+  }
+
+  /**
+   * Bounds a single home-page fetch so no Promise can wait forever. On timeout
+   * it rejects (logged), which Promise.allSettled above converts into the
+   * "some content could not be loaded" fallback instead of a hang.
+   */
+  private withTimeout<T>(label: string, promise: Promise<T>, ms = HOME_DATA_TIMEOUT_MS): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        console.warn(`[ProductService] "${label}" did not settle within ${ms}ms — falling back to empty data.`);
+        reject(new Error(`${label} request timed out`));
+      }, ms);
+      promise.then(
+        value => { clearTimeout(timer); resolve(value); },
+        error => { clearTimeout(timer); reject(error); },
+      );
+    });
   }
 
   getById(id: string): Product | undefined {
