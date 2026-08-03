@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
+import { of } from 'rxjs';
 
-import { AnalyticsSettingsService } from './analytics-settings.service';
+import { AnalyticsSettingsService, FIRESTORE_READ_TIMEOUT_MS } from './analytics-settings.service';
 import { MarketplaceFirebaseService } from '../../features/admin/marketplace/services/marketplace-firebase.service';
 import { SAFE_OFF_SETTINGS } from './analytics-settings.model';
 
@@ -96,5 +97,47 @@ describe('AnalyticsSettingsService', () => {
     getFirestoreMock.mockRejectedValue(new Error('init failed'));
     await expect(svc.ensureLoaded()).resolves.toEqual(SAFE_OFF_SETTINGS);
     expect(svc.settings()).toEqual(SAFE_OFF_SETTINGS);
+  });
+
+  it('falls back to the backend API when the snapshot never settles, enabling persisted ON settings', async () => {
+    const http = TestBed.inject(HttpClient) as unknown as { get: ReturnType<typeof vi.fn>; put: ReturnType<typeof vi.fn> };
+    http.get.mockReturnValue(of({
+      trackingEnabled: true,
+      productClicks: true,
+      heroClicks: true,
+      categoryClicks: true,
+      searchTracking: true,
+      wishlistTracking: true,
+      collectionClicks: true,
+      pageViews: true,
+      scrollTracking: true,
+      performanceTracking: true,
+    }));
+
+    vi.useFakeTimers();
+    try {
+      const promise = svc.ensureLoaded();
+      await vi.advanceTimersByTimeAsync(FIRESTORE_READ_TIMEOUT_MS);
+      await expect(promise).resolves.toMatchObject({ trackingEnabled: true, productClicks: true });
+      expect(svc.settings().trackingEnabled).toBe(true);
+      expect(svc.settings().productClicks).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('stays fail-closed when the snapshot never settles AND the backend API also fails', async () => {
+    const http = TestBed.inject(HttpClient) as unknown as { get: ReturnType<typeof vi.fn>; put: ReturnType<typeof vi.fn> };
+    http.get.mockReturnValue(of(null));
+
+    vi.useFakeTimers();
+    try {
+      const promise = svc.ensureLoaded();
+      await vi.advanceTimersByTimeAsync(FIRESTORE_READ_TIMEOUT_MS);
+      await expect(promise).resolves.toEqual(SAFE_OFF_SETTINGS);
+      expect(svc.settings()).toEqual(SAFE_OFF_SETTINGS);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

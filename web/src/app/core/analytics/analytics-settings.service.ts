@@ -19,7 +19,7 @@ const SETTINGS_URL = `${environment.apiBaseUrl}/analytics-settings`;
 /** Ceiling on the API read/write so settings can never wait indefinitely. */
 const SETTINGS_REQUEST_TIMEOUT_MS = 5_000;
 /** Ceiling on the startup Firestore read — the browser defaults kick in on timeout. */
-const FIRESTORE_READ_TIMEOUT_MS = 8_000;
+export const FIRESTORE_READ_TIMEOUT_MS = 8_000;
 
 /** Raw DTO shape returned by the API — accepts camelCase or PascalCase variants. */
 interface AnalyticsSettingsDto {
@@ -62,10 +62,11 @@ interface AnalyticsSettingsDto {
  * and the browser hydrates the real settings as soon as the first snapshot
  * arrives.
  *
- * FAIL-CLOSED: until a snapshot proves the persisted document enables a switch,
- * every switch is OFF, so a storefront that cannot reach Firestore records
- * nothing instead of silently defaulting to "tracking on". The persisted
- * document is the only way tracking turns on.
+ * FAIL-CLOSED: until a snapshot — or the backend API fallback — proves the
+ * persisted document enables a switch, every switch is OFF, so a storefront
+ * that can reach neither Firestore nor the API records nothing instead of
+ * silently defaulting to "tracking on". The persisted document is the only
+ * way tracking turns on.
  *
  * Write access is admin-only and enforced by the backend: the admin page
  * sits behind the adminAuthGuard, and saving goes through the admin-only API
@@ -115,18 +116,30 @@ export class AnalyticsSettingsService {
       console.warn('[AnalyticsSettingsService] loadFresh() skipped during SSR/prerender — returning defaults.');
       return DEFAULT_ANALYTICS_SETTINGS;
     }
-    const dto = await firstValueFrom(
-      this.http.get<AnalyticsSettingsDto>(SETTINGS_URL).pipe(
-        timeout(SETTINGS_REQUEST_TIMEOUT_MS),
-        catchError(() => {
-          console.warn('[AnalyticsSettingsService] loadFresh() failed or timed out — returning defaults.');
-          return of<AnalyticsSettingsDto>({ ...DEFAULT_ANALYTICS_SETTINGS });
-        }),
-      ),
-    );
-    const settings = this.mapDtoToSettings(dto);
+    const dto = await this.fetchFromApi();
+    const settings = this.mapDtoToSettings(dto ?? { ...DEFAULT_ANALYTICS_SETTINGS });
     this.applyToCache(settings);
     return settings;
+  }
+
+  /**
+   * Reads `analyticsSettings/website` from the backend API (service-account
+   * Firestore). Returns `null` when the read fails or times out — the caller
+   * decides the fallback (the admin page falls back to packaged defaults; the
+   * storefront stays fail-closed). Defaults are never substituted here, so a
+   * transient API failure can never be mistaken for persisted data.
+   */
+  private async fetchFromApi(): Promise<AnalyticsSettingsDto | null> {
+    try {
+      return await firstValueFrom(
+        this.http.get<AnalyticsSettingsDto>(SETTINGS_URL).pipe(
+          timeout(SETTINGS_REQUEST_TIMEOUT_MS),
+          catchError(() => of<AnalyticsSettingsDto | null>(null)),
+        ),
+      );
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -136,8 +149,10 @@ export class AnalyticsSettingsService {
    * browser — rewrites the cache immediately, so the storefront stops/starts
    * recording without a reload. If the initial snapshot never arrives
    * (offline / timeout) or the read fails (permissions / first-run), the
-   * fail-closed {@link SAFE_OFF_SETTINGS} are applied (nothing recorded) and
-   * the subscription stays alive to recover as soon as connectivity returns.
+   * backend API is queried for the persisted document first; only if that
+   * also fails do the fail-closed {@link SAFE_OFF_SETTINGS} apply (nothing
+   * recorded). The subscription stays alive to recover as soon as
+   * connectivity returns.
    */
   private subscribe(): Promise<AnalyticsSettings> {
     return new Promise<AnalyticsSettings>((resolve) => {
@@ -149,18 +164,27 @@ export class AnalyticsSettingsService {
           let settled = false;
           let unsubscribe: () => void = () => {};
 
-          const timer = setTimeout(() => {
-            // No snapshot within the bound — fall back to the fail-closed
-            // SAFE_OFF state so a storefront with a broken connection records
-            // NOTHING. Keep listening; the cache is refreshed the moment a
-            // snapshot arrives.
+          const timer = setTimeout(async () => {
+            // No snapshot within the bound — fall back to the backend API so
+            // a storefront whose Firestore listener cannot settle still
+            // receives the persisted settings. Keep listening; the cache is
+            // refreshed the moment a snapshot arrives.
             if (settled) return;
             settled = true;
-            console.warn(
-              '[AnalyticsSettingsService] analyticsSettings/website snapshot did not settle within ' +
-                `${FIRESTORE_READ_TIMEOUT_MS}ms — using SAFE_OFF (tracking disabled).`,
-            );
-            this.applyToCache(SAFE_OFF_SETTINGS);
+            const fallback = await this.fetchFromApi();
+            if (fallback) {
+              const settings = this.mapDtoToSettings(fallback);
+              // TEMP DIAG — remove after verification.
+              // eslint-disable-next-line no-console
+              console.log('[AnalyticsSettings] backend API fallback settings received', JSON.stringify(settings));
+              this.applyToCache(settings);
+            } else {
+              console.warn(
+                '[AnalyticsSettingsService] analyticsSettings/website snapshot did not settle within ' +
+                  `${FIRESTORE_READ_TIMEOUT_MS}ms and the backend API fallback failed — using SAFE_OFF (tracking disabled).`,
+              );
+              this.applyToCache(SAFE_OFF_SETTINGS);
+            }
             resolve(this.settingsState());
           }, FIRESTORE_READ_TIMEOUT_MS);
 
@@ -184,11 +208,18 @@ export class AnalyticsSettingsService {
               settle();
             },
             () => {
-              // Read failed (offline / permissions / first-run) — keep the
-              // fail-closed SAFE_OFF state so tracking is never silently on.
-              console.warn('[AnalyticsSettingsService] analyticsSettings/website snapshot failed — using SAFE_OFF (tracking disabled).');
-              this.applyToCache(SAFE_OFF_SETTINGS);
-              settle();
+              // Read failed (offline / permissions / first-run) — query the
+              // backend API (service account) for the persisted document, then
+              // fail-closed only if that also fails.
+              void this.fetchFromApi().then(fallback => {
+                if (fallback) {
+                  this.applyToCache(this.mapDtoToSettings(fallback));
+                } else {
+                  console.warn('[AnalyticsSettingsService] analyticsSettings/website snapshot failed and the backend API fallback failed — using SAFE_OFF (tracking disabled).');
+                  this.applyToCache(SAFE_OFF_SETTINGS);
+                }
+                settle();
+              });
             },
           );
 
