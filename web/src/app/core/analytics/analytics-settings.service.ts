@@ -15,6 +15,34 @@ export const ANALYTICS_SETTINGS_DOC_ID = 'website';
 /** Admin-only save endpoint. PUT is the single enforcement boundary for changes — the browser never writes analyticsSettings directly. */
 const SETTINGS_URL = `${environment.apiBaseUrl}/analytics-settings`;
 
+/** Raw DTO shape returned by the API — accepts camelCase or PascalCase variants. */
+interface AnalyticsSettingsDto {
+  trackingEnabled?: boolean;
+  heroClicks?: boolean;
+  productClicks?: boolean;
+  categoryClicks?: boolean;
+  searchTracking?: boolean;
+  wishlistTracking?: boolean;
+  collectionClicks?: boolean;
+  pageViews?: boolean;
+  scrollTracking?: boolean;
+  performanceTracking?: boolean;
+  updatedAt?: string;
+  updatedBy?: string;
+  TrackingEnabled?: boolean;
+  HeroClicks?: boolean;
+  ProductClicks?: boolean;
+  CategoryClicks?: boolean;
+  SearchTracking?: boolean;
+  WishlistTracking?: boolean;
+  CollectionClicks?: boolean;
+  PageViews?: boolean;
+  ScrollTracking?: boolean;
+  PerformanceTracking?: boolean;
+  UpdatedAt?: string;
+  UpdatedBy?: string;
+}
+
 /**
  * Singleton owner of the website analytics configuration.
  *
@@ -58,14 +86,36 @@ export class AnalyticsSettingsService {
   }
 
   /**
-   * Always reads `analyticsSettings/website` from Firestore, bypassing the
-   * startup cache. Used by the admin settings page so it always shows the
-   * current persisted state even if it was changed in another tab.
+   * Always reads `analyticsSettings/website` from the backend API (which uses
+   * the service account), bypassing the startup cache. Used by the admin
+   * settings page so it always shows the current persisted state even if it
+   * was changed in another tab.
    */
   async loadFresh(): Promise<AnalyticsSettings> {
-    const snapshot = await this.read();
-    this.applyToCache(snapshot);
-    return snapshot;
+    const dto = await firstValueFrom(this.http.get<AnalyticsSettingsDto>(SETTINGS_URL));
+    const settings = this.mapDtoToSettings(dto);
+    this.applyToCache(settings);
+    return settings;
+  }
+
+  /**
+   * Reads directly from Firestore (used by storefront at startup).
+   * Not used by admin page — see loadFresh().
+   */
+  private async read(): Promise<AnalyticsSettings> {
+    try {
+      const db = await this.firebase.getFirestore();
+      const { getDoc, doc } = await import('firebase/firestore');
+      const snapshot = await getDoc(doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID));
+      const data = snapshot.exists() ? snapshot.data() : {};
+      return this.toSettings(data);
+    } catch {
+      // Read failed (offline / first-run / permissions) — keep the documented
+      // defaults so tracking behaviour is predictable instead of silently off.
+      return DEFAULT_ANALYTICS_SETTINGS;
+    } finally {
+      this.loadedState.set(true);
+    }
   }
 
   /**
@@ -81,20 +131,21 @@ export class AnalyticsSettingsService {
     return updated;
   }
 
-  private async read(): Promise<AnalyticsSettings> {
-    try {
-      const db = await this.firebase.getFirestore();
-      const { getDoc, doc } = await import('firebase/firestore');
-      const snapshot = await getDoc(doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID));
-      const data = snapshot.exists() ? snapshot.data() : {};
-      return this.toSettings(data);
-    } catch {
-      // Read failed (offline / first-run / permissions) — keep the documented
-      // defaults so tracking behaviour is predictable instead of silently off.
-      return DEFAULT_ANALYTICS_SETTINGS;
-    } finally {
-      this.loadedState.set(true);
-    }
+  private mapDtoToSettings(dto: AnalyticsSettingsDto): AnalyticsSettings {
+    return {
+      trackingEnabled: dto.trackingEnabled ?? dto.TrackingEnabled ?? DEFAULT_ANALYTICS_SETTINGS.trackingEnabled,
+      heroClicks: dto.heroClicks ?? dto.HeroClicks ?? DEFAULT_ANALYTICS_SETTINGS.heroClicks,
+      productClicks: dto.productClicks ?? dto.ProductClicks ?? DEFAULT_ANALYTICS_SETTINGS.productClicks,
+      categoryClicks: dto.categoryClicks ?? dto.CategoryClicks ?? DEFAULT_ANALYTICS_SETTINGS.categoryClicks,
+      searchTracking: dto.searchTracking ?? dto.SearchTracking ?? DEFAULT_ANALYTICS_SETTINGS.searchTracking,
+      wishlistTracking: dto.wishlistTracking ?? dto.WishlistTracking ?? DEFAULT_ANALYTICS_SETTINGS.wishlistTracking,
+      collectionClicks: dto.collectionClicks ?? dto.CollectionClicks ?? DEFAULT_ANALYTICS_SETTINGS.collectionClicks,
+      pageViews: dto.pageViews ?? dto.PageViews ?? DEFAULT_ANALYTICS_SETTINGS.pageViews,
+      scrollTracking: dto.scrollTracking ?? dto.ScrollTracking ?? DEFAULT_ANALYTICS_SETTINGS.scrollTracking,
+      performanceTracking: dto.performanceTracking ?? dto.PerformanceTracking ?? DEFAULT_ANALYTICS_SETTINGS.performanceTracking,
+      updatedAt: dto.updatedAt ?? dto.UpdatedAt ?? '',
+      updatedBy: dto.updatedBy ?? dto.UpdatedBy ?? '',
+    };
   }
 
   private toSettings(data: Record<string, unknown>): AnalyticsSettings {
