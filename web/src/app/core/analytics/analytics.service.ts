@@ -42,9 +42,13 @@ const SEARCH_KEY_MAX = 60;
  *     ProductAnalyticsService; site events increment the `siteAnalytics`
  *     counters).
  *
- * Adding a new event is one method of ~3 lines. Settings are fetched once at
- * app startup and cached by {@link AnalyticsSettingsService} — repeated
- * clicks never trigger Firestore reads.
+ * Adding a new event is one method of ~3 lines. Settings are kept live by
+ * {@link AnalyticsSettingsService} via a realtime Firestore subscription —
+ * repeated clicks never trigger Firestore reads, and an admin save in any tab
+ * takes effect immediately. The cache is fail-closed ({@link SAFE_OFF_SETTINGS}
+ * until a snapshot proves otherwise), and the database itself enforces the
+ * switches server-side (see firestore.rules + the API's analytics write gate),
+ * so a stale or compromised client cannot record events when tracking is off.
  */
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
@@ -214,7 +218,15 @@ export class AnalyticsService {
 
   private isEnabled(field: keyof AnalyticsSettings): boolean {
     const s = this.settingsSvc.settings();
-    return s.trackingEnabled && s[field] === true;
+    const allowed = s.trackingEnabled && s[field] === true;
+    // TEMP DIAG — remove after verification. Logs the exact settings this
+    // event was gated on and the decision (RECORD vs SKIP).
+    // eslint-disable-next-line no-console
+    console.log(
+      `[Analytics GATE] event=${String(field)} trackingEnabled=${s.trackingEnabled} ` +
+        `${String(field)}=${s[field]} → ${allowed ? 'RECORD' : 'SKIP'}`,
+    );
+    return allowed;
   }
 
   private recordSiteEvent(field: SiteAnalyticsMetric, by = 1): void {

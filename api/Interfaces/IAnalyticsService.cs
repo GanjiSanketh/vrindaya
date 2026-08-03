@@ -9,7 +9,7 @@ namespace Vrindaya.Api.Interfaces;
 /// </summary>
 public interface IAnalyticsService
 {
-    /// <summary>Records a "Buy on Flipkart" click — increments Product.WebsiteClickCount atomically and stamps LastClickAt. Public/anonymous-triggered, no auth.</summary>
+    /// <summary>Records a "Buy on Flipkart" click — increments Product.WebsiteClickCount atomically and stamps LastClickAt. Public/anonymous-triggered, no auth. Server-side settings gate: skipped unless analyticsSettings/website has TrackingEnabled AND ProductClicks on.</summary>
     Task RecordProductClickAsync(string productId, CancellationToken cancellationToken);
 
     /// <summary>Dashboard summary — all-time + today's detail/flipkart click totals, and the count of tracked products.</summary>

@@ -79,7 +79,6 @@ export class AnalyticsFirestoreService {
 
   /** TEMP DIAG — logs the complete caught exception. Remove after verification. */
   private diagError(message: string, error: unknown): void {
-    // eslint-disable-next-line no-console
     console.error('[Analytics DIAG]', message, error);
   }
 

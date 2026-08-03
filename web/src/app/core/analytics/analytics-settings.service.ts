@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject, signal, PLATFORM_ID, DestroyRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, timeout, catchError, of } from 'rxjs';
@@ -7,6 +7,7 @@ import { MarketplaceFirebaseService } from '../../features/admin/marketplace/ser
 import {
   AnalyticsSettings,
   DEFAULT_ANALYTICS_SETTINGS,
+  SAFE_OFF_SETTINGS,
 } from './analytics-settings.model';
 
 export const ANALYTICS_SETTINGS_ROOT = 'analyticsSettings';
@@ -51,11 +52,20 @@ interface AnalyticsSettingsDto {
 /**
  * Singleton owner of the website analytics configuration.
  *
- * `analyticsSettings/website` is read exactly ONCE per browser session
- * (kicked off at app startup) and cached in memory — every tracking check
- * afterwards reads the cached signal, never Firestore. SSR/prerender never
- * touches the network; server renders fall back to the packaged defaults
- * and the browser hydrates the real settings as soon as they arrive.
+ * `analyticsSettings/website` is read via a live Firestore subscription on the
+ * browser (kicked off at app startup) and cached in memory — every tracking
+ * check afterwards reads the cached signal, never Firestore. The subscription
+ * stays active for the whole session, so the moment an admin saves new values
+ * in ANY tab or browser, every open storefront session picks them up
+ * immediately; no page reload is needed. SSR/prerender never touches the
+ * network; server renders fall back to the fail-closed {@link SAFE_OFF_SETTINGS}
+ * and the browser hydrates the real settings as soon as the first snapshot
+ * arrives.
+ *
+ * FAIL-CLOSED: until a snapshot proves the persisted document enables a switch,
+ * every switch is OFF, so a storefront that cannot reach Firestore records
+ * nothing instead of silently defaulting to "tracking on". The persisted
+ * document is the only way tracking turns on.
  *
  * Write access is admin-only and enforced by the backend: the admin page
  * sits behind the adminAuthGuard, and saving goes through the admin-only API
@@ -66,27 +76,29 @@ export class AnalyticsSettingsService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly firebase = inject(MarketplaceFirebaseService);
   private readonly http = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
 
-  private readonly settingsState = signal<AnalyticsSettings>(DEFAULT_ANALYTICS_SETTINGS);
+  private readonly settingsState = signal<AnalyticsSettings>(SAFE_OFF_SETTINGS);
   private readonly loadedState = signal(false);
   private loadPromise: Promise<AnalyticsSettings> | null = null;
 
   /** Cached settings — the single source of truth for every tracking check. */
   readonly settings = this.settingsState.asReadonly();
-  /** True once the one-time Firestore read has settled (success or failure). */
+  /** True once the first settings snapshot has settled (success, timeout or failure). */
   readonly loaded = this.loadedState.asReadonly();
 
   /**
-   * Fetches the settings once. Safe to call from anywhere, any number of
-   * times — only the first call touches the network. Returns immediately
-   * (no-op) during SSR/prerender.
+   * Starts the live settings subscription. Safe to call from anywhere, any
+   * number of times — only the first call opens the subscription. Resolves
+   * as soon as the first snapshot (or a timeout/error fallback) lands.
+   * Returns immediately (no-op) during SSR/prerender.
    */
   ensureLoaded(): Promise<AnalyticsSettings> {
     if (this.loadPromise) return this.loadPromise;
     if (!isPlatformBrowser(this.platformId)) {
       return Promise.resolve(this.settingsState());
     }
-    this.loadPromise = this.read();
+    this.loadPromise = this.subscribe();
     return this.loadPromise;
   }
 
@@ -118,27 +130,81 @@ export class AnalyticsSettingsService {
   }
 
   /**
-   * Reads directly from Firestore (used by storefront at startup).
-   * Not used by admin page — see loadFresh().
+   * Subscribes to live updates of `analyticsSettings/website` so the in-memory
+   * cache always mirrors the persisted document. The first snapshot resolves
+   * `ensureLoaded()`; every later snapshot — an admin save from ANY tab or
+   * browser — rewrites the cache immediately, so the storefront stops/starts
+   * recording without a reload. If the initial snapshot never arrives
+   * (offline / timeout) or the read fails (permissions / first-run), the
+   * fail-closed {@link SAFE_OFF_SETTINGS} are applied (nothing recorded) and
+   * the subscription stays alive to recover as soon as connectivity returns.
    */
-  private async read(): Promise<AnalyticsSettings> {
-    try {
-      const db = await this.firebase.getFirestore();
-      const { getDoc, doc } = await import('firebase/firestore');
-      const snapshot = await this.withTimeout(
-        'analyticsSettings/website Firestore read',
-        getDoc(doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID)),
-      );
-      const data = snapshot.exists() ? snapshot.data() : {};
-      return this.toSettings(data);
-    } catch {
-      // Read failed (offline / first-run / permissions / timeout) — keep the
-      // documented defaults so tracking behaviour is predictable instead of
-      // silently off.
-      return DEFAULT_ANALYTICS_SETTINGS;
-    } finally {
-      this.loadedState.set(true);
-    }
+  private subscribe(): Promise<AnalyticsSettings> {
+    return new Promise<AnalyticsSettings>((resolve) => {
+      void this.firebase.getFirestore()
+        .then(async (db) => {
+          const { onSnapshot, doc } = await import('firebase/firestore');
+          const ref = doc(db, ANALYTICS_SETTINGS_ROOT, ANALYTICS_SETTINGS_DOC_ID);
+
+          let settled = false;
+          let unsubscribe: () => void = () => {};
+
+          const timer = setTimeout(() => {
+            // No snapshot within the bound — fall back to the fail-closed
+            // SAFE_OFF state so a storefront with a broken connection records
+            // NOTHING. Keep listening; the cache is refreshed the moment a
+            // snapshot arrives.
+            if (settled) return;
+            settled = true;
+            console.warn(
+              '[AnalyticsSettingsService] analyticsSettings/website snapshot did not settle within ' +
+                `${FIRESTORE_READ_TIMEOUT_MS}ms — using SAFE_OFF (tracking disabled).`,
+            );
+            this.applyToCache(SAFE_OFF_SETTINGS);
+            resolve(this.settingsState());
+          }, FIRESTORE_READ_TIMEOUT_MS);
+
+          const settle = (): void => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            resolve(this.settingsState());
+          };
+
+          unsubscribe = onSnapshot(
+            ref,
+            snapshot => {
+              const data = snapshot.exists() ? snapshot.data() : {};
+              const settings = this.toSettings(data);
+              // TEMP DIAG — remove after verification. Shows the exact values
+              // the storefront cache received from the persisted document.
+              // eslint-disable-next-line no-console
+              console.log('[AnalyticsSettings] live settings received', JSON.stringify(settings));
+              this.applyToCache(settings);
+              settle();
+            },
+            () => {
+              // Read failed (offline / permissions / first-run) — keep the
+              // fail-closed SAFE_OFF state so tracking is never silently on.
+              console.warn('[AnalyticsSettingsService] analyticsSettings/website snapshot failed — using SAFE_OFF (tracking disabled).');
+              this.applyToCache(SAFE_OFF_SETTINGS);
+              settle();
+            },
+          );
+
+          this.destroyRef.onDestroy(() => {
+            clearTimeout(timer);
+            unsubscribe();
+          });
+        })
+        .catch(() => {
+          // getFirestore() itself failed — never hang startup, and stay
+          // fail-closed so nothing is recorded.
+          console.warn('[AnalyticsSettingsService] getFirestore() failed — using SAFE_OFF (tracking disabled).');
+          this.applyToCache(SAFE_OFF_SETTINGS);
+          resolve(this.settingsState());
+        });
+    });
   }
 
   /**
@@ -158,20 +224,6 @@ export class AnalyticsSettingsService {
     return updated;
   }
 
-  /** Rejects after `ms` if the given promise has not settled — keeps reads from waiting forever. */
-  private withTimeout<T>(label: string, promise: Promise<T>, ms = FIRESTORE_READ_TIMEOUT_MS): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        console.warn(`[AnalyticsSettingsService] "${label}" did not settle within ${ms}ms — using defaults.`);
-        reject(new Error(`${label} timed out`));
-      }, ms);
-      promise.then(
-        value => { clearTimeout(timer); resolve(value); },
-        error => { clearTimeout(timer); reject(error); },
-      );
-    });
-  }
-
   private mapDtoToSettings(dto: AnalyticsSettingsDto): AnalyticsSettings {
     return {
       trackingEnabled: dto.trackingEnabled ?? dto.TrackingEnabled ?? DEFAULT_ANALYTICS_SETTINGS.trackingEnabled,
@@ -189,18 +241,23 @@ export class AnalyticsSettingsService {
     };
   }
 
+  /**
+   * Maps a Firestore snapshot to {@link AnalyticsSettings}. Missing booleans
+   * fail-closed to OFF (the persisted document is the only way a switch turns
+   * on), matching the {@link SAFE_OFF_SETTINGS} runtime default.
+   */
   private toSettings(data: Record<string, unknown>): AnalyticsSettings {
     return {
-      trackingEnabled: this.bool(data['trackingEnabled'], DEFAULT_ANALYTICS_SETTINGS.trackingEnabled),
-      heroClicks: this.bool(data['heroClicks'], DEFAULT_ANALYTICS_SETTINGS.heroClicks),
-      productClicks: this.bool(data['productClicks'], DEFAULT_ANALYTICS_SETTINGS.productClicks),
-      categoryClicks: this.bool(data['categoryClicks'], DEFAULT_ANALYTICS_SETTINGS.categoryClicks),
-      searchTracking: this.bool(data['searchTracking'], DEFAULT_ANALYTICS_SETTINGS.searchTracking),
-      wishlistTracking: this.bool(data['wishlistTracking'], DEFAULT_ANALYTICS_SETTINGS.wishlistTracking),
-      collectionClicks: this.bool(data['collectionClicks'], DEFAULT_ANALYTICS_SETTINGS.collectionClicks),
-      pageViews: this.bool(data['pageViews'], DEFAULT_ANALYTICS_SETTINGS.pageViews),
-      scrollTracking: this.bool(data['scrollTracking'], DEFAULT_ANALYTICS_SETTINGS.scrollTracking),
-      performanceTracking: this.bool(data['performanceTracking'], DEFAULT_ANALYTICS_SETTINGS.performanceTracking),
+      trackingEnabled: this.bool(data['trackingEnabled'], false),
+      heroClicks: this.bool(data['heroClicks'], false),
+      productClicks: this.bool(data['productClicks'], false),
+      categoryClicks: this.bool(data['categoryClicks'], false),
+      searchTracking: this.bool(data['searchTracking'], false),
+      wishlistTracking: this.bool(data['wishlistTracking'], false),
+      collectionClicks: this.bool(data['collectionClicks'], false),
+      pageViews: this.bool(data['pageViews'], false),
+      scrollTracking: this.bool(data['scrollTracking'], false),
+      performanceTracking: this.bool(data['performanceTracking'], false),
       updatedAt: this.string(data['updatedAt']),
       updatedBy: this.string(data['updatedBy']),
     };

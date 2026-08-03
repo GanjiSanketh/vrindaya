@@ -62,3 +62,25 @@ export const DEFAULT_ANALYTICS_SETTINGS: AnalyticsSettings = {
   updatedAt: '',
   updatedBy: '',
 };
+
+/**
+ * Fail-closed cache used by the STOREFRONT until the first settings snapshot
+ * arrives (and on read failure). Every switch is OFF so a stale/offline
+ * storefront NEVER records an event — the persisted document is the only way
+ * tracking turns on. `DEFAULT_ANALYTICS_SETTINGS` remains the out-of-box
+ * shape for the admin form; this is the safe runtime default.
+ */
+export const SAFE_OFF_SETTINGS: AnalyticsSettings = {
+  trackingEnabled: false,
+  heroClicks: false,
+  productClicks: false,
+  categoryClicks: false,
+  searchTracking: false,
+  wishlistTracking: false,
+  collectionClicks: false,
+  pageViews: false,
+  scrollTracking: false,
+  performanceTracking: false,
+  updatedAt: '',
+  updatedBy: '',
+};

@@ -1,4 +1,5 @@
 using Google.Cloud.Firestore;
+using Microsoft.Extensions.Logging;
 using Vrindaya.Api.DTOs.Analytics;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
@@ -9,16 +10,42 @@ public class AnalyticsService : IAnalyticsService
 {
     private readonly IProductRepository _productRepository;
     private readonly IProductAnalyticsRepository _analyticsRepository;
+    private readonly IAnalyticsSettingsService _settingsService;
+    private readonly ILogger<AnalyticsService> _logger;
 
-    public AnalyticsService(IProductRepository productRepository, IProductAnalyticsRepository analyticsRepository)
+    public AnalyticsService(
+        IProductRepository productRepository,
+        IProductAnalyticsRepository analyticsRepository,
+        IAnalyticsSettingsService settingsService,
+        ILogger<AnalyticsService> logger)
     {
         _productRepository = productRepository;
         _analyticsRepository = analyticsRepository;
+        _settingsService = settingsService;
+        _logger = logger;
     }
 
-    public Task RecordProductClickAsync(string productId, CancellationToken cancellationToken)
+    /// <summary>
+    /// Records a "Buy on Flipkart" click — but ONLY when the website analytics
+    /// switches allow it. This is the server-side enforcement boundary for the
+    /// legacy click endpoint: the storefront's client-side gate is a first line
+    /// of defence, the settings document is the source of truth here.
+    /// </summary>
+    public async Task RecordProductClickAsync(string productId, CancellationToken cancellationToken)
     {
-        return _productRepository.IncrementWebsiteClickAsync(productId, cancellationToken);
+        var settings = await _settingsService.GetAsync(cancellationToken);
+
+        _logger.LogInformation("WebsiteTracking: {value}", settings.TrackingEnabled);
+        _logger.LogInformation("ProductTracking: {value}", settings.ProductClicks);
+
+        if (!settings.TrackingEnabled || !settings.ProductClicks)
+        {
+            _logger.LogInformation("Skipping analytics event");
+            return;
+        }
+
+        await _productRepository.IncrementWebsiteClickAsync(productId, cancellationToken);
+        _logger.LogInformation("Saved ProductClick event for product '{ProductId}'.", productId);
     }
 
     public async Task<AnalyticsOverviewResponse> GetOverviewAsync(CancellationToken cancellationToken)

@@ -8,6 +8,25 @@ service cloud.firestore {
         && request.auth.token.email.lower() == 'gsanketh7121@gmail.com';
     }
 
+    // The master analytics kill-switch document (analyticsSettings/website).
+    // get()/exists() fail when the document is missing, so every check below
+    // is FAIL-CLOSED: no analytics write is allowed until an admin has saved
+    // settings that explicitly enable tracking. The browser may read this
+    // document (allow read: if true below) so the rules can use it.
+    function analyticsSettingsDoc() {
+      return /databases/$(database)/documents/analyticsSettings/website;
+    }
+
+    // Global kill-switch — when OFF, NOTHING is recorded, at the database level.
+    function analyticsTrackingEnabled() {
+      return get(analyticsSettingsDoc()).data.trackingEnabled == true;
+    }
+
+    // Per-feature switch for a collection, e.g. productClicks for `analytics`.
+    function analyticsToggleOn(field) {
+      return get(analyticsSettingsDoc()).data[field] == true;
+    }
+
     match /marketingSubscribers/{mobileNumber} {
       allow create: if
         mobileNumber.matches('^[6-9][0-9]{9}$')
@@ -75,22 +94,33 @@ service cloud.firestore {
 
     // Product Analytics — anonymous visitors / customer users (unauthenticated)
     // increment counters. Admin sessions are denied at the rules level so admin
-    // browsing can never pollute metrics, even if a client-side check is missed.
+    // browsing can never pollute metrics. Writes additionally require the
+    // settings document to explicitly enable tracking AND productClicks — this
+    // is the server-side enforcement that holds even if a client-side check is
+    // missed or a stale build keeps sending events.
     match /analytics/{productId} {
       allow read: if isAdminUser();
-      allow create, update: if request.auth == null || !isAdminUser();
+      allow create, update: if
+        (request.auth == null || !isAdminUser())
+        && analyticsTrackingEnabled()
+        && analyticsToggleOn('productClicks');
       allow delete: if isAdminUser();
       match /daily/{day} {
         allow read: if isAdminUser();
-        allow create, update: if request.auth == null || !isAdminUser();
+        allow create, update: if
+          (request.auth == null || !isAdminUser())
+          && analyticsTrackingEnabled()
+          && analyticsToggleOn('productClicks');
         allow delete: if isAdminUser();
       }
     }
 
     /**
      * Website analytics configuration (analyticsSettings/website) — the
-     * storefront reads it once at startup (public read), only Admin /
-     * Super Admin may modify it.
+     * storefront subscribes to live updates (public read, so onSnapshot and
+     * the rules' get() below both work); only Admin / Super Admin may modify
+     * it. This document is the server-side source of truth for the
+     * analytics write gates in this file.
      */
     match /analyticsSettings/{docId} {
       allow read: if true;
@@ -101,25 +131,39 @@ service cloud.firestore {
      * Site-wide analytics (hero/category/collection/nav/footer clicks, page
      * views, scroll + search events). Anonymous visitors / customer users
      * increment the counters; admin sessions are denied at the rules level
-     * so admin browsing can never pollute metrics.
+     * so admin browsing can never pollute metrics. The shared totals/daily
+     * counters are gated by the global trackingEnabled switch (the per-feature
+     * toggles for these shared docs are enforced client-side, since a single
+     * shared document carries many counters); the dedicated searches /
+     * performance sub-collections are gated by their own toggle as well.
      */
     match /siteAnalytics/{docId} {
       allow read: if isAdminUser();
-      allow create, update: if request.auth == null || !isAdminUser();
+      allow create, update: if
+        (request.auth == null || !isAdminUser())
+        && analyticsTrackingEnabled();
       allow delete: if isAdminUser();
       match /daily/{day} {
         allow read: if isAdminUser();
-        allow create, update: if request.auth == null || !isAdminUser();
+        allow create, update: if
+          (request.auth == null || !isAdminUser())
+          && analyticsTrackingEnabled();
         allow delete: if isAdminUser();
       }
       match /searches/{key} {
         allow read: if isAdminUser();
-        allow create, update: if request.auth == null || !isAdminUser();
+        allow create, update: if
+          (request.auth == null || !isAdminUser())
+          && analyticsTrackingEnabled()
+          && analyticsToggleOn('searchTracking');
         allow delete: if isAdminUser();
       }
       match /performance/{day} {
         allow read: if isAdminUser();
-        allow create, update: if request.auth == null || !isAdminUser();
+        allow create, update: if
+          (request.auth == null || !isAdminUser())
+          && analyticsTrackingEnabled()
+          && analyticsToggleOn('performanceTracking');
         allow delete: if isAdminUser();
       }
     }

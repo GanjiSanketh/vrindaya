@@ -4,6 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AnalyticsFirestoreService, ANALYTICS_ROOT, ANALYTICS_PRODUCT_DAILY_SUB } from './analytics-firestore.service';
+import { AnalyticsSettingsService } from './analytics-settings.service';
+import type { AnalyticsSettings } from './analytics-settings.model';
 import {
   DailyProductAnalytics,
   ProductMetric,
@@ -41,6 +43,7 @@ export class ProductAnalyticsService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly store = inject(AnalyticsFirestoreService);
+  private readonly settingsSvc = inject(AnalyticsSettingsService);
 
   /** Products whose totals/daily docs already carry a createdAt seed this session. */
   private readonly seeded = new Set<string>();
@@ -52,6 +55,20 @@ export class ProductAnalyticsService {
    */
   recordClick(productId: string): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    const settings = this.settingsSvc.settings();
+    // TEMP DIAG — remove after verification.
+    // eslint-disable-next-line no-console
+    console.log('Tracking Settings:', settings);
+    if (!settings.trackingEnabled) {
+      // eslint-disable-next-line no-console
+      console.log('[Analytics GATE] Skipping legacy click — WebsiteTracking OFF');
+      return;
+    }
+    if (!settings.productClicks) {
+      // eslint-disable-next-line no-console
+      console.log('[Analytics GATE] Skipping legacy click — ProductClickTracking OFF');
+      return;
+    }
     void firstValueFrom(this.http.post<void>(`${LEGACY_BASE}/products/${productId}/click`, {})).catch(() => {});
   }
 
@@ -66,8 +83,38 @@ export class ProductAnalyticsService {
   /** Prepared — wire when purchases are measured. */
   recordPurchase(productId: string): void { this.record(productId, 'purchase'); }
 
+  /**
+   * TEMP DIAG — the settings gate at the exact point the counter would be
+   * incremented. This is the final client-side enforcement boundary: even if a
+   * caller bypasses {@link AnalyticsService}'s gate, the Firestore write is
+   * refused here. `trackingEnabled` is the global kill-switch; per-metric
+   * switches gate their own events (wishlist → wishlistTracking, everything
+   * else → productClicks), matching the storefront facade.
+   */
+  private trackingAllowed(productId: string, metric: ProductMetric): boolean {
+    const settings: AnalyticsSettings = this.settingsSvc.settings();
+    // TEMP DIAG — remove after verification.
+    // eslint-disable-next-line no-console
+    console.log('Tracking Settings:', settings);
+    if (!settings.trackingEnabled) {
+      // eslint-disable-next-line no-console
+      console.log(`[Analytics GATE] Skipping analytics event — WebsiteTracking OFF (${productId}/${metric})`);
+      return false;
+    }
+    const switchField = metric === 'wishlist' ? 'wishlistTracking' : 'productClicks';
+    if (!settings[switchField]) {
+      // eslint-disable-next-line no-console
+      console.log(`[Analytics GATE] Skipping analytics event — ${switchField} OFF (${productId}/${metric})`);
+      return false;
+    }
+    // eslint-disable-next-line no-console
+    console.log(`[Analytics GATE] Tracking ${metric} click (${productId})`);
+    return true;
+  }
+
   private record(productId: string, metric: ProductMetric): void {
     this.diag('Entering record() — click event', { productId, metric });
+    if (!this.trackingAllowed(productId, metric)) return;
     if (!this.store.isEligibleUser()) {
       this.diag('Analytics SKIPPED — role not eligible (Admin/SuperAdmin/SSR)', { productId, metric });
       return;
@@ -75,7 +122,6 @@ export class ProductAnalyticsService {
     const seedCreatedAt = !this.seeded.has(productId);
     if (seedCreatedAt) this.seeded.add(productId);
     void this.commit(productId, metric, seedCreatedAt).catch(err => {
-      // eslint-disable-next-line no-console
       console.error('[Analytics DIAG] commit() rejected — full exception:', err);
     });
   }

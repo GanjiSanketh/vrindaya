@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { PLATFORM_ID } from '@angular/core';
+import { PLATFORM_ID, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import {
@@ -8,6 +8,12 @@ import {
   toLocalDateKey,
 } from './analytics-firestore.service';
 import { ProductAnalyticsService } from './product-analytics.service';
+import { AnalyticsSettingsService } from './analytics-settings.service';
+import {
+  AnalyticsSettings,
+  DEFAULT_ANALYTICS_SETTINGS,
+  SAFE_OFF_SETTINGS,
+} from './analytics-settings.model';
 import { AuthTokenStorageService } from '../services/auth-token-storage.service';
 import { MarketplaceFirebaseService } from '../../features/admin/marketplace/services/marketplace-firebase.service';
 
@@ -80,10 +86,12 @@ describe('ProductAnalyticsService', () => {
   let productRefs: ReturnType<typeof vi.fn>;
   let increment: ReturnType<typeof vi.fn>;
   let eligible: boolean;
+  let settingsSignal: ReturnType<typeof signal<AnalyticsSettings>>;
 
   beforeEach(() => {
     TestBed.resetTestingModule();
     eligible = true;
+    settingsSignal = signal<AnalyticsSettings>({ ...DEFAULT_ANALYTICS_SETTINGS });
     productRefs = vi.fn(refs);
     increment = vi.fn().mockResolvedValue(undefined);
     TestBed.configureTestingModule({
@@ -91,6 +99,13 @@ describe('ProductAnalyticsService', () => {
         ProductAnalyticsService,
         { provide: PLATFORM_ID, useValue: 'browser' },
         { provide: HttpClient, useValue: { post: vi.fn(() => ({ pipe: vi.fn() })) } },
+        {
+          provide: AnalyticsSettingsService,
+          useValue: {
+            settings: settingsSignal,
+            ensureLoaded: vi.fn().mockResolvedValue(DEFAULT_ANALYTICS_SETTINGS),
+          },
+        },
         {
           provide: AnalyticsFirestoreService,
           useValue: {
@@ -154,5 +169,33 @@ describe('ProductAnalyticsService', () => {
     await flush();
     expect(productRefs).not.toHaveBeenCalled();
     expect(increment).not.toHaveBeenCalled();
+  });
+
+  it('refuses to increment when the global tracking switch is OFF', async () => {
+    settingsSignal.set({ ...SAFE_OFF_SETTINGS });
+    const svc = TestBed.inject(ProductAnalyticsService);
+    svc.recordDetailClick('p1');
+    svc.recordFlipkartClick('p1');
+    await flush();
+    expect(productRefs).not.toHaveBeenCalled();
+    expect(increment).not.toHaveBeenCalled();
+  });
+
+  it('refuses to increment when the productClicks switch is OFF', async () => {
+    settingsSignal.set({ ...DEFAULT_ANALYTICS_SETTINGS, trackingEnabled: true, productClicks: false });
+    const svc = TestBed.inject(ProductAnalyticsService);
+    svc.recordDetailClick('p1');
+    svc.recordFlipkartClick('p1');
+    await flush();
+    expect(productRefs).not.toHaveBeenCalled();
+    expect(increment).not.toHaveBeenCalled();
+  });
+
+  it('still increments when tracking is enabled', async () => {
+    settingsSignal.set({ ...DEFAULT_ANALYTICS_SETTINGS, trackingEnabled: true, productClicks: true });
+    const svc = TestBed.inject(ProductAnalyticsService);
+    svc.recordDetailClick('p1');
+    await flush();
+    expect(increment).toHaveBeenCalledTimes(1);
   });
 });
