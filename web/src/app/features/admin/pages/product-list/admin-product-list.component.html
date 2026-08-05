@@ -143,7 +143,7 @@
                      [class.bi-chevron-down]="sortField() === 'stock' && sortDescending()"
                      [class.bi-chevron-expand]="sortField() !== 'stock'"></i>
               </th>
-              <th class="pl-th-price">Original Price</th>
+              <th class="pl-th-price">Purchase Cost</th>
               <th class="pl-th-price">Selling Price</th>
               <th class="d-none d-lg-table-cell">Category</th>
               <th class="d-none d-xl-table-cell">Status</th>
@@ -185,8 +185,8 @@
                   }
                 </td>
                 <td>
-                  @if (p.mrp) {
-                    <span class="pl-price">₹{{ p.mrp }}</span>
+                  @if (p.pricing?.purchaseCost) {
+                    <span class="pl-price">₹{{ p.pricing!.purchaseCost }}</span>
                   } @else {
                     <span class="pl-price pl-price--na">-</span>
                   }
