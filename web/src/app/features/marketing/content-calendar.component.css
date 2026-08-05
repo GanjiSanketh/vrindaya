@@ -1,0 +1,35 @@
+.cc-page { max-width: 1200px; padding: 1.75rem 2rem; }
+
+.cc-header { margin-bottom: 1.25rem; }
+
+.cc-title { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.375rem; }
+
+.cc-desc { font-size: 0.85rem; color: #6b7280; margin: 0; font-family: 'DM Sans', sans-serif; }
+
+.cc-legend { display: flex; gap: 1.25rem; margin-bottom: 1rem; flex-wrap: wrap; }
+
+.cc-legend-item { display: flex; align-items: center; gap: 0.375rem; font-size: 0.72rem; color: #6b7280; font-family: 'DM Sans', sans-serif; }
+
+.cc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+.cc-dot-post { background: #0c4a58; }
+
+.cc-dot-reel { background: #c9a54c; }
+
+.cc-dot-story { background: #22a34a; }
+
+.cc-dot-draft { background: #6b7280; }
+
+.cc-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+
+.cc-day-header { font-size: 0.68rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; padding: 0.5rem 0; font-family: 'DM Sans', sans-serif; border-bottom: 2px solid #e8ecf0; }
+
+.cc-event { border-radius: 8px; padding: 0.5rem 0.625rem; cursor: grab; transition: transform 0.15s, box-shadow 0.15s; min-height: 48px; display: flex; flex-direction: column; gap: 0.15rem; margin-bottom: 0.25rem; user-select: none; }
+
+.cc-event:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+.cc-event:active { cursor: grabbing; }
+
+.cc-event-type { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.8); font-family: 'DM Sans', sans-serif; }
+
+.cc-event-title { font-size: 0.7rem; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Sans', sans-serif; line-height: 1.2; }

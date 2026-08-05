@@ -1,0 +1,75 @@
+.cb-page { max-width: 900px; padding: 1.75rem 2rem; }
+
+.cb-header { margin-bottom: 1.5rem; }
+
+.cb-title { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.375rem; }
+
+.cb-desc { font-size: 0.85rem; color: #6b7280; margin: 0; font-family: 'DM Sans', sans-serif; }
+
+.cb-actions { margin-bottom: 1.25rem; }
+
+.cb-btn { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; border: none; border-radius: 8px; padding: 0.5rem 1.25rem; cursor: pointer; transition: background 0.18s; display: inline-flex; align-items: center; gap: 0.375rem; }
+
+.cb-btn-primary { color: #fff; background: #0c4a58; }
+
+.cb-btn-primary:hover { background: #0f6f84; }
+
+.cb-btn-secondary { color: #0c4a58; background: #e6f4f7; }
+
+.cb-btn-secondary:hover { background: #0f6f84; color: #fff; }
+
+.cb-btn i { font-size: 0.85rem; }
+
+.cb-slides { display: flex; flex-direction: column; gap: 1rem; }
+
+.cb-slide-card { display: flex; align-items: flex-start; gap: 1rem; background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); padding: 1rem; transition: box-shadow 0.15s; }
+
+.cb-slide-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+.cb-slide-number { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 700; color: #0c4a58; background: #e6f4f7; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+.cb-slide-body { flex: 1; display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+
+.cb-field { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.cb-label { font-size: 0.65rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'DM Sans', sans-serif; }
+
+.cb-input { font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: #1a1a2e; padding: 0.4rem 0.625rem; border: 1px solid #e0e4ea; border-radius: 6px; background: #fafbfc; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+
+.cb-input:focus { border-color: #0f6f84; box-shadow: 0 0 0 3px rgba(15,111,132,0.1); background: #fff; }
+
+.cb-input::placeholder { color: #9ca3af; }
+
+.cb-textarea { font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: #1a1a2e; padding: 0.4rem 0.625rem; border: 1px solid #e0e4ea; border-radius: 6px; background: #fafbfc; outline: none; resize: vertical; transition: border-color 0.15s, box-shadow 0.15s; }
+
+.cb-textarea:focus { border-color: #0f6f84; box-shadow: 0 0 0 3px rgba(15,111,132,0.1); background: #fff; }
+
+.cb-textarea::placeholder { color: #9ca3af; }
+
+.cb-image-placeholder { width: 100%; aspect-ratio: 1; background: #f0f2f5; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.375rem; color: #9ca3af; border: 1px dashed #d0d4da; }
+
+.cb-image-placeholder i { font-size: 1.5rem; }
+
+.cb-image-placeholder span { font-size: 0.68rem; font-family: 'DM Sans', sans-serif; }
+
+.cb-slide-actions { display: flex; flex-direction: column; gap: 0.25rem; flex-shrink: 0; padding-top: 0.25rem; }
+
+.cb-icon-btn { background: none; border: none; cursor: pointer; color: #6b7280; padding: 0.25rem; border-radius: 4px; transition: color 0.15s, background 0.15s; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+
+.cb-icon-btn:hover { color: #0c4a58; background: #e6f4f7; }
+
+.cb-icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.cb-icon-btn:disabled:hover { color: #6b7280; background: none; }
+
+.cb-icon-danger:hover { color: #dc2626; background: #fef2f2; }
+
+.cb-summary { display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; padding: 0.75rem 1rem; background: #fff; border-radius: 10px; border: 1px solid #e8ecf0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+
+.cb-summary span { font-size: 0.78rem; font-weight: 600; color: #1a1a2e; font-family: 'DM Sans', sans-serif; }
+
+@media (max-width: 768px) {
+  .cb-slide-card { flex-direction: column; }
+  .cb-slide-number { width: 32px; height: 32px; font-size: 1.2rem; }
+  .cb-page { padding: 1rem; }
+}

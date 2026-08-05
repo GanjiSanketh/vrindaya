@@ -51,6 +51,7 @@ export const NAV_SECTIONS: NavSection[] = [
     key: 'analytics', label: 'Analytics', icon: 'bi-graph-up-arrow',
     items: [
       { label: 'Dashboard', path: 'analytics', icon: 'bi-speedometer2', exact: false },
+      { label: 'Business Intelligence', path: 'bi', icon: 'bi-lightning-fill' },
     ],
   },
   {

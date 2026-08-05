@@ -14,6 +14,7 @@ using Vrindaya.Api.Constants;
 using Vrindaya.Api.Helpers;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Services;
+using Vrindaya.Api.Services.Analytics;
 using Vrindaya.Api.Services.HeroBanners;
 using Vrindaya.Api.Services.Homepage;
 using Vrindaya.Api.Services.Products;
@@ -42,6 +43,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IAnalyticsService, AnalyticsService>();
         services.AddScoped<IAnalyticsSettingsService, AnalyticsSettingsService>();
+        services.AddScoped<IMarketingService, MarketingService>();
 
         // Singleton: wraps one lazily built, reused FirestoreDb client.
         services.AddSingleton<IFirebaseService, FirebaseService>();
@@ -61,6 +63,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInventoryService, InventoryService>();
         services.AddScoped<IPricingService, PricingService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IBIService, BIService>();
 
         // Sales
         services.AddScoped<ISaleRepository, SaleRepository>();

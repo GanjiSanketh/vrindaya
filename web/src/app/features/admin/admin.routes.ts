@@ -37,6 +37,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'analytics-settings', loadComponent: () => import('./pages/analytics-settings/analytics-settings.component').then(m => m.AnalyticsSettingsComponent) },
       { path: 'analytics', loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent) },
       { path: 'analytics/product/:id', loadComponent: () => import('./pages/analytics/product-analytics-detail.component').then(m => m.ProductAnalyticsDetailComponent) },
+      { path: 'bi', loadComponent: () => import('./pages/bi-dashboard/bi-dashboard.component').then(m => m.BIDashboardComponent) },
 
       { path: 'marketplace', loadChildren: () => import('./marketplace/marketplace.routes').then(m => m.MARKETPLACE_ROUTES) },
       { path: '**', redirectTo: 'products' },

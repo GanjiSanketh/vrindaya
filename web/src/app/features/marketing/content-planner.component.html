@@ -1,0 +1,64 @@
+<div class="cc-page">
+  <div class="md-header">
+    <div class="cc-title-row">
+      <div>
+        <h1 class="md-title"><i class="bi bi-lightbulb cc-title-icon"></i> Content Planner</h1>
+        <p class="md-desc">AI-generated content ideas across platforms with captions and hashtags.</p>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="cc-loading-spinner">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-danger" role="alert">
+      {{ error() }}
+    </div>
+  }
+
+  <div class="row g-3 mt-4">
+    @for (idea of contentIdeas(); track idea.title) {
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="cc-card">
+          <div class="cc-card-head">
+            <h5 class="cc-card-title"><i class="bi bi-lightbulb"></i> {{ idea.title }}</h5>
+            <span class="cc-confidence-badge" [style.background]="confidenceColor(idea.confidence)">
+              {{ idea.confidence }}%
+            </span>
+          </div>
+          <div class="cc-card-body">
+            <p class="cc-card-desc">{{ idea.description }}</p>
+            <div class="cc-card-meta">
+              <span class="cc-meta-item">
+                <i class="bi bi-globe"></i>
+                {{ idea.platform }}
+              </span>
+              <span class="cc-meta-item">
+                <i class="bi bi-type"></i>
+                {{ idea.contentType }}
+              </span>
+              <span class="cc-meta-item">
+                <i class="bi bi-people"></i>
+                {{ idea.targetAudience }}
+              </span>
+            </div>
+            <div class="cc-caption-block">
+              <span class="cc-caption-label">Caption</span>
+              <p class="cc-caption-text">{{ idea.suggestedCaption }}</p>
+            </div>
+            <div class="cc-hashtag-block">
+              <span class="cc-caption-label">Hashtags</span>
+              <p class="cc-hashtag-text">{{ idea.suggestedHashtags }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

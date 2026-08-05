@@ -44,18 +44,18 @@ export class MarketingService {
     );
   }
 
-  generateInstagramPost(productName: string, productDesc: string, tone: string): Observable<GenerateResult> {
-    const prompt = `Write an Instagram post for "${productName}". Description: ${productDesc}. Tone: ${tone}. Include: catchy caption, 3-5 relevant hashtags, engagement question. Keep it under 2200 characters.`;
+  generateInstagramPost(productName: string, productDesc: string, tone: string, emojis = true, hashtags = true): Observable<GenerateResult> {
+    const prompt = `Write an Instagram post for "${productName}". Description: ${productDesc}. Tone: ${tone}. Include: catchy caption, 3-5 relevant hashtags, engagement question. Emojis: ${emojis ? 'use tasteful emojis' : 'no emojis'}. Hashtags: ${hashtags ? 'include 5 relevant hashtags' : 'no hashtags'}. Keep it under 2200 characters.`;
     return this.unwrap(this.ai.generate(prompt));
   }
 
-  generateInstagramReel(productName: string, productDesc: string, tone: string): Observable<GenerateResult> {
-    const prompt = `Write an Instagram Reel script for "${productName}". Description: ${productDesc}. Tone: ${tone}. Include: hook (first 3 sec), visual directions, text overlay ideas, audio suggestion, CTA. Keep under 60 seconds script.`;
+  generateInstagramReel(productName: string, productDesc: string, tone: string, audience = ''): Observable<GenerateResult> {
+    const prompt = `Write an Instagram Reel script for "${productName}". Description: ${productDesc}. Tone: ${tone}. Target audience: ${audience || 'general'}. Include: hook (first 3 sec), visual directions, text overlay ideas, audio suggestion, CTA. Keep under 60 seconds script.`;
     return this.unwrap(this.ai.generate(prompt));
   }
 
-  generateFacebookPost(productName: string, productDesc: string, tone: string): Observable<GenerateResult> {
-    const prompt = `Write a Facebook post for "${productName}". Description: ${productDesc}. Tone: ${tone}. Include: engaging headline, body text (2-3 paragraphs), 3 hashtags, CTA. Keep it conversational and shareable.`;
+  generateFacebookPost(productName: string, productDesc: string, tone: string, hashtags = true, cta = 'Shop Now'): Observable<GenerateResult> {
+    const prompt = `Write a Facebook post for "${productName}". Description: ${productDesc}. Tone: ${tone}. Hashtags: ${hashtags ? 'include 3 relevant hashtags' : 'no hashtags'}. Primary CTA: ${cta}. Include: engaging headline, body text (2-3 paragraphs), CTA. Keep it conversational and shareable.`;
     return this.unwrap(this.ai.generate(prompt));
   }
 
@@ -64,13 +64,33 @@ export class MarketingService {
     return this.unwrap(this.ai.generate(prompt));
   }
 
-  generateWhatsAppCatalog(productName: string, productDesc: string, tone: string): Observable<GenerateResult> {
-    const prompt = `Write a WhatsApp catalog entry for "${productName}". Description: ${productDesc}. Tone: ${tone}. Include: short product name (max 30 chars), description (max 1000 chars), price display suggestion, CTA button text.`;
+  generateWhatsAppCatalog(productName: string, productDesc: string, tone: string, cta = 'Shop Now'): Observable<GenerateResult> {
+    const prompt = `Write a WhatsApp catalog entry for "${productName}". Description: ${productDesc}. Tone: ${tone}. Primary CTA: ${cta}. Include: short product name (max 30 chars), description (max 1000 chars), price display suggestion, CTA button text.`;
     return this.unwrap(this.ai.generate(prompt));
   }
 
-  generateCaption(productName: string, productDesc: string, tone: string): Observable<GenerateResult> {
-    const prompt = `Write a short caption for "${productName}". Description: ${productDesc}. Tone: ${tone}. Keep it under 150 characters. Make it punchy and memorable. Include emojis if appropriate.`;
+  generateCaption(productName: string, productDesc: string, tone: string, emojis = true): Observable<GenerateResult> {
+    const prompt = `Write a short caption for "${productName}". Description: ${productDesc}. Tone: ${tone}. Emojis: ${emojis ? 'use tasteful emojis' : 'no emojis'}. Keep it under 150 characters. Make it punchy and memorable.`;
+    return this.unwrap(this.ai.generate(prompt));
+  }
+
+  generateBlog(productName: string, productDesc: string, tone: string, audience: string, length: string, keywords: string): Observable<GenerateResult> {
+    const prompt = `Write a blog article draft for "${productName}". Description: ${productDesc}. Tone: ${tone}. Target audience: ${audience || 'general'}. Length: ${length}. Custom keywords: ${keywords || 'none'}. Include: search-friendly title, intro, 3-5 H2 sections with hooks, product highlights, styling tips, conclusion, CTA, meta description.`;
+    return this.unwrap(this.ai.generate(prompt));
+  }
+
+  generateFlipkart(productName: string, productDesc: string, tone: string, cta: string, keywords: string): Observable<GenerateResult> {
+    const prompt = `Write a Flipkart product description for "${productName}". Description: ${productDesc}. Tone: ${tone}. Primary CTA: ${cta}. Custom keywords: ${keywords || 'none'}. Include: compelling title (max 70 chars), short description (2-3 lines), bullet-point feature list (6-8), key highlights box, search keywords, care instructions note.`;
+    return this.unwrap(this.ai.generate(prompt));
+  }
+
+  generateLanding(productName: string, productDesc: string, tone: string, audience: string, heading: string, length: string, cta: string, keywords: string): Observable<GenerateResult> {
+    const prompt = `Write website landing page copy for "${productName}". Description: ${productDesc}. Tone: ${tone}. Target audience: ${audience || 'general'}. Length: ${length}. Primary CTA: ${cta}. Custom keywords: ${keywords || 'none'}. Structure: attention headline (${heading || 'auto-generated'}), subheadline, 3 benefit sections, proof/social signals, urgency note, final CTA button text.`;
+    return this.unwrap(this.ai.generate(prompt));
+  }
+
+  generateEmail(productName: string, productDesc: string, tone: string, subject: string, audience: string, length: string, cta: string): Observable<GenerateResult> {
+    const prompt = `Write a marketing email for "${productName}". Description: ${productDesc}. Tone: ${tone}. Target audience: ${audience || 'general'}. Length: ${length}. Primary CTA: ${cta}. Include: subject line (${subject || 'auto-generated'}), preview text, personalized greeting, opening hook, 2-3 value points, offer/benefit, single CTA button, closing P.S.`;
     return this.unwrap(this.ai.generate(prompt));
   }
 

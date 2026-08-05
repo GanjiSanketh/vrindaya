@@ -1,0 +1,311 @@
+<div class="bi-page">
+  <div class="bi-header">
+    <div>
+      <h1 class="bi-title">Business Intelligence</h1>
+      <p class="bi-sub">AI-powered insights answering: Why are sales decreasing? Which category is trending? Which product should be promoted? What campaign should be launched?</p>
+    </div>
+    <div class="bi-actions">
+      <button class="btn btn-outline-secondary btn-sm" (click)="refresh()" [disabled]="loading()">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex align-items-center gap-2 text-muted py-5">
+      <span class="spinner-border spinner-border-sm"></span> Loading BI insights…
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ error() }}</span>
+    </div>
+  } @else if (data(); as d) {
+    <!-- Key Insights Cards -->
+    <div class="row g-3 mb-4">
+      @for (insight of d.keyInsights; track insight.title) {
+        <div class="col-6 col-md-3">
+          <div class="card bi-insight-card h-100 {{ getInsightTypeClass(insight.type) }}">
+            <div class="card-body d-flex align-items-start gap-3">
+              <div class="bi-icon-wrapper" [style.background-color]="insight.color">
+                <i class="bi {{ insight.icon }} fs-4 text-white"></i>
+              </div>
+              <div class="min-w-0 flex-grow-1">
+                <h6 class="bi-insight-title mb-1">{{ insight.title }}</h6>
+                <p class="bi-insight-desc mb-1">{{ insight.description }}</p>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="bi-metric fw-semibold">{{ insight.metric }}</span>
+                  <span class="bi-trend" [class.trend-up]="insight.trendDirection === 'up'" [class.trend-down]="insight.trendDirection === 'down'" [class.trend-neutral]="insight.trendDirection === 'neutral'">
+                    <i class="bi" [class.bi-arrow-up-right]="insight.trendDirection === 'up'" [class.bi-arrow-down-right]="insight.trendDirection === 'down'" [class.bi-dash]="insight.trendDirection === 'neutral'"></i>
+                    {{ insight.trend }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Sales Trend Insight -->
+    <div class="row g-4 mb-4">
+      <div class="col-12">
+        <div class="card bi-section-card h-100">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fw-semibold">
+              <i class="bi bi-graph-down me-2 text-danger"></i>
+              Why are sales {{ d.salesTrendInsight.revenueChangePercent < 0 ? 'decreasing' : d.salesTrendInsight.revenueChangePercent > 0 ? 'increasing' : 'stable' }}?
+            </h5>
+            <span class="badge bi-severity-badge" [style.background-color]="getSeverityStyle(d.salesTrendInsight.severity).bg" [style.color]="getSeverityStyle(d.salesTrendInsight.severity).text">
+              <i class="bi {{ getSeverityStyle(d.salesTrendInsight.severity).icon }} me-1"></i>
+              {{ d.salesTrendInsight.severity }}
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="bi-stat">
+                  <div class="bi-stat-value text-danger">{{ d.salesTrendInsight.revenueChangePercent >= 0 ? '+' : '' }}{{ d.salesTrendInsight.revenueChangePercent | number:'1.1-1' }}%</div>
+                  <div class="bi-stat-label">Revenue MoM</div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="bi-stat">
+                  <div class="bi-stat-value">{{ d.salesTrendInsight.orderChangePercent >= 0 ? '+' : '' }}{{ d.salesTrendInsight.orderChangePercent | number:'1.1-1' }}%</div>
+                  <div class="bi-stat-label">Orders MoM</div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="bi-stat">
+                  <div class="bi-stat-value">{{ d.salesTrendInsight.aovChangePercent >= 0 ? '+' : '' }}{{ d.salesTrendInsight.aovChangePercent | number:'1.1-1' }}%</div>
+                  <div class="bi-stat-label">AOV MoM</div>
+                </div>
+              </div>
+            </div>
+            <p class="bi-summary">{{ d.salesTrendInsight.summary }}</p>
+            <p class="bi-root-cause"><strong>Root Cause:</strong> {{ d.salesTrendInsight.rootCause }}</p>
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <h6 class="fw-semibold mb-2"><i class="bi bi-exclamation-circle me-1"></i> Contributing Factors</h6>
+                <ul class="bi-list">
+                  @for (factor of d.salesTrendInsight.contributingFactors; track factor) {
+                    <li><i class="bi bi-dot"></i> {{ factor }}</li>
+                  }
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h6 class="fw-semibold mb-2"><i class="bi bi-check-circle me-1 text-success"></i> Recommended Actions</h6>
+                <ul class="bi-list">
+                  @for (action of d.salesTrendInsight.recommendedActions; track action) {
+                    <li><i class="bi bi-check"></i> {{ action }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Trend & Product Promotion -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-7">
+        <div class="card bi-section-card h-100">
+          <div class="card-header">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-bar-chart-line me-2 text-primary"></i> Which category is trending?</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded-3" style="background: linear-gradient(135deg, #0f6f84 0%, #0891b2 100%); color: white;">
+              <div class="bi-trending-icon"><i class="bi bi-arrow-up-circle-fill fs-1"></i></div>
+              <div>
+                <h4 class="mb-1">{{ d.categoryTrendInsight.trendingCategory }}</h4>
+                <p class="mb-0">Growing at <strong>{{ d.categoryTrendInsight.growthRate | number:'1.1-1' }}%</strong> MoM</p>
+              </div>
+            </div>
+            <div class="bi-chart-container" style="height: 280px;">
+              <canvas #categoryGrowthCanvas></canvas>
+            </div>
+            <div class="mt-3">
+              <h6 class="fw-semibold mb-2">Key Insights</h6>
+              <ul class="bi-list">
+                @for (insight of d.categoryTrendInsight.insights; track insight) {
+                  <li><i class="bi bi-lightbulb"></i> {{ insight }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card bi-section-card h-100">
+          <div class="card-header">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-star-fill me-2" style="color: #c9a54c;"></i> Which product should be promoted?</h5>
+          </div>
+          <div class="card-body">
+            @if (d.productPromotionInsight.recommendedProductName) {
+              <div class="d-flex gap-3 mb-3">
+                <div class="bi-product-thumb" [style.background-image]="'url(' + (d.productPromotionInsight.productImageUrl || 'assets/placeholder.jpg') + ')'"></div>
+                <div class="flex-grow-1">
+                  <h6 class="mb-1">{{ d.productPromotionInsight.recommendedProductName }}</h6>
+                  <p class="text-muted small mb-1">{{ d.productPromotionInsight.category }}</p>
+                  <span class="badge bi-margin-badge">Margin: {{ d.productPromotionInsight.currentMargin | number:'1.1-1' }}%</span>
+                </div>
+              </div>
+              <p class="bi-promo-reason"><strong>Why:</strong> {{ d.productPromotionInsight.promotionReason }}</p>
+              <h6 class="fw-semibold mb-2">Promotion Strategies</h6>
+              <ul class="bi-list">
+                @for (strategy of d.productPromotionInsight.promotionStrategies; track strategy) {
+                  <li><i class="bi bi-arrow-right"></i> {{ strategy }}</li>
+                }
+              </ul>
+              @if (d.productPromotionInsight.alternatives.length) {
+                <hr class="my-3">
+                <h6 class="fw-semibold mb-2">Alternative Products</h6>
+                @for (alt of d.productPromotionInsight.alternatives; track alt.productId) {
+                  <div class="d-flex align-items-center gap-2 py-1">
+                    <span class="badge bi-score-badge">{{ alt.score }}</span>
+                    <div class="flex-grow-1">
+                      <div class="small fw-medium">{{ alt.productName }}</div>
+                      <div class="small text-muted">{{ alt.reason }}</div>
+                    </div>
+                  </div>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaign Recommendation -->
+    <div class="row g-4 mb-4">
+      <div class="col-12">
+        <div class="card bi-section-card h-100">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-megaphone-fill me-2" style="color: #9b4fe0;"></i> What campaign should be launched?</h5>
+            <span class="badge bg-purple-100 text-purple-800">{{ d.campaignRecommendationInsight.campaignType }}</span>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <h4 class="fw-bold mb-2">{{ d.campaignRecommendationInsight.campaignName }}</h4>
+                <p class="text-muted mb-3">{{ d.campaignRecommendationInsight.description }}</p>
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <strong>Target Audience:</strong>
+                    <p class="mb-0">{{ d.campaignRecommendationInsight.targetAudience }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Estimated ROI:</strong>
+                    <p class="mb-0 fw-bold text-success">{{ d.campaignRecommendationInsight.estimatedROI }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Budget:</strong>
+                    <p class="mb-0">{{ d.campaignRecommendationInsight.budgetRecommendation }}</p>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <strong>Key Products:</strong>
+                  <div class="d-flex flex-wrap gap-1 mt-1">
+                    @for (product of d.campaignRecommendationInsight.keyProducts; track product) {
+                      <span class="badge bg-light text-dark">{{ product }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <h6 class="fw-semibold mb-2">Channels</h6>
+                <ul class="bi-list">
+                  @for (channel of d.campaignRecommendationInsight.channels; track channel) {
+                    <li><i class="bi bi-check"></i> {{ channel }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+            <hr class="my-3">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="fw-semibold mb-2">Success Metrics</h6>
+                <ul class="bi-list">
+                  @for (metric of d.campaignRecommendationInsight.successMetrics; track metric) {
+                    <li><i class="bi bi-target"></i> {{ metric }}</li>
+                  }
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h6 class="fw-semibold mb-2">Timeline</h6>
+                <ol class="bi-timeline">
+                  @for (step of d.campaignRecommendationInsight.timeline; track step) {
+                    <li>{{ step }}</li>
+                  }
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Trend & Product Performance -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <div class="card bi-section-card h-100">
+          <div class="card-header">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-graph-up me-2 text-primary"></i> Revenue Trend (12 Months)</h5>
+          </div>
+          <div class="card-body">
+            <div class="bi-chart-container" style="height: 300px;">
+              <canvas #revenueTrendCanvas></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card bi-section-card h-100">
+          <div class="card-header">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-trophy me-2 text-success"></i> Top Growing Products</h5>
+          </div>
+          <div class="card-body">
+            <div class="bi-chart-container" style="height: 300px;">
+              <canvas #growingProductsCanvas></canvas>
+            </div>
+            @if (!d.topGrowingProducts.length) {
+              <div class="text-center text-muted py-4">No significantly growing products this period</div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card bi-section-card h-100">
+          <div class="card-header">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-graph-down me-2 text-danger"></i> Top Declining Products</h5>
+          </div>
+          <div class="card-body">
+            <div class="bi-chart-container" style="height: 300px;">
+              <canvas #decliningProductsCanvas></canvas>
+            </div>
+            @if (!d.topDecliningProducts.length) {
+              <div class="text-center text-muted py-4">No significantly declining products this period</div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card bi-section-card h-100">
+          <div class="card-header">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-bar-chart me-2" style="color: #c9a54c;"></i> Category Growth MoM</h5>
+          </div>
+          <div class="card-body">
+            <div class="bi-chart-container" style="height: 300px;">
+              <canvas #categoryGrowthCanvas></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

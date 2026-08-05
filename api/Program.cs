@@ -1,7 +1,9 @@
 using Serilog;
+using Vrindaya.Api.Configuration;
 using Vrindaya.Api.Constants;
 using Vrindaya.Api.Extensions;
 using Vrindaya.Api.Interfaces;
+using Vrindaya.Api.Providers.OpenRouter;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +13,11 @@ builder.Host.UseSerilog((context, services, configuration) =>
 
 // ── Configuration (strongly typed Options) ────────────────────────────────────
 builder.Services.AddApplicationOptions(builder.Configuration);
+builder.Services.Configure<OpenRouterOptions>(builder.Configuration.GetSection(OpenRouterOptions.SectionName));
 
 // ── Application services (DI composition root) ───────────────────────────────
 builder.Services.AddApplicationServices();
+builder.Services.AddScoped<OpenRouterProvider>();
 
 // ── Authentication/authorization — two JWT Bearer schemes (validating
 // Firebase's ID token for the one-time /auth/login call, and this app's own

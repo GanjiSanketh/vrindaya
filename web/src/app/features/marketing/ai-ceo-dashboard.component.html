@@ -1,0 +1,387 @@
+<div class="cc-page ceo-page">
+  @if (loading()) {
+    <div class="cc-loading-spinner">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+  @if (error()) {
+    <div class="alert alert-danger" role="alert">
+      {{ error() }}
+    </div>
+  }
+  <div class="md-header">
+    <div class="cc-title-row">
+      <div>
+        <h1 class="md-title"><i class="bi bi-award-fill cc-title-icon"></i> AI CEO Dashboard</h1>
+        <p class="md-desc">Executive command center — business health, growth intelligence, and AI-driven recommendations.</p>
+      </div>
+      <div class="cc-header-actions">
+        <span class="cc-live-badge"><span class="cc-dot"></span> Live</span>
+        <span class="cc-period">Last 30 days</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-6 col-md-3">
+      <div class="cc-card cc-kpi">
+        <div class="cc-kpi-top">
+          <span class="cc-kpi-icon" style="background: #0f6f841a; color: #0f6f84">
+            <i class="bi bi-heart-pulse"></i>
+          </span>
+          <span class="cc-kpi-trend cc-trend-up">
+            <i class="bi bi-arrow-up-right"></i>
+            +5.2%
+          </span>
+        </div>
+        <div class="cc-kpi-value">92</div>
+        <div class="cc-kpi-label">Business Health</div>
+        <div class="cc-kpi-spark">
+          <span style="height: 28%; background: #0f6f84"></span>
+          <span style="height: 35%; background: #0f6f84"></span>
+          <span style="height: 42%; background: #0f6f84"></span>
+          <span style="height: 55%; background: #0f6f84"></span>
+          <span style="height: 68%; background: #0f6f84"></span>
+          <span style="height: 74%; background: #0f6f84"></span>
+          <span style="height: 82%; background: #0f6f84"></span>
+          <span style="height: 92%; background: #0f6f84"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="cc-card cc-kpi">
+        <div class="cc-kpi-top">
+          <span class="cc-kpi-icon" style="background: #22a34a1a; color: #22a34a">
+            <i class="bi bi-graph-up-arrow"></i>
+          </span>
+          <span class="cc-kpi-trend cc-trend-up">
+            <i class="bi bi-arrow-up-right"></i>
+            +8.7%
+          </span>
+        </div>
+        <div class="cc-kpi-value">87</div>
+        <div class="cc-kpi-label">Growth Score</div>
+        <div class="cc-kpi-spark">
+          <span style="height: 32%; background: #22a34a"></span>
+          <span style="height: 45%; background: #22a34a"></span>
+          <span style="height: 52%; background: #22a34a"></span>
+          <span style="height: 61%; background: #22a34a"></span>
+          <span style="height: 69%; background: #22a34a"></span>
+          <span style="height: 76%; background: #22a34a"></span>
+          <span style="height: 83%; background: #22a34a"></span>
+          <span style="height: 87%; background: #22a34a"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="cc-card cc-kpi">
+        <div class="cc-kpi-top">
+          <span class="cc-kpi-icon" style="background: #c9a54c1a; color: #c9a54c">
+            <i class="bi bi-megaphone"></i>
+          </span>
+          <span class="cc-kpi-trend cc-trend-up">
+            <i class="bi bi-arrow-up-right"></i>
+            +3.4%
+          </span>
+        </div>
+        <div class="cc-kpi-value">84</div>
+        <div class="cc-kpi-label">Marketing Score</div>
+        <div class="cc-kpi-spark">
+          <span style="height: 38%; background: #c9a54c"></span>
+          <span style="height: 44%; background: #c9a54c"></span>
+          <span style="height: 51%; background: #c9a54c"></span>
+          <span style="height: 58%; background: #c9a54c"></span>
+          <span style="height: 65%; background: #c9a54c"></span>
+          <span style="height: 72%; background: #c9a54c"></span>
+          <span style="height: 79%; background: #c9a54c"></span>
+          <span style="height: 84%; background: #c9a54c"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="cc-card cc-kpi">
+        <div class="cc-kpi-top">
+          <span class="cc-kpi-icon" style="background: #06b6d41a; color: #06b6d4">
+            <i class="bi bi-currency-rupee"></i>
+          </span>
+          <span class="cc-kpi-trend cc-trend-up">
+            <i class="bi bi-arrow-up-right"></i>
+            +14.2%
+          </span>
+        </div>
+        <div class="cc-kpi-value">₹2.47 Cr</div>
+        <div class="cc-kpi-label">Revenue</div>
+        <div class="cc-kpi-spark">
+          <span style="height: 25%; background: #06b6d4"></span>
+          <span style="height: 38%; background: #06b6d4"></span>
+          <span style="height: 44%; background: #06b6d4"></span>
+          <span style="height: 52%; background: #06b6d4"></span>
+          <span style="height: 61%; background: #06b6d4"></span>
+          <span style="height: 70%; background: #06b6d4"></span>
+          <span style="height: 82%; background: #06b6d4"></span>
+          <span style="height: 90%; background: #06b6d4"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="cc-card cc-kpi">
+        <div class="cc-kpi-top">
+          <span class="cc-kpi-icon" style="background: #8b5cf61a; color: #8b5cf6">
+            <i class="bi bi-bag-check"></i>
+          </span>
+          <span class="cc-kpi-trend cc-trend-up">
+            <i class="bi bi-arrow-up-right"></i>
+            +11.8%
+          </span>
+        </div>
+        <div class="cc-kpi-value">3,847</div>
+        <div class="cc-kpi-label">Orders</div>
+        <div class="cc-kpi-spark">
+          <span style="height: 30%; background: #8b5cf6"></span>
+          <span style="height: 42%; background: #8b5cf6"></span>
+          <span style="height: 48%; background: #8b5cf6"></span>
+          <span style="height: 56%; background: #8b5cf6"></span>
+          <span style="height: 64%; background: #8b5cf6"></span>
+          <span style="height: 73%; background: #8b5cf6"></span>
+          <span style="height: 81%; background: #8b5cf6"></span>
+          <span style="height: 88%; background: #8b5cf6"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="cc-card cc-kpi">
+        <div class="cc-kpi-top">
+          <span class="cc-kpi-icon" style="background: #ec48991a; color: #ec4899">
+            <i class="bi bi-rocket-takeoff"></i>
+          </span>
+          <span class="cc-kpi-trend cc-trend-up">
+            <i class="bi bi-arrow-up-right"></i>
+            +6.3%
+          </span>
+        </div>
+        <div class="cc-kpi-value">91%</div>
+        <div class="cc-kpi-label">Campaign Success</div>
+        <div class="cc-kpi-spark">
+          <span style="height: 40%; background: #ec4899"></span>
+          <span style="height: 52%; background: #ec4899"></span>
+          <span style="height: 61%; background: #ec4899"></span>
+          <span style="height: 68%; background: #ec4899"></span>
+          <span style="height: 74%; background: #ec4899"></span>
+          <span style="height: 80%; background: #ec4899"></span>
+          <span style="height: 86%; background: #ec4899"></span>
+          <span style="height: 91%; background: #ec4899"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="cc-card cc-kpi">
+        <div class="cc-kpi-top">
+          <span class="cc-kpi-icon" style="background: #f59e0b1a; color: #f59e0b">
+            <i class="bi bi-people"></i>
+          </span>
+          <span class="cc-kpi-trend cc-trend-up">
+            <i class="bi bi-arrow-up-right"></i>
+            +12.5%
+          </span>
+        </div>
+        <div class="cc-kpi-value">248K</div>
+        <div class="cc-kpi-label">Followers</div>
+        <div class="cc-kpi-spark">
+          <span style="height: 28%; background: #f59e0b"></span>
+          <span style="height: 36%; background: #f59e0b"></span>
+          <span style="height: 44%; background: #f59e0b"></span>
+          <span style="height: 53%; background: #f59e0b"></span>
+          <span style="height: 62%; background: #f59e0b"></span>
+          <span style="height: 71%; background: #f59e0b"></span>
+          <span style="height: 80%; background: #f59e0b"></span>
+          <span style="height: 88%; background: #f59e0b"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="cc-card cc-kpi">
+        <div class="cc-kpi-top">
+          <span class="cc-kpi-icon" style="background: #ef44441a; color: #ef4444">
+            <i class="bi bi-percent"></i>
+          </span>
+          <span class="cc-kpi-trend cc-trend-up">
+            <i class="bi bi-arrow-up-right"></i>
+            +0.8%
+          </span>
+        </div>
+        <div class="cc-kpi-value">3.24%</div>
+        <div class="cc-kpi-label">Conversion Rate</div>
+        <div class="cc-kpi-spark">
+          <span style="height: 35%; background: #ef4444"></span>
+          <span style="height: 40%; background: #ef4444"></span>
+          <span style="height: 45%; background: #ef4444"></span>
+          <span style="height: 50%; background: #ef4444"></span>
+          <span style="height: 55%; background: #ef4444"></span>
+          <span style="height: 60%; background: #ef4444"></span>
+          <span style="height: 65%; background: #ef4444"></span>
+          <span style="height: 70%; background: #ef4444"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-4">
+    <div class="col-12 col-lg-4">
+      <div class="cc-card cc-forecast">
+        <div class="cc-forecast-top">
+          <span class="cc-forecast-icon" [style.background]="weeklyForecast().color + '1a'" [style.color]="weeklyForecast().color">
+            <i class="bi {{ weeklyForecast().icon }}"></i>
+          </span>
+          <span class="cc-forecast-trend" [class.cc-trend-up]="weeklyForecast().trendUp" [class.cc-trend-down]="!weeklyForecast().trendUp">
+            <i class="bi {{ weeklyForecast().trendUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right' }}"></i>
+            {{ weeklyForecast().trend }}
+          </span>
+        </div>
+        <div class="cc-forecast-value">{{ weeklyForecast().value }}</div>
+        <div class="cc-forecast-label">{{ weeklyForecast().label }}</div>
+        <div class="cc-forecast-spark">
+          @for (h of weeklyForecast().spark; track $index) {
+            <span [style.height.%]="h" [style.background]="weeklyForecast().color"></span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="cc-card cc-forecast">
+        <div class="cc-forecast-top">
+          <span class="cc-forecast-icon" [style.background]="monthlyForecast().color + '1a'" [style.color]="monthlyForecast().color">
+            <i class="bi {{ monthlyForecast().icon }}"></i>
+          </span>
+          <span class="cc-forecast-trend" [class.cc-trend-up]="monthlyForecast().trendUp" [class.cc-trend-down]="!monthlyForecast().trendUp">
+            <i class="bi {{ monthlyForecast().trendUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right' }}"></i>
+            {{ monthlyForecast().trend }}
+          </span>
+        </div>
+        <div class="cc-forecast-value">{{ monthlyForecast().value }}</div>
+        <div class="cc-forecast-label">{{ monthlyForecast().label }}</div>
+        <div class="cc-forecast-spark">
+          @for (h of monthlyForecast().spark; track $index) {
+            <span [style.height.%]="h" [style.background]="monthlyForecast().color"></span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="cc-card cc-forecast">
+        <div class="cc-forecast-top">
+          <span class="cc-forecast-icon" [style.background]="quarterlyForecast().color + '1a'" [style.color]="quarterlyForecast().color">
+            <i class="bi {{ quarterlyForecast().icon }}"></i>
+          </span>
+          <span class="cc-forecast-trend" [class.cc-trend-up]="quarterlyForecast().trendUp" [class.cc-trend-down]="!quarterlyForecast().trendUp">
+            <i class="bi {{ quarterlyForecast().trendUp ? 'bi-arrow-up-right' : 'bi-arrow-down-right' }}"></i>
+            {{ quarterlyForecast().trend }}
+          </span>
+        </div>
+        <div class="cc-forecast-value">{{ quarterlyForecast().value }}</div>
+        <div class="cc-forecast-label">{{ quarterlyForecast().label }}</div>
+        <div class="cc-forecast-spark">
+          @for (h of quarterlyForecast().spark; track $index) {
+            <span [style.height.%]="h" [style.background]="quarterlyForecast().color"></span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="cc-card cc-summary">
+        <div class="cc-summary-top">
+          <span class="cc-summary-icon" [style.background]="expectedRevenue().color + '1a'" [style.color]="expectedRevenue().color">
+            <i class="bi {{ expectedRevenue().icon }}"></i>
+          </span>
+          <div class="cc-confidence-badge" [style.background]="confidenceColor(expectedRevenue().confidence)">
+            {{ expectedRevenue().confidence }}% confidence
+          </div>
+        </div>
+        <div class="cc-summary-value">{{ expectedRevenue().value }}</div>
+        <div class="cc-summary-label">{{ expectedRevenue().label }}</div>
+        <div class="cc-summary-sub">{{ expectedRevenue().subValue }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="cc-card cc-summary">
+        <div class="cc-summary-top">
+          <span class="cc-summary-icon" [style.background]="expectedGrowth().color + '1a'" [style.color]="expectedGrowth().color">
+            <i class="bi {{ expectedGrowth().icon }}"></i>
+          </span>
+          <div class="cc-confidence-badge" [style.background]="confidenceColor(expectedGrowth().confidence)">
+            {{ expectedGrowth().confidence }}% confidence
+          </div>
+        </div>
+        <div class="cc-summary-value">{{ expectedGrowth().value }}</div>
+        <div class="cc-summary-label">{{ expectedGrowth().label }}</div>
+        <div class="cc-summary-sub">{{ expectedGrowth().subValue }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="cc-card cc-summary">
+        <div class="cc-summary-top">
+          <span class="cc-summary-icon" [style.background]="confidenceScore().color + '1a'" [style.color]="confidenceScore().color">
+            <i class="bi {{ confidenceScore().icon }}"></i>
+          </span>
+          <div class="cc-confidence-badge" [style.background]="confidenceColor(confidenceScore().confidence)">
+            {{ confidenceScore().confidence }}% accuracy
+          </div>
+        </div>
+        <div class="cc-summary-value">{{ confidenceScore().value }}</div>
+        <div class="cc-summary-label">{{ confidenceScore().label }}</div>
+        <div class="cc-summary-sub">{{ confidenceScore().subValue }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="row g-3 mt-4">
+    <div class="col-12">
+      <div class="cc-card">
+        <div class="cc-card-head">
+          <h5 class="cc-card-title"><i class="bi bi-lightbulb"></i> AI Recommendations</h5>
+          <span class="cc-card-sub">Top 5 actions ranked by predicted impact</span>
+        </div>
+        <div class="cc-rec-list">
+          @for (rec of recommendations(); track rec.title) {
+            <div class="cc-rec-item">
+              <div class="cc-rec-icon" [style.background]="rec.color + '1a'" [style.color]="rec.color">
+                <i class="bi {{ rec.icon }}"></i>
+              </div>
+              <div class="cc-rec-content">
+                <div class="cc-rec-header">
+                  <h6 class="cc-rec-title">{{ rec.title }}</h6>
+                  <span class="cc-rec-priority" [class]="rec.priority">{{ rec.priority | titlecase }}</span>
+                </div>
+                <p class="cc-rec-description">{{ rec.description }}</p>
+                <div class="cc-rec-impact">
+                  <i class="bi bi-graph-up-arrow"></i>
+                  <span>{{ rec.impact }}</span>
+                </div>
+                <div class="cc-rec-meta">
+                  <span class="cc-rec-confidence">
+                    <i class="bi bi-shield-check"></i>
+                    {{ rec.confidence }}% confidence
+                  </span>
+                  <span class="cc-rec-action">{{ rec.action }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>

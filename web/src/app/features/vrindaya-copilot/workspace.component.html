@@ -1,0 +1,151 @@
+<div class="copilot-layout">
+  <header class="copilot-header">
+    <div class="header-section header-start">
+      <span class="header-brand">Vrindaya Copilot</span>
+    </div>
+    <div class="header-section header-center">
+      <div class="header-group">
+        <label class="header-label" for="product-select">Product</label>
+        <select id="product-select" class="header-select">
+          <option value="">Select product</option>
+        </select>
+      </div>
+      <div class="header-group">
+        <label class="header-label" for="content-type-select">Content Type</label>
+        <select id="content-type-select" class="header-select">
+          <option value="">Select content type</option>
+        </select>
+      </div>
+      <div class="header-group">
+        <label class="header-label" for="platform-select">Platform</label>
+        <select id="platform-select" class="header-select">
+          <option value="">Select platform</option>
+        </select>
+      </div>
+    </div>
+    <div class="header-section header-end gap-2">
+      <button class="btn-new-chat">New Chat</button>
+      <button class="btn btn-outline-light btn-execute">Execute Campaign</button>
+    </div>  </header>
+
+  <div class="copilot-body">
+    <main class="copilot-conversation d-flex flex-column">
+      <div class="conversation-area flex-grow-1 overflow-auto p-4">
+        <div class="conversation-empty text-center mb-4">
+          <h2 class="empty-title">Welcome to Vrindaya Copilot</h2>
+          <p class="empty-subtitle">Ask anything to get started</p>
+        </div>
+
+        <div class="suggested-prompts d-grid gap-2 mb-4" style="max-width: 640px; margin: 0 auto; grid-template-columns: 1fr 1fr;">
+          <button class="btn btn-outline-secondary w-100 text-start">Create Instagram Reel</button>
+          <button class="btn btn-outline-secondary w-100 text-start">Create Instagram Post</button>
+          <button class="btn btn-outline-secondary w-100 text-start">Create Carousel</button>
+          <button class="btn btn-outline-secondary w-100 text-start">Create Story</button>
+          <button class="btn btn-outline-secondary w-100 text-start">Fashion Awareness</button>
+          <button class="btn btn-outline-secondary w-100 text-start">Product Launch</button>
+        </div>
+
+        <div class="chat-thread d-flex flex-column gap-3" style="max-width: 760px; margin: 0 auto;">
+          @for (msg of messages(); track msg.id) {
+            @if (msg.role === 'user') {
+              <div class="chat-message user-message d-flex justify-content-end">
+                <div class="message-bubble bg-dark text-white rounded-3 p-3 ms-5">
+                  {{ msg.message }}
+                </div>
+              </div>
+            } @else {
+              <div class="chat-message ai-message d-flex">
+                <div class="ai-avatar rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                  <i class="bi bi-stars"></i>
+                </div>
+                <div class="message-bubble bg-white border shadow-sm rounded-3 p-3 ms-2">
+                  {{ msg.message }}
+                </div>
+              </div>
+            }
+          }
+
+          @if (isThinking()) {
+            <div class="chat-message ai-message d-flex">
+              <div class="ai-avatar rounded-circle bg-dark text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                <i class="bi bi-stars"></i>
+              </div>
+              <div class="message-bubble bg-white border shadow-sm rounded-3 p-3 ms-2 d-flex align-items-center gap-2">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span>Thinking...</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="chat-input-area border-top bg-white p-3 flex-shrink-0" style="max-width: 760px; width: 100%; margin: 0 auto;">
+        <div class="input-group">
+          <input
+            #messageInput
+            type="text"
+            class="form-control"
+            placeholder="Type your message..."
+            aria-label="Message"
+            (keyup.enter)="sendMessage(messageInput.value); messageInput.value = ''"
+          />
+          <button
+            class="btn btn-dark"
+            type="button"
+            aria-label="Send"
+            (click)="sendMessage(messageInput.value); messageInput.value = ''"
+          >
+            <i class="bi bi-send"></i>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="copilot-thinking-panel">
+      <div class="thinking-card">
+        <div class="thinking-card-header">
+          <h4 class="thinking-card-title">AI Thinking</h4>
+        </div>
+        <div class="thinking-card-body">
+          <div class="thinking-section">
+            <span class="thinking-label">Current Task</span>
+            <span class="thinking-value">Idle</span>
+          </div>
+          <div class="thinking-section">
+            <span class="thinking-label">Reasoning</span>
+            <div class="thinking-steps">
+              <div class="thinking-step">No steps yet</div>
+            </div>
+          </div>
+          <div class="thinking-section">
+            <span class="thinking-label">Token Usage</span>
+            <span class="thinking-value">0 / 0</span>
+          </div>
+          <div class="thinking-section">
+            <span class="thinking-label">Elapsed Time</span>
+            <span class="thinking-value">00:00</span>
+          </div>
+          <div class="thinking-section">
+            <span class="thinking-label">Status</span>
+            <span class="thinking-status idle">Idle</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="copilot-output">
+    <div class="output-tabs">
+      <button class="output-tab active">Response</button>
+      <button class="output-tab">Strategy</button>
+      <button class="output-tab">Content</button>
+      <button class="output-tab">Code</button>
+      <button class="output-tab">Review</button>
+    </div>
+    <div class="output-content">
+      <div class="output-pane">
+        <div class="output-placeholder">Select a tab to view content</div>
+      </div>
+    </div>
+  </footer>
+</div>

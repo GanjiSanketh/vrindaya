@@ -1,0 +1,51 @@
+.ms-page { max-width: 800px; padding: 1.75rem 2rem; }
+
+.ms-header { margin-bottom: 1.75rem; }
+
+.ms-title { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.375rem; }
+
+.ms-desc { font-size: 0.85rem; color: #6b7280; margin: 0; font-family: 'DM Sans', sans-serif; }
+
+.ms-layout { display: flex; flex-direction: column; gap: 1rem; }
+
+.ms-card { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); padding: 1.5rem; }
+
+.ms-section { margin-bottom: 1.5rem; }
+
+.ms-section:last-child { margin-bottom: 0; }
+
+.ms-section-title { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; color: #0c4a58; margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e8ecf0; }
+
+.ms-field { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1rem; }
+
+.ms-label { font-size: 0.72rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'DM Sans', sans-serif; }
+
+.ms-input { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: #1a1a2e; padding: 0.5625rem 0.75rem; border: 1px solid #e0e4ea; border-radius: 8px; background: #fafbfc; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+
+.ms-input:focus { border-color: #0f6f84; box-shadow: 0 0 0 3px rgba(15,111,132,0.1); background: #fff; }
+
+.ms-input::placeholder { color: #9ca3af; }
+
+.ms-input option { background: #fff; color: #1a1a2e; }
+
+.ms-slider { width: 100%; accent-color: #0c4a58; cursor: pointer; }
+
+.ms-slider-value { font-size: 0.78rem; font-weight: 600; color: #0c4a58; font-family: 'DM Sans', sans-serif; }
+
+.ms-textarea { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: #1a1a2e; padding: 0.625rem 0.75rem; border: 1px solid #e0e4ea; border-radius: 8px; background: #fafbfc; outline: none; resize: vertical; transition: border-color 0.15s, box-shadow 0.15s; font-family: 'DM Sans', sans-serif; }
+
+.ms-textarea:focus { border-color: #0f6f84; box-shadow: 0 0 0 3px rgba(15,111,132,0.1); background: #fff; }
+
+.ms-textarea::placeholder { color: #9ca3af; }
+
+.ms-actions { display: flex; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid #e8ecf0; margin-top: 0.5rem; }
+
+.ms-btn { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: #fff; background: #0c4a58; border: none; border-radius: 8px; padding: 0.5625rem 1.25rem; cursor: pointer; transition: background 0.18s; display: inline-flex; align-items: center; gap: 0.375rem; }
+
+.ms-btn:hover { background: #0f6f84; }
+
+.ms-btn i { font-size: 0.9rem; }
+
+@media (max-width: 640px) {
+  .ms-page { padding: 1rem; }
+}

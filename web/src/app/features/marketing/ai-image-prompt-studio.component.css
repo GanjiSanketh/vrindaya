@@ -1,0 +1,66 @@
+.ips-page { max-width: 1400px; padding: 1.75rem 2rem; }
+
+.ips-header { margin-bottom: 1.75rem; }
+
+.ips-title { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.375rem; }
+
+.ips-desc { font-size: 0.85rem; color: #6b7280; margin: 0; font-family: 'DM Sans', sans-serif; }
+
+.ips-layout { display: grid; grid-template-columns: 55% 45%; gap: 1.5rem; align-items: start; }
+
+.ips-panel-left { display: flex; flex-direction: column; gap: 1rem; }
+
+.ips-panel-right { display: flex; flex-direction: column; gap: 1rem; }
+
+.ips-section { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); padding: 1.25rem; }
+
+.ips-section-title { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600; color: #0c4a58; margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e8ecf0; }
+
+.ips-field { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 1rem; }
+
+.ips-field:last-child { margin-bottom: 0; }
+
+.ips-label { font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'DM Sans', sans-serif; }
+
+.ips-input { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: #1a1a2e; padding: 0.5rem 0.75rem; border: 1px solid #e0e4ea; border-radius: 8px; background: #fafbfc; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+
+.ips-input:focus { border-color: #0f6f84; box-shadow: 0 0 0 3px rgba(15,111,132,0.1); background: #fff; }
+
+.ips-input::placeholder { color: #9ca3af; }
+
+.ips-input option { background: #fff; color: #1a1a2e; }
+
+.ips-textarea { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: #1a1a2e; padding: 0.5rem 0.75rem; border: 1px solid #e0e4ea; border-radius: 8px; background: #fafbfc; outline: none; resize: vertical; transition: border-color 0.15s, box-shadow 0.15s; }
+
+.ips-textarea:focus { border-color: #0f6f84; box-shadow: 0 0 0 3px rgba(15,111,132,0.1); background: #fff; }
+
+.ips-textarea::placeholder { color: #9ca3af; }
+
+.ips-radio-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.ips-radio { display: flex; align-items: center; gap: 0.375rem; cursor: pointer; font-size: 0.78rem; color: #1a1a2e; font-family: 'DM Sans', sans-serif; }
+
+.ips-radio input[type="radio"] { accent-color: #0c4a58; }
+
+.ips-actions { display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid #e8ecf0; margin-top: 0.5rem; }
+
+.ips-btn { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; border: none; border-radius: 8px; padding: 0.5rem 1.25rem; cursor: pointer; transition: background 0.18s; display: inline-flex; align-items: center; gap: 0.375rem; }
+
+.ips-btn-primary { color: #fff; background: #0c4a58; }
+
+.ips-btn-primary:hover { background: #0f6f84; }
+
+.ips-btn-secondary { color: #0c4a58; background: #e6f4f7; }
+
+.ips-btn-secondary:hover { background: #0f6f84; color: #fff; }
+
+.ips-btn i { font-size: 0.85rem; }
+
+.ips-preview { background: #1a1a2e; border-radius: 10px; padding: 1rem; overflow-x: auto; }
+
+.ips-preview-text { font-family: 'DM Sans', sans-serif; font-size: 0.78rem; color: #e0e4ea; margin: 0; white-space: pre-wrap; line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .ips-layout { grid-template-columns: 1fr; }
+  .ips-page { padding: 1rem; }
+}

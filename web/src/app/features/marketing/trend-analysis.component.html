@@ -1,0 +1,48 @@
+<div class="cc-page">
+  <div class="md-header">
+    <div class="cc-title-row">
+      <div>
+        <h1 class="md-title"><i class="bi bi-graph-up cc-title-icon"></i> Trend Analysis</h1>
+        <p class="md-desc">Revenue, orders, customers and growth trends across periods.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-4">
+    <div class="col-12">
+      <div class="cc-card">
+        <div class="cc-card-head">
+          <h5 class="cc-card-title"><i class="bi bi-table"></i> Trend Data</h5>
+          <span class="cc-card-sub">Period breakdown</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover cc-table mb-0">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Revenue</th>
+                <th>Orders</th>
+                <th>Customers</th>
+                <th>Growth %</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of trends(); track t.period) {
+                <tr>
+                  <td>{{ t.period }}</td>
+                  <td>{{ t.revenue | currency:'₹':'symbol':'1.0-0' }}</td>
+                  <td>{{ t.orders | number }}</td>
+                  <td>{{ t.customers | number }}</td>
+                  <td [class.cc-trend-up]="t.growthPercentage >= 0" [class.cc-trend-down]="t.growthPercentage < 0">
+                    <i class="bi {{ t.growthPercentage >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right' }}"></i>
+                    {{ t.growthPercentage }}%
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

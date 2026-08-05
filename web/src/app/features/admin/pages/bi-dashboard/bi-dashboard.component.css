@@ -1,0 +1,266 @@
+.bi-page {
+  padding: 1.5rem;
+}
+
+.bi-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.bi-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.25rem;
+}
+
+.bi-sub {
+  color: #6b7280;
+  margin: 0;
+  font-size: 0.95rem;
+  max-width: 700px;
+}
+
+.bi-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Insight Cards */
+.bi-insight-card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-left: 4px solid;
+}
+
+.bi-insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.bi-insight-card.insight-critical { border-left-color: #dc2626; }
+.bi-insight-card.insight-warning { border-left-color: #d97706; }
+.bi-insight-card.insight-opportunity { border-left-color: #059669; }
+.bi-insight-card.insight-info { border-left-color: #2563eb; }
+
+.bi-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bi-insight-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.bi-insight-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.bi-metric {
+  font-size: 0.9rem;
+}
+
+.bi-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.bi-trend.trend-up { color: #059669; }
+.bi-trend.trend-down { color: #dc2626; }
+.bi-trend.trend-neutral { color: #6b7280; }
+
+/* Section Cards */
+.bi-section-card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.bi-section-card .card-header {
+  background: transparent;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.25rem;
+}
+
+.bi-section-card .card-body {
+  padding: 1.25rem;
+}
+
+/* Stats */
+.bi-stat {
+  text-align: center;
+  padding: 0.75rem;
+}
+
+.bi-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.bi-stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bi-summary {
+  font-size: 0.95rem;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.bi-root-cause {
+  font-size: 0.9rem;
+  color: #4b5563;
+  background: #f9fafb;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+/* Lists */
+.bi-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bi-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.bi-list li i {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+}
+
+.bi-list li i.bi-lightbulb { color: #c9a54c; }
+.bi-list li i.bi-arrow-right { color: #0f6f84; }
+.bi-list li i.bi-check { color: #22a34a; }
+.bi-list li i.bi-dot { color: #9ca3af; }
+.bi-list li i.bi-target { color: #9b4fe0; }
+
+.bi-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: timeline;
+}
+
+.bi-timeline li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.bi-timeline li::before {
+  counter-increment: timeline;
+  content: counter(timeline);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  background: #9b4fe0;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Badges */
+.bi-severity-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.35rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.bi-margin-badge {
+  background: #c9a54c;
+  color: white;
+  font-size: 0.7rem;
+}
+
+.bi-score-badge {
+  background: #0f6f84;
+  color: white;
+  font-size: 0.7rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Product Thumb */
+.bi-product-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.bi-promo-reason {
+  font-size: 0.85rem;
+  color: #4b5563;
+  background: #fef3c7;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+/* Chart Containers */
+.bi-chart-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bi-page {
+    padding: 1rem;
+  }
+
+  .bi-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bi-actions {
+    justify-content: flex-end;
+  }
+
+  .bi-stat-value {
+    font-size: 1.25rem;
+  }
+}

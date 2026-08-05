@@ -1,0 +1,56 @@
+.cm-page { max-width: 1200px; padding: 1.75rem 2rem; }
+
+.cm-header { margin-bottom: 1.75rem; }
+
+.cm-title { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 700; color: #0c4a58; margin: 0 0 0.375rem; }
+
+.cm-desc { font-size: 0.85rem; color: #6b7280; margin: 0; font-family: 'DM Sans', sans-serif; }
+
+.cm-actions { margin-bottom: 1.5rem; }
+
+.cm-btn { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; border: none; border-radius: 8px; padding: 0.5625rem 1.25rem; cursor: pointer; transition: background 0.18s; display: inline-flex; align-items: center; gap: 0.375rem; }
+
+.cm-btn-primary { color: #fff; background: #0c4a58; }
+
+.cm-btn-primary:hover { background: #0f6f84; }
+
+.cm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+
+.cm-card { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); overflow: hidden; }
+
+.cm-card-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid #e8ecf0; }
+
+.cm-card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; color: #0c4a58; margin: 0; }
+
+.cm-status { font-size: 0.65rem; font-weight: 600; border-radius: 4px; padding: 0.15rem 0.5rem; text-transform: uppercase; font-family: 'DM Sans', sans-serif; letter-spacing: 0.04em; }
+
+.cm-status-active { color: #22a34a; background: #edf7ef; }
+
+.cm-status-paused { color: #b45309; background: #fffbeb; }
+
+.cm-status-completed { color: #6b7280; background: #f3f4f6; }
+
+.cm-card-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.625rem; }
+
+.cm-row { display: flex; gap: 0.5rem; }
+
+.cm-label { font-size: 0.68rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; min-width: 100px; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+
+.cm-value { font-size: 0.78rem; color: #1a1a2e; font-family: 'DM Sans', sans-serif; word-break: break-word; }
+
+.cm-card-actions { display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem; border-top: 1px solid #e8ecf0; }
+
+.cm-action-btn { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500; color: #0f6f84; background: #e6f4f7; border: none; border-radius: 6px; padding: 0.3rem 0.6rem; cursor: pointer; transition: background 0.15s; display: inline-flex; align-items: center; gap: 0.25rem; }
+
+.cm-action-btn:hover { background: #0f6f84; color: #fff; }
+
+.cm-action-btn i { font-size: 0.7rem; }
+
+.cm-action-delete { color: #dc2626; background: #fef2f2; }
+
+.cm-action-delete:hover { background: #dc2626; color: #fff; }
+
+@media (max-width: 768px) {
+  .cm-grid { grid-template-columns: 1fr; }
+  .cm-page { padding: 1rem; }
+}
