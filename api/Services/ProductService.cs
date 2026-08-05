@@ -57,30 +57,58 @@ public class ProductService : IProductService
         var result = await _repository.GetPagedAsync(query, cancellationToken);
         var summaries = result.Items.Select(x => ToSummary(x.Id, x.Data)).ToList();
 
-        // Backfill thumbnail from first active variant for products that don't have thumbnailUrl denormalized yet
-        var needsThumb = summaries.Where(s => s.Thumbnail == null).Select(s => s.Id).ToList();
-        if (needsThumb.Count > 0)
+        // Backfill PurchaseCost (minimum across all colour variants) and, for
+        // products that don't have thumbnailUrl denormalized yet, the thumbnail
+        // from the first active variant. Both need the variants subcollection —
+        // loaded once per product here so list queries never add it to the
+        // product document query itself.
+        if (summaries.Count > 0)
         {
-            var tasks = needsThumb.Select(async id =>
+            var needsVariantData = summaries
+                .Where(s => s.PurchaseCost == null || s.Thumbnail == null)
+                .Select(s => s.Id)
+                .Distinct()
+                .ToList();
+
+            if (needsVariantData.Count > 0)
             {
-                try
+                var tasks = needsVariantData.Select(async id =>
                 {
-                    var v = await _variantRepository.GetFirstActiveVariantAsync(id, cancellationToken);
-                    var url = v?.Images?.Primary?.Url ?? v?.Images?.Gallery?.FirstOrDefault()?.Url;
-                    return (Id: id, Url: url);
-                }
-                catch (Exception ex)
+                    try
+                    {
+                        var variants = await _variantRepository.GetVariantsAsync(id, cancellationToken);
+                        var minPurchaseCost = variants
+                            .Select(v => v.Data.PurchaseCost)
+                            .Where(p => p.HasValue)
+                            .Min();
+                        var firstActive = variants
+                            .Select(v => v.Data)
+                            .FirstOrDefault(v => v.IsActive);
+                        var url = firstActive?.Images?.Primary?.Url
+                            ?? firstActive?.Images?.Gallery?.FirstOrDefault()?.Url;
+                        return (Id: id, MinPurchaseCost: minPurchaseCost, ThumbUrl: url);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to load variants for product {ProductId}", id);
+                        return (Id: id, MinPurchaseCost: (double?)null, ThumbUrl: (string?)null);
+                    }
+                });
+                var variantResults = await Task.WhenAll(tasks);
+                var purchaseCostMap = variantResults
+                    .Where(r => r.MinPurchaseCost.HasValue)
+                    .ToDictionary(r => r.Id, r => r.MinPurchaseCost!.Value);
+                var thumbMap = variantResults
+                    .Where(r => r.ThumbUrl != null)
+                    .ToDictionary(r => r.Id, r => r.ThumbUrl!);
+
+                for (var i = 0; i < summaries.Count; i++)
                 {
-                    _logger.LogWarning(ex, "Failed to load first variant thumbnail for product {ProductId}", id);
-                    return (Id: id, Url: (string?)null);
+                    if (purchaseCostMap.TryGetValue(summaries[i].Id, out var pc))
+                        summaries[i].PurchaseCost = pc;
+                    if (summaries[i].Thumbnail == null && thumbMap.TryGetValue(summaries[i].Id, out var url))
+                        summaries[i].Thumbnail = new ProductImageDto { Url = url };
                 }
-            });
-            var results = await Task.WhenAll(tasks);
-            var thumbMap = results.Where(r => r.Url != null).ToDictionary(r => r.Id, r => r.Url);
-            for (var i = 0; i < summaries.Count; i++)
-            {
-                if (summaries[i].Thumbnail == null && thumbMap.TryGetValue(summaries[i].Id, out var url))
-                    summaries[i].Thumbnail = new ProductImageDto { Url = url };
             }
         }
 

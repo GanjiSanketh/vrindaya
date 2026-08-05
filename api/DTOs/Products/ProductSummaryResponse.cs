@@ -78,4 +78,7 @@ public class ProductSummaryResponse
 
     /// <summary>Highest SellingPrice among variants (null if no variants).</summary>
     public double? HighestPrice { get; set; }
+
+    /// <summary>Minimum PurchaseCost across all colour variants (null if none have a purchase cost). Derived at read time — never stored.</summary>
+    public double? PurchaseCost { get; set; }
 }

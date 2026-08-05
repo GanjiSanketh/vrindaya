@@ -185,8 +185,8 @@
                   }
                 </td>
                 <td>
-                  @if (p.pricing?.purchaseCost) {
-                    <span class="pl-price">₹{{ p.pricing!.purchaseCost }}</span>
+                  @if (p.purchaseCost !== null && p.purchaseCost !== undefined) {
+                    <span class="pl-price">₹{{ p.purchaseCost }}</span>
                   } @else {
                     <span class="pl-price pl-price--na">-</span>
                   }

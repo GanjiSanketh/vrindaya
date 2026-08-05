@@ -63,6 +63,7 @@ export interface ApiProductSummary {
   totalStock: number;
   lowestPrice?: number;
   highestPrice?: number;
+  purchaseCost?: number;
 }
 
 export interface ApiProductDetail extends ApiProductSummary {
@@ -565,6 +566,7 @@ export function apiSummaryToProduct(dto: ApiProductSummary): Product {
     totalStock: dto.totalStock,
     lowestPrice: dto.lowestPrice,
     highestPrice: dto.highestPrice,
+    purchaseCost: dto.purchaseCost,
   };
 }
 
@@ -653,5 +655,6 @@ export function apiDetailToProduct(dto: ApiProductDetail): Product {
     totalStock: dto.totalStock,
     lowestPrice: dto.lowestPrice,
     highestPrice: dto.highestPrice,
+    purchaseCost: dto.purchaseCost,
   };
 }

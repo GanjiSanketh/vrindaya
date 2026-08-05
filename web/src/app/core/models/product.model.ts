@@ -125,6 +125,7 @@ export interface Product {
   totalStock: number;
   lowestPrice?: number;
   highestPrice?: number;
+  purchaseCost?: number;
 }
 
 export interface Category {
