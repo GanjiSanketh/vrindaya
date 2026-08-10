@@ -206,6 +206,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAiModule, RecommendationAiModule>();
         services.AddScoped<IAiModule, ContentGenerationAiModule>();
         services.AddScoped<IAiModule, FlipkartAiModule>();
+        services.AddScoped<IAiModule, WorkspaceAiModule>();
 
         #endregion
 
@@ -370,9 +371,11 @@ public static class ServiceCollectionExtensions
             Vrindaya.Api.AI.Core.Services.AiDiagnosticsDashboardService>();
 
         // AI startup validation. Validates AI configuration, prompt templates,
-        // and module registrations. Registered as singleton; invoked once at
-        // startup from Program.cs.
-        services.AddSingleton<
+        // and module registrations. Scoped (not singleton): it consumes
+        // IEnumerable<IAiModule>, and every AI module is registered scoped, so
+        // a singleton would be a DI lifetime mismatch. Invoked once at startup
+        // from Program.cs inside a scope.
+        services.AddScoped<
             IAiStartupValidationService,
             AiStartupValidationService>();
 

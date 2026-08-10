@@ -16,6 +16,8 @@ public static class AiRouteCatalog
 
     public static readonly string FlipkartRoute = "flipkart";
 
+    public static readonly string WorkspaceRoute = "workspace";
+
     public static readonly string FullRoute = "full";
 
     public static IReadOnlyList<AiOrchestrationRoute> Routes { get; } = new[]
@@ -39,6 +41,11 @@ public static class AiRouteCatalog
             FlipkartRoute,
             "Flipkart Assistant",
             new[] { AiModuleKey.Flipkart }),
+
+        new AiOrchestrationRoute(
+            WorkspaceRoute,
+            "AI Workspace",
+            new[] { AiModuleKey.Workspace }),
 
         new AiOrchestrationRoute(
             FullRoute,

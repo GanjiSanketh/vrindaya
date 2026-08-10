@@ -2,6 +2,7 @@ using Vrindaya.Api.AI.Campaigns.Dtos;
 using Vrindaya.Api.AI.ContentGeneration.DTOs;
 using Vrindaya.Api.AI.Flipkart.DTOs;
 using Vrindaya.Api.AI.Recommendations.DTOs;
+using Vrindaya.Api.AI.Workspace.DTOs;
 
 namespace Vrindaya.Api.AI.Orchestrator.Models;
 
@@ -27,6 +28,9 @@ public sealed class AiOrchestrationContext
 
     /// <summary>Output of the <see cref="AiModuleKey.Prompt"/> hop, when executed.</summary>
     public string? Prompt { get; set; }
+
+    /// <summary>Output of the <see cref="AiModuleKey.Workspace"/> hop, when executed.</summary>
+    public WorkspaceResponseDto? Workspace { get; set; }
 
     public AiOrchestrationContext(AiOrchestratorRequest request)
     {
