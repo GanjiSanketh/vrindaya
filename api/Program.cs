@@ -47,8 +47,13 @@ var app = builder.Build();
 ValidateRequiredConfiguration(app.Services);
 
 // ── AI startup validation — verify AI configuration, templates, modules ──
-var aiValidation = app.Services.GetRequiredService<IAiStartupValidationService>();
-aiValidation.Validate();
+// Resolved inside a scope: the validation service consumes the scoped
+// IAiModule registrations, so it must not be resolved from the root provider.
+using (var validationScope = app.Services.CreateScope())
+{
+    var aiValidation = validationScope.ServiceProvider.GetRequiredService<IAiStartupValidationService>();
+    aiValidation.Validate();
+}
 
 // ── Eagerly initialize singletons that touch the network, so the first
 // real request doesn't pay for cold-start + JWKS download + Firestore init

@@ -12,4 +12,5 @@ public enum AiModuleKey
     Recommendation,
     ContentGeneration,
     Flipkart,
+    Workspace,
 }

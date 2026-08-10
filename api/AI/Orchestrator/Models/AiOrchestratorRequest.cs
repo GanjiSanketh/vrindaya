@@ -3,6 +3,7 @@ using Vrindaya.Api.AI.Campaigns.Models;
 using Vrindaya.Api.AI.ContentGeneration.DTOs;
 using Vrindaya.Api.AI.Flipkart.DTOs;
 using Vrindaya.Api.AI.Recommendations.DTOs;
+using Vrindaya.Api.AI.Workspace.DTOs;
 
 namespace Vrindaya.Api.AI.Orchestrator.Models;
 
@@ -30,6 +31,9 @@ public sealed class AiOrchestratorRequest
 
     /// <summary>Payload consumed by the <see cref="AiModuleKey.Flipkart"/> hop.</summary>
     public FlipkartRequestDto? Flipkart { get; set; }
+
+    /// <summary>Payload consumed by the <see cref="AiModuleKey.Workspace"/> hop.</summary>
+    public WorkspaceRequestDto? Workspace { get; set; }
 
     /// <summary>Fallback product pool used by the recommendation hop when no recommendation request is supplied.</summary>
     public List<CampaignProduct>? Products { get; set; }
