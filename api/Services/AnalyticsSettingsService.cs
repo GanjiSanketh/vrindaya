@@ -16,38 +16,50 @@ public class AnalyticsSettingsService : IAnalyticsSettingsService
 {
     private const string CollectionName = "analyticsSettings";
     private const string DocumentId = "website";
+    private const string CachePrefix = "analyticsSettings";
+    private const string CacheKey = CachePrefix + ":" + DocumentId;
+    private static readonly CacheEntryOptions CacheOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60) };
 
     private readonly IFirebaseService _firebase;
+    private readonly ICacheService _cache;
 
-    public AnalyticsSettingsService(IFirebaseService firebase)
+    public AnalyticsSettingsService(IFirebaseService firebase, ICacheService cache)
     {
         _firebase = firebase;
+        _cache = cache;
     }
 
     public async Task<AnalyticsSettingsDto> GetAsync(CancellationToken cancellationToken)
     {
-        var snapshot = await Document().GetSnapshotAsync(cancellationToken);
-        if (!snapshot.Exists)
-        {
-            return DefaultDto();
-        }
+        return await _cache.GetOrCreateAsync(
+            CacheKey,
+            async token =>
+            {
+                var snapshot = await Document().GetSnapshotAsync(token);
+                if (!snapshot.Exists)
+                {
+                    return DefaultDto();
+                }
 
-        var data = snapshot.ToDictionary();
-        return new AnalyticsSettingsDto
-        {
-            TrackingEnabled = Bool(data, "trackingEnabled", true),
-            HeroClicks = Bool(data, "heroClicks", true),
-            ProductClicks = Bool(data, "productClicks", true),
-            CategoryClicks = Bool(data, "categoryClicks", true),
-            SearchTracking = Bool(data, "searchTracking", true),
-            WishlistTracking = Bool(data, "wishlistTracking", true),
-            CollectionClicks = Bool(data, "collectionClicks", true),
-            PageViews = Bool(data, "pageViews", true),
-            ScrollTracking = Bool(data, "scrollTracking", false),
-            PerformanceTracking = Bool(data, "performanceTracking", false),
-            UpdatedAt = DateTimeValue(data, "updatedAt"),
-            UpdatedBy = StringValue(data, "updatedBy"),
-        };
+                var data = snapshot.ToDictionary();
+                return new AnalyticsSettingsDto
+                {
+                    TrackingEnabled = Bool(data, "trackingEnabled", true),
+                    HeroClicks = Bool(data, "heroClicks", true),
+                    ProductClicks = Bool(data, "productClicks", true),
+                    CategoryClicks = Bool(data, "categoryClicks", true),
+                    SearchTracking = Bool(data, "searchTracking", true),
+                    WishlistTracking = Bool(data, "wishlistTracking", true),
+                    CollectionClicks = Bool(data, "collectionClicks", true),
+                    PageViews = Bool(data, "pageViews", true),
+                    ScrollTracking = Bool(data, "scrollTracking", false),
+                    PerformanceTracking = Bool(data, "performanceTracking", false),
+                    UpdatedAt = DateTimeValue(data, "updatedAt"),
+                    UpdatedBy = StringValue(data, "updatedBy"),
+                };
+            },
+            CacheOptions,
+            cancellationToken);
     }
 
     public async Task<AnalyticsSettingsDto> SaveAsync(
@@ -73,6 +85,7 @@ public class AnalyticsSettingsService : IAnalyticsSettingsService
         };
 
         await Document().SetAsync(data, cancellationToken: cancellationToken);
+        _cache.Remove(CacheKey);
 
         return new AnalyticsSettingsDto
         {

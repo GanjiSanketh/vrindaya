@@ -6,14 +6,28 @@ namespace Vrindaya.Api.Services.Products;
 
 public class InventoryService : IInventoryService
 {
+    // Only the aggregated summary statistics are cached (Total Stock / Low
+    // Stock Count / Out Of Stock Count). Individual inventory records are
+    // deliberately never cached — stock is live data that must always be read
+    // fresh — so GetInventoryAsync stays uncached. The summary factory runs at
+    // most once per 5 minutes (single-flight via ICacheService), and
+    // RemoveByPrefix(CachePrefix) in UpdateStockAsync keeps it fresh after any
+    // stock write.
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+    private const string CachePrefix = "inventory";
+    private const string SummaryCacheKey = CachePrefix + ":summary";
+
     private readonly IProductRepository _productRepo;
     private readonly IProductVariantRepository _variantRepo;
+    private readonly ICacheService _cache;
     public InventoryService(
         IProductRepository productRepo,
-        IProductVariantRepository variantRepo)
+        IProductVariantRepository variantRepo,
+        ICacheService cache)
     {
         _productRepo = productRepo;
         _variantRepo = variantRepo;
+        _cache = cache;
     }
 
     public async Task<List<InventoryProductResponse>> GetInventoryAsync(CancellationToken ct = default)
@@ -58,6 +72,53 @@ public class InventoryService : IInventoryService
         return result.OrderBy(p => p.ProductName).ToList();
     }
 
+    public async Task<InventorySummary> GetInventorySummaryAsync(CancellationToken ct = default)
+    {
+        return await _cache.GetOrCreateAsync(SummaryCacheKey, async (ct) =>
+        {
+            var products = await _productRepo.GetAllUnpagedAsync(ct);
+
+            var productCount = 0;
+            var variantCount = 0;
+            long totalStock = 0;
+            var lowStockCount = 0;
+            var outOfStockCount = 0;
+
+            foreach (var (id, data) in products)
+            {
+                if (data.Deleted) continue;
+
+                var variants = await _variantRepo.GetVariantsAsync(id, ct);
+                var activeVariants = variants.Where(v => v.Data.IsActive).ToList();
+                if (activeVariants.Count == 0) continue;
+
+                productCount++;
+                variantCount += activeVariants.Count;
+
+                var productStock = activeVariants.Sum(v => v.Data.Sizes.Sum(s => s.Stock));
+                totalStock += productStock;
+
+                if (productStock <= 0)
+                {
+                    outOfStockCount++;
+                }
+                else if (data.LowStockThreshold is > 0 && productStock <= data.LowStockThreshold)
+                {
+                    lowStockCount++;
+                }
+            }
+
+            return new InventorySummary
+            {
+                ProductCount = productCount,
+                VariantCount = variantCount,
+                TotalStock = totalStock,
+                LowStockCount = lowStockCount,
+                OutOfStockCount = outOfStockCount,
+            };
+        }, new CacheEntryOptions { AbsoluteExpirationRelativeToNow = CacheDuration }, ct);
+    }
+
     public async Task UpdateStockAsync(List<StockUpdateItem> updates, CancellationToken ct = default)
     {
         foreach (var update in updates)
@@ -92,6 +153,8 @@ public class InventoryService : IInventoryService
         {
             await SyncProductDenormalizedFields(pid, ct);
         }
+
+        _cache.RemoveByPrefix(CachePrefix);
     }
 
     private async Task SyncProductDenormalizedFields(string productId, CancellationToken ct)
@@ -123,4 +186,16 @@ public class InventoryService : IInventoryService
             ["highestPrice"] = highestPrice.HasValue ? highestPrice.Value : Google.Cloud.Firestore.FieldValue.Delete,
         }, ct);
     }
+}
+
+/// <summary>
+/// Lightweight aggregation of inventory statistics, cached for 5 minutes.
+/// </summary>
+public sealed record InventorySummary
+{
+    public int ProductCount { get; init; }
+    public int VariantCount { get; init; }
+    public long TotalStock { get; init; }
+    public int LowStockCount { get; init; }
+    public int OutOfStockCount { get; init; }
 }

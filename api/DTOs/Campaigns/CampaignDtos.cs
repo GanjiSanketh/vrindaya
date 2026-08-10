@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Vrindaya.Api.AI.Campaigns.Dtos;
 
 namespace Vrindaya.Api.DTOs.Campaigns
 {
@@ -31,6 +32,7 @@ namespace Vrindaya.Api.DTOs.Campaigns
 
     public class CampaignGenerateResponse
     {
+        public List<CampaignSuggestionDto> Campaigns { get; set; } = new();
         public DateTime GeneratedAt { get; set; }
         public string GenerationTime { get; set; }
         public int TotalProductsAnalyzed { get; set; }

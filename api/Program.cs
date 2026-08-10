@@ -3,6 +3,8 @@ using Vrindaya.Api.Configuration;
 using Vrindaya.Api.Constants;
 using Vrindaya.Api.Extensions;
 using Vrindaya.Api.Interfaces;
+using Vrindaya.Api.Providers.Gemini;
+using Vrindaya.Api.Services;
 using Vrindaya.Api.Providers.OpenRouter;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,10 +16,12 @@ builder.Host.UseSerilog((context, services, configuration) =>
 // ── Configuration (strongly typed Options) ────────────────────────────────────
 builder.Services.AddApplicationOptions(builder.Configuration);
 builder.Services.Configure<OpenRouterOptions>(builder.Configuration.GetSection(OpenRouterOptions.SectionName));
+builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection(GeminiOptions.SectionName));
 
 // ── Application services (DI composition root) ───────────────────────────────
 builder.Services.AddApplicationServices();
 builder.Services.AddScoped<OpenRouterProvider>();
+builder.Services.AddScoped<GeminiProvider>();
 
 // ── Authentication/authorization — two JWT Bearer schemes (validating
 // Firebase's ID token for the one-time /auth/login call, and this app's own
@@ -41,6 +45,10 @@ var app = builder.Build();
 
 // ── Startup validation — fail fast if required env vars are missing ───────────
 ValidateRequiredConfiguration(app.Services);
+
+// ── AI startup validation — verify AI configuration, templates, modules ──
+var aiValidation = app.Services.GetRequiredService<IAiStartupValidationService>();
+aiValidation.Validate();
 
 // ── Eagerly initialize singletons that touch the network, so the first
 // real request doesn't pay for cold-start + JWKS download + Firestore init

@@ -5,209 +5,211 @@
     </div>
     <div class="toolbar-section toolbar-center">
       <div class="toolbar-group">
-        <label class="toolbar-label">Product</label>
-        <select class="toolbar-select">
-          <option value="">Select product</option>
-        </select>
-      </div>
-      <div class="toolbar-group">
-        <label class="toolbar-label">Campaign Goal</label>
-        <select class="toolbar-select">
-          <option value="">Select goal</option>
-        </select>
-      </div>
-      <div class="toolbar-group">
-        <label class="toolbar-label">Platform</label>
-        <select class="toolbar-select">
-          <option value="">Select platform</option>
-        </select>
-      </div>
-      <div class="toolbar-group">
-        <label class="toolbar-label">Audience</label>
-        <select class="toolbar-select">
-          <option value="">Select audience</option>
-        </select>
-      </div>
-      <div class="toolbar-group">
-        <label class="toolbar-label">Language</label>
-        <select class="toolbar-select">
-          <option value="">Select language</option>
+        <label class="toolbar-label">Module</label>
+        <select class="toolbar-select" [value]="selectedModule()" (change)="onModuleSelect($any($event.target).value)">
+          <option value="">Select module</option>
+          @for (item of sidebarItems(); track item.key) {
+            <option [value]="item.key">{{ item.label }}</option>
+          }
         </select>
       </div>
     </div>
     <div class="toolbar-section toolbar-end">
-      <button class="btn-execute">Execute Campaign</button>
+      <button class="btn-new" (click)="createWorkspace()" [disabled]="isLoading()">
+        <i class="bi bi-plus-lg"></i> New Workspace
+      </button>
     </div>
   </header>
 
   <div class="workspace-body">
     <aside class="workspace-sidebar">
+      <div class="sidebar-header">
+        <h3 class="sidebar-title">Workspaces</h3>
+      </div>
       <nav class="sidebar-nav">
         <ul class="sidebar-menu">
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-megaphone"></i>
-              <span>Campaign</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-lightbulb"></i>
-              <span>Knowledge</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-brush"></i>
-              <span>Brand</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-database"></i>
-              <span>Memory</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-file-earmark"></i>
-              <span>Assets</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-layout-text-window"></i>
-              <span>Templates</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-person-badge"></i>
-              <span>Providers</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-clock-history"></i>
-              <span>History</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-list-task"></i>
-              <span>Queue</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="#">
-              <i class="bi bi-gear"></i>
-              <span>Settings</span>
-            </a>
-          </li>
+          @for (item of sidebarItems(); track item.key) {
+            <li class="sidebar-item">
+              <a class="sidebar-link" [class.active]="selectedModule() === item.key" (click)="onModuleSelect(item.key)">
+                <i [class]="'bi ' + item.icon"></i>
+                <span>{{ item.label }}</span>
+              </a>
+            </li>
+          }
         </ul>
       </nav>
+      <div class="workspace-list">
+        @if (isLoading() && workspaces().length === 0) {
+          <div class="workspace-list-empty">Loading workspaces...</div>
+        } @else if (workspaces().length === 0) {
+          <div class="workspace-list-empty">No workspaces yet. Create one to get started.</div>
+        } @else {
+          <div class="workspace-list-header">Recent</div>
+          @for (ws of workspaces(); track ws.id) {
+            <div class="workspace-list-item" [class.active]="activeWorkspace()?.id === ws.id" (click)="selectWorkspace(ws.id)">
+              <div class="workspace-item-info">
+                <span class="workspace-item-name">{{ ws.name }}</span>
+                <span class="workspace-item-meta">{{ ws.messageCount }} messages</span>
+              </div>
+              <div class="workspace-item-actions">
+                <button class="workspace-item-btn" title="Archive" (click)="archiveWorkspace(ws.id); $event.stopPropagation()">
+                  <i class="bi bi-archive"></i>
+                </button>
+                <button class="workspace-item-btn" title="Delete" (click)="deleteWorkspace(ws.id); $event.stopPropagation()">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
     </aside>
 
     <main class="workspace-main">
-      <section class="main-content">
-        <div class="workspace-empty">
-          <div class="empty-state">
-            <h2 class="empty-title">Welcome to Vrindaya AI</h2>
-            <p class="empty-subtitle">Select a campaign or start a new one to begin</p>
-          </div>
-          <div class="execute-area">
-            <div class="execute-card">
-              <h3 class="execute-title">Execute Campaign</h3>
-              <div class="execute-field">
-                <label class="execute-label">Campaign Name</label>
-                <input class="execute-input" type="text" placeholder="Enter campaign name" readonly />
-              </div>
-              <div class="execute-field">
-                <label class="execute-label">Objective</label>
-                <select class="execute-select" disabled>
-                  <option value="">Select objective</option>
-                </select>
-              </div>
-              <div class="execute-field">
-                <label class="execute-label">Budget</label>
-                <input class="execute-input" type="text" placeholder="Enter budget" readonly />
-              </div>
-              <button class="btn-execute-large" disabled>Execute Campaign</button>
-            </div>
-          </div>
-          <div class="workspace-grid">
-            <div class="workspace-card">
-              <h3 class="card-title">Recent Campaigns</h3>
-              <div class="card-body empty-list">No recent campaigns</div>
-            </div>
-            <div class="workspace-card">
-              <h3 class="card-title">Quick Templates</h3>
-              <div class="card-body empty-list">No templates available</div>
-            </div>
-          </div>
+      @if (error()) {
+        <div class="workspace-error">
+          <span>{{ error() }}</span>
+          <button class="btn-retry" (click)="loadWorkspaces()">Retry</button>
         </div>
-      </section>
+      }
+
+      @if (!hasActiveWorkspace()) {
+        <section class="main-content">
+          <div class="workspace-empty">
+            <div class="empty-state">
+              <h2 class="empty-title">Welcome to Vrindaya AI Workspace</h2>
+              <p class="empty-subtitle">Create or select a workspace to start your AI-powered marketing session</p>
+              <button class="btn-create" (click)="createWorkspace()" [disabled]="isLoading()">
+                <i class="bi bi-plus-lg"></i> Create New Workspace
+              </button>
+            </div>
+          </div>
+        </section>
+      } @else {
+        <section class="main-content">
+          <div class="chat-container">
+            <div class="chat-header">
+              <h3 class="chat-title">{{ activeWorkspace()?.name }}</h3>
+              <span class="chat-module">{{ activeWorkspace()?.currentModule }}</span>
+            </div>
+
+            <div class="chat-messages">
+              @if (messages().length === 0) {
+                <div class="chat-empty">
+                  <p>Send a message to start the conversation</p>
+                </div>
+              } @else {
+                @for (msg of messages(); track msg.id) {
+                  @if (msg.role === 'user') {
+                    <div class="chat-message user-message">
+                      <div class="message-bubble">
+                        <p>{{ msg.content }}</p>
+                        <span class="message-time">{{ msg.createdAt | date:'shortTime' }}</span>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="chat-message ai-message">
+                      <div class="ai-avatar">
+                        <i class="bi bi-stars"></i>
+                      </div>
+                      <div class="message-bubble">
+                        <p>{{ msg.content }}</p>
+                        <span class="message-meta">
+                          @if (msg.module) {
+                            <span class="message-module">{{ msg.module }}</span>
+                          }
+                          <span class="message-time">{{ msg.createdAt | date:'shortTime' }}</span>
+                        </span>
+                      </div>
+                    </div>
+                  }
+                }
+              }
+
+              @if (isThinking()) {
+                <div class="chat-message ai-message">
+                  <div class="ai-avatar">
+                    <i class="bi bi-stars"></i>
+                  </div>
+                  <div class="message-bubble thinking">
+                    <span class="thinking-dots"><span></span><span></span><span></span></span>
+                    <span>Thinking...</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="chat-input-container">
+              <input
+                type="text"
+                class="chat-input"
+                placeholder="Ask the AI anything about your marketing..."
+                [value]="messageInput()"
+                  (input)="onInputChange($any($event.target).value)"
+                (keyup.enter)="sendMessage()"
+                [disabled]="isThinking()"
+              />
+              <button
+                class="btn-send"
+                (click)="sendMessage()"
+                [disabled]="isThinking() || !messageInput().trim()"
+              >
+                <i class="bi bi-send"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+      }
     </main>
 
     <aside class="workspace-ai-panel">
-      <div class="ai-activity">
-        <div class="ai-card">
-          <div class="ai-card-header">
-            <h4 class="ai-card-title">AI Activity</h4>
+      <div class="ai-card">
+        <div class="ai-card-header">
+          <h4 class="ai-card-title">AI Activity</h4>
+        </div>
+        <div class="ai-card-body">
+          <div class="ai-section">
+            <span class="ai-section-label">Current Task</span>
+            <span class="ai-section-value">{{ isThinking() ? 'Processing...' : 'Idle' }}</span>
           </div>
-          <div class="ai-card-body">
-            <div class="ai-section">
-              <span class="ai-section-label">Current Task</span>
-              <span class="ai-section-value">Idle</span>
-            </div>
-            <div class="ai-section">
-              <span class="ai-section-label">Thinking Progress</span>
-              <div class="ai-progress">
-                <div class="ai-progress-bar" style="width: 0%"></div>
-              </div>
-              <span class="ai-progress-text">0%</span>
-            </div>
-            <div class="ai-section">
-              <span class="ai-section-label">Current Agent</span>
-              <span class="ai-section-value">None</span>
-            </div>
-            <div class="ai-section">
-              <span class="ai-section-label">Token Usage</span>
-              <span class="ai-section-value">0 / 0</span>
-            </div>
-            <div class="ai-section">
-              <span class="ai-section-label">Elapsed Time</span>
-              <span class="ai-section-value">00:00</span>
-            </div>
-            <div class="ai-section">
-              <span class="ai-section-label">Status</span>
-              <span class="ai-status idle">Idle</span>
-            </div>
+          <div class="ai-section">
+            <span class="ai-section-label">Messages</span>
+            <span class="ai-section-value">{{ messageCount() }}</span>
           </div>
+          <div class="ai-section">
+            <span class="ai-section-label">Current Module</span>
+            <span class="ai-section-value">{{ selectedModule() || 'None' }}</span>
+          </div>
+          <div class="ai-section">
+            <span class="ai-section-label">Last AI Module</span>
+            <span class="ai-section-value">{{ lastModule() }}</span>
+          </div>
+          <div class="ai-section">
+            <span class="ai-section-label">Status</span>
+            <span class="ai-status" [class.active]="isThinking()">{{ isThinking() ? 'Thinking' : 'Idle' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-card-header">
+          <h4 class="ai-card-title">Suggested Prompts</h4>
+        </div>
+        <div class="ai-card-body">
+          <button class="suggested-prompt" (click)="onInputChange('Create a new marketing campaign'); sendMessage()">
+            Create a new marketing campaign
+          </button>
+          <button class="suggested-prompt" (click)="onInputChange('Generate Instagram content ideas'); sendMessage()">
+            Generate Instagram content ideas
+          </button>
+          <button class="suggested-prompt" (click)="onInputChange('Analyze my product listings'); sendMessage()">
+            Analyze my product listings
+          </button>
+          <button class="suggested-prompt" (click)="onInputChange('Recommend pricing strategy'); sendMessage()">
+            Recommend pricing strategy
+          </button>
         </div>
       </div>
     </aside>
   </div>
-
-  <footer class="workspace-output">
-    <div class="output-tabs">
-      <button class="output-tab active">Strategy</button>
-      <button class="output-tab">Caption</button>
-      <button class="output-tab">Images</button>
-      <button class="output-tab">Reel</button>
-      <button class="output-tab">Story</button>
-      <button class="output-tab">Carousel</button>
-      <button class="output-tab">SEO</button>
-      <button class="output-tab">Flipkart</button>
-      <button class="output-tab">Website</button>
-      <button class="output-tab">Email</button>
-      <button class="output-tab">WhatsApp</button>
-      <button class="output-tab">Review</button>
-    </div>
-    <div class="output-content">
-      <div class="output-pane">
-        <div class="output-placeholder">Select a tab to view content</div>
-      </div>
-    </div>
-  </footer>
 </div>

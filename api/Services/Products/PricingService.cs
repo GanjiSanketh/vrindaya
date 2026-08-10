@@ -6,11 +6,24 @@ namespace Vrindaya.Api.Services.Products;
 
 public class PricingService : IPricingService
 {
-    private readonly IProductRepository _productRepo;
+    // Only the aggregate summary cards are cached (15 minutes). Editable
+    // per-product pricing rows are deliberately never cached — they embed
+    // frequently-changing price/cost data that must always be read live — so
+    // GetDashboardAsync recomputes them fresh on every request while the
+    // summary (Average Margin, Average Selling Price, dashboard cards) comes
+    // from cache. The key lives under the "products" prefix so ProductRepository's
+    // RemoveByPrefix("products") — fired on every product write, including
+    // price updates (marketplacePrice/marketplaceMrp/pricing) — invalidates it.
+    private static readonly TimeSpan SummaryCacheDuration = TimeSpan.FromMinutes(15);
+    private const string SummaryCacheKey = "products:pricing:summary";
 
-    public PricingService(IProductRepository productRepo)
+    private readonly IProductRepository _productRepo;
+    private readonly ICacheService _cache;
+
+    public PricingService(IProductRepository productRepo, ICacheService cache)
     {
         _productRepo = productRepo;
+        _cache = cache;
     }
 
     public async Task<PricingDashboardResponse> GetDashboardAsync(CancellationToken ct = default)
@@ -28,25 +41,36 @@ public class PricingService : IPricingService
             pricingDtos.Add(dto);
         }
 
+        var summary = (await _cache.GetOrCreateAsync(
+            SummaryCacheKey,
+            _ => Task.FromResult(BuildSummary(pricingDtos)),
+            new CacheEntryOptions { AbsoluteExpirationRelativeToNow = SummaryCacheDuration },
+            ct))!;
+
         var sortedByProfit = pricingDtos.OrderByDescending(p => p.Profit).ToList();
         var lossProducts = pricingDtos.Where(p => p.IsLoss).ToList();
 
         return new PricingDashboardResponse
         {
-            Summary = new PricingSummary
-            {
-                TotalProducts = pricingDtos.Count,
-                ProfitableCount = pricingDtos.Count(p => !p.IsLoss),
-                LossCount = lossProducts.Count,
-                AverageProfitPercent = pricingDtos.Count > 0
-                    ? Math.Round(pricingDtos.Average(p => p.ProfitPercent), 1)
-                    : 0,
-                TotalProfit = Math.Round(pricingDtos.Sum(p => p.Profit), 2),
-            },
+            Summary = summary,
             TopProfitable = sortedByProfit.Take(10).ToList(),
             LeastProfitable = sortedByProfit.TakeLast(10).Where(p => !p.IsLoss).Reverse().ToList(),
             SellingAtLoss = lossProducts.OrderBy(p => p.ProfitPercent).Take(10).ToList(),
             AllProducts = pricingDtos,
+        };
+    }
+
+    private static PricingSummary BuildSummary(List<ProductPricingDto> pricingDtos)
+    {
+        return new PricingSummary
+        {
+            TotalProducts = pricingDtos.Count,
+            ProfitableCount = pricingDtos.Count(p => !p.IsLoss),
+            LossCount = pricingDtos.Count(p => p.IsLoss),
+            AverageProfitPercent = pricingDtos.Count > 0
+                ? Math.Round(pricingDtos.Average(p => p.ProfitPercent), 1)
+                : 0,
+            TotalProfit = Math.Round(pricingDtos.Sum(p => p.Profit), 2),
         };
     }
 

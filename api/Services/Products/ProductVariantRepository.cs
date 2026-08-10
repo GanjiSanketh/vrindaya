@@ -1,6 +1,7 @@
 using Google.Cloud.Firestore;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Interfaces;
 
 namespace Vrindaya.Api.Services.Products;
 
@@ -9,13 +10,26 @@ public class ProductVariantRepository : IProductVariantRepository
     private const string ProductsCollection = "products";
     private const string VariantsCollection = "variants";
 
-    private readonly IFirebaseService _firebaseService;
-    private readonly ILogger<ProductVariantRepository> _logger;
+    // SKUs are stable lookup data (rarely change, validated on every variant
+    // create/update) so the full-catalog scan SkuExistsAsync used to do is
+    // replaced by a cached lowercase-sku → variant-id map. This is deliberately
+    // NOT cached under the "products" prefix (product edits needn't rebuild it);
+    // it is invalidated explicitly by the variant write methods below. Variant
+    // documents themselves (inventory + pricing) are never cached.
+    private const string SkuMapCacheKey = "variant-skus:map";
+    private static readonly CacheEntryOptions SkuMapCacheOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30) };
 
-    public ProductVariantRepository(IFirebaseService firebaseService, ILogger<ProductVariantRepository> logger)
+    private readonly IFirebaseService _firebaseService;
+    private readonly ICacheService _cache;
+    private readonly ILogger<ProductVariantRepository> _logger;
+    private readonly IRequestScopedCache _requestCache;
+
+    public ProductVariantRepository(IFirebaseService firebaseService, ICacheService cache, ILogger<ProductVariantRepository> logger, IRequestScopedCache requestCache)
     {
         _firebaseService = firebaseService;
+        _cache = cache;
         _logger = logger;
+        _requestCache = requestCache;
     }
 
     private FirestoreDb Db => _firebaseService.GetFirestoreDb();
@@ -25,11 +39,14 @@ public class ProductVariantRepository : IProductVariantRepository
 
     public async Task<List<(string Id, ProductVariantDocument Data)>> GetVariantsAsync(string productId, CancellationToken ct = default)
     {
-        var snapshot = await VariantCol(productId)
-            .OrderBy("displayOrder")
-            .GetSnapshotAsync(ct);
+        // Whole-subcollection load goes through the request-scoped cache (keyed
+        // by the nested path products/{productId}/variants) so multiple reads of
+        // the same product's variants within one request share one Firestore
+        // load. The snapshot is unordered; displayOrder ordering is applied here
+        // so behavior matches the previous OrderBy("displayOrder") query.
+        var snapshot = await _requestCache.GetWholeCollectionSnapshotAsync(VariantCol(productId).Path, ct);
 
-        var variants = new List<(string, ProductVariantDocument)>();
+        var variants = new List<(string Id, ProductVariantDocument Data)>();
         foreach (var doc in snapshot.Documents)
         {
             var variant = DeserializeVariantDocument(doc);
@@ -38,7 +55,40 @@ public class ProductVariantRepository : IProductVariantRepository
             else
                 _logger.LogWarning("Skipping variant document {VariantId} in product {ProductId} — deserialization failed", doc.Id, productId);
         }
-        return variants;
+        return variants.OrderBy(v => v.Data.DisplayOrder).ToList();
+    }
+
+    /// <summary>
+    /// Exactly the fields the dashboard (and the BI layer that reuses its raw
+    /// snapshot) reads from each variant — a Firestore field-mask projection so
+    /// the image gallery, MRP, flipkart URLs and timestamps are never
+    /// transferred. "images.primary" keeps only the primary image slot (and
+    /// still deserializes legacy string-URL primaries). Anything absent is left
+    /// at its default value; displayOrder is kept so ordering matches the full
+    /// read.
+    /// </summary>
+    private static readonly string[] DashboardVariantFields =
+    [
+        "isActive", "displayOrder", "sizes",
+        "purchaseCost", "packagingCost", "flipkartCommission", "shippingCharges",
+        "marketingCost", "otherCharges", "sellingPrice", "colourName",
+        "images.primary",
+    ];
+
+    public async Task<List<(string Id, ProductVariantDocument Data)>> GetDashboardVariantsAsync(string productId, CancellationToken ct = default)
+    {
+        var snapshot = await _requestCache.GetWholeCollectionSnapshotAsync(VariantCol(productId).Path, DashboardVariantFields, ct);
+
+        var variants = new List<(string Id, ProductVariantDocument Data)>();
+        foreach (var doc in snapshot.Documents)
+        {
+            var variant = DeserializeVariantDocument(doc);
+            if (variant != null)
+                variants.Add((doc.Id, variant));
+            else
+                _logger.LogWarning("Skipping variant document {VariantId} in product {ProductId} — deserialization failed", doc.Id, productId);
+        }
+        return variants.OrderBy(v => v.Data.DisplayOrder).ToList();
     }
 
     public async Task<ProductVariantDocument?> GetVariantAsync(string variantId, CancellationToken ct = default)
@@ -58,6 +108,8 @@ public class ProductVariantRepository : IProductVariantRepository
         variant.CreatedAt = DateTime.UtcNow;
         variant.UpdatedAt = DateTime.UtcNow;
         await docRef.CreateAsync(variant, ct);
+        InvalidateSkuMap();
+        InvalidateVariants(productId);
         return docRef.Id;
     }
 
@@ -66,34 +118,102 @@ public class ProductVariantRepository : IProductVariantRepository
         variant.CreatedAt = DateTime.UtcNow;
         variant.UpdatedAt = DateTime.UtcNow;
         await VariantCol(productId).Document(variantId).CreateAsync(variant, ct);
+        InvalidateSkuMap();
+        InvalidateVariants(productId);
     }
 
     public async Task UpdateVariantAsync(string variantId, ProductVariantDocument variant, CancellationToken ct = default)
     {
         variant.UpdatedAt = DateTime.UtcNow;
         await Db.GetDocument(variantId).SetAsync(variant, SetOptions.Overwrite, ct);
+        InvalidateSkuMap();
+        InvalidateVariants(ExtractProductId(variantId));
     }
 
     public async Task DeleteVariantAsync(string variantId, CancellationToken ct = default)
     {
         await Db.GetDocument(variantId).DeleteAsync(null, ct);
+        InvalidateSkuMap();
+        InvalidateVariants(ExtractProductId(variantId));
     }
 
     public async Task<bool> SkuExistsAsync(string sku, string? excludeVariantId = null, CancellationToken ct = default)
     {
-        var allProducts = await Db.Collection(ProductsCollection).GetSnapshotAsync(ct);
-        foreach (var prodDoc in allProducts.Documents)
+        if (string.IsNullOrWhiteSpace(sku))
         {
-            var variants = await prodDoc.Reference.Collection("variants").GetSnapshotAsync(ct);
-            foreach (var varDoc in variants.Documents)
-            {
-                if (varDoc.Id == excludeVariantId) continue;
-                var data = DeserializeVariantDocument(varDoc);
-                if (data?.Sku.Equals(sku, StringComparison.OrdinalIgnoreCase) == true)
-                    return true;
-            }
+            return false;
         }
-        return false;
+
+        var skuToVariantIds = await GetSkuToVariantIdsAsync(ct);
+        if (!skuToVariantIds.TryGetValue(sku, out var holders))
+        {
+            return false;
+        }
+
+        if (excludeVariantId == null)
+        {
+            return true;
+        }
+
+        return holders.Any(vid => vid != excludeVariantId);
+    }
+
+    /// <summary>
+    /// Builds (once per 30 min) a case-insensitive map of variant SKU → the ids
+    /// of every variant holding it, replacing the previous all-products ×
+    /// all-variants scan this ran on every create/update. Behavior is preserved:
+    /// a sku exists if any variant other than the caller's excluded one holds it.
+    /// Invalidated by the variant write methods below.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, List<string>>> GetSkuToVariantIdsAsync(CancellationToken ct)
+    {
+        return await _cache.GetOrCreateAsync(
+            SkuMapCacheKey,
+            async token =>
+            {
+                var map = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+
+                var allProducts = await _requestCache.GetWholeCollectionSnapshotAsync(ProductsCollection, token);
+                foreach (var prodDoc in allProducts.Documents)
+                {
+                    var variants = await prodDoc.Reference.Collection(VariantsCollection).GetSnapshotAsync(token);
+                    foreach (var varDoc in variants.Documents)
+                    {
+                        var data = DeserializeVariantDocument(varDoc);
+                        if (data == null || string.IsNullOrWhiteSpace(data.Sku)) continue;
+
+                        if (!map.TryGetValue(data.Sku, out var list))
+                        {
+                            list = [];
+                            map[data.Sku] = list;
+                        }
+                        list.Add(varDoc.Id);
+                    }
+                }
+
+                return (IReadOnlyDictionary<string, List<string>>)map;
+            },
+            SkuMapCacheOptions,
+            ct) ?? new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void InvalidateSkuMap()
+    {
+        _cache.Remove(SkuMapCacheKey);
+    }
+
+    /// <summary>Drops the request-scoped variants snapshot for a product after a variant write.</summary>
+    private void InvalidateVariants(string productId)
+    {
+        _requestCache.Invalidate(VariantCol(productId).Path);
+    }
+
+    /// <summary>Extracts the product id from a Firestore path like "products/{productId}/variants/{variantId}".</summary>
+    private static string ExtractProductId(string variantPath)
+    {
+        var parts = variantPath.Split('/');
+        return parts.Length >= 4 ? parts[1]
+            : throw new ArgumentException($"Invalid variant path: {variantPath}", nameof(variantPath));
     }
 
     public async Task DeleteAllVariantsAsync(string productId, CancellationToken ct = default)
@@ -103,11 +223,13 @@ public class ProductVariantRepository : IProductVariantRepository
         {
             await doc.Reference.DeleteAsync(null, ct);
         }
+        InvalidateSkuMap();
+        InvalidateVariants(productId);
     }
 
     public async Task<List<string>> GetVariantIdsAsync(string productId, CancellationToken ct = default)
     {
-        var snapshot = await VariantCol(productId).GetSnapshotAsync(ct);
+        var snapshot = await _requestCache.GetWholeCollectionSnapshotAsync(VariantCol(productId).Path, ct);
         return snapshot.Documents.Select(d => d.Id).ToList();
     }
 

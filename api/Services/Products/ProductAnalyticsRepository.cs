@@ -1,5 +1,6 @@
 using Google.Cloud.Firestore;
 using Vrindaya.Api.Interfaces;
+using Vrindaya.Api.Services.Interfaces;
 
 namespace Vrindaya.Api.Services.Products;
 
@@ -14,16 +15,19 @@ public class ProductAnalyticsRepository : IProductAnalyticsRepository
     private const string DailySubcollection = "daily";
 
     private readonly IFirebaseService _firebaseService;
+    private readonly IRequestScopedCache _requestCache;
 
-    public ProductAnalyticsRepository(IFirebaseService firebaseService)
+    public ProductAnalyticsRepository(IFirebaseService firebaseService, IRequestScopedCache requestCache)
     {
         _firebaseService = firebaseService;
+        _requestCache = requestCache;
     }
 
     public async Task<List<(string ProductId, Dictionary<string, object> Data)>> GetAllTotalsAsync(CancellationToken cancellationToken)
     {
-        var db = _firebaseService.GetFirestoreDb();
-        var snapshot = await db.Collection(Collection).GetSnapshotAsync(cancellationToken);
+        // Whole-collection load via the request-scoped cache so repeated reads
+        // of the analytics collection within one request share a single snapshot.
+        var snapshot = await _requestCache.GetWholeCollectionSnapshotAsync(Collection, cancellationToken);
         return snapshot.Documents.Select(d => (d.Id, ToDictionary(d))).ToList();
     }
 

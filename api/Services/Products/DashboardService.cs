@@ -4,74 +4,264 @@ using Vrindaya.Api.Models;
 
 namespace Vrindaya.Api.Services.Products;
 
+/// <summary>
+/// The computed dashboard together with the raw product/variant/sale datasets it
+/// was aggregated from. Lets a caller get the dashboard and the datasets it
+/// needs in a single Firestore load rather than re-querying the same collections.
+/// </summary>
+public sealed record DashboardSnapshot(
+    DashboardDto Dashboard,
+    List<(string Id, SaleDocument Data)> Sales,
+    List<(string Id, ProductDocument Doc)> Products,
+    List<(string ProductId, string VariantId, ProductVariantDocument Doc)> Variants);
+
+/// <summary>
+/// Dashboard aggregation. Widgets are split into two independently cached
+/// groups so the critical summary cards can be served first and cheaply while
+/// the heavy analytics are loaded lazily and separately:
+///
+/// - Summary (2-min cache): SummaryCards, TodaySnapshot and SalesSummary — the
+///   headline numbers computed in a single cheap pass over the data.
+/// - Analytics (10-min cache): profit/category analytics, pie/bar/donut charts
+///   and product ranking/lists — the heavy O(products × variants) aggregation.
+///
+/// Both keys live under the "products" prefix so the existing
+/// RemoveByPrefix(InvalidationPrefix) write cascade keeps them fresh. The raw
+/// datasets behind them are read at most once per request via the request-scoped
+/// collection cache, so assembling the full snapshot never double-queries
+/// Firestore. GetAnalyticsAsync exposes the heavy group for separate/on-demand
+/// loading without touching the summary path.
+/// </summary>
 public class DashboardService : IDashboardService
 {
+    // Both keys live under the "products" prefix so ProductRepository's
+    // RemoveByPrefix(InvalidationPrefix) — fired on every product write
+    // (create/update/delete, including pricing fields) and on the
+    // denormalized-field sync that InventoryService and SaleService run after
+    // inventory/sale changes — keeps the dashboard fresh without touching
+    // individual repos. The cache windows are the safety net; the write
+    // cascade invalidates sooner.
+    public const string InvalidationPrefix = "products";
+    private const string SummaryCacheKey = InvalidationPrefix + ":dashboard:summary";
+    private const string AnalyticsCacheKey = InvalidationPrefix + ":dashboard:analytics";
+
+    // Summary cards are cheap to recompute, so they're cached briefly to stay
+    // fresh; the heavy analytics are expensive, so they're cached longer and
+    // refreshed independently.
+    private static readonly TimeSpan SummaryCacheDuration = TimeSpan.FromMinutes(2);
+    private static readonly TimeSpan AnalyticsCacheDuration = TimeSpan.FromMinutes(10);
+    private static readonly CacheEntryOptions SummaryCacheOptions = new() { AbsoluteExpirationRelativeToNow = SummaryCacheDuration };
+    private static readonly CacheEntryOptions AnalyticsCacheOptions = new() { AbsoluteExpirationRelativeToNow = AnalyticsCacheDuration };
+
     private readonly IProductRepository _productRepo;
     private readonly IProductVariantRepository _variantRepo;
     private readonly ISaleRepository _saleRepo;
     private readonly ILogger<DashboardService> _logger;
+    private readonly ICacheService _cache;
 
     public DashboardService(
         IProductRepository productRepo,
         IProductVariantRepository variantRepo,
         ISaleRepository saleRepo,
-        ILogger<DashboardService> logger)
+        ILogger<DashboardService> logger,
+        ICacheService cache)
     {
         _productRepo = productRepo;
         _variantRepo = variantRepo;
         _saleRepo = saleRepo;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<DashboardDto> GetDashboardAsync(CancellationToken ct = default)
     {
-        _logger.LogInformation("Loading dashboard data");
+        return (await GetDashboardSnapshotAsync(ct).ConfigureAwait(false)).Dashboard;
+    }
 
-        var products = await _productRepo.GetAllUnpagedAsync(ct);
+    /// <summary>
+    /// Returns the summary cards (computed first, cheap) merged with the heavy
+    /// analytics (lazily loaded, independently cached), together with the raw
+    /// product/variant/sale datasets the dashboard was built from — so callers
+    /// that also need those datasets (e.g. BI) reuse the same load instead of
+    /// querying Firestore again within the request. The merged DashboardDto is
+    /// assembled fresh on every call; only its two parts are cached.
+    /// </summary>
+    public async Task<DashboardSnapshot> GetDashboardSnapshotAsync(CancellationToken ct = default)
+    {
+        var summary = await GetOrComputeSummaryAsync(ct).ConfigureAwait(false);
+        var analytics = await GetOrComputeAnalyticsAsync(ct).ConfigureAwait(false);
 
-        var allProducts = new List<(string Id, ProductDocument Doc)>();
+        var dashboard = new DashboardDto();
+        MergeDashboard(dashboard, summary, analytics);
+
+        // Raw datasets for callers that aggregate from them (e.g. BI). Loaded
+        // at most once per request via the request-scoped collection cache, so
+        // this never re-reads Firestore when the caches above already loaded it.
+        var raw = await LoadRawDataAsync(ct).ConfigureAwait(false);
+        return new DashboardSnapshot(dashboard, raw.Sales ?? [], raw.Products, raw.Variants);
+    }
+
+    /// <summary>
+    /// Computes (and caches) only the heavy analytics widgets — profit/category
+    /// analytics, pie/bar/donut charts and product rankings/lists — independent
+    /// of the critical summary cards. Lets a caller load the heavy widgets on
+    /// demand without recomputing (or waiting on) the summary path. Returns a
+    /// DashboardDto whose summary/sales fields are left at their defaults.
+    /// </summary>
+    public async Task<DashboardDto> GetAnalyticsAsync(CancellationToken ct = default)
+    {
+        return await GetOrComputeAnalyticsAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Critical summary cards (SummaryCards + TodaySnapshot) and the sales
+    /// summary, computed first and cached separately from the heavy analytics.
+    /// </summary>
+    private async Task<DashboardDto> GetOrComputeSummaryAsync(CancellationToken ct)
+    {
+        return (await _cache.GetOrCreateAsync(
+            SummaryCacheKey,
+            async token =>
+            {
+                _logger.LogInformation("Loading dashboard summary cards");
+
+                var (products, variants, sales) = await LoadRawDataAsync(token).ConfigureAwait(false);
+
+                var dto = new DashboardDto();
+                var activeProducts = products.Where(p => !p.Doc.Deleted && p.Doc.Active).ToList();
+                var activeVariants = variants.ToList();
+
+                // Critical cards first — a single cheap pass over the variants.
+                ComputeSummaryCards(dto, activeProducts, activeVariants);
+
+                if (sales is not null)
+                    ComputeSalesSummary(dto, sales);
+
+                return dto;
+            },
+            SummaryCacheOptions,
+            ct).ConfigureAwait(false))!;
+    }
+
+    /// <summary>
+    /// Heavy analytics widgets, cached under their own key so they are computed
+    /// lazily and independently of the summary path.
+    /// </summary>
+    private async Task<DashboardDto> GetOrComputeAnalyticsAsync(CancellationToken ct)
+    {
+        return (await _cache.GetOrCreateAsync(
+            AnalyticsCacheKey,
+            async token =>
+            {
+                _logger.LogInformation("Loading dashboard analytics widgets");
+
+                var (products, variants, _) = await LoadRawDataAsync(token).ConfigureAwait(false);
+
+                var dto = new DashboardDto();
+                var activeProducts = products.Where(p => !p.Doc.Deleted && p.Doc.Active).ToList();
+                var activeVariants = variants.ToList();
+
+                ComputeAnalytics(dto, products, activeProducts, activeVariants);
+
+                return dto;
+            },
+            AnalyticsCacheOptions,
+            ct).ConfigureAwait(false))!;
+    }
+
+    /// <summary>Copies the two independently cached parts into one full DashboardDto.</summary>
+    private static void MergeDashboard(DashboardDto target, DashboardDto summary, DashboardDto analytics)
+    {
+        target.SummaryCards = summary.SummaryCards;
+        target.TodaySnapshot = summary.TodaySnapshot;
+        target.SalesSummary = summary.SalesSummary;
+
+        target.ProfitAnalytics = analytics.ProfitAnalytics;
+        target.CategoryAnalytics = analytics.CategoryAnalytics;
+        target.LowStockProducts = analytics.LowStockProducts;
+        target.TopExpensiveProducts = analytics.TopExpensiveProducts;
+        target.MostProfitableProducts = analytics.MostProfitableProducts;
+        target.RecentlyAddedProducts = analytics.RecentlyAddedProducts;
+        target.OutOfStockProducts = analytics.OutOfStockProducts;
+
+        target.InventoryByCategory = analytics.InventoryByCategory;
+        target.InventoryValueDistribution = analytics.InventoryValueDistribution;
+        target.RevenueDistribution = analytics.RevenueDistribution;
+        target.ProfitDistribution = analytics.ProfitDistribution;
+        target.ProductStatusDistribution = analytics.ProductStatusDistribution;
+
+        target.TopRevenueProducts = analytics.TopRevenueProducts;
+        target.TopProfitProducts = analytics.TopProfitProducts;
+        target.StockPerProduct = analytics.StockPerProduct;
+        target.PurchaseCostVsSellingPrice = analytics.PurchaseCostVsSellingPrice;
+
+        target.ProductTypeDistribution = analytics.ProductTypeDistribution;
+    }
+
+    private async Task<(List<(string Id, ProductDocument Doc)> Products,
+                        List<(string ProductId, string VariantId, ProductVariantDocument Doc)> Variants,
+                        List<(string Id, SaleDocument Data)>? Sales)> LoadRawDataAsync(CancellationToken ct)
+    {
+        // The sales dataset is fully independent of the product/variant dataset,
+        // so both are fetched concurrently to cut end-to-end execution time.
+        // Products/variants/sales are read through field-mask projections
+        // (GetDashboard*Async) so only the fields these aggregations touch are
+        // transferred from Firestore, not the full documents.
+        var productsTask = _productRepo.GetDashboardProductsAsync(ct);
+        var salesTask = LoadSalesAsync(ct);
+
+        var products = await productsTask.ConfigureAwait(false);
+
+        var allProducts = new List<(string Id, ProductDocument Doc)>(products.Count);
         var allVariants = new List<(string ProductId, string VariantId, ProductVariantDocument Doc)>();
 
-        foreach (var (id, doc) in products)
+        // Each product's variants are independent lookups; issue them all in
+        // parallel instead of sequentially (N+1 -> single batched fan-out).
+        var variantTasks = products.Select(async p =>
         {
-            allProducts.Add((id, doc));
-            var variants = await _variantRepo.GetVariantsAsync(id, ct);
-            foreach (var (vid, vdoc) in variants)
+            var variants = await _variantRepo.GetDashboardVariantsAsync(p.Id, ct).ConfigureAwait(false);
+            return (Product: p, Variants: variants);
+        }).ToArray();
+        var variantResults = await Task.WhenAll(variantTasks).ConfigureAwait(false);
+
+        foreach (var result in variantResults)
+        {
+            allProducts.Add((result.Product.Id, result.Product.Data));
+            foreach (var (vid, vdoc) in result.Variants)
             {
                 if (!vdoc.IsActive) continue;
-                allVariants.Add((id, vid, vdoc));
+                allVariants.Add((result.Product.Id, vid, vdoc));
             }
         }
 
-        var dto = new DashboardDto();
-        ComputeAll(dto, allProducts, allVariants);
+        var sales = await salesTask.ConfigureAwait(false);
+        return (allProducts, allVariants, sales);
+    }
 
+    private async Task<List<(string Id, SaleDocument Data)>?> LoadSalesAsync(CancellationToken ct)
+    {
         try
         {
-            var allSales = await _saleRepo.GetAllAsync(ct);
-            ComputeSalesSummary(dto, allSales);
+            return await _saleRepo.GetDashboardSalesAsync(ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to load sales data for dashboard");
+            return null;
         }
-
-        return dto;
     }
 
-    private static void ComputeAll(DashboardDto dto,
-        List<(string Id, ProductDocument Doc)> products,
-        List<(string ProductId, string VariantId, ProductVariantDocument Doc)> variants)
+    /// <summary>
+    /// The critical summary cards — a single cheap pass over the data, computed
+    /// before the heavy analytics so they can be returned first.
+    /// </summary>
+    private static void ComputeSummaryCards(DashboardDto dto,
+        List<(string Id, ProductDocument Doc)> activeProducts,
+        List<(string ProductId, string VariantId, ProductVariantDocument Doc)> activeVariants)
     {
-        var activeProducts = products.Where(p => !p.Doc.Deleted && p.Doc.Active).ToList();
-        var activeVariants = variants.ToList();
-
-        // ── Summary Cards ──
         long totalUnits = 0;
         double totalCost = 0;
         double totalRevenue = 0;
-        var profitPercents = new List<double>();
-        var rois = new List<double>();
 
         foreach (var (_, _, v) in activeVariants)
         {
@@ -89,14 +279,9 @@ public class DashboardService : IDashboardService
 
             totalCost += costPerUnit * stock;
             totalRevenue += sellingPrice * stock;
-
-            if (costPerUnit > 0)
-            {
-                var profit = sellingPrice - costPerUnit;
-                profitPercents.Add(profit / costPerUnit * 100);
-                rois.Add(costPerUnit > 0 ? profit / costPerUnit * 100 : 0);
-            }
         }
+
+        var (avgProfitPercent, avgRoiPercent) = ComputeAverageProfitStats(activeVariants);
 
         dto.SummaryCards.TotalProducts = activeProducts.Count;
         dto.SummaryCards.TotalVariants = activeVariants.Count;
@@ -104,10 +289,35 @@ public class DashboardService : IDashboardService
         dto.SummaryCards.InventoryValue = Math.Round(totalCost, 2);
         dto.SummaryCards.PotentialSalesValue = Math.Round(totalRevenue, 2);
         dto.SummaryCards.ExpectedProfit = Math.Round(totalRevenue - totalCost, 2);
-        dto.SummaryCards.AverageProfitPercent = profitPercents.Count > 0 ? Math.Round(profitPercents.Average(), 1) : 0;
-        dto.SummaryCards.AverageRoiPercent = rois.Count > 0 ? Math.Round(rois.Average(), 1) : 0;
+        dto.SummaryCards.AverageProfitPercent = avgProfitPercent;
+        dto.SummaryCards.AverageRoiPercent = avgRoiPercent;
 
+        // ── TodaySnapshot (Summary Panel) ──
+        dto.TodaySnapshot = new TodaySnapshotDto
+        {
+            Products = dto.SummaryCards.TotalProducts,
+            Variants = dto.SummaryCards.TotalVariants,
+            TotalUnits = dto.SummaryCards.InventoryQuantity,
+            InventoryCost = dto.SummaryCards.InventoryValue,
+            PotentialRevenue = dto.SummaryCards.PotentialSalesValue,
+            ExpectedProfit = dto.SummaryCards.ExpectedProfit,
+            AverageMarginPercent = dto.SummaryCards.AverageProfitPercent,
+            AverageRoiPercent = dto.SummaryCards.AverageRoiPercent,
+        };
+    }
+
+    /// <summary>
+    /// The heavy analytics widgets — profit/category analytics, pie/bar/donut
+    /// charts and product rankings/lists. Kept separate from the summary cards
+    /// so they can be computed lazily and independently.
+    /// </summary>
+    private static void ComputeAnalytics(DashboardDto dto,
+        List<(string Id, ProductDocument Doc)> products,
+        List<(string Id, ProductDocument Doc)> activeProducts,
+        List<(string ProductId, string VariantId, ProductVariantDocument Doc)> activeVariants)
+    {
         // ── Profit Analytics ──
+        var (avgProfitPercent, avgRoiPercent) = ComputeAverageProfitStats(activeVariants);
         ProductProfitInfo? highestMargin = null;
         ProductProfitInfo? lowestMargin = null;
         var sellingPrices = new List<double>();
@@ -147,8 +357,8 @@ public class DashboardService : IDashboardService
             }
         }
 
-        dto.ProfitAnalytics.AverageProfitPercent = dto.SummaryCards.AverageProfitPercent;
-        dto.ProfitAnalytics.AverageRoiPercent = dto.SummaryCards.AverageRoiPercent;
+        dto.ProfitAnalytics.AverageProfitPercent = avgProfitPercent;
+        dto.ProfitAnalytics.AverageRoiPercent = avgRoiPercent;
         dto.ProfitAnalytics.AverageSellingPrice = sellingPrices.Count > 0 ? Math.Round(sellingPrices.Average(), 2) : 0;
         dto.ProfitAnalytics.AveragePurchaseCost = purchaseCosts.Count > 0 ? Math.Round(purchaseCosts.Average(), 2) : 0;
         dto.ProfitAnalytics.HighestMarginProduct = highestMargin;
@@ -441,19 +651,40 @@ public class DashboardService : IDashboardService
                 };
             })
             .ToList();
+    }
 
-        // ── TodaySnapshot (Summary Panel) ──
-        dto.TodaySnapshot = new TodaySnapshotDto
+    /// <summary>
+    /// Average profit/ROI percent across active variants — shared by the summary
+    /// cards and the profit analytics so both report identical values.
+    /// </summary>
+    private static (double AvgProfitPercent, double AvgRoiPercent) ComputeAverageProfitStats(
+        List<(string ProductId, string VariantId, ProductVariantDocument Doc)> activeVariants)
+    {
+        var profitPercents = new List<double>();
+        var rois = new List<double>();
+
+        foreach (var (_, _, v) in activeVariants)
         {
-            Products = dto.SummaryCards.TotalProducts,
-            Variants = dto.SummaryCards.TotalVariants,
-            TotalUnits = dto.SummaryCards.InventoryQuantity,
-            InventoryCost = dto.SummaryCards.InventoryValue,
-            PotentialRevenue = dto.SummaryCards.PotentialSalesValue,
-            ExpectedProfit = dto.SummaryCards.ExpectedProfit,
-            AverageMarginPercent = dto.SummaryCards.AverageProfitPercent,
-            AverageRoiPercent = dto.SummaryCards.AverageRoiPercent,
-        };
+            var purchaseCost = v.PurchaseCost ?? 0;
+            var packagingCost = v.PackagingCost ?? 0;
+            var commission = v.FlipkartCommission ?? 0;
+            var shipping = v.ShippingCharges ?? 0;
+            var marketing = v.MarketingCost ?? 0;
+            var other = v.OtherCharges ?? 0;
+            var costPerUnit = purchaseCost + packagingCost + commission + shipping + marketing + other;
+            var sellingPrice = v.SellingPrice ?? 0;
+
+            if (costPerUnit > 0)
+            {
+                var profit = sellingPrice - costPerUnit;
+                profitPercents.Add(profit / costPerUnit * 100);
+                rois.Add(costPerUnit > 0 ? profit / costPerUnit * 100 : 0);
+            }
+        }
+
+        return (
+            profitPercents.Count > 0 ? Math.Round(profitPercents.Average(), 1) : 0,
+            rois.Count > 0 ? Math.Round(rois.Average(), 1) : 0);
     }
 
     private static void ComputeSalesSummary(DashboardDto dto, List<(string Id, SaleDocument Data)> sales)

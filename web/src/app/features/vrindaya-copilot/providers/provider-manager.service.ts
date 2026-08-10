@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { OpenRouterProviderService } from './openrouter/openrouter-provider.service';
+import { GeminiProviderService } from './gemini/gemini-provider.service';
+import { IAIProvider, CampaignRequest, CampaignResponse } from './interfaces/ai-provider.interface';
 
 export interface Provider {
   id: string;
@@ -13,14 +15,14 @@ export interface Provider {
 export class ProviderManagerService {
   private providers: Provider[] = [
     {
-      id: 'openrouter',
-      name: 'OpenRouter',
-      models: ['openrouter/auto', 'openrouter/sonoma-sky-alpha', 'openrouter/sonoma-dusk-alpha'],
-    },
-    {
       id: 'gemini',
       name: 'Gemini',
       models: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash-exp'],
+    },
+    {
+      id: 'openrouter',
+      name: 'OpenRouter',
+      models: ['openrouter/auto', 'openrouter/sonoma-sky-alpha', 'openrouter/sonoma-dusk-alpha'],
     },
     {
       id: 'groq',
@@ -34,12 +36,31 @@ export class ProviderManagerService {
     },
   ];
 
-  private currentProviderId = 'openrouter';
+  private currentProviderId = 'gemini';
+  private providerInstances: Map<string, IAIProvider> = new Map();
 
-  constructor(private openRouterProvider: OpenRouterProviderService) {}
+  constructor(
+    private openRouterProvider: OpenRouterProviderService,
+    private geminiProvider: GeminiProviderService
+  ) {
+    this.providerInstances.set('openrouter', this.openRouterProvider);
+    this.providerInstances.set('gemini', this.geminiProvider);
+  }
 
   execute(prompt: string, model?: string): Promise<string> {
-    return this.openRouterProvider.executePrompt(prompt);
+    const provider = this.providerInstances.get(this.currentProviderId);
+    if (provider) {
+      return provider.executePrompt(prompt);
+    }
+    return this.geminiProvider.executePrompt(prompt);
+  }
+
+  async generateCampaign(request: CampaignRequest): Promise<CampaignResponse> {
+    const provider = this.providerInstances.get(this.currentProviderId);
+    if (provider) {
+      return provider.generateCampaign(request);
+    }
+    return this.geminiProvider.generateCampaign(request);
   }
 
   getAvailableProviders(): Provider[] {
@@ -54,5 +75,9 @@ export class ProviderManagerService {
     if (this.providers.some(p => p.id === providerId)) {
       this.currentProviderId = providerId;
     }
+  }
+
+  getProviderInstance(providerId: string): IAIProvider | undefined {
+    return this.providerInstances.get(providerId);
   }
 }

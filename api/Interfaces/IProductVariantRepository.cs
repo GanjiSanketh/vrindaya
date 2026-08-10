@@ -5,6 +5,15 @@ namespace Vrindaya.Api.Interfaces;
 public interface IProductVariantRepository
 {
     Task<List<(string Id, ProductVariantDocument Data)>> GetVariantsAsync(string productId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Field-projected read of a product's variants carrying only the fields the
+    /// dashboard/BI aggregation needs (pricing, costs, sizes/stock, active
+    /// flag, primary image, colour, display order) — a smaller Firestore payload
+    /// than the full-document <see cref="GetVariantsAsync"/>. Ordered by
+    /// displayOrder to match the non-projected read.
+    /// </summary>
+    Task<List<(string Id, ProductVariantDocument Data)>> GetDashboardVariantsAsync(string productId, CancellationToken ct = default);
     Task<ProductVariantDocument?> GetVariantAsync(string variantId, CancellationToken ct = default);
     Task<string> CreateVariantAsync(string productId, ProductVariantDocument variant, CancellationToken ct = default);
     Task CreateVariantWithIdAsync(string productId, string variantId, ProductVariantDocument variant, CancellationToken ct = default);

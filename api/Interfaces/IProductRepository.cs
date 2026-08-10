@@ -24,6 +24,23 @@ public interface IProductRepository
     /// <summary>Firestore batch-get (db.GetAllAsync) — one round trip for N ids, not N calls. Used to resolve the homepage's curated Featured/Trending/New-Arrivals-override product-id lists. Missing/nonexistent ids are simply omitted, not an error.</summary>
     Task<List<(string Id, ProductDocument Data)>> GetByIdsAsync(List<string> ids, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Aggregate product counts (Total / Active / Featured / distinct
+    /// Categories). Computed from one products-collection read and cached
+    /// separately for 15 minutes under the "products" prefix — invalidated by
+    /// every create/update/delete, never caching the edit operation itself.
+    /// </summary>
+    Task<ProductStatistics> GetStatisticsAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Field-projected read of the whole products collection containing only
+    /// the fields the dashboard/BI aggregation needs (name, category, status
+    /// flags, totals, thumbnail) — a materially smaller Firestore payload than
+    /// the full-document <see cref="GetAllUnpagedAsync"/>. Only the projected
+    /// fields are populated on the returned documents.
+    /// </summary>
+    Task<List<(string Id, ProductDocument Data)>> GetDashboardProductsAsync(CancellationToken cancellationToken);
+
     Task CreateAsync(string id, ProductDocument document, CancellationToken cancellationToken);
 
     Task UpdateAsync(string id, Dictionary<string, object?> fields, CancellationToken cancellationToken);

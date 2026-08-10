@@ -1,29 +1,19 @@
 using Vrindaya.Api.DTOs.Products;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
-using Vrindaya.Api.Services.Products;
 
 namespace Vrindaya.Api.Services.Analytics;
 
 public class BIService : IBIService
 {
     private readonly IDashboardService _dashboardService;
-    private readonly ISaleRepository _saleRepo;
-    private readonly IProductRepository _productRepo;
-    private readonly IProductVariantRepository _variantRepo;
     private readonly ILogger<BIService> _logger;
 
     public BIService(
         IDashboardService dashboardService,
-        ISaleRepository saleRepo,
-        IProductRepository productRepo,
-        IProductVariantRepository variantRepo,
         ILogger<BIService> logger)
     {
         _dashboardService = dashboardService;
-        _saleRepo = saleRepo;
-        _productRepo = productRepo;
-        _variantRepo = variantRepo;
         _logger = logger;
     }
 
@@ -31,23 +21,15 @@ public class BIService : IBIService
     {
         _logger.LogInformation("Loading BI dashboard data");
 
-        var dashboard = await _dashboardService.GetDashboardAsync(ct);
-        var sales = await _saleRepo.GetAllAsync(ct);
-        var products = await _productRepo.GetAllUnpagedAsync(ct);
+        // The dashboard service computes the dashboard AND the raw product/
+        // variant/sale datasets it aggregates in a single Firestore load — reuse
+        // that snapshot instead of re-reading the same collections here.
+        var snapshot = await _dashboardService.GetDashboardSnapshotAsync(ct);
 
-        var allProducts = new List<(string Id, ProductDocument Doc)>();
-        var allVariants = new List<(string ProductId, string VariantId, ProductVariantDocument Doc)>();
-
-        foreach (var (id, doc) in products)
-        {
-            allProducts.Add((id, doc));
-            var variants = await _variantRepo.GetVariantsAsync(id, ct);
-            foreach (var (vid, vdoc) in variants)
-            {
-                if (!vdoc.IsActive) continue;
-                allVariants.Add((id, vid, vdoc));
-            }
-        }
+        var dashboard = snapshot.Dashboard;
+        var sales = snapshot.Sales;
+        var allProducts = snapshot.Products;
+        var allVariants = snapshot.Variants;
 
         var biDto = new BIDashboardDto();
 

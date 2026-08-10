@@ -4,6 +4,7 @@ using Vrindaya.Api.Constants;
 using Vrindaya.Api.DTOs.Products;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Interfaces;
 
 namespace Vrindaya.Api.Services.Products;
 
@@ -15,12 +16,27 @@ namespace Vrindaya.Api.Services.Products;
 public class ProductRepository : IProductRepository
 {
     private const string Collection = "products";
+    private const string CachePrefix = "products";
+
+    // Only stable lookup/statistics data is cached — slug/sku existence counts
+    // used for uniqueness validation, plus the count-only product statistics
+    // (total/active/featured/categories). Full product documents are
+    // deliberately NEVER cached: they embed inventory quantities
+    // (Stock/TotalStock/Sizes) and frequently-changing pricing
+    // (Price/Pricing/MarketplacePrice), which must always be read live.
+    // Invalidation via RemoveByPrefix(CachePrefix) below.
+    private static readonly CacheEntryOptions LookupCacheOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30) };
+    private static readonly CacheEntryOptions StatisticsCacheOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15) };
 
     private readonly IFirebaseService _firebaseService;
+    private readonly ICacheService _cache;
+    private readonly IRequestScopedCache _requestCache;
 
-    public ProductRepository(IFirebaseService firebaseService)
+    public ProductRepository(IFirebaseService firebaseService, ICacheService cache, IRequestScopedCache requestCache)
     {
         _firebaseService = firebaseService;
+        _cache = cache;
+        _requestCache = requestCache;
     }
 
     public string GenerateId()
@@ -29,10 +45,73 @@ public class ProductRepository : IProductRepository
         return db.Collection(Collection).Document().Id;
     }
 
+    /// <summary>
+    /// Count-only product statistics, cached separately from any list read so
+    /// repeated aggregation calls don't re-read the whole catalog. Key lives
+    /// under the "products" prefix, so the RemoveByPrefix(CachePrefix) fired
+    /// by every create/update/delete invalidates it along with the lookup
+    /// counts — edit operations themselves are never cached.
+    /// </summary>
+    public async Task<ProductStatistics> GetStatisticsAsync(CancellationToken cancellationToken)
+    {
+        return await _cache.GetOrCreateAsync(
+            $"{CachePrefix}:statistics",
+            async ct =>
+            {
+                // Only count fields are needed (deleted/active/featured/category)
+                // — the field-projected dashboard read covers them all and is
+                // smaller than the full-document load. When the dashboard ran in
+                // the same request it also reuses the already-loaded snapshot.
+                var products = await GetDashboardProductsAsync(ct);
+
+                var active = 0;
+                var featured = 0;
+                var categories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var (_, doc) in products)
+                {
+                    if (doc.Deleted || !doc.Active) continue;
+
+                    active++;
+                    if (doc.Featured) featured++;
+                    if (!string.IsNullOrWhiteSpace(doc.Category))
+                    {
+                        categories.Add(doc.Category);
+                    }
+                }
+
+                return new ProductStatistics(products.Count, active, featured, categories.Count);
+            },
+            StatisticsCacheOptions,
+            cancellationToken);
+    }
+
     public async Task<List<(string Id, ProductDocument Data)>> GetAllUnpagedAsync(CancellationToken cancellationToken)
     {
-        var db = _firebaseService.GetFirestoreDb();
-        var snapshot = await db.Collection(Collection).GetSnapshotAsync(cancellationToken);
+        // Whole-collection load goes through the request-scoped cache so a
+        // request that reads the products collection more than once (e.g. the
+        // dashboard aggregate plus a statistics/sku-map scan) reuses this
+        // snapshot instead of querying Firestore again. Writes invalidate it.
+        var snapshot = await _requestCache.GetWholeCollectionSnapshotAsync(Collection, cancellationToken);
+        return snapshot.Documents.Select(d => (d.Id, d.ConvertTo<ProductDocument>())).ToList();
+    }
+
+    /// <summary>
+    /// Exactly the fields the dashboard (and the BI layer that reuses its raw
+    /// snapshot) reads from each product — a Firestore field-mask projection so
+    /// the big blobs (images, seo, marketplace, searchKeywords, descriptions)
+    /// are never transferred. Everything the aggregation touches is included;
+    /// anything absent is left at its default value.
+    /// </summary>
+    private static readonly string[] DashboardFields =
+    [
+        "name", "category", "deleted", "active", "featured", "newArrival", "bestSeller",
+        "totalStock", "lowStockThreshold", "createdAt", "thumbnailUrl",
+    ];
+
+    public async Task<List<(string Id, ProductDocument Data)>> GetDashboardProductsAsync(CancellationToken cancellationToken)
+    {
+        var snapshot = await _requestCache.GetWholeCollectionSnapshotAsync(Collection, DashboardFields, cancellationToken);
         return snapshot.Documents.Select(d => (d.Id, d.ConvertTo<ProductDocument>())).ToList();
     }
 
@@ -219,6 +298,8 @@ public class ProductRepository : IProductRepository
     {
         var db = _firebaseService.GetFirestoreDb();
         await db.Collection(Collection).Document(id).CreateAsync(document, cancellationToken);
+        _cache.RemoveByPrefix(CachePrefix);
+        _requestCache.Invalidate(Collection);
     }
 
     public async Task UpdateAsync(string id, Dictionary<string, object?> fields, CancellationToken cancellationToken)
@@ -229,6 +310,8 @@ public class ProductRepository : IProductRepository
             .ToDictionary(kv => kv.Key, kv => kv.Value!);
 
         await db.Collection(Collection).Document(id).UpdateAsync(updates, cancellationToken: cancellationToken);
+        _cache.RemoveByPrefix(CachePrefix);
+        _requestCache.Invalidate(Collection);
     }
 
     public async Task<int> CountBySlugAsync(string slug, CancellationToken cancellationToken)
@@ -243,13 +326,21 @@ public class ProductRepository : IProductRepository
 
     private async Task<int> CountByFieldAsync(string field, string value, CancellationToken cancellationToken)
     {
-        var db = _firebaseService.GetFirestoreDb();
-        var snapshot = await db.Collection(Collection)
-            .WhereEqualTo(field, value)
-            .Count()
-            .GetSnapshotAsync(cancellationToken);
+        var cacheKey = $"{CachePrefix}:count:{field}:{value}";
+        return await _cache.GetOrCreateAsync(
+            cacheKey,
+            async ct =>
+            {
+                var db = _firebaseService.GetFirestoreDb();
+                var snapshot = await db.Collection(Collection)
+                    .WhereEqualTo(field, value)
+                    .Count()
+                    .GetSnapshotAsync(ct);
 
-        return (int)(snapshot.Count ?? 0);
+                return (int)(snapshot.Count ?? 0);
+            },
+            LookupCacheOptions,
+            cancellationToken);
     }
 
     public async Task<PagedResult<(string Id, ProductDocument Data)>> SearchAsync(List<string> tokens, int pageSize, string? cursor, CancellationToken cancellationToken)
@@ -345,6 +436,8 @@ public class ProductRepository : IProductRepository
     {
         var db = _firebaseService.GetFirestoreDb();
         await db.Collection(Collection).Document(id).DeleteAsync(cancellationToken: cancellationToken);
+        _cache.RemoveByPrefix(CachePrefix);
+        _requestCache.Invalidate(Collection);
     }
 
     /// <summary>
@@ -365,6 +458,7 @@ public class ProductRepository : IProductRepository
         }
 
         await batch.CommitAsync(cancellationToken);
+        _requestCache.Invalidate(Collection);
     }
 
     public async Task BulkUpdateFlipkartUrlsAsync(List<BulkFlipkartUrlItem> items, string updatedBy, CancellationToken cancellationToken)
@@ -417,5 +511,6 @@ public class ProductRepository : IProductRepository
             ["websiteClickCount"] = FieldValue.Increment(1),
             ["lastClickAt"] = DateTime.UtcNow,
         }, cancellationToken: cancellationToken);
+        _requestCache.Invalidate(Collection);
     }
 }

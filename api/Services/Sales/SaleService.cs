@@ -1,6 +1,7 @@
 using Vrindaya.Api.DTOs.Products;
 using Vrindaya.Api.Interfaces;
 using Vrindaya.Api.Models;
+using Vrindaya.Api.Services.Products;
 
 namespace Vrindaya.Api.Services.Sales;
 
@@ -10,17 +11,20 @@ public class SaleService : ISaleService
     private readonly IProductRepository _productRepo;
     private readonly IProductVariantRepository _variantRepo;
     private readonly ILogger<SaleService> _logger;
+    private readonly ICacheService _cache;
 
     public SaleService(
         ISaleRepository saleRepo,
         IProductRepository productRepo,
         IProductVariantRepository variantRepo,
-        ILogger<SaleService> logger)
+        ILogger<SaleService> logger,
+        ICacheService cache)
     {
         _saleRepo = saleRepo;
         _productRepo = productRepo;
         _variantRepo = variantRepo;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<List<SaleDto>> GetAllAsync(CancellationToken ct = default)
@@ -97,6 +101,8 @@ public class SaleService : ISaleService
 
         await SyncProductDenormalizedFields(request.ProductId, ct);
 
+        InvalidateDashboardCache();
+
         return ToDto(saleId, saleDoc);
     }
 
@@ -146,12 +152,19 @@ public class SaleService : ISaleService
         existing.SoldAt = request.SoldAt ?? existing.SoldAt;
 
         await _saleRepo.UpdateAsync(saleId, existing, ct);
+        InvalidateDashboardCache();
         return ToDto(saleId, existing);
     }
 
     public async Task DeleteAsync(string saleId, CancellationToken ct = default)
     {
         await _saleRepo.DeleteAsync(saleId, ct);
+        InvalidateDashboardCache();
+    }
+
+    private void InvalidateDashboardCache()
+    {
+        _cache.RemoveByPrefix(DashboardService.InvalidationPrefix);
     }
 
     private async Task SyncProductDenormalizedFields(string productId, CancellationToken ct)

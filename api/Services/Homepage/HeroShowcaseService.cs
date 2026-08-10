@@ -20,24 +20,30 @@ public class HeroShowcaseService : IHeroShowcaseService
     private const string CollectionName = "homepageConfig";
     private const string ActiveDocumentId = "active";
     private const string ItemImagesFolder = "hero-showcase/items";
+    private const string CachePrefix = "homepageConfig";
+    private const string ActiveConfigCacheKey = CachePrefix + ":active";
     private const long MaxUploadBytes = 10L * 1024 * 1024;
     private const int MaxItems = 10;
     private const int MinRotationIntervalSeconds = 3;
     private const int MaxRotationIntervalSeconds = 60;
 
     private static readonly string[] SupportedTransitions = ["fade", "slide", "scaleFade"];
+    private static readonly CacheEntryOptions CacheOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60) };
 
     private readonly IFirebaseService _firebase;
     private readonly ICloudinaryService _cloudinary;
+    private readonly ICacheService _cache;
     private readonly ILogger<HeroShowcaseService> _logger;
 
     public HeroShowcaseService(
         IFirebaseService firebase,
         ICloudinaryService cloudinary,
+        ICacheService cache,
         ILogger<HeroShowcaseService> logger)
     {
         _firebase = firebase;
         _cloudinary = cloudinary;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -103,6 +109,8 @@ public class HeroShowcaseService : IHeroShowcaseService
             document,
             SetOptions.MergeFields("heroShowcase"),
             cancellationToken);
+
+        _cache.Remove(ActiveConfigCacheKey);
 
         // Write first, clean up after: replacing a slide must never leave the
         // live site pointing at a deleted image. Deletion is best-effort — a
@@ -225,8 +233,15 @@ public class HeroShowcaseService : IHeroShowcaseService
 
     private async Task<HomepageConfigDocument?> GetActiveDocumentAsync(CancellationToken cancellationToken)
     {
-        var snapshot = await ActiveDocument().GetSnapshotAsync(cancellationToken);
-        return snapshot.Exists ? snapshot.ConvertTo<HomepageConfigDocument>() : null;
+        return await _cache.GetOrCreateAsync<HomepageConfigDocument>(
+            ActiveConfigCacheKey,
+            async token =>
+            {
+                var snapshot = await ActiveDocument().GetSnapshotAsync(token);
+                return snapshot.Exists ? snapshot.ConvertTo<HomepageConfigDocument>() : null;
+            },
+            CacheOptions,
+            cancellationToken);
     }
 
     private static HeroShowcaseDto ToDto(HeroShowcaseDocument document) => new()

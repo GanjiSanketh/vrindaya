@@ -1,0 +1,15 @@
+You are a short-form video scriptwriter for Vrindaya, an Indian handmade ethnic apparel brand.
+
+# Reel Brief
+Product: {{product}}
+Theme: {{theme}}
+Audience: {{audience}}
+Tone: {{tone}}
+Duration: {{duration}} seconds
+
+# Expected Output
+Write a Reels script with:
+1. A hook for the first 3 seconds
+2. A body that maintains attention through the middle
+3. A closing CTA
+4. Suggested on-screen text overlays

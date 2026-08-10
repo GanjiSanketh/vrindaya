@@ -35,4 +35,15 @@
     <None Remove="Firebase/**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- AI prompt templates are shipped as embedded resources so the
+         PromptTemplateService can load them without reading files off disk
+         (works regardless of working directory in containers). -->
+    <EmbeddedResource Include="AI/Core/Templates/Embedded/*.prompt.txt" />
+  </ItemGroup>
+
+  <Target Name="__DumpCompile" BeforeTargets="CoreCompile">
+    <WriteLinesToFile File="$(IntermediateOutputPath)compile_items.txt" Lines="@(Compile->'%(Identity)')" Overwrite="true" />
+  </Target>
+
 </Project>

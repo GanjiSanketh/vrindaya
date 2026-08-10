@@ -19,21 +19,27 @@ public class HeroBannerService : IHeroBannerService
 {
     private const string CollectionName = "heroBanners";
     private const string ActiveDocumentId = "active";
+    private const string CachePrefix = "heroBanners";
+    private const string ActiveCacheKey = CachePrefix + ":active";
+    private static readonly CacheEntryOptions CacheOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60) };
     private const string DesktopFolder = "hero-banners/desktop";
     private const string MobileFolder = "hero-banners/mobile";
     private const long MaxUploadBytes = 10L * 1024 * 1024;
 
     private readonly IFirebaseService _firebase;
     private readonly ICloudinaryService _cloudinary;
+    private readonly ICacheService _cacheService;
     private readonly ILogger<HeroBannerService> _logger;
 
     public HeroBannerService(
         IFirebaseService firebase,
         ICloudinaryService cloudinary,
+        ICacheService cacheService,
         ILogger<HeroBannerService> logger)
     {
         _firebase = firebase;
         _cloudinary = cloudinary;
+        _cacheService = cacheService;
         _logger = logger;
     }
 
@@ -66,6 +72,7 @@ public class HeroBannerService : IHeroBannerService
         };
 
         await ActiveDocument().SetAsync(document, cancellationToken: cancellationToken);
+        _cacheService.Remove(ActiveCacheKey);
 
         // Write first, clean up after: replacing the banner must never leave
         // the live site pointing at a deleted image. Deletion is best-effort —
@@ -174,8 +181,15 @@ public class HeroBannerService : IHeroBannerService
 
     private async Task<HeroBannerDocument?> GetActiveDocumentAsync(CancellationToken cancellationToken)
     {
-        var snapshot = await ActiveDocument().GetSnapshotAsync(cancellationToken);
-        return snapshot.Exists ? snapshot.ConvertTo<HeroBannerDocument>() : null;
+        return await _cacheService.GetOrCreateAsync(
+            ActiveCacheKey,
+            async token =>
+            {
+                var snapshot = await ActiveDocument().GetSnapshotAsync(token);
+                return snapshot.Exists ? snapshot.ConvertTo<HeroBannerDocument>() : null;
+            },
+            CacheOptions,
+            cancellationToken);
     }
 
     private static HeroBannerDto ToDto(HeroBannerDocument document) => new()

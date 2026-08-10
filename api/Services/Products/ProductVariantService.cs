@@ -26,12 +26,15 @@ public class ProductVariantService : IProductVariantService
 
     public async Task<List<VariantResponse>> GetVariantsAsync(string productId, CancellationToken ct = default)
     {
-        var hasVariants = await _repo.HasVariantsAsync(productId, ct);
-        if (!hasVariants)
+        // Read the variants subcollection once and treat an empty result as
+        // "no variants yet" — the previous HasVariantsAsync (a Limit(1) query on
+        // the same subcollection) plus this full read queried Firestore twice.
+        var docs = await _repo.GetVariantsAsync(productId, ct);
+        if (docs.Count == 0)
         {
             await EnsureDefaultVariantAsync(productId, ct);
+            docs = await _repo.GetVariantsAsync(productId, ct);
         }
-        var docs = await _repo.GetVariantsAsync(productId, ct);
         return docs.Select(d => MapToResponse(d.Data, d.Id)).ToList();
     }
 
