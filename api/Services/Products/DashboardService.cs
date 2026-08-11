@@ -365,19 +365,25 @@ public class DashboardService : IDashboardService
         dto.ProfitAnalytics.LowestMarginProduct = lowestMargin;
 
         // ── Category Analytics ──
+        // Firestore is schemaless: `category` may be an explicit null on
+        // legacy documents (products written before this API, or sales copied
+        // from them). Dictionary keys can never be null, so normalize at the
+        // aggregation boundary — null behaves as an empty-category bucket.
         var catData = new Dictionary<string, (int Products, long Stock, double Cost, double Revenue, double Profit)>();
         foreach (var (pid, doc) in activeProducts)
         {
-            if (!catData.ContainsKey(doc.Category))
-                catData[doc.Category] = (0, 0, 0, 0, 0);
-            var e = catData[doc.Category];
+            var category = doc.Category ?? string.Empty;
+            if (!catData.ContainsKey(category))
+                catData[category] = (0, 0, 0, 0, 0);
+            var e = catData[category];
             e.Products++;
-            catData[doc.Category] = e;
+            catData[category] = e;
         }
         foreach (var (pid, _, v) in activeVariants)
         {
             var product = activeProducts.FirstOrDefault(p => p.Id == pid).Doc;
             if (product == null) continue;
+            var category = product.Category ?? string.Empty;
             var purchaseCost = v.PurchaseCost ?? 0;
             var packagingCost = v.PackagingCost ?? 0;
             var commission = v.FlipkartCommission ?? 0;
@@ -387,12 +393,12 @@ public class DashboardService : IDashboardService
             var costPerUnit = purchaseCost + packagingCost + commission + shipping + marketing + other;
             var sellingPrice = v.SellingPrice ?? 0;
             var stock = v.Sizes.Sum(s => s.Stock);
-            var e = catData[product.Category];
+            var e = catData[category];
             e.Stock += stock;
             e.Cost += costPerUnit * stock;
             e.Revenue += sellingPrice * stock;
             e.Profit += (sellingPrice - costPerUnit) * stock;
-            catData[product.Category] = e;
+            catData[category] = e;
         }
         dto.CategoryAnalytics = catData
             .Select(kv => new CategoryAnalyticsDto
@@ -534,13 +540,14 @@ public class DashboardService : IDashboardService
         {
             var product = activeProducts.FirstOrDefault(p => p.Id == pId).Doc;
             if (product == null) continue;
-            if (!catCostPrice.ContainsKey(product.Category))
-                catCostPrice[product.Category] = (0, 0, 0);
-            var e = catCostPrice[product.Category];
+            var category = product.Category ?? string.Empty;
+            if (!catCostPrice.ContainsKey(category))
+                catCostPrice[category] = (0, 0, 0);
+            var e = catCostPrice[category];
             e.TotalCost += v.PurchaseCost ?? 0;
             e.TotalRevenue += v.SellingPrice ?? 0;
             e.Count++;
-            catCostPrice[product.Category] = e;
+            catCostPrice[category] = e;
         }
         dto.PurchaseCostVsSellingPrice = catCostPrice
             .Select(kv => new CategoryCostPriceDto
@@ -787,14 +794,16 @@ public class DashboardService : IDashboardService
         };
     }
 
-    private static void AddToDict(Dictionary<string, double> dict, string key, double value)
+    private static void AddToDict(Dictionary<string, double> dict, string? key, double value)
     {
+        key ??= string.Empty;
         if (!dict.ContainsKey(key)) dict[key] = 0;
         dict[key] += value;
     }
 
-    private static void AddToDictInt(Dictionary<string, int> dict, string key, int value)
+    private static void AddToDictInt(Dictionary<string, int> dict, string? key, int value)
     {
+        key ??= string.Empty;
         if (!dict.ContainsKey(key)) dict[key] = 0;
         dict[key] += value;
     }

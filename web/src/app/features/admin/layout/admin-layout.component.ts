@@ -73,6 +73,12 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Settings',    path: 'marketplace/settings',    icon: 'bi-gear' },
     ],
   },
+  {
+    key: 'ai', label: 'AI Workspace', icon: 'bi-stars',
+    items: [
+      { label: 'AI Workspace', path: 'ai-workspace', icon: 'bi-stars' },
+    ],
+  },
 ];
 
 const EXPANDED_STORAGE_KEY = 'vrindaya_admin_nav_expanded';
