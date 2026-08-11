@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Vrindaya.Api.AI.Copilot.DTOs;
 using Vrindaya.Api.AI.Copilot.Interfaces;
+using Vrindaya.Api.AI.Core.Services;
 using Vrindaya.Api.AI.Workspace.DTOs;
 using Vrindaya.Api.AI.Workspace.Interfaces;
 using Vrindaya.Api.AI.Workspace.Models;
@@ -78,7 +79,16 @@ public sealed class WorkspaceOrchestrator : IWorkspaceOrchestrator
             sw.Stop();
             success = false;
             errorMessage = ex.Message;
-            _logger.LogWarning(ex, "WorkspaceOrchestrator: copilot service failed for workspace type '{WorkspaceType}'.", request.WorkspaceType);
+
+            // Log the full failure — message, stack trace, inner-exception
+            // chain and any Gemini HTTP status — before the friendly fallback
+            // below replaces the response text.
+            _logger.LogError(
+                ex,
+                "WorkspaceOrchestrator: copilot service failed for workspace type '{WorkspaceType}'. {FailureDetail}",
+                request.WorkspaceType,
+                AiFailureLog.Describe(ex));
+
             copilotResponse = new AiCopilotResponseDto
             {
                 Response = "The AI service is currently unavailable. Please try again.",

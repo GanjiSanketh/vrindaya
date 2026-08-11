@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Vrindaya.Api.AI.Core.Interfaces;
+using Vrindaya.Api.AI.Core.Services;
 using Vrindaya.Api.AI.Orchestrator.Interfaces;
 using Vrindaya.Api.AI.Orchestrator.Models;
 using IAiCoreOrchestrator = Vrindaya.Api.AI.Core.Interfaces.IAiOrchestrator;
@@ -109,9 +110,16 @@ public sealed class WorkspaceAiModule : IAiModule
             sw.Stop();
             success = false;
             errorMessage = ex.Message;
-            _logger.LogWarning(
-                ex, "WorkspaceAiModule: AI generation failed for workspace type '{WorkspaceType}'.",
-                request.WorkspaceType);
+
+            // Log the full failure — message, stack trace, inner-exception
+            // chain and any Gemini HTTP status — before the friendly fallback
+            // below replaces the reply text.
+            _logger.LogError(
+                ex,
+                "WorkspaceAiModule: AI generation failed for workspace type '{WorkspaceType}'. {FailureDetail}",
+                request.WorkspaceType,
+                AiFailureLog.Describe(ex));
+
             reply = "The AI service is currently unavailable. Please try again.";
         }
 

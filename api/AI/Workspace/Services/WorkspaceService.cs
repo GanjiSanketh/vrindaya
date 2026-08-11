@@ -1,6 +1,7 @@
 using Google.Cloud.Firestore;
 using Vrindaya.Api.AI.Copilot.DTOs;
 using Vrindaya.Api.AI.Copilot.Interfaces;
+using Vrindaya.Api.AI.Core.Services;
 using Vrindaya.Api.AI.Workspace.DTOs;
 using Vrindaya.Api.AI.Workspace.Interfaces;
 using Vrindaya.Api.Interfaces;
@@ -137,7 +138,15 @@ public sealed class WorkspaceService : IWorkspaceService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "AI Workspace: copilot service failed for workspace '{WorkspaceId}'.", workspaceId);
+            // The full failure is logged first — message, stack trace, the
+            // inner-exception chain and any Gemini HTTP status — before the
+            // friendly fallback below replaces the response text.
+            _logger.LogError(
+                ex,
+                "AI Workspace: copilot service failed for workspace '{WorkspaceId}'. {FailureDetail}",
+                workspaceId,
+                AiFailureLog.Describe(ex));
+
             copilotResponse = new AiCopilotResponseDto
             {
                 Response = "The AI service is currently unavailable. Please try again.",

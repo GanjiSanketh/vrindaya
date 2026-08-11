@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Vrindaya.Api.AI.Core.Configuration;
 using Vrindaya.Api.AI.Core.Providers.Gemini.Models;
+using Vrindaya.Api.AI.Core.Services;
 
 namespace Vrindaya.Api.AI.Core.Providers.Gemini;
 
@@ -144,6 +145,12 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
 
         using var httpRequest = BuildRequest(model, prompt, systemInstruction, responseMimeType, settings);
 
+        // Captured up front so a failed call can be logged with the exact URL
+        // (never containing the API key — it travels only in a header) and the
+        // exact payload that was sent.
+        var requestUrl = ResolveRequestUrl(client, httpRequest);
+        var requestPayload = await httpRequest.Content!.ReadAsStringAsync(cancellationToken);
+
         var stopwatch = Stopwatch.StartNew();
 
         try
@@ -155,7 +162,8 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
 
             if (!httpResponse.IsSuccessStatusCode)
             {
-                throw await BuildFailureAsync(model, httpResponse, stopwatch, cancellationToken);
+                throw await BuildFailureAsync(
+                    model, requestUrl, requestPayload, httpResponse, stopwatch, cancellationToken);
             }
 
             await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken);
@@ -176,6 +184,15 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
         {
             stopwatch.Stop();
 
+            _logger.LogError(
+                "GeminiHttpClient: request {Method} {RequestUrl} for model {Model} timed out after " +
+                "{TimeoutSeconds:F0}s. Request payload: {RequestPayload}.",
+                HttpMethod.Post,
+                requestUrl,
+                model,
+                Timeout.TotalSeconds,
+                requestPayload);
+
             throw new GeminiApiException(
                 $"Gemini call to model '{model}' timed out after {Timeout.TotalSeconds:F0}s.",
                 ex);
@@ -184,6 +201,15 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
         {
             stopwatch.Stop();
 
+            _logger.LogError(
+                "GeminiHttpClient: request {Method} {RequestUrl} for model {Model} could not be reached. " +
+                "{FailureDetail} Request payload: {RequestPayload}.",
+                HttpMethod.Post,
+                requestUrl,
+                model,
+                AiFailureLog.Describe(ex),
+                requestPayload);
+
             throw new GeminiApiException(
                 $"Gemini could not be reached at '{BaseAddress}' for model '{model}'.",
                 ex);
@@ -191,6 +217,15 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
         catch (JsonException ex)
         {
             stopwatch.Stop();
+
+            _logger.LogError(
+                "GeminiHttpClient: request {Method} {RequestUrl} for model {Model} returned an unreadable " +
+                "response body. {FailureDetail} Request payload: {RequestPayload}.",
+                HttpMethod.Post,
+                requestUrl,
+                model,
+                AiFailureLog.Describe(ex),
+                requestPayload);
 
             throw new GeminiApiException(
                 $"Gemini returned an unreadable response body for model '{model}'.",
@@ -260,23 +295,53 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
     /// </summary>
     private async Task<GeminiApiException> BuildFailureAsync(
         string model,
+        string requestUrl,
+        string requestPayload,
         HttpResponseMessage response,
         Stopwatch stopwatch,
         CancellationToken cancellationToken)
     {
         stopwatch.Stop();
 
-        var error = await ReadErrorAsync(response, cancellationToken);
         var statusCode = response.StatusCode;
         var reason = DescribeStatus(statusCode);
+
+        string? rawBody = null;
+        GeminiErrorDetail? error = null;
+
+        try
+        {
+            rawBody = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            error = string.IsNullOrWhiteSpace(rawBody)
+                ? null
+                : JsonSerializer
+                    .Deserialize<GeminiErrorResponse>(rawBody, ResponseJsonOptions)?
+                    .Error;
+        }
+        catch (Exception ex) when (ex is JsonException or HttpRequestException or InvalidOperationException)
+        {
+            _logger.LogWarning(
+                ex,
+                "GeminiHttpClient: could not read or parse the error body for model {Model}. {FailureDetail}",
+                model,
+                AiFailureLog.Describe(ex));
+        }
+
         var detail = string.IsNullOrWhiteSpace(error?.Message) ? null : error!.Message!.Trim();
 
-        _logger.LogWarning(
-            "GeminiHttpClient: model {Model} returned HTTP {StatusCode} ({ApiStatus}) after {ElapsedMs}ms.",
+        _logger.LogError(
+            "GeminiHttpClient: request {Method} {RequestUrl} for model {Model} failed with HTTP " +
+            "{StatusCode} ({ApiStatus}) after {ElapsedMs}ms. " +
+            "Request payload: {RequestPayload}. Response body: {ResponseBody}.",
+            HttpMethod.Post,
+            requestUrl,
             model,
             (int)statusCode,
             error?.Status ?? "unknown",
-            stopwatch.ElapsedMilliseconds);
+            stopwatch.ElapsedMilliseconds,
+            requestPayload,
+            rawBody ?? string.Empty);
 
         var message = detail is null
             ? $"Gemini request for model '{model}' failed with HTTP {(int)statusCode}: {reason}"
@@ -308,33 +373,6 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
             "Gemini is temporarily unavailable — retries were already exhausted.",
         _ => "the API returned an unexpected status.",
     };
-
-    /// <summary>
-    /// Reads the API's error envelope. A body that is missing or unparsable is
-    /// not itself an error — the status code alone still describes the failure.
-    /// </summary>
-    private static async Task<GeminiErrorDetail?> ReadErrorAsync(
-        HttpResponseMessage response,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var body = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                return null;
-            }
-
-            return JsonSerializer
-                .Deserialize<GeminiErrorResponse>(body, ResponseJsonOptions)?
-                .Error;
-        }
-        catch (Exception ex) when (ex is JsonException or HttpRequestException or InvalidOperationException)
-        {
-            return null;
-        }
-    }
 
     /// <summary>
     /// Projects the response onto the generated text of the first candidate.
@@ -391,6 +429,28 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
     /// <summary>Model name guarded against a blank configuration value.</summary>
     private static string ResolveModel(GeminiSettings settings) =>
         string.IsNullOrWhiteSpace(settings.Model) ? "gemini-2.5-flash" : settings.Model.Trim();
+
+    /// <summary>
+    /// Resolves the absolute URL a request will be sent to, for failure
+    /// logging. The API key is never part of the URL (it travels in the
+    /// <c>x-goog-api-key</c> header), so logging the resolved URL is safe.
+    /// </summary>
+    private static string ResolveRequestUrl(HttpClient client, HttpRequestMessage request)
+    {
+        if (request.RequestUri is null)
+        {
+            return string.Empty;
+        }
+
+        if (request.RequestUri.IsAbsoluteUri)
+        {
+            return request.RequestUri.ToString();
+        }
+
+        return client.BaseAddress is null
+            ? request.RequestUri.ToString()
+            : new Uri(client.BaseAddress, request.RequestUri).ToString();
+    }
 
     /// <summary>
     /// Applies base address, timeout and headers to a factory-supplied client.

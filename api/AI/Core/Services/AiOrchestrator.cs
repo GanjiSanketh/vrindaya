@@ -7,6 +7,7 @@ using Vrindaya.Api.AI.Campaigns.Dtos;
 using Vrindaya.Api.AI.Core.Configuration;
 using Vrindaya.Api.AI.Core.Interfaces;
 using Vrindaya.Api.AI.Core.Models;
+using Vrindaya.Api.AI.Core.Services;
 
 namespace Vrindaya.Api.AI.Core.Services;
 
@@ -419,6 +420,18 @@ public sealed class AiOrchestrator : IAiOrchestrator
         Exception exception,
         long elapsedMs)
     {
+        // Callers may degrade this exception into a friendly message (the AI
+        // Workspace does), so log the full failure — type, message, stack
+        // trace, inner-exception chain and any HTTP status — before it can
+        // disappear from the logs.
+        _logger.LogError(
+            exception,
+            "AiOrchestrator: {Operation} failed for provider {Provider} after {ElapsedMs}ms. {FailureDetail}",
+            operation,
+            provider.ProviderName,
+            elapsedMs,
+            AiFailureLog.Describe(exception));
+
         var status = exception is OperationCanceledException
             ? nameof(AiDiagnosticsOutcome.Cancelled)
             : nameof(AiDiagnosticsOutcome.Failed);

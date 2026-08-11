@@ -8,6 +8,7 @@ using Vrindaya.Api.AI.Campaigns.Prompts;
 using Vrindaya.Api.AI.Core.Configuration;
 using Vrindaya.Api.AI.Core.Interfaces;
 using Vrindaya.Api.AI.Core.Models;
+using Vrindaya.Api.AI.Core.Services;
 
 namespace Vrindaya.Api.AI.Core.Providers.Gemini;
 
@@ -181,8 +182,12 @@ public sealed class GeminiAiProvider : IAiProvider
             stopwatch.Stop();
 
             // A health probe reports; it does not fail the caller. The reason is
-            // carried in Status so operators can act on it.
-            _logger.LogWarning(ex, "GeminiAiProvider: health probe failed.");
+            // carried in Status so operators can act on it. The full failure is
+            // logged first so the swallowed reason is never lost.
+            _logger.LogError(
+                ex,
+                "GeminiAiProvider: health probe failed. {FailureDetail}",
+                AiFailureLog.Describe(ex));
 
             return new AiProviderHealthStatus
             {
