@@ -166,12 +166,24 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
                     model, requestUrl, requestPayload, httpResponse, stopwatch, cancellationToken);
             }
 
-            await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken);
-
-            var payload = await JsonSerializer.DeserializeAsync<GeminiResponse>(
-                stream, ResponseJsonOptions, cancellationToken);
+            var rawResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
             stopwatch.Stop();
+
+            // Full request/response trail: the exact prompt that was sent (the
+            // API key never appears in it — it travels in a header) and the raw
+            // Gemini HTTP response body, before any parsing or projection.
+            _logger.LogDebug(
+                "GeminiHttpClient: request {Method} {RequestUrl} for model {Model} succeeded after " +
+                "{ElapsedMs}ms. Request payload: {RequestPayload}. Raw response body: {RawResponse}.",
+                HttpMethod.Post,
+                requestUrl,
+                model,
+                stopwatch.ElapsedMilliseconds,
+                requestPayload,
+                rawResponse);
+
+            var payload = JsonSerializer.Deserialize<GeminiResponse>(rawResponse, ResponseJsonOptions);
 
             return ExtractText(payload, model, stopwatch.ElapsedMilliseconds);
         }

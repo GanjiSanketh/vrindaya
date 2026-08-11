@@ -274,8 +274,18 @@ public sealed class AiCopilotService : IAiCopilotService
 
         var prompt = BuildReplyPrompt(request, orchestration, actions);
 
+        _logger.LogDebug(
+            "AI Copilot: conversation {ConversationId} — prompt sent to the AI provider for narration: {Prompt}",
+            request.ConversationId,
+            prompt);
+
         var reply = await _aiOrchestrator.GenerateTextAsync(
             prompt, SystemInstruction, ModuleName, cancellationToken);
+
+        _logger.LogDebug(
+            "AI Copilot: conversation {ConversationId} — narrated reply received from the AI provider: {Reply}",
+            request.ConversationId,
+            reply);
 
         if (string.IsNullOrWhiteSpace(reply))
         {
@@ -287,8 +297,24 @@ public sealed class AiCopilotService : IAiCopilotService
             // own prompt: it is passed through to the AI provider unchanged and
             // the provider's actual response is returned — never a canned
             // module-status placeholder.
-            return (await _aiOrchestrator.GenerateTextAsync(
+            var directReply = (await _aiOrchestrator.GenerateTextAsync(
                 request.UserMessage, SystemInstruction, ModuleName, cancellationToken)).Trim();
+
+            if (string.IsNullOrWhiteSpace(directReply))
+            {
+                // The exact point at which the AI message would be saved with
+                // empty content: the provider returned no text for either the
+                // narration brief or the operator's own prompt. The original
+                // user prompt is logged so the failing request can be replayed.
+                _logger.LogError(
+                    "AI Copilot: conversation {ConversationId} — the AI provider returned an empty reply for " +
+                    "both the narration brief and the operator's original prompt '{UserPrompt}'. " +
+                    "The AI message will be saved with empty content.",
+                    request.ConversationId,
+                    request.UserMessage);
+            }
+
+            return directReply;
         }
 
         return reply.Trim();

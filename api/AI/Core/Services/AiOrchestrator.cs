@@ -280,10 +280,13 @@ public sealed class AiOrchestrator : IAiOrchestrator
         {
             // A malformed payload is a provider-quality problem, not a caller
             // error: report null so the module falls back deterministically.
+            // The raw payload is logged with the exception so a silent fallback
+            // never hides what the provider actually returned.
             _logger.LogWarning(ex,
-                "AiOrchestrator: {Module} received a payload that is not valid {Contract}.",
+                "AiOrchestrator: {Module} received a payload that is not valid {Contract}. Raw payload: {Payload}.",
                 module ?? "prompt",
-                typeof(TValue).Name);
+                typeof(TValue).Name,
+                text);
 
             return null;
         }
