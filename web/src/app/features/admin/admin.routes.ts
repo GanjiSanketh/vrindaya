@@ -40,6 +40,7 @@ export const ADMIN_ROUTES: Routes = [
       { path: 'bi', loadComponent: () => import('./pages/bi-dashboard/bi-dashboard.component').then(m => m.BIDashboardComponent) },
 
       { path: 'marketplace', loadChildren: () => import('./marketplace/marketplace.routes').then(m => m.MARKETPLACE_ROUTES) },
+      { path: 'ai-workspace', loadComponent: () => import('../vrindaya-ai/workspace.component').then(m => m.WorkspaceComponent) },
       { path: '**', redirectTo: 'products' },
     ],
   },

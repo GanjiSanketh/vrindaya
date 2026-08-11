@@ -27,6 +27,7 @@ export class GlobalSearchService {
     { label: 'Sync Centre', path: 'marketplace/sync-centre', icon: 'bi-arrow-repeat', section: 'Marketplace', type: 'page' },
     { label: 'Marketing AI', path: 'marketplace/marketing', icon: 'bi-megaphone', section: 'Marketplace', type: 'page' },
     { label: 'Marketplace Settings', path: 'marketplace/settings', icon: 'bi-gear', section: 'Marketplace', type: 'page' },
+    { label: 'AI Workspace', path: 'ai-workspace', icon: 'bi-stars', section: 'AI Workspace', type: 'page' },
   ];
 
   readonly query = signal('');
