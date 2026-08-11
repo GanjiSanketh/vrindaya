@@ -103,7 +103,12 @@ public sealed class WorkspaceAiModule : IAiModule
             var prompt = BuildPrompt(request, conversationId);
             reply = await _aiOrchestrator.GenerateTextAsync(
                 prompt, SystemInstruction, ModuleName, cancellationToken);
-            reply = string.IsNullOrWhiteSpace(reply) ? string.Empty : reply.Trim();
+
+            // An empty provider reply is a failure, never content — never
+            // returned as an empty string.
+            reply = string.IsNullOrWhiteSpace(reply)
+                ? "The AI provider returned an empty response. Please try again."
+                : reply.Trim();
         }
         catch (Exception ex)
         {

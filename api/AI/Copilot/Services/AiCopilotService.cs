@@ -76,6 +76,12 @@ public sealed class AiCopilotService : IAiCopilotService
     /// <summary>Route used when no intent can be resolved from the message or the current module.</summary>
     private static readonly string FallbackRoute = AiRouteCatalog.RecommendationRoute;
 
+    /// <summary>
+    /// Reply returned when the AI provider returns no text at all. Empty text is
+    /// a failure, never content, so it is never handed back to the workspace.
+    /// </summary>
+    private const string EmptyReplyFallback = "The AI provider returned an empty response. Please try again.";
+
     /// <summary>Telemetry label for prompts issued by the copilot.</summary>
     private const string ModuleName = "copilot";
 
@@ -309,9 +315,11 @@ public sealed class AiCopilotService : IAiCopilotService
                 _logger.LogError(
                     "AI Copilot: conversation {ConversationId} — the AI provider returned an empty reply for " +
                     "both the narration brief and the operator's original prompt '{UserPrompt}'. " +
-                    "The AI message will be saved with empty content.",
+                    "Returning the empty-reply fallback message.",
                     request.ConversationId,
                     request.UserMessage);
+
+                return EmptyReplyFallback;
             }
 
             return directReply;

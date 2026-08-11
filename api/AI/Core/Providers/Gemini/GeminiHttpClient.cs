@@ -171,21 +171,33 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
             stopwatch.Stop();
 
             // Full request/response trail: the exact prompt that was sent (the
-            // API key never appears in it — it travels in a header) and the raw
-            // Gemini HTTP response body, before any parsing or projection.
+            // API key never appears in it — it travels in a header), the HTTP
+            // status and the raw Gemini HTTP response body, before any parsing
+            // or projection.
             _logger.LogDebug(
-                "GeminiHttpClient: request {Method} {RequestUrl} for model {Model} succeeded after " +
-                "{ElapsedMs}ms. Request payload: {RequestPayload}. Raw response body: {RawResponse}.",
+                "GeminiHttpClient: request {Method} {RequestUrl} for model {Model} returned HTTP {StatusCode} " +
+                "after {ElapsedMs}ms. Request payload: {RequestPayload}. Raw response body: {RawResponse}.",
                 HttpMethod.Post,
                 requestUrl,
                 model,
+                (int)httpResponse.StatusCode,
                 stopwatch.ElapsedMilliseconds,
                 requestPayload,
                 rawResponse);
 
             var payload = JsonSerializer.Deserialize<GeminiResponse>(rawResponse, ResponseJsonOptions);
 
-            return ExtractText(payload, model, stopwatch.ElapsedMilliseconds);
+            var text = ExtractText(payload, model, stopwatch.ElapsedMilliseconds);
+
+            // The parsed text that will be returned to the caller, after
+            // candidate extraction — kept at Debug like the raw body above.
+            _logger.LogDebug(
+                "GeminiHttpClient: model {Model} parsed {Characters} characters of text: {ParsedText}",
+                model,
+                text.Length,
+                text);
+
+            return text;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -395,6 +407,10 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
     {
         if (payload is null)
         {
+            _logger.LogWarning(
+                "GeminiHttpClient: model {Model} returned an empty response body — no candidates to parse.",
+                model);
+
             throw new GeminiApiException(
                 $"Gemini returned an empty response body for model '{model}'.");
         }
@@ -402,6 +418,11 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
         var blockReason = payload.PromptFeedback?.BlockReason;
         if (!string.IsNullOrWhiteSpace(blockReason))
         {
+            _logger.LogWarning(
+                "GeminiHttpClient: model {Model} blocked the prompt ({BlockReason}) — no text to parse.",
+                model,
+                blockReason);
+
             throw new GeminiApiException(
                 $"Gemini blocked the prompt for model '{model}': {blockReason}.");
         }
@@ -409,6 +430,10 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
         var candidate = payload.Candidates?.FirstOrDefault();
         if (candidate is null)
         {
+            _logger.LogWarning(
+                "GeminiHttpClient: model {Model} returned no candidates — nothing to extract text from.",
+                model);
+
             throw new GeminiApiException(
                 $"Gemini returned no candidates for model '{model}'.");
         }
@@ -424,6 +449,13 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
             var finishReason = string.IsNullOrWhiteSpace(candidate.FinishReason)
                 ? "no finish reason was reported"
                 : $"finish reason was '{candidate.FinishReason}'";
+
+            // Logged before the throw so the reason is on record even if the
+            // exception is later degraded into a friendly message.
+            _logger.LogWarning(
+                "GeminiHttpClient: model {Model} returned no text in the parsed candidates — {FinishReason}.",
+                model,
+                finishReason);
 
             throw new GeminiApiException(
                 $"Gemini returned no text for model '{model}' — {finishReason}.");
