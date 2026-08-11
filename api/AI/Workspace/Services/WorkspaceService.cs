@@ -160,6 +160,23 @@ public sealed class WorkspaceService : IWorkspaceService
             };
         }
 
+        // An empty AI reply is a failure, never content — an empty string must
+        // never be persisted as the AI message. The reason is logged at Error
+        // (Mock fallback because the Gemini key is missing at runtime, or a
+        // provider that returned nothing) and a clear fallback message is saved
+        // instead. The original user prompt is included so the request can be
+        // replayed.
+        if (string.IsNullOrWhiteSpace(copilotResponse.Response))
+        {
+            _logger.LogError(
+                "AI Workspace: copilot returned an empty reply for workspace '{WorkspaceId}' — saving the " +
+                "empty-reply fallback message instead of empty content. Original user prompt: {UserPrompt}",
+                workspaceId,
+                request.Content);
+
+            copilotResponse.Response = "The AI provider returned an empty response. Please try again.";
+        }
+
         var aiMessage = new WorkspaceMessageDto
         {
             Id = Guid.NewGuid().ToString("N"),
@@ -176,26 +193,10 @@ public sealed class WorkspaceService : IWorkspaceService
 
         workspace.Messages.Add(aiMessage);
 
-        if (string.IsNullOrWhiteSpace(copilotResponse.Response))
-        {
-            // The one path that saves an empty AI message: the copilot returned
-            // no text. Logged at Error so the cause (Mock fallback because the
-            // Gemini key is missing at runtime, or a provider that returned
-            // nothing) is never silent. The original user prompt is included so
-            // the failing request can be replayed.
-            _logger.LogError(
-                "AI Workspace: copilot returned an empty reply for workspace '{WorkspaceId}' — the AI message " +
-                "will be saved with empty content. Original user prompt: {UserPrompt}",
-                workspaceId,
-                request.Content);
-        }
-        else
-        {
-            _logger.LogDebug(
-                "AI Workspace: final AI message content saved for workspace '{WorkspaceId}' — {AiContent}",
-                workspaceId,
-                copilotResponse.Response);
-        }
+        _logger.LogDebug(
+            "AI Workspace: final AI message content saved for workspace '{WorkspaceId}' — {AiContent}",
+            workspaceId,
+            copilotResponse.Response);
 
         if (!string.IsNullOrWhiteSpace(copilotResponse.RecommendedModule))
         {
