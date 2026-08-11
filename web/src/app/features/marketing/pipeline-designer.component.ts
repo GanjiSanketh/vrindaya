@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, signal, computed, inject, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed, inject, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ToastService } from '../../shared/services/toast.service';
 import { PipelineDesignerService } from './pipeline-designer.service';
 import {
@@ -134,6 +135,7 @@ function uid(): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PipelineDesignerComponent implements OnDestroy {
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly toast = inject(ToastService);
   private readonly service = inject(PipelineDesignerService);
 
@@ -197,6 +199,7 @@ export class PipelineDesignerComponent implements OnDestroy {
   });
 
   ngOnDestroy(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     window.removeEventListener('pointermove', this.onPointerMove);
     window.removeEventListener('pointerup', this.onPointerUp);
   }

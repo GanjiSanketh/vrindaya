@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Workspace, WorkspaceSummary, CreateWorkspaceRequest, SendMessageRequest } from '../models/workspace.model';
 import { AiOrchestrator } from './ai-orchestrator.service';

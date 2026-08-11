@@ -1,4 +1,4 @@
-import { Component, inject, signal, PLATFORM_ID, ChangeDetectionStrategy, DestroyRef, ElementRef, viewChild } from '@angular/core';
+import { Component, inject, signal, PLATFORM_ID, ChangeDetectionStrategy, DestroyRef, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { fromEvent, animationFrameScheduler } from 'rxjs';
@@ -70,8 +70,6 @@ export class HomePageComponent {
   /** The persisted Hero Showcase configuration + whether it is live. */
   readonly heroShowcaseConfig = this.heroShowcaseSvc.config;
   readonly heroShowcaseEnabled = this.heroShowcaseSvc.enabled;
-
-  protected readonly heroSequence = viewChild.required(HeroSequenceComponent);
 
   /** Wide/narrow banner URLs from the Firestore-driven HeroBannerService (asset fallback until/unless published). */
   readonly heroDesktop = this.heroBanner.desktopSrc;

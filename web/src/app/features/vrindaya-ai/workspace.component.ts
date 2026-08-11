@@ -67,7 +67,7 @@ export class WorkspaceComponent implements OnInit {
         this.workspaces.set(workspaces);
         this.isLoading.set(false);
       },
-      error: err => {
+      error: () => {
         this.error.set('Failed to load workspaces');
         this.isLoading.set(false);
       },
