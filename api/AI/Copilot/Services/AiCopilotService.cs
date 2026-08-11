@@ -280,10 +280,15 @@ public sealed class AiCopilotService : IAiCopilotService
         if (string.IsNullOrWhiteSpace(reply))
         {
             _logger.LogInformation(
-                "AI Copilot: conversation {ConversationId} received no narrated reply — reporting module status.",
+                "AI Copilot: conversation {ConversationId} received no narrated reply — answering the operator's question directly.",
                 request.ConversationId);
 
-            return $"{orchestration.RouteLabel} completed via {string.Join(", ", executed)}.";
+            // The module narration came back empty, so answer from the operator's
+            // own prompt: it is passed through to the AI provider unchanged and
+            // the provider's actual response is returned — never a canned
+            // module-status placeholder.
+            return (await _aiOrchestrator.GenerateTextAsync(
+                request.UserMessage, SystemInstruction, ModuleName, cancellationToken)).Trim();
         }
 
         return reply.Trim();
