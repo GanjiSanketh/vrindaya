@@ -122,6 +122,11 @@ public sealed class WorkspaceService : IWorkspaceService
 
         workspace.Messages.Add(userMessage);
 
+        _logger.LogDebug(
+            "AI Workspace: saving original user message in '{WorkspaceId}' unchanged — {UserPrompt}",
+            workspaceId,
+            request.Content);
+
         var copilotRequest = new AiCopilotRequestDto
         {
             UserMessage = request.Content,
@@ -170,6 +175,27 @@ public sealed class WorkspaceService : IWorkspaceService
         };
 
         workspace.Messages.Add(aiMessage);
+
+        if (string.IsNullOrWhiteSpace(copilotResponse.Response))
+        {
+            // The one path that saves an empty AI message: the copilot returned
+            // no text. Logged at Error so the cause (Mock fallback because the
+            // Gemini key is missing at runtime, or a provider that returned
+            // nothing) is never silent. The original user prompt is included so
+            // the failing request can be replayed.
+            _logger.LogError(
+                "AI Workspace: copilot returned an empty reply for workspace '{WorkspaceId}' — the AI message " +
+                "will be saved with empty content. Original user prompt: {UserPrompt}",
+                workspaceId,
+                request.Content);
+        }
+        else
+        {
+            _logger.LogDebug(
+                "AI Workspace: final AI message content saved for workspace '{WorkspaceId}' — {AiContent}",
+                workspaceId,
+                copilotResponse.Response);
+        }
 
         if (!string.IsNullOrWhiteSpace(copilotResponse.RecommendedModule))
         {
