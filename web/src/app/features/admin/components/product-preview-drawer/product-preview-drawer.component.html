@@ -1,5 +1,5 @@
 @if (productId()) {
-  <div class="ppd-backdrop" (click)="onBackdropClick($event)">
+  <div class="ppd-backdrop" (click)="onBackdropClick($event)" (keydown.escape)="close()" tabindex="-1">
     <aside class="ppd-drawer">
       <button type="button" class="ppd-close" (click)="close()" title="Close" aria-label="Close preview">
         <i class="bi bi-x-lg"></i>

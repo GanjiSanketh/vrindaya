@@ -1,21 +1,9 @@
 import { Component, inject, signal, viewChild, ElementRef, AfterViewInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { BIService, BIDashboardDto, ChartDataPoint, InsightCardDto } from '../../services/bi.service';
+import { BIService, BIDashboardDto, ChartDataPoint } from '../../services/bi.service';
 import { Chart } from 'chart.js';
 
 const COLORS = ['#0f6f84', '#c9a54c', '#22a34a', '#9b4fe0', '#dc2626', '#b45309', '#6b7280', '#be123c', '#0891b2', '#65a30d'];
-const GRADIENT_COLORS = [
-  'rgba(15, 111, 132, 0.8)',
-  'rgba(201, 165, 76, 0.8)',
-  'rgba(34, 163, 74, 0.8)',
-  'rgba(155, 79, 224, 0.8)',
-  'rgba(220, 38, 38, 0.8)',
-  'rgba(180, 83, 9, 0.8)',
-  'rgba(107, 114, 128, 0.8)',
-  'rgba(190, 18, 60, 0.8)',
-  'rgba(8, 145, 178, 0.8)',
-  'rgba(101, 163, 13, 0.8)'
-];
 
 interface SeverityStyle {
   bg: string;
@@ -176,7 +164,7 @@ export class BIDashboardComponent implements AfterViewInit, OnDestroy {
     canvas: HTMLCanvasElement | undefined,
     data: ChartDataPoint[],
     label: string,
-    color: string
+    _color: string
   ): Chart | null {
     if (!canvas || !data.length) return null;
 

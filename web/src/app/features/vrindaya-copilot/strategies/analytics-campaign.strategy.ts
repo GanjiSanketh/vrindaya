@@ -19,7 +19,6 @@ export class AnalyticsCampaignStrategy implements ICampaignStrategy {
     const hasAnalyticsGoal = !!analyticsGoal;
     const hasMetrics = !!metrics && Array.isArray(metrics);
     const hasTarget = !!targetAudience;
-    const hasPlatform = !!platform;
     const hasProduct = !!productId || !!productName;
     
     const validPlatforms: CampaignPlatform[] = [
@@ -136,8 +135,6 @@ export class AnalyticsCampaignStrategy implements ICampaignStrategy {
         formats: ['Video', 'Vlog', 'Tutorial', 'Analysis']
       }
     };
-    
-    const selectedCampaigns = platforms[platform as keyof typeof platforms] || platforms.instagram;
     
     const audienceSegment = targetAudience || 
       (analyticsGoal === 'conversion' ? 'prospects and customers' :

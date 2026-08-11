@@ -188,6 +188,16 @@ export class AdminLayoutComponent {
     this.kbd.showSearch.set(false);
   }
 
+  closeAllOverlays(): void {
+    this.closeSearch();
+    this.kbd.showCommandPalette.set(false);
+    this.kbd.showHelp.set(false);
+  }
+
+  onOverlayClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).classList.contains('ux-overlay')) this.closeAllOverlays();
+  }
+
   onSearchInput(query: string): void {
     this.searchQuery = query;
     this.search.search(query);

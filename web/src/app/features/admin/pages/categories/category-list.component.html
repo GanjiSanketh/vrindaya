@@ -51,8 +51,8 @@
 </div>
 
 @if (deleteId() !== null) {
-    <div class="modal-backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'cd-title'" (click)="cancelDelete()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'cd-title'" (click)="onBackdropClick($event)" (keydown.escape)="cancelDelete()" tabindex="-1">
+    <div class="modal-box">
       <div class="modal-icon"><i class="bi bi-trash3-fill"></i></div>
       <h3 class="modal-title" id="cd-title">Delete Category?</h3>
       <p class="modal-body">Products already assigned to this category keep their category value — only the category's own listing/nav entry is removed.</p>

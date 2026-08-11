@@ -1,5 +1,5 @@
-<div class="modal-backdrop" role="dialog" aria-modal="true" (click)="cancel()">
-  <div class="modal-box modal-box--wide" (click)="$event.stopPropagation()">
+<div class="modal-backdrop" role="dialog" aria-modal="true" (click)="onBackdropClick($event)" (keydown.escape)="cancel()" tabindex="-1">
+  <div class="modal-box modal-box--wide">
 
     <div class="hbf-header">
       <h2 class="hbf-title">Edit Flipkart Info</h2>

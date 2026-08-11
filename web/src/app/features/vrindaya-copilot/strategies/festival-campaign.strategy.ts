@@ -32,11 +32,6 @@ export class FestivalCampaignStrategy implements ICampaignStrategy {
     const hasPlatform = !!platform;
     const hasTarget = !!targetAudience;
     
-    const validPlatforms: CampaignPlatform[] = [
-      'instagram', 'facebook', 'twitter', 'linkedin', 
-      'pinterest', 'tiktok', 'youtube', 'whatsApp', 'sms', 'email'
-    ];
-    
     return isFestival || isSeason || hasPlatform || hasTarget || !!productId || !!productName;
   }
 

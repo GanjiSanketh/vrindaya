@@ -87,7 +87,7 @@ export class AiReviewerService {
     return Math.min(bonus, 6);
   }
 
-  private improvementsFor(category: ReviewCategory, content: string): string[] {
+  private improvementsFor(category: ReviewCategory, _content: string): string[] {
     const base: Record<ReviewCategory, string[]> = {
       'Caption': [
         'Open with an emotive first line that names the feeling before the product.',

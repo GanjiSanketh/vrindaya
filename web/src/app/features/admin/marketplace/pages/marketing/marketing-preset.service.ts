@@ -179,7 +179,7 @@ export class MarketingPresetService {
 
   private seed(): void {
     const now = new Date().toISOString();
-    const seeded: MarketingPreset[] = DEFAULT_PRESET_SEEDS.map((s, i) => ({
+    const seeded: MarketingPreset[] = DEFAULT_PRESET_SEEDS.map(s => ({
       id: crypto.randomUUID(),
       name: s.name,
       category: s.category,

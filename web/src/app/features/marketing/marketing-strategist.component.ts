@@ -11,7 +11,6 @@ import {
   StrategistInput,
   CampaignPlan,
   CampaignPhase,
-  CampaignActivity,
 } from './models/marketing-strategist.model';
 
 @Component({

@@ -30,7 +30,8 @@
         <ul class="sidebar-menu">
           @for (item of sidebarItems(); track item.key) {
             <li class="sidebar-item">
-              <a class="sidebar-link" [class.active]="selectedModule() === item.key" (click)="onModuleSelect(item.key)">
+              <a class="sidebar-link" [class.active]="selectedModule() === item.key" (click)="onModuleSelect(item.key)"
+                 (keydown.enter)="onModuleSelect(item.key)" (keydown.space)="onModuleSelect(item.key)" role="button" tabindex="0">
                 <i [class]="'bi ' + item.icon"></i>
                 <span>{{ item.label }}</span>
               </a>
@@ -46,7 +47,8 @@
         } @else {
           <div class="workspace-list-header">Recent</div>
           @for (ws of workspaces(); track ws.id) {
-            <div class="workspace-list-item" [class.active]="activeWorkspace()?.id === ws.id" (click)="selectWorkspace(ws.id)">
+            <div class="workspace-list-item" [class.active]="activeWorkspace()?.id === ws.id" (click)="selectWorkspace(ws.id)"
+                 (keydown.enter)="selectWorkspace(ws.id)" (keydown.space)="selectWorkspace(ws.id)" role="button" tabindex="0">
               <div class="workspace-item-info">
                 <span class="workspace-item-name">{{ ws.name }}</span>
                 <span class="workspace-item-meta">{{ ws.messageCount }} messages</span>

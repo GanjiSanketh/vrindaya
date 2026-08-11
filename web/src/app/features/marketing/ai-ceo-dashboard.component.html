@@ -364,7 +364,7 @@
               <div class="cc-rec-content">
                 <div class="cc-rec-header">
                   <h6 class="cc-rec-title">{{ rec.title }}</h6>
-                  <span class="cc-rec-priority" [class]="rec.priority">{{ rec.priority | titlecase }}</span>
+                  <span [class]="'cc-rec-priority ' + rec.priority">{{ rec.priority | titlecase }}</span>
                 </div>
                 <p class="cc-rec-description">{{ rec.description }}</p>
                 <div class="cc-rec-impact">

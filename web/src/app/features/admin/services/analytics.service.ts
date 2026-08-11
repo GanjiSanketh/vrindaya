@@ -85,7 +85,6 @@ export class AnalyticsService implements OnDestroy {
           const productSet = new Set<string>();
           let totalRevenue = 0;
 
-          const aiGenerated = 0, aiOptimized = 0, manual = 0, notApplicable = 0;
           const aiCount: Record<string, number> = {};
           const aiPlatformCount: Record<string, Record<string, number>> = {};
           const statusCount: Record<string, number> = {};
@@ -272,7 +271,7 @@ export class AnalyticsService implements OnDestroy {
           this.productStats.update(s => ({ ...s, totalProducts: snap.size }));
         }),
       );
-    } catch (_e) {
+    } catch {
     } finally {
       this.loading.set(false);
     }

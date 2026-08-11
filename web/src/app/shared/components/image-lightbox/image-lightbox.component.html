@@ -1,6 +1,6 @@
 @if (svc.isOpen()) {
-  <div class="lb-backdrop" (click)="onBackdropClick($event)"
-       role="dialog" aria-modal="true" aria-label="Image lightbox">
+  <div class="lb-backdrop" (click)="onBackdropClick($event)" (keydown.escape)="svc.close()"
+       tabindex="-1" role="dialog" aria-modal="true" aria-label="Image lightbox">
 
     <!-- Close -->
     <button class="lb-close" (click)="svc.close()" aria-label="Close">

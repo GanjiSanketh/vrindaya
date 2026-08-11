@@ -1,21 +1,13 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import {
-  OrchestratorModule,
-  OrchestrationRoute,
-  OrchestratorEnvelope,
-  OrchestratorLogEntry,
-  OrchestratorModuleKey,
-  ModuleState,
-} from '../models/ai-orchestrator.model';
+import { environment } from '../../../../environments/environment';
+import { OrchestratorModule, OrchestrationRoute } from '../models/workspace.model';
 import {
   Workspace,
   WorkspaceSummary,
   CreateWorkspaceRequest,
   SendMessageRequest,
-  WorkspaceMessage,
 } from '../models/workspace.model';
 
 const ORCHESTRATION_ROUTES: OrchestrationRoute[] = [

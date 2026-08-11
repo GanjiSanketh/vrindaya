@@ -24,11 +24,6 @@ export class BrandCampaignStrategy implements ICampaignStrategy {
     const hasSeason = !!season;
     const hasProduct = !!productId || !!productName;
     
-    const validPlatforms: CampaignPlatform[] = [
-      'instagram', 'facebook', 'twitter', 'linkedin', 
-      'pinterest', 'tiktok', 'youtube', 'whatsApp', 'sms', 'email'
-    ];
-    
     return hasBrandProfile && (hasBrandVoice || hasTarget || hasPlatform || hasSeason || hasProduct);
   }
 
@@ -40,7 +35,6 @@ export class BrandCampaignStrategy implements ICampaignStrategy {
       brandVoice,
       productId,
       productName,
-      season = 'Festive',
       score = 75,
       confidence = 0.80,
       expectedROI = 0.15,

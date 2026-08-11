@@ -299,6 +299,10 @@ export class CategoryFormComponent implements OnInit {
   @HostListener('document:keydown.escape')
   onEscape(): void { this.showPreview.set(false); }
 
+  onBackdropClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).classList.contains('modal-backdrop')) this.showPreview.set(false);
+  }
+
   currentImageSrc(): string {
     return this.imagePreview() || this.imageUrl() || '';
   }
