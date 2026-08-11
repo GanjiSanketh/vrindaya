@@ -208,7 +208,7 @@ export class MarketplaceDashboardService implements OnDestroy {
         ),
       );
 
-    } catch (_e) {
+    } catch {
     } finally {
       this.loading.set(false);
     }

@@ -307,6 +307,10 @@ export class AdminProductListComponent {
   /* ── Single-row actions ── */
 
   confirmDelete(id: string): void { this.deleteId.set(id); this.deleteError.set(null); }
+  onBackdropClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).classList.contains('modal-backdrop') && !this.deleting()) this.cancelDelete();
+  }
+
   cancelDelete():            void { this.deleteId.set(null); this.deleteError.set(null); }
 
   @HostListener('document:keydown.escape')

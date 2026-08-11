@@ -328,7 +328,6 @@ export class VisionAnalysisComponent implements OnDestroy {
     if (!result?.approved) return;
     this.storing.set(true);
     try {
-      const { id: _i, productId: _p, rawResponse: _r, ...data } = result;
       localStorage.setItem('vrindaya_vision_approved', JSON.stringify(result));
       this.successMessage.set('Approved analysis stored successfully.');
     } catch {

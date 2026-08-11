@@ -14,14 +14,11 @@ export class ContentCampaignStrategy implements ICampaignStrategy {
       platform,
       productId,
       productName,
-      season,
     } = data;
     
     const hasContentType = !!contentType;
     const hasContentFocus = !!contentFocus;
     const hasTarget = !!targetAudience;
-    const hasPlatform = !!platform;
-    const hasSeason = !!season;
     const hasProduct = !!productId || !!productName;
     
     const validPlatforms: CampaignPlatform[] = [
@@ -100,47 +97,6 @@ export class ContentCampaignStrategy implements ICampaignStrategy {
     };
     
     const selected = contentGuidelines[contentType as keyof typeof contentGuidelines] || contentGuidelines.educational;
-    
-    const platforms = {
-      'instagram': {
-        objectives: ['Stories teaching tips', 'Reels demonstrating value', 'Carousel showing benefits'],
-        tone: contentType === 'educational' ? 'Helpful and clear' : 
-              contentType === 'entertaining' ? 'Fun and engaging' :
-              contentType === 'inspiring' ? 'Motivational and uplifting' :
-              'Engaging and persuasive',
-        formats: ['Story', 'Reel', 'Carousel', 'Video']
-      },
-      'facebook': {
-        objectives: ['Long-form content', 'Community sharing', 'Discussion generation'],
-        tone: contentType === 'educational' ? 'Authoritative and clear' :
-              contentType === 'review' ? 'Balanced and honest' :
-              'Engaging and informative',
-        formats: ['Post', 'Article', 'Video', 'Event']
-      },
-      'youtube': {
-        objectives: ['Demonstrations', 'Tutorials', 'Deep dives'],
-        tone: contentType === 'tutorial' ? 'Authoritative and clear' :
-              contentType === 'educational' ? 'Informative and helpful' :
-              'Engaging and professional',
-        formats: ['Video', 'Vlog', 'Demonstration', 'Tutorial']
-      },
-      'linkedin': {
-        objectives: ['Thought leadership', 'Professional insights', 'Industry knowledge'],
-        tone: contentType === 'educational' ? 'Professional and expert' :
-              contentType === 'comparison' ? 'Analytical and data-driven' :
-              'Authoritative and credible',
-        formats: ['Article', 'Post', 'Case study', 'Infographic']
-      },
-      'twitter': {
-        objectives: ['Quick tips', 'Fact sharing', 'Opinion pieces'],
-        tone: contentType === 'educational' ? 'Concise and clear' :
-              contentType === 'review' ? 'Direct and honest' :
-              'Engaging and thought-provoking',
-        formats: ['Tweet', 'Thread', 'Poll', 'Quote']
-      }
-    };
-    
-    const selectedCampaigns = platforms[platform as keyof typeof platforms] || platforms.instagram;
     
     const audienceSegment = contentFocus || 
       (targetAudience ? targetAudience.toLowerCase() : 

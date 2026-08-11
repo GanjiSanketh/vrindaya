@@ -449,13 +449,10 @@ export class AITestingStudioComponent implements OnInit, OnDestroy {
     const fullInput = { ...this.input };
 
     let useCustomPrompt = false;
-    let customPromptText = '';
     if (custom) {
       useCustomPrompt = true;
-      customPromptText = custom;
     } else if (template && template.id !== 'standard' && template.system) {
       useCustomPrompt = true;
-      customPromptText = template.system;
     }
 
     let obs = this.aiTestingSvc.generateEverything(fullInput);
@@ -554,7 +551,7 @@ export class AITestingStudioComponent implements OnInit, OnDestroy {
     this.saveVersionEntry(field, result);
   }
 
-  private saveVersionEntry(field: string, result: any): void {
+  private saveVersionEntry(field: string, _result: any): void {
     const settings = this.ai.currentSettings();
     const vr = this.visionResult();
     const content = { ...this.content };

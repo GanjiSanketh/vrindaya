@@ -21,6 +21,10 @@ export class ExitIntentPopupComponent {
 
   dismiss(): void { this.svc.dismiss(); }
 
+  onBackdropClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).classList.contains('ei-backdrop')) this.dismiss();
+  }
+
   @HostListener('document:keydown.escape')
   onEscape(): void { this.dismiss(); }
 }

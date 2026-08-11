@@ -42,12 +42,25 @@ public class GlobalExceptionMiddleware
         }
         catch (Exception ex)
         {
+            var exceptionType = ex.GetType().FullName;
+            var exceptionMessage = ex.Message;
+            var exceptionStackTrace = ex.StackTrace;
+            var innerException = ex.InnerException is not null
+                ? $"{ex.InnerException.GetType().FullName}: {ex.InnerException.Message}"
+                : null;
+
             _logger.LogError(
                 ex,
-                "Unhandled exception while processing {Method} {Path} (TraceId: {TraceId})",
+                "Unhandled exception while processing {Method} {Path} (TraceId: {TraceId}). " +
+                "ExceptionType: {ExceptionType}; Message: {ExceptionMessage}; " +
+                "StackTrace: {StackTrace}; InnerException: {InnerException}",
                 context.Request.Method,
                 context.Request.Path,
-                context.TraceIdentifier);
+                context.TraceIdentifier,
+                exceptionType,
+                exceptionMessage,
+                exceptionStackTrace,
+                innerException);
 
             await WriteErrorResponseAsync(context, ex);
         }

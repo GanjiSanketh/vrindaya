@@ -132,7 +132,7 @@ export class MarketplaceAnalyticsService implements OnDestroy {
         ),
       );
 
-    } catch (_e) {
+    } catch {
     } finally {
       this.loading.set(false);
     }

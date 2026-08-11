@@ -1,6 +1,6 @@
 @if (svc.shouldShow()) {
-  <div class="ei-backdrop" (click)="dismiss()" role="dialog" aria-modal="true" aria-labelledby="ei-title" aria-describedby="ei-message">
-    <div class="ei-modal" (click)="$event.stopPropagation()">
+  <div class="ei-backdrop" (click)="onBackdropClick($event)" (keydown.escape)="dismiss()" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ei-title" aria-describedby="ei-message">
+    <div class="ei-modal">
       <button class="ei-close" (click)="dismiss()" aria-label="Close popup">
         <i class="bi bi-x-lg"></i>
       </button>

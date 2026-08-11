@@ -14,14 +14,11 @@ export class CollaborationCampaignStrategy implements ICampaignStrategy {
       platform,
       productId,
       productName,
-      season,
     } = data;
     
     const hasCollaborationType = !!collaborationType;
     const hasPartnerBrand = !!partnerBrand;
     const hasTarget = !!targetAudience;
-    const hasPlatform = !!platform;
-    const hasSeason = !!season;
     const hasProduct = !!productId || !!productName;
     
     const validPlatforms: CampaignPlatform[] = [
@@ -102,46 +99,6 @@ export class CollaborationCampaignStrategy implements ICampaignStrategy {
     };
     
     const selected = collaborationGuidelines[collaborationType as keyof typeof collaborationGuidelines] || collaborationGuidelines.influencer;
-    
-    const platforms = {
-      'instagram': {
-        objectives: ['Influencer story takeover', 'Joint reels', 'Collaborative carousel'],
-        tone: collaborationType === 'influencer' ? 'Personal and authentic' :
-              collaborationType === 'partnership' ? 'Professional and polished' :
-              collaborationType === 'coup' ? 'Exciting and urgent' :
-              'Engaging and interactive',
-        formats: ['Story', 'Reel', 'Carousel', 'Video']
-      },
-      'facebook': {
-        objectives: ['Event creation', 'Group discussion', 'Community building'],
-        tone: collaborationType === 'partnership' ? 'Professional and informative' :
-              collaborationType === 'joint venture' ? 'Strategic and forward-thinking' :
-              'Engaging and collaborative',
-        formats: ['Event', 'Post', 'Group', 'Video']
-      },
-      'twitter': {
-        objectives: ['Real-time updates', 'Thread discussions', 'Hashtag trends'],
-        tone: collaborationType === 'coup' ? 'Quick and exciting' :
-              collaborationType === 'giveaway' ? 'Generous and engaging' :
-              'Engaging and conversational',
-        formats: ['Tweet', 'Thread', 'Poll', 'Hashtag campaign']
-      },
-      'linkedin': {
-        objectives: ['B2B partnerships', 'Thought leadership', 'Professional networking'],
-        tone: collaborationType === 'partnership' || collaborationType === 'joint venture' ? 'Professional and strategic' :
-              'Authoritative and business-focused',
-        formats: ['Article', 'Post', 'Case study', 'White paper']
-      },
-      'youtube': {
-        objectives: ['Long-form collaboration', 'Deep dive', 'Educational content'],
-        tone: collaborationType === 'influencer' ? 'Personal and authentic' :
-              collaborationType === 'tutorial' ? 'Educational and expert' :
-              'Engaging and professional',
-        formats: ['Video', 'Vlog', 'Tutorial', 'Documentary']
-      }
-    };
-    
-    const selectedCampaigns = platforms[platform as keyof typeof platforms] || platforms.instagram;
     
     const audienceSegment = targetAudience || 
       (season.toLowerCase().includes('diwali') ? 'festive shoppers' :

@@ -89,7 +89,7 @@ export class SyncEngineService {
           allComparisons.push(comparison);
           this.progress.update(p => ({ ...p!, completed: p!.completed + 1 }));
         }
-      } catch (err) {
+      } catch {
         this.progress.update(p => ({ ...p!, failed: p!.failed + 1 }));
       }
     }

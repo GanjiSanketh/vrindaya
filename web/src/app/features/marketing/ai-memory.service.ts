@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { MEMORY_CATEGORIES, type AiMemoryDraft, type AiMemoryEntry } from './models/ai-memory.model';
+import { type AiMemoryDraft, type AiMemoryEntry } from './models/ai-memory.model';
 
 const STORAGE_KEY = 'vrindaya_ai_memory';
 

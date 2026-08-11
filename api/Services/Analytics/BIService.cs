@@ -180,23 +180,27 @@ public class BIService : IBIService
 
         foreach (var (_, s) in sales)
         {
+            // Firestore is schemaless — `category` may be an explicit null on
+            // legacy sale documents. Dictionary keys can never be null, so
+            // normalize before aggregating (null == empty-category bucket).
+            var category = s.Category ?? string.Empty;
             if (s.SoldAt >= thisMonthStart)
             {
-                if (!categoryThisMonth.ContainsKey(s.Category))
-                    categoryThisMonth[s.Category] = (0, 0);
-                var c = categoryThisMonth[s.Category];
+                if (!categoryThisMonth.ContainsKey(category))
+                    categoryThisMonth[category] = (0, 0);
+                var c = categoryThisMonth[category];
                 c.Revenue += s.AmountReceived;
                 c.Orders++;
-                categoryThisMonth[s.Category] = c;
+                categoryThisMonth[category] = c;
             }
             else if (s.SoldAt >= lastMonthStart && s.SoldAt <= lastMonthEnd)
             {
-                if (!categoryLastMonth.ContainsKey(s.Category))
-                    categoryLastMonth[s.Category] = (0, 0);
-                var c = categoryLastMonth[s.Category];
+                if (!categoryLastMonth.ContainsKey(category))
+                    categoryLastMonth[category] = (0, 0);
+                var c = categoryLastMonth[category];
                 c.Revenue += s.AmountReceived;
                 c.Orders++;
-                categoryLastMonth[s.Category] = c;
+                categoryLastMonth[category] = c;
             }
         }
 
@@ -600,15 +604,18 @@ public class BIService : IBIService
 
         foreach (var (_, s) in sales)
         {
+            // Schemaless Firestore may store `category` as an explicit null on
+            // legacy sale documents — never use it as a raw dictionary key.
+            var category = s.Category ?? string.Empty;
             if (s.SoldAt >= thisMonthStart)
             {
-                if (!thisMonth.ContainsKey(s.Category)) thisMonth[s.Category] = 0;
-                thisMonth[s.Category] += s.AmountReceived;
+                if (!thisMonth.ContainsKey(category)) thisMonth[category] = 0;
+                thisMonth[category] += s.AmountReceived;
             }
             else if (s.SoldAt >= lastMonthStart && s.SoldAt <= lastMonthEnd)
             {
-                if (!lastMonth.ContainsKey(s.Category)) lastMonth[s.Category] = 0;
-                lastMonth[s.Category] += s.AmountReceived;
+                if (!lastMonth.ContainsKey(category)) lastMonth[category] = 0;
+                lastMonth[category] += s.AmountReceived;
             }
         }
 

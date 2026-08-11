@@ -1,6 +1,6 @@
 @if (svc.product(); as product) {
-  <div class="qv-backdrop" (click)="onBackdropClick($event)"
-       role="dialog" aria-modal="true" [attr.aria-label]="'Quick view: ' + product.name">
+  <div class="qv-backdrop" (click)="onBackdropClick($event)" (keydown.escape)="close()"
+       tabindex="-1" role="dialog" aria-modal="true" [attr.aria-label]="'Quick view: ' + product.name">
 
     <div class="qv-panel">
 
@@ -25,7 +25,8 @@
       <!-- ── Gallery ── -->
       <div class="qv-gallery">
 
-        <div class="qv-main-wrap" (click)="openLightbox()" title="Click to zoom"
+        <div class="qv-main-wrap" (click)="openLightbox()" (keydown.enter)="openLightbox()" (keydown.space)="openLightbox()"
+             role="button" tabindex="0" title="Click to zoom"
              (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()">
           <img [src]="selectedImage() | cloudinaryUrl:800" [alt]="product.name"
                class="qv-main-img" loading="eager" decoding="async"

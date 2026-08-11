@@ -73,6 +73,12 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Settings',    path: 'marketplace/settings',    icon: 'bi-gear' },
     ],
   },
+  {
+    key: 'ai', label: 'AI Workspace', icon: 'bi-stars',
+    items: [
+      { label: 'AI Workspace', path: 'ai-workspace', icon: 'bi-stars' },
+    ],
+  },
 ];
 
 const EXPANDED_STORAGE_KEY = 'vrindaya_admin_nav_expanded';
@@ -186,6 +192,16 @@ export class AdminLayoutComponent {
   closeSearch(): void {
     this.search.close();
     this.kbd.showSearch.set(false);
+  }
+
+  closeAllOverlays(): void {
+    this.closeSearch();
+    this.kbd.showCommandPalette.set(false);
+    this.kbd.showHelp.set(false);
+  }
+
+  onOverlayClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).classList.contains('ux-overlay')) this.closeAllOverlays();
   }
 
   onSearchInput(query: string): void {

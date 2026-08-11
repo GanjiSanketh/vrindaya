@@ -158,5 +158,5 @@ export class GenerationQueueComponent {
     );
   }
 
-  onView(id: string): void {}
+  onView(_id: string): void {}
 }

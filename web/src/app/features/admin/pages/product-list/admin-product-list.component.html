@@ -160,16 +160,16 @@
                   <div class="pl-thumb-wrap">
               @if (p.thumbnailUrl) {
                 <img [src]="p.thumbnailUrl" [alt]="p.name" class="pl-thumb" loading="lazy" draggable="false"
-                     (click)="openPreview(p.id)" />
+                     role="button" tabindex="0" (click)="openPreview(p.id)" (keydown.enter)="openPreview(p.id)" />
               } @else {
-                <div class="pl-thumb-placeholder" (click)="openPreview(p.id)">
+                <div class="pl-thumb-placeholder" role="button" tabindex="0" (click)="openPreview(p.id)" (keydown.enter)="openPreview(p.id)">
                   <i class="bi bi-image"></i>
                 </div>
               }
                   </div>
                 </td>
                 <td>
-                  <div class="pl-product-name pl-link" (click)="openPreview(p.id)">{{ p.name }}</div>
+                  <div class="pl-product-name pl-link" role="button" tabindex="0" (click)="openPreview(p.id)" (keydown.enter)="openPreview(p.id)">{{ p.name }}</div>
                   <div class="pl-product-meta">
                     <span class="pl-variant-meta">{{ p.variantCount }} color{{ p.variantCount !== 1 ? 's' : '' }}</span>
                     <span class="pl-meta-dot"></span>
@@ -194,7 +194,7 @@
                 <td>
                   @if (p.pricing?.sellingPrice) {
                     <span class="pl-price">₹{{ p.pricing!.sellingPrice }}</span>
-                  } @else if (p.lowestPrice != null && p.highestPrice != null) {
+                  } @else if (p.lowestPrice !== null && p.highestPrice !== null) {
                     @if (p.lowestPrice === p.highestPrice) {
                       <span class="pl-price">₹{{ p.lowestPrice }}</span>
                     } @else {
@@ -275,8 +275,8 @@
 
 <!-- Delete confirmation dialog -->
 @if (deleteId() !== null) {
-  <div class="modal-backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'ad-title'" (click)="deleting() ? null : cancelDelete()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
+  <div class="modal-backdrop" role="dialog" aria-modal="true" [attr.aria-labelledby]="'ad-title'" (click)="onBackdropClick($event)" (keydown.escape)="deleting() ? null : cancelDelete()" tabindex="-1">
+    <div class="modal-box">
       <div class="modal-icon modal-icon--danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
       <h3 class="modal-title" id="ad-title">Delete Product</h3>
       <p class="modal-body">Are you sure you want to permanently delete</p>

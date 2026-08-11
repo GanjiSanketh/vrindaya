@@ -353,7 +353,6 @@ export class AiOrchestratorComponent {
     this.pushLog(reqId, `Request accepted → route "${route.label}" (${path.length} hops)`, true);
 
     const start = Date.now();
-    let totalMs = 0;
     const runHop = (idx: number): void => {
       if (seq !== this.runSeq) return;
       if (idx >= path.length) {
@@ -382,8 +381,6 @@ export class AiOrchestratorComponent {
       window.setTimeout(() => {
         if (seq !== this.runSeq) return;
         this.completeHop(key);
-        const latency = this.modules().find(m => m.key === key)!.latency;
-        totalMs += latency;
         window.setTimeout(() => runHop(idx + 1), 160);
       }, 420);
     };
