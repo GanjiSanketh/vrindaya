@@ -118,6 +118,21 @@ public sealed class GeminiPromptExecutor : IGeminiPromptExecutor
                 latencyMs: 0);
         }
 
+        // The model is never hardcoded and never defaulted here — it must come
+        // from configuration. A blank value fails before any URL is built so a
+        // deployment can never silently hit a model it did not select.
+        if (string.IsNullOrWhiteSpace(options.Model))
+        {
+            _logger.LogWarning(
+                "GeminiPromptExecutor: no model configured — prompt not executed.");
+
+            return Failure(
+                GeminiExecutionStatus.NotConfigured,
+                "No Gemini model is configured (set Gemini__Model or AI__Gemini__Model).",
+                options.Model,
+                latencyMs: 0);
+        }
+
         var cacheKeyPrompt = $"{systemInstruction}\n{prompt}";
         var operation = responseMimeType == JsonMimeType ? "json" : "text";
 
@@ -476,7 +491,7 @@ public sealed class GeminiPromptExecutor : IGeminiPromptExecutor
 
         var httpRequest = new HttpRequestMessage(
             HttpMethod.Post,
-            $"{baseUrl}/{options.Model}:generateContent")
+            $"{baseUrl}/{options.Model.Trim()}:generateContent")
         {
             Content = new StringContent(json, Encoding.UTF8, JsonMimeType),
         };

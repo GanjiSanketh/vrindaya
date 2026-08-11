@@ -30,7 +30,15 @@ public class GeminiSettings
     /// </summary>
     public string BaseUrl { get; set; } = "https://generativelanguage.googleapis.com/v1beta/models";
 
-    public string Model { get; set; } = "gemini-1.5-flash";
+    /// <summary>
+    /// Gemini model name for generateContent calls ("gemini-2.5-flash", …).
+    /// Deliberately NOT hardcoded here — the value comes exclusively from
+    /// configuration ("AI:Gemini:Model" / "Gemini:Model", overridable with the
+    /// AI__Gemini__Model / Gemini__Model environment variables). An empty value
+    /// fails loudly at request time rather than silently substituting a model
+    /// the deployment never selected.
+    /// </summary>
+    public string Model { get; set; } = string.Empty;
 
     public double Temperature { get; set; } = 0.7;
 
