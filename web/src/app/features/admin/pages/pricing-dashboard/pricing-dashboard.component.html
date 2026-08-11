@@ -116,7 +116,7 @@
                   <span>{{ p.productName }}</span>
                 </td>
                 <td class="pdash-cell-num">₹{{ p.sellingPrice }}</td>
-                <td class="pdash-cell-num">{{ p.costPrice != null ? '₹' + p.costPrice : '—' }}</td>
+                <td class="pdash-cell-num">{{ p.costPrice !== null ? '₹' + p.costPrice : '—' }}</td>
                 <td class="pdash-cell-num">₹{{ p.packagingCost }}</td>
                 <td class="pdash-cell-num">₹{{ p.shippingCost }}</td>
                 <td class="pdash-cell-num">₹{{ p.commissionAmount }} ({{ p.commissionPercent }}%)</td>

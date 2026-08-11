@@ -2,9 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { OrchestratorModule, OrchestrationRoute } from '../models/workspace.model';
 import {
-  OrchestratorModule,
-  OrchestrationRoute,
   Workspace,
   WorkspaceSummary,
   CreateWorkspaceRequest,

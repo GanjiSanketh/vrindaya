@@ -47,7 +47,7 @@ export class ProviderManagerService {
     this.providerInstances.set('gemini', this.geminiProvider);
   }
 
-  execute(prompt: string, model?: string): Promise<string> {
+  execute(prompt: string, _model?: string): Promise<string> {
     const provider = this.providerInstances.get(this.currentProviderId);
     if (provider) {
       return provider.executePrompt(prompt);

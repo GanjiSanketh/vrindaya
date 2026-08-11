@@ -1,5 +1,5 @@
 @if (visible()) {
-  <div class="ls-backdrop" [class.hiding]="hiding()" (click)="dismiss()">
+  <div class="ls-backdrop" [class.hiding]="hiding()" (click)="dismiss()" (keydown.escape)="dismiss()" tabindex="-1">
 
     <div class="ls-content">
       <!-- Decorative ornament -->

@@ -73,9 +73,7 @@ app.post('/api/ai/generate', express.json(), async (req, res) => {
         }),
       });
 
-      if (!visionResponse.ok) {
-        const errBody = await visionResponse.text();
-      } else {
+      if (visionResponse.ok) {
         const visionData = await visionResponse.json() as any;
         visionAnalysis = visionData.choices?.[0]?.message?.content ?? '';
       }
@@ -131,7 +129,6 @@ Respond with valid JSON (no markdown, no \`\`\`) using this exact schema:
     });
 
     if (!genResponse.ok) {
-      const errBody = await genResponse.text();
       res.status(502).json({ error: 'OpenAI API request failed', detail: `Status ${genResponse.status}` });
       return;
     }
@@ -178,7 +175,7 @@ Respond with valid JSON (no markdown, no \`\`\`) using this exact schema:
     aiCache.set(cacheKey, { data: result, expiresAt: Date.now() + AI_CACHE_TTL_MS });
 
     res.json(result);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Internal server error during AI generation' });
   }
 });

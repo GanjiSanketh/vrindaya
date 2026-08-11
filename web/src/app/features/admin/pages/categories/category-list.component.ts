@@ -64,6 +64,10 @@ export class CategoryListComponent {
   }
 
   confirmDelete(id: string): void { this.deleteId.set(id); }
+  onBackdropClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).classList.contains('modal-backdrop')) this.cancelDelete();
+  }
+
   cancelDelete():            void { this.deleteId.set(null); }
 
   @HostListener('document:keydown.escape')

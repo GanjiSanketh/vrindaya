@@ -49,7 +49,8 @@
 
         <!-- Gallery -->
         <div class="pd-gallery">
-          <div class="pd-main-wrap" (click)="openLightbox()" title="Click to zoom"
+          <div class="pd-main-wrap" (click)="openLightbox()" (keydown.enter)="openLightbox()" (keydown.space)="openLightbox()"
+               role="button" tabindex="0" title="Click to zoom"
                (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()">
             <img [src]="selectedImage() | cloudinaryUrl:1200"
                  [srcset]="selectedImage() | cloudinarySrcset"

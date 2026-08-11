@@ -23,11 +23,6 @@ export class SalesCampaignStrategy implements ICampaignStrategy {
     const hasPlatform = !!platform;
     const hasTarget = !!targetAudience;
     
-    const validPlatforms: CampaignPlatform[] = [
-      'instagram', 'facebook', 'twitter', 'linkedin', 
-      'pinterest', 'tiktok', 'youtube', 'whatsApp', 'sms', 'email'
-    ];
-    
     return hasSalesData || hasRevenue || hasSeason || hasPlatform || hasTarget || !!productId || !!productName;
   }
 

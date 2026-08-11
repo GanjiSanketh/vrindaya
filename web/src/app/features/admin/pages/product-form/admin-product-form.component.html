@@ -151,7 +151,7 @@
             <div class="pf-variant-card" [class.pf-variant-card--expanded]="expandedVariantIds().has(v.id)">
 
               <!-- Accordion header -->
-              <div class="pf-variant-header" (click)="toggleVariant(v.id)">
+              <div class="pf-variant-header" (click)="toggleVariant(v.id)" (keydown.enter)="toggleVariant(v.id)" (keydown.space)="toggleVariant(v.id)" role="button" tabindex="0">
                 <div class="pf-variant-header-left">
                   <span class="pf-variant-swatch" [style.background]="v.colourHex || '#e8ecf0'">
                     @if (!v.colourHex || v.colourHex === '#000000') {
@@ -306,7 +306,7 @@
                     <div class="vg-dropzone"
                          (dragover)="onVariantGalleryDragOver($event)"
                          (drop)="onVariantGalleryDrop($event, v.id)"
-                         (click)="triggerVariantGalleryInput(v.id)">
+                         (click)="triggerVariantGalleryInput(v.id)" (keydown.enter)="triggerVariantGalleryInput(v.id)" role="button" tabindex="0">
                       <i class="bi bi-cloud-arrow-up vg-dropzone-icon"></i>
                       <span class="vg-dropzone-text">Drop images here or click to browse</span>
                     </div>

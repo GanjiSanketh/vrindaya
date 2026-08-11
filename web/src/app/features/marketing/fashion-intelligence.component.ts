@@ -5,12 +5,6 @@ import { ToastService } from '../../shared/services/toast.service';
 import { FashionIntelligenceService } from './fashion-intelligence.service';
 import {
   CLASSIFICATION_KEYS,
-  OCCASIONS,
-  SEASONS,
-  AUDIENCES,
-  FABRIC_STYLES,
-  PRINT_TYPES,
-  COLOR_FAMILIES,
   ProductInput,
   ClassificationResult,
 } from './models/fashion-intelligence.model';

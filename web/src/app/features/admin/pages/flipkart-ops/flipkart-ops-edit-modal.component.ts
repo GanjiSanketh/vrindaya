@@ -129,6 +129,10 @@ export class FlipkartOpsEditModalComponent implements OnInit {
 
   cancel(): void { this.closed.emit(); }
 
+  onBackdropClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).classList.contains('modal-backdrop')) this.cancel();
+  }
+
   @HostListener('document:keydown.escape')
   onEscape(): void { this.cancel(); }
 }

@@ -8,7 +8,6 @@ export class InventoryCampaignStrategy implements ICampaignStrategy {
     if (!data) return false;
     
     const {
-      productId,
       stockStatus,
       inventoryLevel,
       targetAudience,

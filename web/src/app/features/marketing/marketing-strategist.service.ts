@@ -7,8 +7,6 @@ import {
   StrategistInput,
   CAMPAIGN_DURATIONS,
   CAMPAIGN_TYPES,
-  CHANNELS,
-  FORMATS,
   defaultStrategistInput,
 } from '../models/marketing-strategist.model';
 
@@ -30,7 +28,6 @@ function formatDate(date: Date): string {
 
 function generatePhases(input: StrategistInput): CampaignPhase[] {
   const days = CAMPAIGN_DURATIONS.find(d => d.value === input.duration)?.days || 30;
-  const typeConfig = CAMPAIGN_TYPES.find(t => t.value === input.type)!;
   
   const phaseTemplates: Record<typeof input.type, { name: string; description: string; startPct: number; endPct: number; activities: Omit<CampaignActivity, 'id' | 'day' | 'status'>[] }[]> = {
     launch: [

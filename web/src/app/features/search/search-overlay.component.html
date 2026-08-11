@@ -1,6 +1,6 @@
 @if (svc.isOpen()) {
-  <div class="so-backdrop" (click)="onBackdropClick($event)" role="dialog"
-       aria-modal="true" aria-label="Search products">
+  <div class="so-backdrop" (click)="onBackdropClick($event)" (keydown.escape)="close()"
+       tabindex="-1" role="dialog" aria-modal="true" aria-label="Search products">
 
     <div class="so-panel">
 
@@ -35,7 +35,7 @@
       } @else if (results().length > 0) {
         <ul class="so-results" role="listbox" aria-label="Search results">
           @for (item of results(); track resultKey(item)) {
-            <li class="so-result" role="option" (click)="navigate(item)"
+            <li class="so-result" role="option" tabindex="-1" (click)="navigate(item)" (keydown.enter)="navigate(item)"
                 [attr.aria-label]="resultName(item) + ', ' + resultSubLabel(item)">
               @if (item.kind === 'product') {
                 <img [src]="item.product.image | cloudinaryUrl:300" [alt]="item.product.name" class="so-thumb" loading="lazy" decoding="async" width="60" height="75" draggable="false" />

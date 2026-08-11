@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ProductService } from './product.service';
-import { Product } from '../models/product.model';
 
 export interface PostResult {
   imageUrl: string;

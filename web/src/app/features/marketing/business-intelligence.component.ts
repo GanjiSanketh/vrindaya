@@ -2,13 +2,7 @@ import { Component, ChangeDetectionStrategy, signal, computed, inject, OnInit, V
 import { CommonModule } from '@angular/common';
 import { ToastService } from '../../shared/services/toast.service';
 import { BusinessIntelligenceService } from './business-intelligence.service';
-import {
-  Insight,
-  KPIMetric,
-  CategoryPerformance,
-  ProductPerformance,
-  INSIGHT_CATEGORIES,
-} from './models/business-intelligence.model';
+import { INSIGHT_CATEGORIES } from './models/business-intelligence.model';
 
 @Component({
   selector: 'app-business-intelligence',

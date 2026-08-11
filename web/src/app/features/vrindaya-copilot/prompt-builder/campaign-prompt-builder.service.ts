@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class CampaignPromptBuilder {
-  BuildCampaignPrompt(data: any): string {
+  BuildCampaignPrompt(_data: any): string {
     return 'Building campaign prompt...';
   }
 
