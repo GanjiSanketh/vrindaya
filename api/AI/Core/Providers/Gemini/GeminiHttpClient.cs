@@ -470,9 +470,22 @@ public sealed class GeminiHttpClient : IGeminiHttpClient
         return text;
     }
 
-    /// <summary>Model name guarded against a blank configuration value.</summary>
-    private static string ResolveModel(GeminiSettings settings) =>
-        string.IsNullOrWhiteSpace(settings.Model) ? "gemini-2.5-flash" : settings.Model.Trim();
+    /// <summary>
+    /// Model name from configuration only — never a hardcoded default. A blank
+    /// configured value fails loudly (and is logged) so a deployment can never
+    /// silently target a model it did not select.
+    /// </summary>
+    private static string ResolveModel(GeminiSettings settings)
+    {
+        if (string.IsNullOrWhiteSpace(settings.Model))
+        {
+            throw new GeminiApiException(
+                "No Gemini model is configured. Set Gemini__Model (or AI__Gemini__Model) in the environment " +
+                "or Gemini:Model (AI:Gemini:Model) in appsettings.");
+        }
+
+        return settings.Model.Trim();
+    }
 
     /// <summary>
     /// Resolves the absolute URL a request will be sent to, for failure
