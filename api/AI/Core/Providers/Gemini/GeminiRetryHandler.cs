@@ -100,8 +100,9 @@ public sealed class GeminiRetryHandler : DelegatingHandler
                 if (attempt == maxAttempts)
                 {
                     _logger.LogWarning(
-                        "Gemini retry: giving up after {Attempt} attempt(s) — last status HTTP {StatusCode}.",
-                        attempt, (int)response.StatusCode);
+                        "Gemini retry: giving up on {RequestUri} after {Attempt} attempt(s) — " +
+                        "last status HTTP {StatusCode}.",
+                        request.RequestUri, attempt, (int)response.StatusCode);
 
                     return response;
                 }
@@ -130,8 +131,9 @@ public sealed class GeminiRetryHandler : DelegatingHandler
                 if (attempt == maxAttempts)
                 {
                     _logger.LogWarning(ex,
-                        "Gemini retry: giving up after {Attempt} attempt(s) — last failure was a {Reason}.",
-                        attempt, reason);
+                        "Gemini retry: giving up on {RequestUri} after {Attempt} attempt(s) — " +
+                        "last failure was a {Reason}.",
+                        request.RequestUri, attempt, reason);
 
                     throw;
                 }

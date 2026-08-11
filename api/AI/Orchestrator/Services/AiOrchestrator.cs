@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Vrindaya.Api.AI.Core.Services;
 using Vrindaya.Api.AI.Orchestrator.Interfaces;
 using Vrindaya.Api.AI.Orchestrator.Models;
 
@@ -133,8 +134,8 @@ public sealed class AiOrchestrator : IAiOrchestrator
             hopSw.Stop();
 
             _logger.LogError(ex,
-                "AI Orchestrator: request {RequestId} — hop {Module} failed in {DurationMs}ms.",
-                requestId, module.Name, hopSw.ElapsedMilliseconds);
+                "AI Orchestrator: request {RequestId} — hop {Module} failed in {DurationMs}ms. {FailureDetail}",
+                requestId, module.Name, hopSw.ElapsedMilliseconds, AiFailureLog.Describe(ex));
 
             return new AiOrchestrationHop
             {

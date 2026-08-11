@@ -235,6 +235,12 @@ public sealed class GeminiPromptExecutor : IGeminiPromptExecutor
 
         using var httpRequest = BuildHttpRequest(options, prompt, systemInstruction, responseMimeType);
 
+        // Captured up front so a failed call can be logged with the exact URL
+        // (the API key travels only in a header, never in the URL) and the
+        // exact payload that was sent.
+        var requestUrl = httpRequest.RequestUri?.ToString() ?? string.Empty;
+        var requestPayload = await httpRequest.Content!.ReadAsStringAsync(linkedCts.Token);
+
         var stopwatch = Stopwatch.StartNew();
 
         try
@@ -248,11 +254,19 @@ public sealed class GeminiPromptExecutor : IGeminiPromptExecutor
             {
                 stopwatch.Stop();
 
-                _logger.LogWarning(
-                    "GeminiPromptExecutor: model {Model} returned HTTP {StatusCode} after {ElapsedMs}ms.",
+                var responseBody = await ReadBodySafelyAsync(httpResponse, linkedCts.Token);
+
+                _logger.LogError(
+                    "GeminiPromptExecutor: request {Method} {RequestUrl} for model {Model} failed with HTTP " +
+                    "{StatusCode} after {ElapsedMs}ms. " +
+                    "Request payload: {RequestPayload}. Response body: {ResponseBody}.",
+                    HttpMethod.Post,
+                    requestUrl,
                     options.Model,
                     (int)httpResponse.StatusCode,
-                    stopwatch.ElapsedMilliseconds);
+                    stopwatch.ElapsedMilliseconds,
+                    requestPayload,
+                    responseBody);
 
                 return Failure(
                     GeminiExecutionStatus.HttpError,
@@ -279,10 +293,14 @@ public sealed class GeminiPromptExecutor : IGeminiPromptExecutor
         {
             stopwatch.Stop();
 
-            _logger.LogWarning(
-                "GeminiPromptExecutor: model {Model} exhausted its {TimeoutSeconds:F0}s overall budget.",
+            _logger.LogError(
+                "GeminiPromptExecutor: request {Method} {RequestUrl} for model {Model} exhausted its " +
+                "{TimeoutSeconds:F0}s overall budget. Request payload: {RequestPayload}.",
+                HttpMethod.Post,
+                requestUrl,
                 options.Model,
-                overallTimeout.TotalSeconds);
+                overallTimeout.TotalSeconds,
+                requestPayload);
 
             return Failure(
                 GeminiExecutionStatus.Timeout,
@@ -294,8 +312,15 @@ public sealed class GeminiPromptExecutor : IGeminiPromptExecutor
         {
             stopwatch.Stop();
 
-            _logger.LogWarning(ex,
-                "GeminiPromptExecutor: transport failure calling model {Model}.", options.Model);
+            _logger.LogError(
+                ex,
+                "GeminiPromptExecutor: request {Method} {RequestUrl} for model {Model} failed with a transport " +
+                "error. {FailureDetail} Request payload: {RequestPayload}.",
+                HttpMethod.Post,
+                requestUrl,
+                options.Model,
+                AiFailureLog.Describe(ex),
+                requestPayload);
 
             return Failure(
                 GeminiExecutionStatus.TransportError,
@@ -307,14 +332,45 @@ public sealed class GeminiPromptExecutor : IGeminiPromptExecutor
         {
             stopwatch.Stop();
 
-            _logger.LogWarning(ex,
-                "GeminiPromptExecutor: unreadable response body from model {Model}.", options.Model);
+            _logger.LogError(
+                ex,
+                "GeminiPromptExecutor: request {Method} {RequestUrl} for model {Model} returned an unreadable " +
+                "response body. {FailureDetail} Request payload: {RequestPayload}.",
+                HttpMethod.Post,
+                requestUrl,
+                options.Model,
+                AiFailureLog.Describe(ex),
+                requestPayload);
 
             return Failure(
                 GeminiExecutionStatus.InvalidResponse,
                 "Gemini returned an unreadable response body.",
                 options.Model,
                 stopwatch.ElapsedMilliseconds);
+        }
+    }
+
+    /// <summary>
+    /// Reads a failed response's body for logging. Never throws: an unreadable
+    /// body must not mask the HTTP failure it was already about to report.
+    /// </summary>
+    private async Task<string> ReadBodySafelyAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            return body ?? string.Empty;
+        }
+        catch (Exception ex) when (ex is JsonException or HttpRequestException or InvalidOperationException)
+        {
+            _logger.LogWarning(
+                ex,
+                "GeminiPromptExecutor: could not read the error body. {FailureDetail}",
+                AiFailureLog.Describe(ex));
+
+            return string.Empty;
         }
     }
 
