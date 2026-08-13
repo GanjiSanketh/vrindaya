@@ -1,64 +1,82 @@
 /* ═══════════════════════════════════════════════════════════════
-   STICKY STORYTELLING SECTION
-   The imagery stays anchored while the narrative steps through it.
+   THE VRINDAYA STORY — FULL-BLEED CINEMATIC SCROLL STORYTELLING
+   -----------------------------------------------------------------
+   The imagery is anchored to the viewport for the whole sequence
+   while the reader moves through each principle, one beat at a
+   time. Pure observer-driven — no scroll listeners — and only
+   transform + opacity are ever animated.
+
+   NOTE: the section itself must stay width:100% with NO horizontal
+   constraint and NO overflow on any ancestor of the sticky media,
+   or the sticky anchoring (and the full-bleed background) breaks.
    ═══════════════════════════════════════════════════════════════ */
 
 .story-section {
+  /* Section-local premium palette */
+  --story-bg:         #171512;
+  --story-ivory:      #f2eee5;
+  --story-dim:        rgba(242, 238, 229, 0.62);
+  --story-faint:      rgba(242, 238, 229, 0.38);
+  --story-champagne:  #c2a078;
+  --story-line:       rgba(242, 238, 229, 0.14);
+
   position: relative;
-  background: var(--color-charcoal);
-  color: #f4f1ea;
-  padding: clamp(88px, 11vw, 150px) 0;
-  overflow: hidden;
+  width: 100%;
+  background: var(--story-bg);
+  color: var(--story-ivory);
+
+  display: grid;
+  grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+  grid-template-areas:
+    "media intro"
+    "media points"
+    "media outro";
+  column-gap: clamp(2rem, 4vw, 4.5rem);
+  align-items: start;
 }
 
-.story-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(244, 241, 234, 0.25), transparent);
-}
-
+/* Editorial hairlines at the section edges */
+.story-section::before,
 .story-section::after {
   content: '';
   position: absolute;
-  bottom: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(244, 241, 234, 0.25), transparent);
+  z-index: 2;
+  pointer-events: none;
 }
 
-.story-section :is(.section-label) { color: var(--color-bronze); }
-.story-section :is(.section-title) { color: #f4f1ea; }
-.story-section :is(.section-desc)  { color: rgba(244, 241, 234, 0.6); }
-
-.story-section {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(3rem, 7vw, 7rem);
-  align-items: start;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding-left: clamp(1.25rem, 4vw, 2.5rem);
-  padding-right: clamp(1.25rem, 4vw, 2.5rem);
+.story-section::before {
+  top: 0;
+  background: linear-gradient(to right, transparent, rgba(194, 160, 120, 0.28), transparent);
 }
 
-/* ── Anchored media column ── */
+.story-section::after {
+  bottom: 0;
+  background: linear-gradient(to right, transparent, rgba(194, 160, 120, 0.34), transparent);
+}
+
+/* ────────────────────────── Anchored media ────────────────────────── */
+
 .story-media {
+  grid-area: media;
   position: sticky;
-  top: 110px;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
   align-self: start;
 }
 
 .story-stack {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  border-radius: 4px;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
-  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.45);
+  background: #14110d; /* quiet placeholder while frames load */
+  transition:
+    opacity 1.1s ease,
+    filter 1.1s ease,
+    transform 1.8s var(--ease-out-quint);
 }
 
 .story-img {
@@ -68,10 +86,10 @@
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transform: scale(1.04);
+  transform: scale(1.06);
   transition:
-    opacity 0.9s var(--ease-out-quint),
-    transform 1.4s var(--ease-out-quint);
+    opacity 0.9s ease,
+    transform 1.6s var(--ease-out-quint);
 }
 
 .story-img.active {
@@ -79,87 +97,361 @@
   transform: scale(1);
 }
 
-/* ── Narrative column ── */
-.story-body {
+/* Cinematic grade — deepens the edges so the caption + rail sit
+   comfortably and the frame feels like a film still. */
+.story-stack-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(23, 21, 18, 0.38) 0%, transparent 24%),
+    linear-gradient(0deg, rgba(23, 21, 18, 0.62) 0%, transparent 32%);
+}
+
+/* Current-step caption (bottom-left of the frame) */
+.story-caption {
+  position: absolute;
+  left: clamp(1.25rem, 3vw, 2.5rem);
+  bottom: clamp(1.5rem, 4vh, 3rem);
+  z-index: 2;
+  height: 1.9rem;
+  min-width: 15rem;
+}
+
+.story-caption-block {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s var(--ease-out-quint);
+}
+
+.story-caption-block.active {
+  opacity: 1;
+  transform: none;
+}
+
+.story-caption-index {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--story-champagne);
+}
+
+.story-caption-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--story-ivory);
+}
+
+/* Progress rail — 01 ━━━ / 02 ─── / 03 ─── */
+.story-progress {
+  position: absolute;
+  right: clamp(0.9rem, 1.8vw, 1.75rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.3rem;
+}
+
+.story-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0.55;
+  transition: opacity 0.5s ease;
+}
+
+.story-progress-item.active { opacity: 1; }
+
+.story-progress-num {
+  font-family: var(--font-sans);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: var(--story-ivory);
+  transition: color 0.5s ease;
+}
+
+.story-progress-item.active .story-progress-num { color: var(--story-champagne); }
+
+.story-progress-line {
+  position: relative;
+  width: 34px;
+  height: 1px;
+  background: var(--story-line);
+  overflow: hidden;
+}
+
+.story-progress-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--story-champagne);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.7s var(--ease-out-quint);
+}
+
+.story-progress-item.active .story-progress-line::after {
+  transform: scaleX(1);
+}
+
+/* ────────────────────────── Opening composition ────────────────────── */
+
+.story-intro {
+  grid-area: intro;
+  min-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding:
+    clamp(7rem, 14vh, 10rem)
+    clamp(1.5rem, 5vw, 5rem)
+    clamp(3.5rem, 8vh, 6rem)
+    clamp(1.5rem, 4vw, 4rem);
+}
+
+.story-eyebrow {
+  position: relative;
+  margin: 0 0 clamp(1.75rem, 3.5vh, 2.5rem);
+  padding-left: 2.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--story-champagne);
+}
+
+.story-eyebrow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1.6rem;
+  height: 1px;
+  background: var(--story-champagne);
+  opacity: 0.75;
+}
+
+.story-headline {
+  margin: 0 0 clamp(1.5rem, 3vh, 2.25rem);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 4.6vw, 5.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--story-ivory);
+}
+
+.story-lede {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.15vw, 1.12rem);
+  line-height: 1.85;
+  color: var(--story-dim);
+  max-width: 44ch;
+}
+
+/* ────────────────────────── Story beats ───────────────────────────── */
+
+.story-points {
+  grid-area: points;
   min-width: 0;
 }
 
-.story-intro {
-  margin-bottom: clamp(3rem, 6vw, 5rem);
-}
-
-.story-steps {
+.story-point {
+  min-height: 92vh;
   display: flex;
   flex-direction: column;
-  gap: clamp(2.5rem, 5vw, 4rem);
+  justify-content: center;
+  padding:
+    clamp(3rem, 7vh, 5rem)
+    clamp(1.5rem, 5vw, 5rem)
+    clamp(3rem, 7vh, 5rem)
+    clamp(1.5rem, 4vw, 4rem);
+  opacity: 0.45; /* quiet, never disabled — neighbours stay legible */
+  transition: opacity 0.6s ease;
 }
 
-.story-step {
-  display: grid;
-  grid-template-columns: 3rem 1fr;
-  gap: 1.25rem;
-  border-top: 1px solid rgba(244, 241, 234, 0.12);
-  padding-top: clamp(1.75rem, 3vw, 2.5rem);
-  transition: opacity 0.5s ease, transform 0.5s var(--ease-out-quint);
+.story-point.active { opacity: 1; }
+
+.story-point-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.story-step:not(.active) {
-  opacity: 0.45;
-  transform: translateY(6px);
-}
-
-.story-step-index {
+.story-point-index {
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  letter-spacing: 0.18em;
-  color: var(--color-bronze);
-  padding-top: 0.4rem;
+  letter-spacing: 0.26em;
+  color: var(--story-champagne);
+  flex-shrink: 0;
 }
 
-.story-step-copy { min-width: 0; }
-
-.story-step-title {
-  font-family: var(--font-serif);
-  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
-  font-weight: 500;
-  color: #f4f1ea;
-  margin: 0 0 0.75rem;
-  line-height: 1.15;
-}
-
-.story-step-text {
-  font-size: 0.95rem;
-  line-height: 1.8;
-  color: rgba(244, 241, 234, 0.62);
+.story-point-title {
   margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 3.2vw, 2.9rem);
+  line-height: 1.14;
+  color: var(--story-ivory);
+}
+
+.story-point-text {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(0.95rem, 1.05vw, 1.06rem);
+  line-height: 1.9;
+  color: var(--story-dim);
   max-width: 46ch;
 }
 
-/* ── Responsive ── */
+/* ────────────────────────── Closing beat ──────────────────────────── */
+
+.story-outro {
+  grid-area: outro;
+  min-height: 55vh;
+  display: flex;
+  align-items: center;
+  padding:
+    clamp(3rem, 7vh, 5rem)
+    clamp(1.5rem, 5vw, 5rem)
+    clamp(6rem, 12vh, 9rem)
+    clamp(1.5rem, 4vw, 4rem);
+}
+
+.story-outro-line {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+  line-height: 1.45;
+  color: var(--story-ivory);
+  max-width: 22ch;
+}
+
+.story-outro-line::before {
+  content: '';
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  background: var(--story-champagne);
+  margin-bottom: 1.6rem;
+  opacity: 0.7;
+}
+
+/* ── Exit release — as the closing beat arrives, the frame recedes ── */
+
+.story-section.exiting .story-stack {
+  opacity: 0.78;
+  filter: brightness(0.88);
+  transform: scale(1.025);
+}
+
+/* ═══════════════════ Responsive ═══════════════════ */
+
+@media (max-width: 1199.98px) {
+  .story-section {
+    grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
+    column-gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .story-headline { font-size: clamp(2.4rem, 4.4vw, 3.6rem); }
+  .story-intro,
+  .story-point,
+  .story-outro {
+    padding-left: clamp(1.25rem, 3.5vw, 2.5rem);
+    padding-right: clamp(1.25rem, 3.5vw, 2.5rem);
+  }
+}
+
+/* Tablet + mobile — the storytelling becomes vertical:
+   label → headline → image → principles, no sticky columns. */
 @media (max-width: 1023.98px) {
   .story-section {
     grid-template-columns: 1fr;
-    gap: 3rem;
+    grid-template-areas:
+      "intro"
+      "media"
+      "points"
+      "outro";
+    column-gap: 0;
   }
 
   .story-media {
     position: relative;
     top: auto;
+    height: auto;
+    align-self: auto;
   }
 
-  .story-stack { aspect-ratio: 16 / 10; }
+  .story-stack {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: 2px;
+  }
+
+  .story-intro {
+    min-height: 0;
+    padding: clamp(6rem, 18vh, 8.5rem) clamp(1.25rem, 6vw, 2.5rem) clamp(2.75rem, 7vh, 4rem);
+  }
+
+  .story-headline { font-size: clamp(2.35rem, 10vw, 3.1rem); }
+  .story-lede { font-size: 1rem; }
+
+  .story-point {
+    min-height: 0;
+    padding: clamp(2.75rem, 8vh, 4.5rem) clamp(1.25rem, 6vw, 2.5rem);
+  }
+
+  .story-point-head { margin-bottom: 1.1rem; }
+  .story-point-title { font-size: clamp(1.75rem, 6.5vw, 2.2rem); }
+  .story-point-text { font-size: 0.95rem; }
+
+  .story-outro {
+    min-height: 0;
+    padding: clamp(1.5rem, 5vh, 3rem) clamp(1.25rem, 6vw, 2.5rem) clamp(6rem, 14vh, 9rem);
+  }
+
+  .story-outro-line { font-size: clamp(1.4rem, 5.5vw, 1.9rem); }
 }
 
-@media (max-width: 767px) {
-  .story-stack { aspect-ratio: 4 / 3.4; }
-  .story-step { grid-template-columns: 2.4rem 1fr; gap: 0.875rem; }
-  .story-step-text { font-size: 0.9rem; }
-}
+/* ═══════════════════ Reduced motion ═══════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
-  .story-img { transition: none; }
   .story-img:first-child,
-  .story-img.active { opacity: 1; }
-  .story-step:not(.active) { opacity: 0.55; transform: none; }
+  .story-img.active {
+    opacity: 1;
+    transform: none;
+  }
+
+  .story-point { opacity: 1; }
+  .story-progress-item { opacity: 1; }
+  .story-section.exiting .story-stack {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
 }
