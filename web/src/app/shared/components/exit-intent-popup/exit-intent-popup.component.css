@@ -95,10 +95,10 @@
 }
 
 .ei-btn--primary {
-  background: #0f6f84;
+  background: var(--color-ink);
   color: #fff;
 }
-.ei-btn--primary:hover { background: #0d5f72; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15,111,132,0.3); }
+.ei-btn--primary:hover { background: #000; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(32, 28, 23, 0.25); }
 
 .ei-btn--ghost {
   background: transparent;

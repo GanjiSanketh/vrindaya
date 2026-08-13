@@ -1,13 +1,12 @@
-/* ═══════════════════════════════════════
-   LUXURY LOADING SCREEN
-   ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   BRAND SPLASH — warm, minimal opening
+   ═══════════════════════════════════════════════════════════════ */
 
 .ls-backdrop {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #0f2027;
-  background: linear-gradient(135deg, #0f2027 0%, #0f6b81 50%, #0f2027 100%);
+  background: #f7f4ee;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,40 +22,40 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.5rem;
   animation: ls-content-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both;
 }
 
-/* ── Gold ornament row ── */
+/* ── Ornament row ── */
 .ls-ornament {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  color: #D4AF37;
-  opacity: 0.8;
+  gap: 1rem;
+  color: var(--color-bronze);
+  opacity: 0.55;
 }
 
 .ls-line {
   display: block;
-  width: 48px;
+  width: 44px;
   height: 1px;
   background: currentColor;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
-.ls-lotus { color: #D4AF37; }
+.ls-lotus { color: var(--color-bronze); }
 
 /* ── Brand letters ── */
 .ls-brand {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif);
   font-size: clamp(2.75rem, 8vw, 5rem);
   font-weight: 300;
-  letter-spacing: 0.45em;
-  color: #ffffff;
+  letter-spacing: 0.4em;
+  color: var(--color-ink);
   display: flex;
   gap: 0;
   margin: 0;
-  padding-right: 0.45em; /* compensate last letter-spacing */
+  padding-right: 0.4em; /* compensate last letter-spacing */
   position: relative;
 }
 
@@ -68,7 +67,7 @@
   animation: ls-letter-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Gold shimmer sweep over the brand name */
+/* Soft bronze shimmer over the brand name */
 .ls-brand::after {
   content: '';
   position: absolute;
@@ -76,44 +75,38 @@
   background: linear-gradient(
     105deg,
     transparent 30%,
-    rgba(212, 175, 55, 0.35) 50%,
+    rgba(168, 123, 78, 0.28) 50%,
     transparent 70%
   );
   background-size: 200% 100%;
-  animation: ls-shimmer 1.8s ease 0.8s infinite;
+  animation: ls-shimmer 2s ease 0.8s infinite;
   pointer-events: none;
 }
 
-/* ── Tagline ── */
 .ls-tagline {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif);
   font-style: italic;
-  font-weight: 400;
-  font-size: clamp(0.9rem, 2.5vw, 1.15rem);
-  letter-spacing: 0.2em;
-  color: rgba(212, 175, 55, 0.85);
-  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.18em;
+  color: var(--color-bronze);
   opacity: 0;
-  animation: ls-fade-in 0.7s ease 0.9s forwards;
+  animation: ls-fade-in 0.8s ease 0.5s forwards;
 }
 
-/* ── Gold progress bar ── */
+/* ── Progress line ── */
 .ls-bar-wrap {
   width: 120px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 1px;
+  background: rgba(32, 28, 23, 0.12);
   overflow: hidden;
-  margin-top: 0.5rem;
-  opacity: 0;
-  animation: ls-fade-in 0.4s ease 0.6s forwards;
+  margin-top: 0.25rem;
 }
 
 .ls-bar {
   height: 100%;
-  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
-  animation: ls-progress 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
   width: 0;
+  background: var(--color-bronze);
+  animation: ls-progress 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
 }
 
 /* ── Keyframes ── */
@@ -153,7 +146,7 @@
   to   { width: 100%; }
 }
 
-/* Respect reduced-motion preference */
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .ls-letter,
   .ls-tagline,

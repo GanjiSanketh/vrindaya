@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 8rem 1rem 3rem;
 }
 
 .offline-card {
@@ -55,7 +55,7 @@
 }
 
 .offline-btn--primary {
-  background: #0f6f84;
+  background: var(--color-ink);
   color: #fff;
 }
 .offline-btn--primary:hover { background: #0d5f72; transform: translateY(-1px); }

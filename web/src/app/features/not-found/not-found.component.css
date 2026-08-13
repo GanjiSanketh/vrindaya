@@ -1,10 +1,10 @@
 .nf-section {
-  min-height: calc(100vh - 140px);
+  min-height: calc(100svh - 118px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4rem 1.5rem;
-  background: var(--cream, #ffffff);
+  padding: 8rem 1.5rem 5rem;
+  background: var(--color-bg);
   text-align: center;
 }
 
@@ -78,20 +78,21 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.85rem 2.25rem;
-  background: var(--maroon, #0f6f84);
+  padding: 0.95rem 2.25rem;
+  background: var(--color-ink);
   color: #fff;
   font-family: var(--font-sans, 'DM Sans', sans-serif);
   font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   text-decoration: none;
-  border-radius: var(--r-sm, 6px);
-  transition: background 0.2s ease, transform 0.2s ease;
+  border-radius: 12px;
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .nf-btn:hover {
-  background: var(--maroon-dark, #0b5868);
-  transform: translateY(-1px);
+  background: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(32, 28, 23, 0.22);
   color: #fff;
 }

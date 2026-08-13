@@ -1,0 +1,51 @@
+<section class="story-section" id="story" aria-label="The Vrindaya story">
+
+  <!-- Anchored visual — crossfades as the reader moves through the story -->
+  <div class="story-media" aria-hidden="true">
+    <div class="story-stack">
+      @for (step of steps; track step.id) {
+        <img
+          [src]="step.image"
+          [alt]=""
+          class="story-img"
+          [class.active]="activeStep() === step.id"
+          loading="lazy"
+          decoding="async"
+          width="800"
+          height="1000"
+        />
+      }
+    </div>
+  </div>
+
+  <!-- Narrative steps -->
+  <div class="story-body">
+    <div class="story-intro" data-reveal>
+      <p class="section-label">The Vrindaya Story</p>
+      <h2 class="section-title">
+        Crafted with intention,<br />
+        worn with grace
+      </h2>
+      <p class="section-desc">
+        Three quiet principles guide every piece we make.
+      </p>
+    </div>
+
+    <div class="story-steps">
+      @for (step of steps; track step.id) {
+        <article
+          class="story-step"
+          [class.active]="activeStep() === step.id"
+          [attr.data-step]="step.id"
+        >
+          <span class="story-step-index">{{ step.index }}</span>
+          <div class="story-step-copy">
+            <h3 class="story-step-title">{{ step.title }}</h3>
+            <p class="story-step-text">{{ step.text }}</p>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+
+</section>

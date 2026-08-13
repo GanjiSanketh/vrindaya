@@ -14,6 +14,7 @@ import { HeroSequenceComponent } from '../../components/hero-sequence/hero-seque
 import { HeroShowcaseComponent } from '../../components/hero-showcase/hero-showcase.component';
 import { PremiumFloatingCategoriesComponent } from '../../components/premium-floating-categories/premium-floating-categories.component';
 import { PremiumProductShowcaseComponent } from '../../components/premium-product-showcase/premium-product-showcase.component';
+import { StorySectionComponent } from '../../components/story-section/story-section.component';
 import { RevealDirective } from '../../directives/reveal.directive';
 import { NewArrivals } from '../../../../components/new-arrivals/new-arrivals';
 import { TrendingProducts } from '../../../../components/trending-products/trending-products';
@@ -31,6 +32,7 @@ import { CloudinaryUrlPipe, CloudinarySrcsetPipe } from '../../../../shared/pipe
     HeroShowcaseComponent,
     PremiumFloatingCategoriesComponent,
     PremiumProductShowcaseComponent,
+    StorySectionComponent,
     RevealDirective,
     NewArrivals, TrendingProducts, BestSellers, CustomerLove,
     SkeletonGridComponent,

@@ -91,11 +91,11 @@
 
 .hsc-brand {
   margin: 0 0 0.9rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.42em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: #a8884c;
+  color: var(--color-bronze);
 }
 
 .hsc-title {
@@ -122,20 +122,22 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.95rem 2rem;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #b99852, #a8884c);
+  padding: 1rem 2.25rem;
+  border-radius: 12px;
+  background: var(--color-ink);
   color: #fff;
-  font-weight: 600;
-  font-size: 0.98rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
   text-decoration: none;
-  box-shadow: 0 10px 24px -10px rgba(168, 136, 76, 0.55);
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s;
+  box-shadow: 0 10px 24px -10px rgba(32, 28, 23, 0.4);
+  transition: transform 0.3s var(--ease-out-quint), box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
 .hsc-cta-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 16px 34px -12px rgba(168, 136, 76, 0.65);
+  background: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px -12px rgba(32, 28, 23, 0.5);
 }
 
 .hsc-cta-btn:focus-visible {

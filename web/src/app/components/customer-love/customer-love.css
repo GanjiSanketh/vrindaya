@@ -1,52 +1,64 @@
-.cl-section { background: #ffffff; }
+.cl-section {
+  background: #ffffff;
+}
 
-.cl-title { font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: 0.05em; }
+.cl-title {
+  font-size: clamp(2.1rem, 4.6vw, 3.5rem);
+  letter-spacing: -0.02em;
+}
 
 /* 4-card grid */
 .cl-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 2.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.75rem;
+  margin-bottom: 3rem;
 }
 
-/* Testimonial card */
+/* Testimonial card — hairline, no loud shadows */
 .cl-card {
-  background: var(--white);
-  border-radius: var(--r-md);
-  padding: 1.5rem 1.25rem 1.25rem;
-  box-shadow: var(--shadow-sm);
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 2rem 1.75rem 1.75rem;
+  border: 1px solid var(--color-line);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 0.625rem;
-  transition: box-shadow 0.28s, transform 0.28s;
-  border: 1px solid var(--border);
+  gap: 0.75rem;
+  transition: box-shadow 0.35s ease, transform 0.35s var(--ease-out-quint), border-color 0.35s ease;
 }
 
-.cl-card:hover { box-shadow: var(--shadow-md); transform: translateY(-4px); }
+.cl-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  border-color: rgba(168, 123, 78, 0.35);
+}
 
 .cl-quote {
-  font-size: 1.5rem;
-  color: var(--gold);
-  opacity: 0.7;
-  line-height: 1;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  color: var(--color-bronze);
+  opacity: 0.55;
+  line-height: 0.6;
 }
 
 .cl-avatar-wrap {
-  width: 80px; height: 80px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid var(--gold-light);
-  box-shadow: 0 4px 16px rgba(201,168,76,0.2);
+  border: 2px solid var(--gold-light);
   flex-shrink: 0;
-  background: var(--cream-mid);
-  display: flex; align-items: center; justify-content: center;
+  background: var(--color-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cl-avatar {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   object-position: center 20%;  /* face-centred for portrait headshots */
 }
@@ -54,91 +66,97 @@
 /* Shown when image fails to load — initials fallback */
 .cl-avatar-fallback {
   font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--gold);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-bronze);
   line-height: 1;
   user-select: none;
 }
 
 .cl-stars {
-  display: flex; gap: 2px;
-  color: var(--gold);
-  font-size: 0.75rem;
+  display: flex;
+  gap: 3px;
+  color: var(--color-bronze);
+  font-size: 0.72rem;
 }
 
 .cl-review {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  line-height: 1.7;
+  font-size: 0.84rem;
+  color: var(--color-muted);
+  line-height: 1.75;
   margin: 0;
   flex: 1;
 }
 
 .cl-divider {
-  width: 60px; height: 1px;
-  background: var(--gold-light);
+  width: 48px;
+  height: 1px;
+  background: var(--color-line);
   margin: 0.25rem 0;
 }
 
 .cl-name {
   font-family: var(--font-serif);
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .cl-location {
   font-size: 0.75rem;
-  color: var(--text-muted);
-  display: flex; align-items: center; gap: 0.25rem;
+  color: var(--color-faint);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
-/* Stats bar */
+/* Stats bar — quiet and minimal */
 .cl-stats {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0;
-  background: #f9f9f9;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border);
-  padding: 1.5rem 2rem;
-  margin-bottom: 2rem;
+  padding: 1.5rem 0;
+  margin-bottom: 2.25rem;
   flex-wrap: wrap;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
 }
 
 .cl-stat {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 2rem;
+  gap: 0.875rem;
+  padding: 0.5rem clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .cl-stat > i {
-  font-size: 1.4rem;
-  color: var(--gold);
+  font-size: 1.3rem;
+  color: var(--color-bronze);
+  opacity: 0.85;
 }
 
 .cl-stat div {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .cl-stat strong {
   font-family: var(--font-serif);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .cl-stat span {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--color-muted);
 }
 
 .cl-sep {
-  width: 1px; height: 40px;
-  background: var(--border);
+  width: 1px;
+  height: 36px;
+  background: var(--color-line);
   flex-shrink: 0;
 }
 
@@ -147,32 +165,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.25rem;
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: var(--color-muted);
   text-align: center;
 }
 
 .cl-note-line {
-  height: 1px; width: 60px;
-  background: var(--gold); opacity: 0.4;
+  height: 1px;
+  width: 60px;
+  background: var(--color-bronze);
+  opacity: 0.35;
   display: inline-block;
 }
 
-.cl-note-heart { color: var(--gold); font-size: 0.75rem; }
+.cl-note-heart { color: var(--color-bronze); font-size: 0.75rem; }
 
 /* Responsive */
-@media (max-width: 1024px) { .cl-grid { grid-template-columns: repeat(2, 1fr); } }
-
-@media (max-width: 768px) {
-  /* .cl-title has its own letter-spacing (0.05em) that makes it wider
-     than .section-title — needs its own mobile clamp override */
-  .cl-title { font-size: clamp(1.5rem, 5vw, 2.5rem); letter-spacing: 0.02em; }
+@media (max-width: 1024px) {
+  .cl-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 576px)  {
-  .cl-grid  { grid-template-columns: 1fr; gap: 1rem; }
-  .cl-stats { gap: 1rem; flex-direction: column; }
-  .cl-sep   { width: 60px; height: 1px; }
-  .cl-stat  { padding: 0.5rem 0; }
+@media (max-width: 768px) {
+  .cl-title { font-size: clamp(1.75rem, 5.5vw, 2.4rem); }
+  .cl-grid { gap: 1rem; }
+}
+
+@media (max-width: 576px) {
+  .cl-grid  { grid-template-columns: 1fr; }
+  .cl-stats { gap: 1.25rem; flex-direction: column; }
+  .cl-sep   { width: 56px; height: 1px; }
+  .cl-stat  { padding: 0.25rem 0; }
 }
