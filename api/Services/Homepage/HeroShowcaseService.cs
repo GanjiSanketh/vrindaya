@@ -28,6 +28,7 @@ public class HeroShowcaseService : IHeroShowcaseService
     private const int MaxRotationIntervalSeconds = 60;
 
     private static readonly string[] SupportedTransitions = ["fade", "slide", "scaleFade"];
+    private static readonly string[] SupportedPositions = ["top", "center", "bottom", "left", "right"];
     private static readonly CacheEntryOptions CacheOptions = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60) };
 
     private readonly IFirebaseService _firebase;
@@ -73,6 +74,9 @@ public class HeroShowcaseService : IHeroShowcaseService
                 ItemId = item.ItemId,
                 ImageUrl = item.ImageUrl,
                 StoragePath = item.StoragePath,
+                MobileImageUrl = item.MobileImageUrl,
+                MobileStoragePath = item.MobileStoragePath,
+                ImagePosition = item.ImagePosition,
                 Title = item.Title,
                 Subtitle = item.Subtitle,
                 ButtonText = item.ButtonText,
@@ -180,6 +184,14 @@ public class HeroShowcaseService : IHeroShowcaseService
             throw new RequestValidationException("Unsupported transition. Only fade, slide, or scaleFade are available.");
         }
 
+        var invalidPosition = request.Items.FirstOrDefault(i =>
+            !SupportedPositions.Contains(i.ImagePosition, StringComparer.OrdinalIgnoreCase));
+        if (invalidPosition is not null)
+        {
+            throw new RequestValidationException(
+                $"Unsupported image position \"{invalidPosition.ImagePosition}\". Only top, center, bottom, left, or right are available.");
+        }
+
         var ids = request.Items.Select(i => i.ItemId).Where(id => !string.IsNullOrWhiteSpace(id)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (ids.Count != request.Items.Count)
         {
@@ -206,16 +218,28 @@ public class HeroShowcaseService : IHeroShowcaseService
             return;
         }
 
-        var kept = saved.Items.Select(i => i.StoragePath)
+        var kept = saved.Items.SelectMany(i => new[] { i.StoragePath, i.MobileStoragePath })
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         foreach (var old in existing.Items)
         {
-            if (string.IsNullOrWhiteSpace(old.StoragePath) || kept.Contains(old.StoragePath))
+            var removedPaths = new[] { old.StoragePath, old.MobileStoragePath }
+                .Where(p => !string.IsNullOrWhiteSpace(p) && !kept.Contains(p))
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var storagePath in removedPaths)
             {
-                continue;
+                try
+                {
+                    await _cloudinary.DeleteImageAsync(storagePath, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to delete replaced hero showcase image {StoragePath}", storagePath);
+                }
             }
+        }
 
             try
             {
@@ -256,6 +280,9 @@ public class HeroShowcaseService : IHeroShowcaseService
             ItemId = i.ItemId,
             ImageUrl = i.ImageUrl,
             StoragePath = i.StoragePath,
+            MobileImageUrl = i.MobileImageUrl,
+            MobileStoragePath = i.MobileStoragePath,
+            ImagePosition = i.ImagePosition,
             Title = i.Title,
             Subtitle = i.Subtitle,
             ButtonText = i.ButtonText,

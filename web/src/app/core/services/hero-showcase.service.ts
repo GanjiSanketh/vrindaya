@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { MarketplaceFirebaseService } from '../../features/admin/marketplace/services/marketplace-firebase.service';
-import { HeroShowcase, HeroShowcaseItem } from '../models/hero-showcase.model';
+import { HeroShowcase, HeroShowcaseItem, HeroShowcasePosition } from '../models/hero-showcase.model';
 
 /**
  * Storefront hero showcase provider.
@@ -93,6 +93,9 @@ export class HeroShowcaseService {
         itemId: (item['itemId'] as string) ?? `item-${index}`,
         imageUrl: (item['imageUrl'] as string) ?? '',
         storagePath: (item['storagePath'] as string) ?? '',
+        mobileImageUrl: (item['mobileImageUrl'] as string) ?? '',
+        mobileStoragePath: (item['mobileStoragePath'] as string) ?? '',
+        imagePosition: this.toPosition(item['imagePosition']),
         title: (item['title'] as string) ?? '',
         subtitle: (item['subtitle'] as string) ?? '',
         buttonText: (item['buttonText'] as string) ?? '',
@@ -106,6 +109,12 @@ export class HeroShowcaseService {
       updatedAt: this.toIsoDate(raw['updatedAt']),
       updatedBy: (raw['updatedBy'] as string) ?? '',
     };
+  }
+
+  private toPosition(value: unknown): HeroShowcasePosition {
+    return value === 'top' || value === 'bottom' || value === 'left' || value === 'right'
+      ? value
+      : 'center';
   }
 
   private toInterval(value: unknown): number {

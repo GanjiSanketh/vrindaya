@@ -25,6 +25,9 @@ public class HeroShowcaseItemDto
     public string ItemId { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
     public string StoragePath { get; set; } = string.Empty;
+    public string MobileImageUrl { get; set; } = string.Empty;
+    public string MobileStoragePath { get; set; } = string.Empty;
+    public string ImagePosition { get; set; } = "center";
     public string Title { get; set; } = string.Empty;
     public string Subtitle { get; set; } = string.Empty;
     public string ButtonText { get; set; } = string.Empty;
@@ -56,6 +59,9 @@ public class SaveHeroShowcaseItemRequest
     public string ItemId { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
     public string StoragePath { get; set; } = string.Empty;
+    public string MobileImageUrl { get; set; } = string.Empty;
+    public string MobileStoragePath { get; set; } = string.Empty;
+    public string ImagePosition { get; set; } = "center";
     public string Title { get; set; } = string.Empty;
     public string Subtitle { get; set; } = string.Empty;
     public string ButtonText { get; set; } = string.Empty;

@@ -81,6 +81,10 @@ export class HeroShowcaseComponent implements OnInit, AfterViewInit {
   readonly buttonLink = computed(() => this.current()?.buttonLink?.trim() || DEFAULT_BUTTON_LINK);
   readonly isExternalLink = computed(() => /^https?:\/\//i.test(this.buttonLink()));
   readonly image = computed(() => this.current()?.imageUrl?.trim() || IMAGE_FALLBACK);
+  /** Optional tighter crop for small screens — falls back to the desktop image. */
+  readonly mobileImage = computed(() => this.current()?.mobileImageUrl?.trim() || '');
+  /** object-position keyword driving where the model sits in the frame. */
+  readonly imagePosition = computed(() => this.current()?.imagePosition ?? 'center');
 
   readonly transition = computed(() => (this.config?.transition === 'slide' || this.config?.transition === 'scaleFade'
     ? this.config.transition
