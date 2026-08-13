@@ -1,0 +1,254 @@
+<div class="vs-page">
+
+  <!-- ── Header ── -->
+  <header class="vs-header">
+    <div class="vs-header-inner">
+      <div>
+        <span class="vs-breadcrumb">
+          <a routerLink="/" class="vs-bc-link">Home</a>
+          <i class="bi bi-chevron-right vs-bc-sep"></i>
+          <span>Admin</span>
+          <i class="bi bi-chevron-right vs-bc-sep"></i>
+          <span>Site Content</span>
+          <i class="bi bi-chevron-right vs-bc-sep"></i>
+          <span>Vrindaya Story</span>
+        </span>
+        <div class="vs-heading-row">
+          <h1 class="vs-heading">Vrindaya Story</h1>
+          @if (dirty()) {
+            <span class="vs-chip vs-chip--dirty"><i class="bi bi-circle-fill"></i> {{ changedCount() }} unsaved change{{ changedCount() === 1 ? '' : 's' }}</span>
+          } @else if (justSaved()) {
+            <span class="vs-chip vs-chip--saved"><i class="bi bi-check-circle-fill"></i> All Changes Saved</span>
+          }
+        </div>
+        <p class="vs-sub">Manage the images and content used in the brand story on the homepage.</p>
+      </div>
+      <a routerLink="/" class="vs-preview-link">
+        <i class="bi bi-eye"></i> Preview Story
+      </a>
+    </div>
+  </header>
+
+  <main class="vs-main">
+
+    @if (loading()) {
+      <div class="vs-card vs-loading">
+        <span class="btn-spinner"></span> Loading story configuration…
+      </div>
+    } @else {
+
+      @if (error()) {
+        <div class="vs-banner vs-banner--error">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          {{ error() }}
+          <button type="button" class="vs-banner-close" (click)="error.set(null)" aria-label="Dismiss">×</button>
+        </div>
+      }
+
+      @if (message()) {
+        <div class="vs-banner vs-banner--success">
+          <i class="bi bi-check-circle-fill"></i>
+          {{ message() }}
+        </div>
+      }
+
+      <!-- ── Story beats ── -->
+      <section class="vs-list">
+        @for (item of items(); track item.storyId) {
+          <article class="vs-card" [class.vs-card--changed]="changedIds().has(item.storyId)">
+
+            <div class="vs-card-head">
+              <span class="vs-card-number">{{ item.storyNumber || '—' }}</span>
+              <div class="vs-card-heading">
+                <h2 class="vs-card-title">{{ item.title || 'Untitled beat' }}</h2>
+                @if (changedIds().has(item.storyId)) {
+                  <span class="vs-chip vs-chip--dirty vs-chip--sm"><i class="bi bi-circle-fill"></i> Unsaved</span>
+                }
+                @if (!item.isActive) {
+                  <span class="vs-chip vs-chip--hidden vs-chip--sm"><i class="bi bi-eye-slash"></i> Hidden from website</span>
+                }
+              </div>
+              <label class="vs-switch" [title]="item.isActive ? 'Visible on website' : 'Hidden from website'">
+                <input type="checkbox" [checked]="item.isActive" (change)="toggleActive(item.storyId, $any($event.target).checked)" />
+                <span class="vs-switch-track"></span>
+              </label>
+            </div>
+
+            <div class="vs-card-body">
+
+              <!-- Image preview + actions -->
+              <div class="vs-image-col">
+                <div class="vs-image-frame">
+                  @if (item.imageUrl) {
+                    <img [src]="item.imageUrl" [alt]="item.imageAlt" class="vs-image"
+                         [style.object-position]="item.imagePosition" loading="lazy" decoding="async" />
+                  } @else {
+                    <div class="vs-image-empty"><i class="bi bi-image"></i><span>No image</span></div>
+                  }
+                  <span class="vs-position-badge">{{ item.imagePosition }}</span>
+                </div>
+
+                <div class="vs-image-actions">
+                  <button type="button" class="vs-btn vs-btn--outline vs-btn--sm" (click)="openChangeImage(item.storyId)">
+                    <i class="bi bi-arrow-repeat"></i> Change Image
+                  </button>
+                  <span class="vs-hint">JPG, PNG or WebP · up to 15 MB</span>
+                </div>
+              </div>
+
+              <!-- Copy + position -->
+              <div class="vs-fields">
+                <div class="vs-field">
+                  <label class="vs-field-label" [attr.for]="'vs-title-' + item.storyId">Story title</label>
+                  <input [id]="'vs-title-' + item.storyId" type="text" class="vs-input"
+                         [value]="item.title" (input)="onTitleChange(item.storyId, $any($event.target).value)"
+                         placeholder="e.g. Rooted in heritage" maxlength="80" />
+                </div>
+
+                <div class="vs-field">
+                  <label class="vs-field-label" [attr.for]="'vs-desc-' + item.storyId">Description</label>
+                  <textarea [id]="'vs-desc-' + item.storyId" class="vs-input vs-input--area" rows="4"
+                            [value]="item.description" (input)="onDescriptionChange(item.storyId, $any($event.target).value)"
+                            placeholder="Short supporting text shown beneath the title." maxlength="400"></textarea>
+                </div>
+
+                <div class="vs-field vs-field--row">
+                  <div class="vs-field">
+                    <label class="vs-field-label" [attr.for]="'vs-pos-' + item.storyId">Image position</label>
+                    <select [id]="'vs-pos-' + item.storyId" class="vs-select"
+                            [value]="item.imagePosition" (change)="onPositionChange(item.storyId, $any($event.target).value)"
+                            aria-label="Image position">
+                      @for (p of positions; track p) {
+                        <option [value]="p">{{ p[0].toUpperCase() + p.slice(1) }}</option>
+                      }
+                    </select>
+                  </div>
+                  <p class="vs-pos-note">Controls where the model sits inside the frame on the website — no CSS needed.</p>
+                </div>
+              </div>
+
+            </div>
+          </article>
+        }
+      </section>
+
+      <!-- ── Sticky save bar ── -->
+      <div class="vs-savebar" [class.vs-savebar--active]="dirty()">
+        <div class="vs-savebar-inner">
+          <span class="vs-savebar-status">
+            @if (dirty()) {
+              <i class="bi bi-pencil-square"></i> {{ changedCount() }} unsaved change{{ changedCount() === 1 ? '' : 's' }} — save to publish to the website
+            } @else {
+              <i class="bi bi-check2-circle"></i> Everything is up to date
+            }
+          </span>
+          <button type="button" class="vs-btn vs-btn--primary" (click)="save()" [disabled]="!dirty() || saving()">
+            @if (saving()) {
+              <span class="btn-spinner"></span> Saving…
+            } @else {
+              <i class="bi bi-cloud-arrow-up"></i> Save Story
+            }
+          </button>
+        </div>
+      </div>
+
+    }
+
+  </main>
+
+  <!-- ── Change Image modal ── -->
+  @if (modalOpen()) {
+    @if (modalItem(); as item) {
+      <div class="vs-overlay" (click)="closeModal()" (keydown.escape)="closeModal()" tabindex="-1">
+        <div class="vs-modal" role="dialog" aria-modal="true" aria-label="Change story image" (click)="$event.stopPropagation()">
+
+          <div class="vs-modal-head">
+            <div>
+              <span class="vs-modal-eyebrow">Story {{ item.storyNumber || '' }}</span>
+              <h3 class="vs-modal-title">Change Story Image</h3>
+            </div>
+            <button type="button" class="vs-modal-close" (click)="closeModal()" aria-label="Close" [disabled]="modalUploading()">×</button>
+          </div>
+
+          <div class="vs-modal-body">
+
+            <!-- Current image -->
+            <div class="vs-modal-section">
+              <span class="vs-modal-label">Current Image</span>
+              <div class="vs-modal-current">
+                @if (item.imageUrl) {
+                  <img [src]="item.imageUrl" [alt]="item.imageAlt" class="vs-modal-current-img"
+                       [style.object-position]="item.imagePosition" loading="lazy" decoding="async" />
+                } @else {
+                  <div class="vs-image-empty"><i class="bi bi-image"></i><span>No image set</span></div>
+                }
+              </div>
+            </div>
+
+            @if (modalError()) {
+              <div class="vs-banner vs-banner--error vs-banner--modal">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                {{ modalError() }}
+              </div>
+            }
+
+            <!-- New image: dropzone or staged preview -->
+            <div class="vs-modal-section">
+              <span class="vs-modal-label">New Image</span>
+
+              @if (stagedFile(); as staged) {
+                <div class="vs-staged">
+                  <div class="vs-staged-preview">
+                    <img [src]="staged.previewUrl" alt="Selected image preview" class="vs-staged-img" />
+                  </div>
+                  <div class="vs-staged-meta">
+                    <span class="vs-staged-name"><i class="bi bi-file-earmark-image"></i> {{ staged.fileName }}</span>
+                    <span class="vs-staged-detail">
+                      {{ formatSize(staged.sizeBytes) }} · {{ staged.width }} × {{ staged.height }} · WebP
+                    </span>
+                  </div>
+                  <div class="vs-staged-actions">
+                    <button type="button" class="vs-btn vs-btn--ghost vs-btn--sm" (click)="releaseStaged()" [disabled]="modalUploading()">
+                      <i class="bi bi-x-lg"></i> Remove
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div class="vs-dropzone"
+                     [class.vs-dropzone--over]="dragOver()"
+                     (dragover)="onDragOver($event)"
+                     (dragleave)="dragOver.set(false)"
+                     (drop)="onDrop($event)">
+                  <input #storyFileInput type="file" accept="image/jpeg,image/png,image/webp"
+                         class="vs-hidden-input" (change)="onBrowseFile(storyFileInput)" [disabled]="modalUploading()" />
+                  <i class="bi bi-cloud-arrow-up vs-dropzone-icon"></i>
+                  <p class="vs-dropzone-title">Drag &amp; drop an image here</p>
+                  <p class="vs-dropzone-or">or</p>
+                  <button type="button" class="vs-btn vs-btn--outline vs-btn--sm" (click)="storyFileInput.click()" [disabled]="modalUploading()">
+                    <i class="bi bi-folder2-open"></i> Browse Images
+                  </button>
+                  <p class="vs-dropzone-hint">JPG, JPEG, PNG or WebP · up to 15 MB</p>
+                </div>
+              }
+
+            </div>
+
+          </div>
+
+          <div class="vs-modal-foot">
+            <button type="button" class="vs-btn vs-btn--ghost" (click)="closeModal()" [disabled]="modalUploading()">Cancel</button>
+            <button type="button" class="vs-btn vs-btn--primary" (click)="saveStagedImage()" [disabled]="!stagedFile() || modalUploading()">
+              @if (modalUploading()) {
+                <span class="btn-spinner"></span> Uploading…
+              } @else {
+                <i class="bi bi-check2-circle"></i> Save Image
+              }
+            </button>
+          </div>
+
+        </div>
+      </div>
+    }
+  }
+
+</div>

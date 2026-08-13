@@ -1,0 +1,234 @@
+/* VRINDAYA STORY — Admin page. One card per story beat with its own
+   image, copy, position and visibility; a modal handles image replacement.
+   Uses the Vrindaya admin design language (same as Hero Showcase). */
+
+.vs-page {
+  min-height: 100vh;
+  background: #f7f5f1;
+  font-family: var(--font-sans, 'DM Sans', sans-serif);
+  color: #1a1a1a;
+}
+
+/* ── Header ── */
+.vs-header { background: #fff; border-bottom: 1px solid #eaeaea; padding: 1.25rem 0; }
+.vs-header-inner {
+  max-width: 1100px; margin: 0 auto; padding: 0 2rem;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem;
+}
+.vs-breadcrumb { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: #999; margin-bottom: 0.375rem; }
+.vs-bc-link { color: var(--maroon, #2c2721); text-decoration: none; }
+.vs-bc-link:hover { text-decoration: underline; }
+.vs-bc-sep { font-size: 0.6rem; color: #ccc; }
+.vs-heading-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.vs-heading { font-family: var(--font-serif, 'Cormorant Garamond', serif); font-size: 1.75rem; font-weight: 700; color: #1a1a1a; margin: 0; }
+.vs-sub { margin: 0.35rem 0 0; font-size: 0.85rem; color: #777; max-width: 640px; line-height: 1.5; }
+.vs-preview-link {
+  display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600;
+  color: var(--maroon, #2c2721); border: 1.5px solid var(--maroon, #2c2721); padding: 0.5rem 1rem;
+  border-radius: 6px; text-decoration: none; white-space: nowrap;
+}
+.vs-preview-link:hover { background: var(--maroon, #2c2721); color: #fff; }
+
+/* ── Layout & cards ── */
+.vs-main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 7rem; }
+.vs-list { display: flex; flex-direction: column; gap: 1.25rem; }
+.vs-card { background: #fff; border: 1px solid #eaeaea; border-radius: 12px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); overflow: hidden; }
+.vs-card--changed { border-color: #e8c98a; box-shadow: 0 0 0 3px rgba(183, 121, 31, 0.08); }
+.vs-loading { display: flex; align-items: center; gap: 0.6rem; color: #777; font-size: 0.9rem; padding: 1.5rem; }
+
+/* ── Card head ── */
+.vs-card-head {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1rem 1.5rem; border-bottom: 1px solid #f0ede6; background: #fcfbf9;
+}
+.vs-card-number {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 2.4rem; height: 2.4rem; padding: 0 0.5rem;
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--maroon, #2c2721); background: #f0ece4; border: 1px solid #e4ddd0; border-radius: 8px;
+}
+.vs-card-heading { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 0; }
+.vs-card-title { font-family: var(--font-serif, 'Cormorant Garamond', serif); font-size: 1.15rem; font-weight: 700; color: #1a1a1a; margin: 0; }
+.vs-card-heading-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+/* ── Chips & status ── */
+.vs-chip {
+  display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 600;
+  color: #666; background: #f4f2ed; border: 1px solid #e8e4dc; padding: 0.3rem 0.7rem; border-radius: 999px; white-space: nowrap;
+}
+.vs-chip--sm { font-size: 0.68rem; padding: 0.18rem 0.55rem; }
+.vs-chip--dirty { color: #b7791f; background: #fdf3e3; border-color: #f3dfc0; }
+.vs-chip--saved { color: #2f7d4f; background: #e9f6ee; border-color: #cdeadd; }
+.vs-chip--hidden { color: #8a5a33; background: #f7efe6; border-color: #ecdcc9; }
+
+/* ── Card body ── */
+.vs-card-body { display: grid; grid-template-columns: 260px 1fr; gap: 1.5rem; padding: 1.5rem; }
+
+.vs-image-col { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.vs-image-frame {
+  position: relative; aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden;
+  background: #f0ece4; border: 1px solid #e8e4dc;
+}
+.vs-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vs-image-empty {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+  color: #b9b2a6; font-size: 0.8rem;
+}
+.vs-image-empty i { font-size: 1.6rem; }
+.vs-position-badge {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #5a5245; background: rgba(255, 255, 255, 0.88); border: 1px solid #e4ddd0;
+  padding: 0.2rem 0.5rem; border-radius: 5px;
+}
+.vs-image-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+.vs-hint { font-size: 0.7rem; color: #aaa; }
+
+/* ── Fields ── */
+.vs-fields { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.vs-field { display: flex; flex-direction: column; gap: 0.35rem; }
+.vs-field--row { gap: 0.6rem; }
+.vs-field-label { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #8a8478; }
+.vs-input {
+  font-family: inherit; font-size: 0.9rem; color: #1a1a1a;
+  padding: 0.55rem 0.8rem; border: 1.5px solid #e2ddd4; border-radius: 8px; background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.vs-input:focus { outline: none; border-color: var(--maroon, #2c2721); box-shadow: 0 0 0 3px rgba(44, 39, 33, 0.08); }
+.vs-input--area { resize: vertical; line-height: 1.55; }
+.vs-select {
+  font-family: inherit; font-size: 0.88rem; color: #1a1a1a;
+  padding: 0.5rem 0.75rem; border: 1.5px solid #e2ddd4; border-radius: 8px; background: #fff; cursor: pointer;
+}
+.vs-pos-note { margin: 0; font-size: 0.72rem; color: #aaa; line-height: 1.5; max-width: 320px; }
+
+/* ── Switch ── */
+.vs-switch { position: relative; display: inline-flex; cursor: pointer; flex-shrink: 0; }
+.vs-switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.vs-switch-track {
+  width: 44px; height: 24px; border-radius: 999px; background: #d8d4cc; position: relative;
+  transition: background-color 0.25s ease;
+}
+.vs-switch-track::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s ease;
+}
+.vs-switch input:checked + .vs-switch-track { background: #2f7d4f; }
+.vs-switch input:checked + .vs-switch-track::after { transform: translateX(20px); }
+.vs-switch input:focus-visible + .vs-switch-track { box-shadow: 0 0 0 3px rgba(47, 125, 79, 0.25); }
+
+/* ── Buttons ── */
+.vs-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+  font-family: inherit; font-size: 0.85rem; font-weight: 600;
+  padding: 0.55rem 1.1rem; border-radius: 8px; border: 1.5px solid transparent;
+  cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  white-space: nowrap;
+}
+.vs-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.vs-btn--sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+.vs-btn--primary { background: var(--maroon, #2c2721); color: #fff; }
+.vs-btn--primary:hover:not(:disabled) { background: #423c33; }
+.vs-btn--outline { background: #fff; color: var(--maroon, #2c2721); border-color: #d9d3c8; }
+.vs-btn--outline:hover:not(:disabled) { border-color: var(--maroon, #2c2721); }
+.vs-btn--ghost { background: transparent; color: #666; }
+.vs-btn--ghost:hover:not(:disabled) { background: #f2efe9; color: #1a1a1a; }
+
+/* ── Banners ── */
+.vs-banner {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.85rem; border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.25rem;
+}
+.vs-banner--error { color: #b3261e; background: #fdecea; border: 1px solid #f6d3cf; }
+.vs-banner--success { color: #2f7d4f; background: #e9f6ee; border: 1px solid #cdeadd; }
+.vs-banner--modal { margin: 0 0 1rem; }
+.vs-banner-close { margin-left: auto; background: none; border: none; font-size: 1.1rem; color: inherit; cursor: pointer; padding: 0 0.25rem; }
+
+/* ── Sticky save bar ── */
+.vs-savebar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-top: 1px solid #eaeaea;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.vs-savebar--active { transform: translateY(0); }
+.vs-savebar-inner {
+  max-width: 1100px; margin: 0 auto; padding: 0.85rem 2rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.vs-savebar-status { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; font-weight: 600; color: #b7791f; }
+.vs-savebar-status i { font-size: 0.95rem; }
+
+/* ── Change Image modal ── */
+.vs-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(26, 23, 20, 0.5);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+}
+.vs-modal {
+  width: min(560px, 100%); max-height: calc(100vh - 3rem); overflow-y: auto;
+  background: #fff; border-radius: 14px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  display: flex; flex-direction: column;
+}
+.vs-modal-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+  padding: 1.25rem 1.5rem; border-bottom: 1px solid #f0ede6;
+}
+.vs-modal-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--maroon, #2c2721); }
+.vs-modal-title { font-family: var(--font-serif, 'Cormorant Garamond', serif); font-size: 1.4rem; font-weight: 700; color: #1a1a1a; margin: 0.15rem 0 0; }
+.vs-modal-close { background: none; border: none; font-size: 1.5rem; line-height: 1; color: #999; cursor: pointer; padding: 0.25rem; }
+.vs-modal-close:hover { color: #1a1a1a; }
+.vs-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.vs-modal-section { display: flex; flex-direction: column; gap: 0.5rem; }
+.vs-modal-label { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #8a8478; }
+.vs-modal-current {
+  aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden;
+  background: #f0ece4; border: 1px solid #e8e4dc; position: relative;
+}
+.vs-modal-current-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vs-modal-foot {
+  display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem;
+  padding: 1rem 1.5rem; border-top: 1px solid #f0ede6; background: #fcfbf9; border-radius: 0 0 14px 14px;
+}
+
+/* ── Dropzone ── */
+.vs-dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.45rem;
+  padding: 2.25rem 1.5rem; border: 2px dashed #d8d2c6; border-radius: 12px; background: #fbfaf7;
+  text-align: center; transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.vs-dropzone--over { border-color: var(--maroon, #2c2721); background: #f4f1ea; }
+.vs-dropzone-icon { font-size: 1.9rem; color: #b9b2a6; margin-bottom: 0.25rem; }
+.vs-dropzone-title { margin: 0; font-size: 0.95rem; font-weight: 600; color: #444; }
+.vs-dropzone-or { margin: 0; font-size: 0.75rem; color: #aaa; }
+.vs-dropzone-hint { margin: 0.25rem 0 0; font-size: 0.7rem; color: #aaa; }
+.vs-hidden-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* ── Staged preview ── */
+.vs-staged { display: flex; flex-direction: column; gap: 0.75rem; }
+.vs-staged-preview {
+  aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden;
+  background: #f0ece4; border: 1px solid #e8e4dc;
+}
+.vs-staged-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vs-staged-meta { display: flex; flex-direction: column; gap: 0.15rem; }
+.vs-staged-name { font-size: 0.88rem; font-weight: 600; color: #1a1a1a; display: inline-flex; align-items: center; gap: 0.4rem; }
+.vs-staged-detail { font-size: 0.75rem; color: #999; }
+.vs-staged-actions { display: flex; justify-content: flex-end; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .vs-card-body { grid-template-columns: 1fr; }
+  .vs-image-frame { max-width: 340px; }
+}
+
+@media (max-width: 640px) {
+  .vs-header-inner, .vs-main, .vs-savebar-inner { padding-left: 1rem; padding-right: 1rem; }
+  .vs-header-inner { align-items: flex-start; flex-direction: column; }
+  .vs-card-head { padding: 0.9rem 1rem; }
+  .vs-card-body { padding: 1rem; }
+}

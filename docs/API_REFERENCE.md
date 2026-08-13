@@ -131,6 +131,22 @@ Route prefix: `api/v{version:apiVersion}/homepage-config`. Admin-only
 `GET`/`PUT` of the `homepageConfig/singleton` document as a whole — see
 [Firestore Schema](database/firestore-schema.md#collection-homepageconfig).
 
+## VrindayaStoryController
+
+Route prefix: `api/v{version:apiVersion}/homepage-config`. Manages the
+`vrindayaStory` object nested on the `homepageConfig/active` Firestore
+document — the CMS record behind the homepage's brand-story section. The
+storefront reads that document straight from Firestore (with built-in
+defaults as fallback), so a saved configuration goes live with no code
+change.
+
+| Endpoint | Auth | Notes |
+| --- | --- | --- |
+| `GET /vrindaya-story` | Public | Current story configuration, or `404` when none has been saved yet. |
+| `PUT /vrindaya-story` | AdminOnly | Full-state overwrite (idempotent). `displayOrder` is derived from array position; validates unique `storyId`s and `imagePosition` keywords (`top`/`center`/`bottom`/`left`/`right`); deletes replaced Cloudinary assets after the write. |
+| `POST /vrindaya-story/items/images` | AdminOnly | Multipart (`file`) — one story image per call, validated (JPG/PNG/WebP, ≤10 MB) and stored under `vrindaya-story/items/`. Returns `{url, storagePath, width, height, sizeBytes}`; Firestore is untouched until the subsequent save. |
+| `DELETE /vrindaya-story/items/images?storagePath=` | AdminOnly | Deletes a story image by its Cloudinary public id; rejects paths outside the `vrindaya-story/` prefix. |
+
 ## HomepageAssetsController
 
 Route prefix: `api/v{version:apiVersion}/homepage-assets`. One shared

@@ -11,12 +11,13 @@
        as the reader moves from one principle to the next. -->
   <div class="story-media" aria-hidden="true">
     <div class="story-stack">
-      @for (step of steps; track step.id) {
+      @for (step of steps(); track step.id) {
         <img
           [src]="step.image"
           alt=""
           class="story-img"
           [class.active]="activeStep() === step.id"
+          [style.object-position]="step.position"
           [loading]="step.id === 0 ? 'eager' : 'lazy'"
           decoding="async"
           width="900"
@@ -28,7 +29,7 @@
 
     <!-- Current-step caption -->
     <div class="story-caption">
-      @for (step of steps; track step.id) {
+      @for (step of steps(); track step.id) {
         <div class="story-caption-block" [class.active]="activeStep() === step.id">
           <span class="story-caption-index">{{ step.index }}</span>
           <span class="story-caption-title">{{ step.title }}</span>
@@ -38,7 +39,7 @@
 
     <!-- Progress rail: 01 ━━━ / 02 ─── / 03 ─── -->
     <div class="story-progress">
-      @for (step of steps; track step.id) {
+      @for (step of steps(); track step.id) {
         <span class="story-progress-item" [class.active]="activeStep() === step.id">
           <span class="story-progress-num">{{ step.index }}</span>
           <span class="story-progress-line"></span>
@@ -60,7 +61,7 @@
 
   <!-- ── Story beats — each scrolls through its own moment ─────── -->
   <div class="story-points">
-    @for (step of steps; track step.id) {
+    @for (step of steps(); track step.id) {
       <article
         class="story-point"
         [class.active]="activeStep() === step.id"

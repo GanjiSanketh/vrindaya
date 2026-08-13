@@ -17,6 +17,10 @@ public class HomepageConfigDocument
     [FirestoreProperty("heroShowcase")]
     public HeroShowcaseDocument? HeroShowcase { get; set; }
 
+    /// <summary>The CMS-driven brand story beats (null until it is first saved).</summary>
+    [FirestoreProperty("vrindayaStory")]
+    public VrindayaStoryDocument? VrindayaStory { get; set; }
+
     [FirestoreProperty("createdAt")]
     public DateTime CreatedAt { get; set; }
 

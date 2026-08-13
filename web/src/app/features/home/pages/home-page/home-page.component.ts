@@ -9,6 +9,7 @@ import { SeoService } from '../../../../core/services/seo.service';
 import { ProductService } from '../../../../core/services/product.service';
 import { HeroBannerService } from '../../../../core/services/hero-banner.service';
 import { HeroShowcaseService } from '../../../../core/services/hero-showcase.service';
+import { VrindayaStoryService } from '../../../../core/services/vrindaya-story.service';
 import { AnalyticsService } from '../../../../core/analytics/analytics.service';
 import { HeroSequenceComponent } from '../../components/hero-sequence/hero-sequence.component';
 import { HeroShowcaseComponent } from '../../components/hero-showcase/hero-showcase.component';
@@ -50,6 +51,7 @@ export class HomePageComponent {
   readonly productSvc = inject(ProductService);
   private readonly heroBanner = inject(HeroBannerService);
   private readonly heroShowcaseSvc = inject(HeroShowcaseService);
+  private readonly storySvc = inject(VrindayaStoryService);
   private readonly analytics = inject(AnalyticsService);
 
   readonly showScrollTop = signal(false);
@@ -72,6 +74,9 @@ export class HomePageComponent {
   /** The persisted Hero Showcase configuration + whether it is live. */
   readonly heroShowcaseConfig = this.heroShowcaseSvc.config;
   readonly heroShowcaseEnabled = this.heroShowcaseSvc.enabled;
+
+  /** The persisted Vrindaya Story configuration (admin-managed). */
+  readonly storyConfig = this.storySvc.config;
 
   /** Wide/narrow banner URLs from the Firestore-driven HeroBannerService (asset fallback until/unless published). */
   readonly heroDesktop = this.heroBanner.desktopSrc;
@@ -103,10 +108,11 @@ export class HomePageComponent {
       void this.productSvc.ensureHomeDataLoaded();
       void this.heroBanner.ensureLoaded();
       void this.heroShowcaseSvc.ensureLoaded();
+      void this.storySvc.ensureLoaded();
       this.initScrollHandler();
       this.initMouseParallax();
     } else {
-      console.warn('[HomePage] SSR/prerender — skipping browser-only data loads (products, hero banner, hero showcase).');
+      console.warn('[HomePage] SSR/prerender — skipping browser-only data loads (products, hero banner, hero showcase, vrindaya story).');
     }
   }
 

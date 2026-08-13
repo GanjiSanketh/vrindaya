@@ -58,6 +58,7 @@ export const NAV_SECTIONS: NavSection[] = [
     key: 'site', label: 'Site Content', icon: 'bi-window',
     items: [
       { label: 'Hero Showcase', path: 'hero-showcase', icon: 'bi-images' },
+      { label: 'Vrindaya Story', path: 'vrindaya-story', icon: 'bi-collection' },
       { label: 'Categories', path: 'categories', icon: 'bi-tags' },
       { label: 'Analytics Settings', path: 'analytics-settings', icon: 'bi-sliders' },
     ],
