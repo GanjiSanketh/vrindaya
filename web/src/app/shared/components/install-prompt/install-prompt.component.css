@@ -76,7 +76,7 @@
 }
 
 .ip-btn--install {
-  background: #0f6f84;
+  background: var(--color-ink);
   color: #fff;
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;

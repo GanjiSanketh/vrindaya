@@ -1,23 +1,30 @@
-.na-section { background: var(--ivory); }
+.na-section {
+  background: var(--color-surface-2);
+}
 
 .na-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(2rem, 3.5vw, 3.25rem) clamp(1.25rem, 2.5vw, 2rem);
+  margin-bottom: 2.75rem;
 }
 
 .na-grid app-product-card {
-  animation: card-fade-in 0.5s ease-out both;
+  animation: card-fade-in 0.7s var(--ease-out-quint) both;
   animation-delay: var(--stagger-delay, 0ms);
 }
 
 @keyframes card-fade-in {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(28px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 .na-cta { text-align: center; }
 
-@media (max-width: 1024px) { .na-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 576px)  { .na-grid { grid-template-columns: 1fr 1fr; gap: 1rem; } }
+@media (max-width: 1024px) {
+  .na-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 576px) {
+  .na-grid { grid-template-columns: 1fr 1fr; gap: 1.75rem 0.875rem; margin-bottom: 2rem; }
+}

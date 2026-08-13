@@ -151,7 +151,7 @@
 }
 
 .pis-cta-btn:hover {
-  background: #d4af37;
+  background: var(--color-bronze);
   transform: translate3d(0, -3px, 0);
   box-shadow: 0 14px 30px rgba(201, 165, 76, 0.35);
 }

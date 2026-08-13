@@ -6,14 +6,14 @@
   position: fixed;
   inset: 0;
   z-index: 1010;
-  background: rgba(0, 0, 0, 0.52);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(31, 27, 22, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding-top: 5rem;
-  animation: so-fade-in 0.2s ease;
+  animation: so-fade-in 0.25s ease;
 }
 
 .so-panel {
@@ -93,10 +93,10 @@
   gap: 0.875rem;
   padding: 0.75rem 1.25rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background-color 0.2s ease;
 }
 
-.so-result:hover { background: var(--maroon-light, #e6f4f7); }
+.so-result:hover { background: var(--color-surface-2); }
 
 .so-view-all {
   display: flex;
@@ -116,7 +116,7 @@
   flex-shrink: 0;
 }
 
-.so-view-all:hover { background: var(--maroon-light, #e6f4f7); }
+.so-view-all:hover { background: var(--color-surface-2); }
 
 .so-thumb {
   width: 52px;

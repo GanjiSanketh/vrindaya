@@ -1,61 +1,77 @@
-/* ══════════════════════════════════════
-   PRODUCT LISTING PAGE
-   Compact: breadcrumb+sort → grid
-══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   PRODUCT LISTING PAGE — PREMIUM EDITORIAL
+   Cinematic category banner → refined sort → generous grid.
+   ═══════════════════════════════════════════════════════════════ */
 
 .pl-page {
   min-height: 100vh;
-  background: #ffffff;
+  background: var(--color-bg);
+  padding-top: 118px;
 }
 
-/* ── Banner ── */
+/* ── Banner — full-bleed and cinematic, tucking under the header ── */
+.pl-page > .cl-banner:first-child {
+  margin-top: -118px;
+}
+
 .cl-banner {
   position: relative;
   width: 100%;
-  max-height: 320px;
+  min-height: clamp(320px, 42vw, 480px);
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-charcoal);
 }
 
 .cl-banner-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
-  max-height: 320px;
 }
 
 .cl-banner-overlay {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.875rem;
   text-align: center;
-  padding: 1.5rem;
-  background: rgba(0, 0, 0, 0.35);
+  padding: 7rem 1.5rem 4rem;
+  width: 100%;
+  background:
+    linear-gradient(to top, rgba(20, 17, 13, 0.72), rgba(20, 17, 13, 0.18) 55%, rgba(20, 17, 13, 0.42));
 }
 
 .cl-banner-title {
   font-family: var(--font-serif);
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  color: #fff;
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 400;
+  color: #fbfaf6;
   margin: 0;
+  letter-spacing: -0.015em;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.3);
 }
 
 .cl-banner-desc {
   font-family: var(--font-sans);
   font-size: 0.95rem;
-  color: #fff;
+  font-weight: 300;
+  color: rgba(251, 250, 246, 0.85);
   max-width: 560px;
   margin: 0;
 }
 
 /* ── Breadcrumb + Sort row ── */
 .pl-breadcrumb {
-  background: #ffffff;
-  padding: 0.75rem 0;
+  padding: 1.5rem 0 1rem;
 }
 
 .pl-bc-inner {
@@ -69,58 +85,56 @@
 .pl-bc-path {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .pl-bc-link {
-  color: var(--text-muted);
+  color: var(--color-muted);
   text-decoration: none;
-  transition: color 0.18s;
+  transition: color 0.2s ease;
 }
 
-.pl-bc-link:hover { color: var(--maroon); }
+.pl-bc-link:hover { color: var(--color-bronze-deep); }
 
-.pl-bc-sep     { color: var(--text-light); font-size: 0.6rem; }
-.pl-bc-current { color: var(--text); font-weight: 500; }
+.pl-bc-sep     { color: var(--color-faint); font-size: 0.6rem; }
+.pl-bc-current { color: var(--color-text); font-weight: 500; }
 
-/* Sort dropdown */
 .pl-sort-select {
-  padding: 0.45rem 2rem 0.45rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
+  padding: 0.5rem 2rem 0.5rem 0.9rem;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
-  color: var(--text);
-  background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  background: var(--color-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236f685c'/%3E%3C/svg%3E") no-repeat right 0.7rem center;
   background-size: 8px;
   -webkit-appearance: none;
   appearance: none;
   cursor: pointer;
   flex-shrink: 0;
-  transition: border-color 0.18s;
   outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.pl-sort-select:hover  { border-color: var(--maroon); }
-.pl-sort-select:focus  { border-color: var(--maroon); box-shadow: 0 0 0 2px rgba(15,111,132,0.12); }
+.pl-sort-select:hover  { border-color: var(--color-bronze); }
+.pl-sort-select:focus  { border-color: var(--color-bronze); box-shadow: 0 0 0 3px rgba(168, 123, 78, 0.14); }
 
 /* ── Product grid ── */
 .pl-products {
-  padding: 0 0 3.5rem;
+  padding: 0 0 4.5rem;
 }
 
 .pl-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.25rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(2rem, 3.5vw, 3rem) clamp(1.25rem, 2.5vw, 2rem);
   padding-top: 0.75rem;
 }
 
-/* ── Load more ── */
 .pl-load-more {
   display: flex;
   justify-content: center;
-  padding-top: 2rem;
+  padding-top: 2.5rem;
 }
 
 /* ── Empty state ── */
@@ -128,14 +142,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.875rem;
-  padding: 5rem 2rem;
+  gap: 1rem;
+  padding: 6rem 2rem;
   text-align: center;
 }
 
-.pl-empty i        { font-size: 3rem; color: var(--gold); opacity: 0.4; }
-.pl-empty-title    { font-family: var(--font-serif); font-size: 1.1rem; color: var(--text); margin: 0; }
-.pl-empty-sub      { font-size: 0.875rem; color: var(--text-muted); margin: 0; }
+.pl-empty i        { font-size: 2.75rem; color: var(--color-bronze); opacity: 0.4; }
+.pl-empty-title    { font-family: var(--font-serif); font-size: 1.35rem; color: var(--color-text); margin: 0; }
+.pl-empty-sub      { font-size: 0.9rem; color: var(--color-muted); margin: 0; }
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
@@ -143,12 +157,15 @@
 }
 
 @media (max-width: 768px) {
+  .pl-page { padding-top: 96px; }
+  .pl-page > .cl-banner:first-child { margin-top: -96px; }
   .pl-bc-inner { flex-wrap: wrap; gap: 0.5rem 1rem; }
-  .pl-grid { grid-template-columns: repeat(2, 1fr); gap: 0.875rem; }
-  .pl-products { padding: 0 0 2.5rem; }
-  .cl-banner { max-height: 220px; }
+  .pl-grid { grid-template-columns: repeat(2, 1fr); gap: 1.75rem 0.875rem; }
+  .pl-products { padding: 0 0 3rem; }
+  .cl-banner { min-height: 280px; }
+  .cl-banner-overlay { padding: 5.5rem 1.25rem 3rem; }
 }
 
 @media (max-width: 480px) {
-  .pl-grid { gap: 0.625rem; }
+  .pl-grid { gap: 1.5rem 0.625rem; }
 }
