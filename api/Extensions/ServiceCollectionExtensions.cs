@@ -119,6 +119,9 @@ public static class ServiceCollectionExtensions
         // Hero showcase (CMS-driven homepage hero, nested under homepageConfig/active)
         services.AddScoped<IHeroShowcaseService, HeroShowcaseService>();
 
+        // Vrindaya Story (CMS-driven brand story, nested under homepageConfig/active)
+        services.AddScoped<IVrindayaStoryService, VrindayaStoryService>();
+
         #region AI Campaigns
 
         // AI Campaigns — deterministic scoring engine (no Firestore, no AI)
