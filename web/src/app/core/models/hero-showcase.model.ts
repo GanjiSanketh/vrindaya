@@ -23,6 +23,11 @@ export interface HeroShowcase {
 
 export type HeroShowcaseTransition = 'fade' | 'slide' | 'scaleFade';
 
+/** CSS object-position keyword — controls where the model sits in the hero frame. */
+export type HeroShowcasePosition = 'top' | 'center' | 'bottom' | 'left' | 'right';
+
+export const HERO_SHOWCASE_POSITIONS: HeroShowcasePosition[] = ['top', 'center', 'bottom', 'left', 'right'];
+
 /** One configurable slide in the hero showcase. */
 export interface HeroShowcaseItem {
   /** Stable client-generated id used as the Angular track key. */
@@ -31,6 +36,12 @@ export interface HeroShowcaseItem {
   imageUrl: string;
   /** Cloudinary public id (hero-showcase/items/...) — used to delete/replace the stored asset. */
   storagePath: string;
+  /** Optional Cloudinary URL used on small screens — fashion imagery often needs a tighter crop. */
+  mobileImageUrl: string;
+  /** Cloudinary public id of the mobile image — used to delete/replace the stored asset. */
+  mobileStoragePath: string;
+  /** object-position keyword — "center" when unset. */
+  imagePosition: HeroShowcasePosition;
   title: string;
   subtitle: string;
   buttonText: string;
@@ -58,6 +69,9 @@ export interface HeroShowcaseItemSavePayload {
   itemId: string;
   imageUrl: string;
   storagePath: string;
+  mobileImageUrl: string;
+  mobileStoragePath: string;
+  imagePosition: HeroShowcasePosition;
   title: string;
   subtitle: string;
   buttonText: string;

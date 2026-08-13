@@ -1,6 +1,6 @@
 <div class="hsc-page">
 
-  <!-- ── Header ── -->
+  <!-- ── Page header ── -->
   <header class="hsc-header">
     <div class="hsc-header-inner">
       <div>
@@ -15,17 +15,18 @@
         </span>
         <div class="hsc-heading-row">
           <h1 class="hsc-heading">Hero Showcase</h1>
-          @if (dirty()) {
-            <span class="hsc-unsaved"><i class="bi bi-circle-fill"></i> Unsaved Changes</span>
-          } @else if (justSaved()) {
-            <span class="hsc-saved"><i class="bi bi-check-circle-fill"></i> All Changes Saved</span>
+          @if (justSaved()) {
+            <span class="hsc-chip hsc-chip--saved"><i class="bi bi-check-circle-fill"></i> All Changes Saved</span>
           }
         </div>
-        <p class="hsc-sub">Create beautiful rotating homepage banners.</p>
+        <p class="hsc-sub">Manage the imagery, messaging and presentation of your homepage hero.</p>
       </div>
-      <a routerLink="/" class="hsc-preview-link">
-        <i class="bi bi-eye"></i> Preview Site
-      </a>
+      <div class="hsc-header-actions">
+        <span class="hsc-saved-at"><i class="bi bi-clock-history"></i> {{ lastSavedText() }}</span>
+        <a routerLink="/" class="hsc-preview-link">
+          <i class="bi bi-eye"></i> Preview Site
+        </a>
+      </div>
     </div>
   </header>
 
@@ -42,7 +43,7 @@
           <div class="hsc-banner hsc-banner--error">
             <i class="bi bi-exclamation-circle-fill"></i>
             {{ error() }}
-            <button type="button" class="hsc-banner-close" (click)="error.set(null)">×</button>
+            <button type="button" class="hsc-banner-close" (click)="error.set(null)" aria-label="Dismiss">×</button>
           </div>
         }
 
@@ -53,19 +54,19 @@
           </div>
         }
 
-        <!-- ── Section 1: Showcase Settings ── -->
+        <!-- ── Section 1: Hero Settings (compact) ── -->
         <section class="hsc-card">
           <div class="hsc-card-head">
-            <h2 class="hsc-card-title"><i class="bi bi-sliders"></i> Hero Showcase Settings</h2>
+            <h2 class="hsc-card-title"><i class="bi bi-sliders"></i> Hero Settings</h2>
             <span class="hsc-chip" [class.hsc-chip--live]="enabled()">
-              <i class="bi {{ enabled() ? 'bi-toggle-on' : 'bi-toggle-off' }}"></i>
+              <i class="bi {{ enabled() ? 'bi-circle-fill' : 'bi-circle' }}"></i>
               {{ enabled() ? 'Live on website' : 'Hidden from website' }}
             </span>
           </div>
 
-          <div class="hsc-settings">
-            <div class="hsc-settings-row">
-              <div class="hsc-settings-label">
+          <div class="hsc-settings-grid">
+            <div class="hsc-setting">
+              <div class="hsc-setting-copy">
                 <strong>Enable Hero Showcase</strong>
                 <span>Show the showcase instead of the Hero Banner on the homepage.</span>
               </div>
@@ -75,8 +76,8 @@
               </label>
             </div>
 
-            <div class="hsc-settings-row">
-              <div class="hsc-settings-label">
+            <div class="hsc-setting">
+              <div class="hsc-setting-copy">
                 <strong>Auto Transition</strong>
                 <span>Automatically rotate through the enabled slides.</span>
               </div>
@@ -86,8 +87,8 @@
               </label>
             </div>
 
-            <div class="hsc-settings-row">
-              <div class="hsc-settings-label">
+            <div class="hsc-setting">
+              <div class="hsc-setting-copy">
                 <strong>Pause On Hover</strong>
                 <span>Pause auto-rotation while the pointer is over the showcase.</span>
               </div>
@@ -97,295 +98,275 @@
               </label>
             </div>
 
-            <div class="hsc-settings-row">
-              <div class="hsc-settings-label">
+            <div class="hsc-setting">
+              <div class="hsc-setting-copy">
                 <strong>Transition Style</strong>
-                <span>How slides transition. Fade is implemented; Slide and Scale Fade are reserved for future releases.</span>
+                <span>How slides transition. Fade is implemented; Slide and Scale Fade are reserved.</span>
               </div>
-              <select class="hsc-select" [value]="transition()" (change)="setTransition($any($event.target).value)"
-                      aria-label="Transition effect">
+              <select class="hsc-select" [value]="transition()" (change)="setTransition($any($event.target).value)" aria-label="Transition effect">
                 <option value="fade">Fade</option>
                 <option value="slide">Slide</option>
                 <option value="scaleFade">Scale Fade</option>
               </select>
             </div>
 
-            <div class="hsc-settings-row">
-              <div class="hsc-settings-label">
+            <div class="hsc-setting">
+              <div class="hsc-setting-copy">
                 <strong>Auto Transition Interval</strong>
-                <span>Seconds each slide stays visible before rotating. Example: 5 Seconds.</span>
+                <span>Seconds each slide stays visible before rotating.</span>
               </div>
-              <div class="hsc-settings-control hsc-interval">
+              <div class="hsc-setting-control">
                 <input type="number" class="hsc-input hsc-input--number" min="1" max="60"
                        [value]="rotationInterval()" (input)="setInterval($any($event.target).value)"
                        aria-label="Auto transition interval in seconds" />
-                <span class="hsc-suffix">Seconds</span>
+                <span class="hsc-suffix">sec</span>
               </div>
             </div>
 
-            <div class="hsc-settings-row">
-              <div class="hsc-settings-label">
+            <div class="hsc-setting">
+              <div class="hsc-setting-copy">
                 <strong>Maximum Slides</strong>
                 <span>The most slides the hero showcase can hold.</span>
               </div>
-              <div class="hsc-settings-control">
-                <input type="text" class="hsc-input hsc-input--readonly" [value]="maxItems"
-                       readonly aria-label="Maximum slides (read-only)" />
+              <div class="hsc-setting-control">
+                <input type="text" class="hsc-input hsc-input--readonly" [value]="maxItems" readonly aria-label="Maximum slides (read-only)" />
               </div>
             </div>
           </div>
-
-          <p class="hsc-settings-hint"><i class="bi bi-info-circle"></i> These settings apply to all Hero slides.</p>
         </section>
 
         <!-- ── Section 2: Hero Slides ── -->
-        <section class="hsc-card">
+        <section class="hsc-card hsc-slides-card">
           <div class="hsc-card-head">
             <h2 class="hsc-card-title"><i class="bi bi-images"></i> Hero Slides</h2>
             <div class="hsc-card-head-actions">
-              <span class="hsc-count">{{ items().length }} / {{ maxItems }}</span>
+              <span class="hsc-slide-count">{{ items().length }} of {{ maxItems }} slides</span>
               <button type="button" class="hsc-btn hsc-btn--primary" (click)="addSlide()" [disabled]="!canAdd() || saving()">
                 <i class="bi bi-plus-lg"></i> Add Hero Slide
               </button>
             </div>
           </div>
 
-          <p class="hsc-hint">
-            <i class="bi bi-arrow-down-up"></i>
-            Drag the handle to reorder slides, or use the arrows — Display Order updates automatically.
-          </p>
-
           @if (!hasItems()) {
             <div class="hsc-empty">
-              <i class="bi bi-image"></i>
-              <p>No slides yet. Add your first slide to start building the hero.</p>
+              <div class="hsc-empty-icon"><i class="bi bi-images"></i></div>
+              <h3 class="hsc-empty-title">No Hero Slides</h3>
+              <p class="hsc-empty-copy">Create your first homepage hero slide to start building the showcase.</p>
+              <button type="button" class="hsc-btn hsc-btn--primary" (click)="addSlide()" [disabled]="!canAdd() || saving()">
+                <i class="bi bi-plus-lg"></i> Add Hero Slide
+              </button>
             </div>
           } @else {
-            <div class="hsc-slides">
-              @for (item of items(); track item.itemId; let i = $index, last = $last) {
-                <article class="hsc-slide-card"
-                         [class.hsc-slide-card--dragging]="draggingIndex() === i"
-                         [class.hsc-slide-card--drop-target]="dragOverIndex() === i"
-                         [class.hsc-slide-card--disabled]="!item.enabled"
-                         [class.hsc-slide-card--expanded]="!isCollapsed(item.itemId)"
+            <p class="hsc-hint">
+              <i class="bi bi-grip-vertical"></i>
+              Drag the handle to reorder slides — display order updates automatically.
+            </p>
+
+            <div class="hsc-slide-list">
+              @for (item of items(); track item.itemId; let i = $index) {
+                <article class="hsc-slide-row"
+                         [class.hsc-slide-row--dragging]="draggingIndex() === i"
+                         [class.hsc-slide-row--drop-target]="dragOverIndex() === i"
+                         [class.hsc-slide-row--hidden]="!item.enabled"
                          (dragover)="onDragOver(i, $event)"
                          (drop)="onDrop(i, $event)">
 
-                  <header class="hsc-slide-head">
-                    <span class="hsc-slide-grip" draggable="true"
-                          (dragstart)="onDragStart(i, $event)"
-                          (dragend)="onDragEnd()"
-                          title="Drag to reorder" aria-label="Drag slide to reorder">
-                      <i class="bi bi-grip-vertical"></i>
-                    </span>
+                  <span class="hsc-grip" draggable="true"
+                        (dragstart)="onDragStart(i, $event)"
+                        (dragend)="onDragEnd()"
+                        title="Drag to reorder" aria-label="Drag slide to reorder">
+                    <i class="bi bi-grip-vertical"></i>
+                  </span>
 
-                    <button type="button" class="hsc-slide-toggle" (click)="toggleExpanded(item.itemId)"
-                            [attr.aria-expanded]="!isCollapsed(item.itemId)" aria-label="Expand or collapse slide">
-                      <i class="bi bi-chevron-down"></i>
+                  <!-- Thumbnail -->
+                  <div class="hsc-thumb">
+                    @if (failedImages().has(item.itemId + ':d')) {
+                      <div class="hsc-thumb-placeholder">
+                        <i class="bi bi-image"></i>
+                        <span>Image unavailable</span>
+                      </div>
+                    } @else if (item.imageUrl) {
+                      <img [src]="item.imageUrl | cloudinaryUrl:300" [alt]="item.title || 'Slide image'"
+                           class="hsc-thumb-img" [style.object-position]="item.imagePosition"
+                           loading="lazy" decoding="async" (error)="markImageFailed(item.itemId + ':d')" />
+                      @if (item.mobileImageUrl) {
+                        <span class="hsc-thumb-badge"><i class="bi bi-phone"></i> Mobile</span>
+                      }
+                    } @else if (item.mobileImageUrl) {
+                      <img [src]="item.mobileImageUrl | cloudinaryUrl:300" [alt]="item.title || 'Slide image'"
+                           class="hsc-thumb-img" [style.object-position]="item.imagePosition"
+                           loading="lazy" decoding="async" (error)="markImageFailed(item.itemId + ':d')" />
+                    } @else {
+                      <div class="hsc-thumb-placeholder">
+                        <i class="bi bi-image"></i>
+                        <span>No image</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Slide information -->
+                  <div class="hsc-slide-info">
+                    <div class="hsc-slide-info-top">
+                      <span class="hsc-slide-num">Slide #{{ i + 1 }}</span>
+                      <span class="hsc-status" [class.hsc-status--live]="item.enabled">
+                        <i class="bi bi-circle-fill"></i> {{ item.enabled ? 'Live' : 'Hidden' }}
+                      </span>
+                    </div>
+                    <h3 class="hsc-slide-title">{{ item.title || 'Untitled slide' }}</h3>
+                    <p class="hsc-slide-subtitle">{{ item.subtitle || 'No description yet' }}</p>
+                    <div class="hsc-slide-meta">
+                      <span><i class="bi bi-bag"></i> {{ item.buttonText || 'Shop Now' }} · {{ item.buttonLink || '/shop' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="hsc-slide-actions">
+                    <button type="button" class="hsc-btn hsc-btn--outline hsc-btn--sm" (click)="openEditor(item)">
+                      <i class="bi bi-pencil"></i> Edit
+                    </button>
+                    <button type="button" class="hsc-btn hsc-btn--ghost hsc-btn--sm" (click)="previewSlideFromList(item.itemId)">
+                      <i class="bi bi-eye"></i> Preview
                     </button>
 
-                    <button type="button" class="hsc-slide-name" (click)="toggleExpanded(item.itemId)">
-                      Slide #{{ i + 1 }}
-                    </button>
-
-                    <span class="hsc-chip" [class.hsc-chip--live]="item.enabled">
-                      <i class="bi {{ item.enabled ? 'bi-circle-fill' : 'bi-circle' }}"></i>
-                      {{ item.enabled ? 'Live' : 'Hidden' }}
-                    </span>
-
-                    <span class="hsc-slide-spacer"></span>
-
-                    <div class="hsc-slide-actions">
-                      <button type="button" class="hsc-icon-btn" (click)="moveSlide(i, -1)" [disabled]="i === 0" title="Move up" aria-label="Move slide up">
-                        <i class="bi bi-chevron-up"></i>
+                    <div class="hsc-menu-wrap">
+                      <button type="button" class="hsc-icon-btn" (click)="toggleMenu(item.itemId)"
+                              [attr.aria-expanded]="openMenuId() === item.itemId" aria-label="More actions">
+                        <i class="bi bi-three-dots"></i>
                       </button>
-                      <button type="button" class="hsc-icon-btn" (click)="moveSlide(i, 1)" [disabled]="i === items().length - 1" title="Move down" aria-label="Move slide down">
-                        <i class="bi bi-chevron-down"></i>
-                      </button>
-                      <label class="hsc-switch hsc-switch--sm" title="Enable / disable this slide">
-                        <input type="checkbox" [checked]="item.enabled" (change)="toggleSlideEnabled(item)" />
-                        <span class="hsc-switch-track"></span>
-                      </label>
-                      <button type="button" class="hsc-icon-btn hsc-icon-btn--danger" (click)="removeSlide(item.itemId)" title="Delete slide" aria-label="Delete slide">
-                        <i class="bi bi-trash"></i>
-                      </button>
+
+                      @if (openMenuId() === item.itemId) {
+                        <div class="hsc-menu" role="menu">
+                          <button type="button" role="menuitem" (click)="duplicateSlide(item)">
+                            <i class="bi bi-files"></i> Duplicate
+                          </button>
+                          <button type="button" role="menuitem" (click)="moveSlide(i, -1)" [disabled]="i === 0">
+                            <i class="bi bi-chevron-up"></i> Move Up
+                          </button>
+                          <button type="button" role="menuitem" (click)="moveSlide(i, 1)" [disabled]="i === items().length - 1">
+                            <i class="bi bi-chevron-down"></i> Move Down
+                          </button>
+                          <button type="button" role="menuitem" (click)="toggleSlideEnabled(item)">
+                            <i class="bi {{ item.enabled ? 'bi-eye-slash' : 'bi-eye' }}"></i>
+                            {{ item.enabled ? 'Deactivate' : 'Activate' }}
+                          </button>
+                          <div class="hsc-menu-sep"></div>
+                          <button type="button" role="menuitem" class="hsc-menu-danger" (click)="requestDelete(item)">
+                            <i class="bi bi-trash"></i> Delete
+                          </button>
+                        </div>
+                      }
                     </div>
-                  </header>
-
-                  @if (!isCollapsed(item.itemId)) {
-                    <div class="hsc-slide-body">
-                      <div class="hsc-slide-media">
-                        <div class="hsc-slide-image">
-                          @if (item.preview) {
-                            <img [src]="item.preview" alt="Slide image preview" class="hsc-slide-img" decoding="async" />
-                          } @else if (item.imageUrl) {
-                            <img [src]="item.imageUrl" alt="Slide image" class="hsc-slide-img" loading="lazy" decoding="async" />
-                          } @else {
-                            <div class="hsc-slide-empty"><i class="bi bi-image"></i><span>No image yet</span></div>
-                          }
-                          @if (item.uploading) {
-                            <div class="hsc-slide-overlay">
-                              <span class="btn-spinner"></span> Uploading…
-                            </div>
-                          }
-                        </div>
-
-                        <div class="hsc-slide-upload">
-                          <input [id]="'hsc-img-' + item.itemId" type="file" accept="image/jpeg,image/png,image/webp"
-                                 class="hsc-hidden-input" (change)="onFileSelected(item, $event)" [disabled]="item.uploading" />
-                          <label class="hsc-btn hsc-btn--outline hsc-btn--sm" [attr.for]="'hsc-img-' + item.itemId">
-                            <i class="bi bi-upload"></i> {{ item.imageUrl ? 'Replace Image' : 'Upload Image' }}
-                          </label>
-                          @if (item.imageUrl || item.preview) {
-                            <button type="button" class="hsc-btn hsc-btn--outline hsc-btn--sm" (click)="removeImage(item.itemId)" [disabled]="item.uploading">
-                              <i class="bi bi-x-circle"></i> Remove Image
-                            </button>
-                          }
-                          <span class="hsc-upload-hint">JPG, PNG or WebP · max 10 MB</span>
-                        </div>
-                      </div>
-
-                      <div class="hsc-slide-fields">
-                        <label class="hsc-field">
-                          <span>Headline</span>
-                          <input type="text" class="hsc-input" [value]="item.title" (input)="patchItem(item, 'title', $any($event.target).value)"
-                                 placeholder="e.g. Wear The Grace" />
-                        </label>
-
-                        <label class="hsc-field">
-                          <span>Subtitle</span>
-                          <input type="text" class="hsc-input" [value]="item.subtitle" (input)="patchItem(item, 'subtitle', $any($event.target).value)"
-                                 placeholder="e.g. Timeless ethnic wear for the modern woman" />
-                        </label>
-
-                        <div class="hsc-field-row">
-                          <label class="hsc-field">
-                            <span>Primary Button Text</span>
-                            <input type="text" class="hsc-input" [value]="item.buttonText" (input)="patchItem(item, 'buttonText', $any($event.target).value)"
-                                   placeholder="e.g. Explore Collection" />
-                          </label>
-                          <label class="hsc-field">
-                            <span>Primary Button Link</span>
-                            <input type="text" class="hsc-input" [value]="item.buttonLink" (input)="patchItem(item, 'buttonLink', $any($event.target).value)"
-                                   placeholder="/shop or /category/kurtas or https://…" />
-                          </label>
-                        </div>
-
-                        <div class="hsc-slide-enabled">
-                          <label class="hsc-switch">
-                            <input type="checkbox" [checked]="item.enabled" (change)="toggleSlideEnabled(item)" />
-                            <span class="hsc-switch-track"></span>
-                          </label>
-                          <div class="hsc-slide-enabled-copy">
-                            <strong>{{ item.enabled ? 'Slide is Live' : 'Slide is Hidden' }}</strong>
-                            <span>{{ item.enabled ? 'Visible in the homepage showcase.' : 'Kept, but not shown on the website.' }}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  }
-
-                  @if (!$last) {
-                    <div class="hsc-slide-divider" aria-hidden="true"></div>
-                  }
+                  </div>
                 </article>
               }
             </div>
           }
+
+          @if (openMenuId()) {
+            <div class="hsc-menu-scrim" (click)="closeMenu()"></div>
+          }
         </section>
 
         <!-- ── Section 3: Live Preview ── -->
-        <section class="hsc-card">
+        <section class="hsc-card hsc-preview-section">
           <div class="hsc-card-head">
             <h2 class="hsc-card-title"><i class="bi bi-eye"></i> Live Preview</h2>
-            <span class="hsc-chip"><i class="bi bi-magic"></i> Updates in real time as you edit</span>
+            <span class="hsc-chip hsc-chip--live"><i class="bi bi-circle-fill"></i> Live preview — updates as you edit</span>
           </div>
 
           @if (preview(); as p) {
-            <div class="hsc-preview-grid">
-              <div class="hsc-preview-col">
-                <span class="hsc-preview-label"><i class="bi bi-display"></i> Desktop Preview</span>
-                <div class="hsc-preview-frame hsc-preview-frame--desktop">
-                  <div class="hsc-pv-inner">
-                    <div class="hsc-pv-copy">
-                      <p class="hsc-pv-brand">Vrindaya</p>
-                      <h3 class="hsc-pv-title">{{ p.title }}</h3>
-                      <p class="hsc-pv-subtitle">{{ p.subtitle }}</p>
-                      <span class="hsc-pv-btn">{{ p.buttonText }}</span>
-                    </div>
-                    <div class="hsc-pv-media">
-                      <img [src]="p.image" alt="Slide preview image" class="hsc-pv-img" loading="lazy" decoding="async" />
-                    </div>
-                  </div>
-                </div>
+            <!-- Preview controls -->
+            <div class="hsc-preview-toolbar">
+              <div class="hsc-device-toggle" role="tablist" aria-label="Preview device">
+                <button type="button" role="tab" [class.hsc-device-toggle--active]="previewDevice() === 'desktop'"
+                        (click)="previewDevice.set('desktop')">
+                  <i class="bi bi-display"></i> Desktop
+                </button>
+                <button type="button" role="tab" [class.hsc-device-toggle--active]="previewDevice() === 'mobile'"
+                        (click)="previewDevice.set('mobile')">
+                  <i class="bi bi-phone"></i> Mobile
+                </button>
               </div>
 
-              <div class="hsc-preview-col">
-                <span class="hsc-preview-label"><i class="bi bi-phone"></i> Mobile Preview</span>
-                <div class="hsc-preview-frame hsc-preview-frame--mobile">
-                  <div class="hsc-pv-inner hsc-pv-inner--mobile">
-                    <div class="hsc-pv-media">
-                      <img [src]="p.image" alt="Slide preview image" class="hsc-pv-img" loading="lazy" decoding="async" />
-                    </div>
-                    <div class="hsc-pv-copy">
-                      <p class="hsc-pv-brand">Vrindaya</p>
-                      <h3 class="hsc-pv-title">{{ p.title }}</h3>
-                      <p class="hsc-pv-subtitle">{{ p.subtitle }}</p>
-                      <span class="hsc-pv-btn">{{ p.buttonText }}</span>
-                    </div>
-                  </div>
-                </div>
+              <div class="hsc-preview-nav">
+                <button type="button" class="hsc-preview-nav-btn" (click)="prevPreview()" aria-label="Previous slide" [disabled]="previewSlides().length <= 1">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+                <span class="hsc-preview-counter">
+                  Slide {{ previewIndex() + 1 }} / {{ previewSlides().length }}
+                </span>
+                <button type="button" class="hsc-preview-nav-btn" (click)="nextPreview()" aria-label="Next slide" [disabled]="previewSlides().length <= 1">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
               </div>
             </div>
 
-            @if (previewSlides().length > 1) {
-              <div class="hsc-preview-dots" role="tablist" aria-label="Preview slides">
-                @for (slide of previewSlides(); track slide.itemId; let pi = $index) {
-                  <button type="button" class="hsc-preview-dot"
-                          [class.hsc-preview-dot--active]="pi === previewIndex()"
-                          [attr.aria-label]="'Preview slide ' + (pi + 1)"
-                          [attr.aria-selected]="pi === previewIndex()"
-                          role="tab"
-                          (click)="selectPreview(pi)"></button>
-                }
+            <!-- Realistic hero frame -->
+            <div class="hsc-pv-hero" [class.hsc-pv-hero--mobile]="previewDevice() === 'mobile'">
+              <div class="hsc-pv-bg" aria-hidden="true"></div>
+              <div class="hsc-pv-grid">
+                <div class="hsc-pv-copy">
+                  <p class="hsc-pv-brand">Vrindaya</p>
+                  <h4 class="hsc-pv-title">{{ p.title }}</h4>
+                  <p class="hsc-pv-subtitle">{{ p.subtitle }}</p>
+                  <span class="hsc-pv-btn">{{ p.buttonText }} <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                </div>
+                <div class="hsc-pv-card">
+                  @if (failedImages().has(p.itemId + ':pv-' + previewDevice()) || (!p.image && !p.mobileImage)) {
+                    <div class="hsc-pv-placeholder">
+                      <i class="bi bi-image"></i>
+                      <span>Image not selected</span>
+                    </div>
+                  } @else {
+                    <img [src]="(previewDevice() === 'mobile' && p.mobileImage ? p.mobileImage : p.image) | cloudinaryUrl:900:'fill'"
+                         [alt]="p.title"
+                         class="hsc-pv-img"
+                         [style.object-position]="p.position"
+                         loading="lazy" decoding="async"
+                         (error)="markImageFailed(p.itemId + ':pv-' + previewDevice())" />
+                  }
+                </div>
               </div>
-            }
+            </div>
           } @else {
-            <div class="hsc-empty">
-              <i class="bi bi-eye-slash"></i>
-              <p>Upload an image and enable a slide to preview the showcase here.</p>
+            <div class="hsc-empty hsc-empty--compact">
+              <div class="hsc-empty-icon"><i class="bi bi-eye-slash"></i></div>
+              <h3 class="hsc-empty-title">Nothing to preview yet</h3>
+              <p class="hsc-empty-copy">Upload an image and enable a slide to preview the showcase here.</p>
             </div>
           }
         </section>
 
-        <!-- ── Fallback Hero Banner (managed on its own page) ── -->
+        <!-- ── Fallback Hero Banner ── -->
         <section class="hsc-card hsc-fallback">
-          <div class="hsc-card-head">
-            <h2 class="hsc-card-title"><i class="bi bi-image"></i> Fallback Hero Banner</h2>
+          <div class="hsc-fallback-inner">
+            <div>
+              <h2 class="hsc-card-title"><i class="bi bi-image"></i> Fallback Hero Banner</h2>
+              <p class="hsc-hint">
+                Shown on the website while the Hero Showcase is disabled. Edited on its own page.
+              </p>
+            </div>
             <a routerLink="/admin/hero-banners" class="hsc-btn hsc-btn--ghost hsc-btn--sm">
               <i class="bi bi-box-arrow-up-right"></i> Manage Fallback Banner
             </a>
           </div>
-          <p class="hsc-hint">
-            The Hero Banner shown on the website while the Hero Showcase is disabled is edited on its own page.
-          </p>
         </section>
 
-        <!-- ── Bottom action bar ── -->
-        <footer class="hsc-actions">
-          <div class="hsc-actions-inner">
-            <div class="hsc-actions-status">
+        <!-- ── Sticky action bar ── -->
+        <footer class="hsc-savebar">
+          <div class="hsc-savebar-inner">
+            <div class="hsc-savebar-status">
               @if (dirty()) {
-                <span class="hsc-unsaved"><i class="bi bi-circle-fill"></i> Unsaved Changes</span>
-              } @else if (justSaved()) {
-                <span class="hsc-saved"><i class="bi bi-check-circle-fill"></i> All Changes Saved</span>
+                <span class="hsc-savebar-unsaved"><i class="bi bi-circle-fill"></i> Unsaved changes</span>
+              } @else {
+                <span class="hsc-savebar-clean"><i class="bi bi-check2-circle"></i> No unsaved changes</span>
               }
             </div>
-            <div class="hsc-actions-buttons">
-              <button type="button" class="hsc-btn hsc-btn--ghost" (click)="cancel()" [disabled]="saving() || !dirty()">
-                Cancel
+            <div class="hsc-savebar-actions">
+              <button type="button" class="hsc-btn hsc-btn--ghost" (click)="discard()" [disabled]="saving() || !dirty()">
+                Discard
               </button>
-              <button type="button" class="hsc-btn hsc-btn--save" (click)="saveChanges()" [disabled]="saving()">
+              <button type="button" class="hsc-btn hsc-btn--save" (click)="saveChanges()" [disabled]="saving() || !dirty()">
                 @if (saving()) {
                   <span class="btn-spinner"></span> Saving…
                 } @else {
@@ -399,5 +380,245 @@
       </form>
     }
   </main>
+
+  <!-- ── Slide editor modal ── -->
+  @if (editorOpen()) {
+    @if (editorDraft(); as draft) {
+      <div class="hsc-overlay" (click)="closeEditor()" tabindex="-1">
+        <div class="hsc-editor" role="dialog" aria-modal="true" aria-label="Edit hero slide" (click)="$event.stopPropagation()">
+
+          <div class="hsc-editor-head">
+            <div>
+              <span class="hsc-editor-eyebrow">Hero Slide #{{ items().findIndex(i => i.itemId === draft!.itemId) + 1 }}</span>
+              <h3 class="hsc-editor-title">{{ draft.title.trim() ? 'Edit Hero Slide' : 'Create Hero Slide' }}</h3>
+            </div>
+            <button type="button" class="hsc-editor-close" (click)="closeEditor()" aria-label="Close" [disabled]="editorUploading()">×</button>
+          </div>
+
+          <div class="hsc-editor-body">
+
+            <!-- Left: content controls -->
+            <div class="hsc-editor-fields">
+
+              @if (editorError()) {
+                <div class="hsc-banner hsc-banner--error hsc-banner--tight">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  {{ editorError() }}
+                </div>
+              }
+
+              <label class="hsc-field">
+                <span class="hsc-field-label">Heading</span>
+                <input type="text" class="hsc-input" [value]="draft.title" [attr.maxlength]="maxTitle"
+                       (input)="patchEditor('title', $any($event.target).value)"
+                       placeholder="e.g. Bold Contrast, Timeless Grace" />
+                <span class="hsc-field-count">{{ draft.title.length }} / {{ maxTitle }}</span>
+              </label>
+
+              <label class="hsc-field">
+                <span class="hsc-field-label">Description</span>
+                <textarea class="hsc-input hsc-input--area" rows="3" [value]="draft.subtitle" [attr.maxlength]="maxSubtitle"
+                          (input)="patchEditor('subtitle', $any($event.target).value)"
+                          placeholder="A contemporary two-tone kurta set for festive evenings."></textarea>
+                <span class="hsc-field-count">{{ draft.subtitle.length }} / {{ maxSubtitle }}</span>
+              </label>
+
+              <div class="hsc-field-row">
+                <label class="hsc-field">
+                  <span class="hsc-field-label">Primary Button</span>
+                  <input type="text" class="hsc-input" [value]="draft.buttonText" [attr.maxlength]="maxButtonText"
+                         (input)="patchEditor('buttonText', $any($event.target).value)"
+                         placeholder="e.g. Shop Collection" />
+                </label>
+                <label class="hsc-field">
+                  <span class="hsc-field-label">Button Link</span>
+                  <input type="text" class="hsc-input" [value]="draft.buttonLink" [attr.maxlength]="maxButtonLink"
+                         (input)="patchEditor('buttonLink', $any($event.target).value)"
+                         placeholder="/shop or /collection/… or https://…" />
+                </label>
+              </div>
+
+              <div class="hsc-field-row">
+                <label class="hsc-field">
+                  <span class="hsc-field-label">Image Position</span>
+                  <select class="hsc-select" [value]="draft.imagePosition"
+                          (change)="patchEditor('imagePosition', $any($event.target).value)"
+                          aria-label="Image position">
+                    @for (p of positions; track p) {
+                      <option [value]="p">{{ p[0].toUpperCase() + p.slice(1) }}</option>
+                    }
+                  </select>
+                  <span class="hsc-field-hint">Controls where the model sits in the frame.</span>
+                </label>
+
+                <div class="hsc-field">
+                  <span class="hsc-field-label">Status</span>
+                  <div class="hsc-editor-status">
+                    <span class="hsc-status" [class.hsc-status--live]="draft.enabled">
+                      <i class="bi bi-circle-fill"></i> {{ draft.enabled ? 'Live' : 'Hidden' }}
+                    </span>
+                    <label class="hsc-switch">
+                      <input type="checkbox" [checked]="draft.enabled" (change)="patchEditor('enabled', $any($event.target).checked)" />
+                      <span class="hsc-switch-track"></span>
+                    </label>
+                  </div>
+                  <span class="hsc-field-hint">{{ draft.enabled ? 'Visible in the homepage showcase.' : 'Kept, but not shown on the website.' }}</span>
+                </div>
+              </div>
+
+              <!-- Desktop image -->
+              <div class="hsc-editor-image-block">
+                <span class="hsc-field-label">Desktop Image</span>
+                @if (editorStaged(); as staged) {
+                  <div class="hsc-staged">
+                    <div class="hsc-staged-preview">
+                      <img [src]="staged.previewUrl" alt="Desktop image preview" class="hsc-staged-img"
+                           [style.object-position]="draft.imagePosition" />
+                    </div>
+                    <div class="hsc-staged-meta">
+                      <span class="hsc-staged-name"><i class="bi bi-file-earmark-image"></i> {{ staged.fileName }}</span>
+                      <span class="hsc-staged-detail">{{ formatSize(staged.sizeBytes) }} · {{ staged.width }} × {{ staged.height }} · WebP</span>
+                    </div>
+                    <button type="button" class="hsc-btn hsc-btn--ghost hsc-btn--sm" (click)="releaseStaged('desktop')" [disabled]="editorUploading()">
+                      <i class="bi bi-x-lg"></i> Remove
+                    </button>
+                  </div>
+                } @else if (draft.imageUrl && !failedImages().has(draft.itemId + ':e-d')) {
+                  <div class="hsc-current-image">
+                    <img [src]="draft.imageUrl | cloudinaryUrl:600" alt="Current desktop image"
+                         class="hsc-current-img" [style.object-position]="draft.imagePosition"
+                         loading="lazy" decoding="async" (error)="markImageFailed(draft.itemId + ':e-d')" />
+                    <button type="button" class="hsc-btn hsc-btn--outline hsc-btn--sm" (click)="removeEditorImage('desktop')" [disabled]="editorUploading()">
+                      <i class="bi bi-x-circle"></i> Remove Image
+                    </button>
+                  </div>
+                }
+
+                <div class="hsc-dropzone"
+                     (dragover)="onEditorDragOver($event)"
+                     (drop)="onEditorDrop($event, 'desktop')">
+                  <input #editorDesktopInput type="file" accept="image/jpeg,image/png,image/webp"
+                         class="hsc-hidden-input" (change)="onEditorBrowse(editorDesktopInput, 'desktop')" [disabled]="editorUploading()" />
+                  <i class="bi bi-cloud-arrow-up hsc-dropzone-icon"></i>
+                  <p class="hsc-dropzone-title">Drag &amp; drop hero image</p>
+                  <span class="hsc-dropzone-or">or</span>
+                  <button type="button" class="hsc-btn hsc-btn--outline hsc-btn--sm" (click)="editorDesktopInput.click()" [disabled]="editorUploading()">
+                    <i class="bi bi-folder2-open"></i> Browse Image
+                  </button>
+                  <span class="hsc-dropzone-hint">JPG · PNG · WEBP · up to 15 MB</span>
+                </div>
+              </div>
+
+              <!-- Mobile image -->
+              <div class="hsc-editor-image-block">
+                <span class="hsc-field-label">Mobile Image <em>optional</em></span>
+                @if (editorMobileStaged(); as staged) {
+                  <div class="hsc-staged">
+                    <div class="hsc-staged-preview">
+                      <img [src]="staged.previewUrl" alt="Mobile image preview" class="hsc-staged-img"
+                           [style.object-position]="draft.imagePosition" />
+                    </div>
+                    <div class="hsc-staged-meta">
+                      <span class="hsc-staged-name"><i class="bi bi-file-earmark-image"></i> {{ staged.fileName }}</span>
+                      <span class="hsc-staged-detail">{{ formatSize(staged.sizeBytes) }} · {{ staged.width }} × {{ staged.height }} · WebP</span>
+                    </div>
+                    <button type="button" class="hsc-btn hsc-btn--ghost hsc-btn--sm" (click)="releaseStaged('mobile')" [disabled]="editorUploading()">
+                      <i class="bi bi-x-lg"></i> Remove
+                    </button>
+                  </div>
+                } @else if (draft.mobileImageUrl && !failedImages().has(draft.itemId + ':e-m')) {
+                  <div class="hsc-current-image hsc-current-image--mobile">
+                    <img [src]="draft.mobileImageUrl | cloudinaryUrl:400" alt="Current mobile image"
+                         class="hsc-current-img" [style.object-position]="draft.imagePosition"
+                         loading="lazy" decoding="async" (error)="markImageFailed(draft.itemId + ':e-m')" />
+                    <button type="button" class="hsc-btn hsc-btn--outline hsc-btn--sm" (click)="removeEditorImage('mobile')" [disabled]="editorUploading()">
+                      <i class="bi bi-x-circle"></i> Remove Image
+                    </button>
+                  </div>
+                }
+
+                <div class="hsc-dropzone hsc-dropzone--sm"
+                     (dragover)="onEditorDragOver($event)"
+                     (drop)="onEditorDrop($event, 'mobile')">
+                  <input #editorMobileInput type="file" accept="image/jpeg,image/png,image/webp"
+                         class="hsc-hidden-input" (change)="onEditorBrowse(editorMobileInput, 'mobile')" [disabled]="editorUploading()" />
+                  <i class="bi bi-cloud-arrow-up hsc-dropzone-icon"></i>
+                  <p class="hsc-dropzone-title">Drag &amp; drop mobile image</p>
+                  <span class="hsc-dropzone-or">or</span>
+                  <button type="button" class="hsc-btn hsc-btn--outline hsc-btn--sm" (click)="editorMobileInput.click()" [disabled]="editorUploading()">
+                    <i class="bi bi-folder2-open"></i> Browse Image
+                  </button>
+                  <span class="hsc-dropzone-hint">Used on small screens — pick a tighter crop.</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right: live preview -->
+            <div class="hsc-editor-preview">
+              <span class="hsc-field-label">Live Preview</span>
+              @if (editorPreview(); as ep) {
+                <div class="hsc-editor-preview-frame">
+                  <div class="hsc-pv-bg" aria-hidden="true"></div>
+                  <div class="hsc-pv-grid hsc-pv-grid--editor">
+                    <div class="hsc-pv-copy">
+                      <p class="hsc-pv-brand">Vrindaya</p>
+                      <h4 class="hsc-pv-title">{{ ep.title }}</h4>
+                      <p class="hsc-pv-subtitle">{{ ep.subtitle }}</p>
+                      <span class="hsc-pv-btn">{{ ep.buttonText }} <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                    </div>
+                    <div class="hsc-pv-card">
+                      @if (!ep.image && !ep.mobileImage) {
+                        <div class="hsc-pv-placeholder">
+                          <i class="bi bi-image"></i>
+                          <span>Image not selected</span>
+                        </div>
+                      } @else {
+                        <img [src]="ep.image | cloudinaryUrl:900:'fill'"
+                             [alt]="ep.title"
+                             class="hsc-pv-img"
+                             [style.object-position]="ep.position"
+                             loading="lazy" decoding="async" />
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+          </div>
+
+          <div class="hsc-editor-foot">
+            <button type="button" class="hsc-btn hsc-btn--ghost" (click)="closeEditor()" [disabled]="editorUploading()">Cancel</button>
+            <button type="button" class="hsc-btn hsc-btn--save" (click)="saveEditorSlide()" [disabled]="editorUploading()">
+              @if (editorUploading()) {
+                <span class="btn-spinner"></span> Saving…
+              } @else {
+                <i class="bi bi-check-lg"></i> Save Slide
+              }
+            </button>
+          </div>
+
+        </div>
+      </div>
+    }
+  }
+
+  <!-- ── Delete confirmation ── -->
+  @if (deleteTarget(); as target) {
+    <div class="hsc-overlay hsc-overlay--confirm" (click)="cancelDelete()" tabindex="-1">
+      <div class="hsc-confirm" role="dialog" aria-modal="true" aria-label="Delete hero slide" (click)="$event.stopPropagation()">
+        <div class="hsc-confirm-icon"><i class="bi bi-trash"></i></div>
+        <h3 class="hsc-confirm-title">Delete Hero Slide?</h3>
+        <p class="hsc-confirm-copy">"{{ target.title || 'Untitled slide' }}" will be removed from the Hero Showcase. This can be undone until you save.</p>
+        <div class="hsc-confirm-actions">
+          <button type="button" class="hsc-btn hsc-btn--ghost" (click)="cancelDelete()">Cancel</button>
+          <button type="button" class="hsc-btn hsc-btn--danger" (click)="removeSlide(target.itemId)">
+            <i class="bi bi-trash"></i> Delete Slide
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 
 </div>

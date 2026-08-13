@@ -55,13 +55,25 @@
                   [srcset]="image() | cloudinarySrcset"
                   sizes="(max-width: 820px) 86vw, 480px"
                   [alt]="item.title || 'Vrindaya showcase'"
-                  class="hsc-img"
+                  class="hsc-img hsc-img--desktop"
+                  [style.object-position]="imagePosition()"
                   loading="eager"
                   decoding="async"
                   width="800" height="1000"
                   fetchpriority="high"
                   (load)="onImageLoad()"
                 />
+                @if (mobileImage()) {
+                  <img
+                    [src]="mobileImage() | cloudinaryUrl:900:'fill'"
+                    alt=""
+                    class="hsc-img hsc-img--mobile"
+                    [style.object-position]="imagePosition()"
+                    loading="lazy"
+                    decoding="async"
+                    width="600" height="800"
+                  />
+                }
                 @if (item.title) {
                   <figcaption class="hsc-caption" aria-hidden="true">{{ item.title }}</figcaption>
                 }

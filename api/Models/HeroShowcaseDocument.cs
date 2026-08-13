@@ -63,6 +63,18 @@ public class HeroShowcaseItemDocument
     [FirestoreProperty("storagePath")]
     public string StoragePath { get; set; } = string.Empty;
 
+    /// <summary>Optional Cloudinary URL for small screens — fashion imagery often needs a tighter crop.</summary>
+    [FirestoreProperty("mobileImageUrl")]
+    public string MobileImageUrl { get; set; } = string.Empty;
+
+    /// <summary>Cloudinary public id of the mobile image — used to delete/replace the stored asset.</summary>
+    [FirestoreProperty("mobileStoragePath"])
+    public string MobileStoragePath { get; set; } = string.Empty;
+
+    /// <summary>CSS object-position keyword: "top" | "center" | "bottom" | "left" | "right". Drives where the model sits in the hero frame.</summary>
+    [FirestoreProperty("imagePosition")]
+    public string ImagePosition { get; set; } = "center";
+
     [FirestoreProperty("title")]
     public string Title { get; set; } = string.Empty;
 
