@@ -55,7 +55,11 @@ const STEPS: StoryStep[] = [
 export class StorySectionComponent {
   readonly steps = STEPS;
 
+  /** Story beat currently in the middle of the viewport. */
   readonly activeStep = signal(0);
+
+  /** True while the closing beat is in view — releases the frame. */
+  readonly exiting = signal(false);
 
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly platformId = inject(PLATFORM_ID);
@@ -66,26 +70,39 @@ export class StorySectionComponent {
       if (!isPlatformBrowser(this.platformId)) return;
 
       const stepEls = Array.from(
-        this.el.nativeElement.querySelectorAll('.story-step') as NodeListOf<HTMLElement>,
+        this.el.nativeElement.querySelectorAll('.story-point') as NodeListOf<HTMLElement>,
       );
 
-      const observer = new IntersectionObserver(
+      // The beat is considered "current" when it crosses the middle band
+      // of the viewport — no scroll listeners, purely observer-driven.
+      const stepObserver = new IntersectionObserver(
         entries => {
           for (const entry of entries) {
             if (entry.isIntersecting) {
-              const el = entry.target as HTMLElement;
-              const idx = Number(el.dataset['step']);
+              const idx = Number((entry.target as HTMLElement).dataset['step']);
               if (Number.isFinite(idx)) this.activeStep.set(idx);
             }
           }
         },
-        // The step is considered "current" when it crosses the middle band
-        // of the viewport — no scroll listeners, purely observer-driven.
         { rootMargin: '-42% 0px -42% 0px', threshold: 0 },
       );
 
-      stepEls.forEach(el => observer.observe(el));
-      this.destroyRef.onDestroy(() => observer.disconnect());
+      stepEls.forEach(el => stepObserver.observe(el));
+
+      // As the closing beat scrolls into view, the anchored frame eases
+      // back — a natural release into the next section.
+      const outroEl = this.el.nativeElement.querySelector('.story-outro') as HTMLElement | null;
+      const outroObserver = new IntersectionObserver(
+        ([entry]) => this.exiting.set(entry.isIntersecting),
+        { rootMargin: '0px 0px -55% 0px', threshold: 0 },
+      );
+
+      if (outroEl) outroObserver.observe(outroEl);
+
+      this.destroyRef.onDestroy(() => {
+        stepObserver.disconnect();
+        outroObserver.disconnect();
+      });
     });
   }
 }

@@ -1,51 +1,83 @@
-<section class="story-section" id="story" aria-label="The Vrindaya story">
+<section
+  class="story-section"
+  id="story"
+  aria-label="The Vrindaya story"
+  [class.exiting]="exiting()"
+>
 
-  <!-- Anchored visual — crossfades as the reader moves through the story -->
+  <!-- ── Anchored cinematic media ────────────────────────────────
+       The image column stays pinned to the viewport for the whole
+       sequence; the active frame crossfades with a whisper of zoom
+       as the reader moves from one principle to the next. -->
   <div class="story-media" aria-hidden="true">
     <div class="story-stack">
       @for (step of steps; track step.id) {
         <img
           [src]="step.image"
-          [alt]=""
+          alt=""
           class="story-img"
           [class.active]="activeStep() === step.id"
-          loading="lazy"
+          [loading]="step.id === 0 ? 'eager' : 'lazy'"
           decoding="async"
-          width="800"
-          height="1000"
+          width="900"
+          height="1100"
         />
       }
-    </div>
-  </div>
-
-  <!-- Narrative steps -->
-  <div class="story-body">
-    <div class="story-intro" data-reveal>
-      <p class="section-label">The Vrindaya Story</p>
-      <h2 class="section-title">
-        Crafted with intention,<br />
-        worn with grace
-      </h2>
-      <p class="section-desc">
-        Three quiet principles guide every piece we make.
-      </p>
+      <div class="story-stack-shade"></div>
     </div>
 
-    <div class="story-steps">
+    <!-- Current-step caption -->
+    <div class="story-caption">
       @for (step of steps; track step.id) {
-        <article
-          class="story-step"
-          [class.active]="activeStep() === step.id"
-          [attr.data-step]="step.id"
-        >
-          <span class="story-step-index">{{ step.index }}</span>
-          <div class="story-step-copy">
-            <h3 class="story-step-title">{{ step.title }}</h3>
-            <p class="story-step-text">{{ step.text }}</p>
-          </div>
-        </article>
+        <div class="story-caption-block" [class.active]="activeStep() === step.id">
+          <span class="story-caption-index">{{ step.index }}</span>
+          <span class="story-caption-title">{{ step.title }}</span>
+        </div>
+      }
+    </div>
+
+    <!-- Progress rail: 01 ━━━ / 02 ─── / 03 ─── -->
+    <div class="story-progress">
+      @for (step of steps; track step.id) {
+        <span class="story-progress-item" [class.active]="activeStep() === step.id">
+          <span class="story-progress-num">{{ step.index }}</span>
+          <span class="story-progress-line"></span>
+        </span>
       }
     </div>
   </div>
+
+  <!-- ── Opening composition ───────────────────────────────────── -->
+  <header class="story-intro">
+    <p class="story-eyebrow" data-reveal>The Vrindaya Story</p>
+    <h2 class="story-headline" data-reveal style="--reveal-delay: 90ms">
+      Crafted with intention,<br />worn with grace
+    </h2>
+    <p class="story-lede" data-reveal style="--reveal-delay: 180ms">
+      Three quiet principles guide every piece we make.
+    </p>
+  </header>
+
+  <!-- ── Story beats — each scrolls through its own moment ─────── -->
+  <div class="story-points">
+    @for (step of steps; track step.id) {
+      <article
+        class="story-point"
+        [class.active]="activeStep() === step.id"
+        [attr.data-step]="step.id"
+      >
+        <div class="story-point-head">
+          <span class="story-point-index">{{ step.index }}</span>
+          <h3 class="story-point-title">{{ step.title }}</h3>
+        </div>
+        <p class="story-point-text">{{ step.text }}</p>
+      </article>
+    }
+  </div>
+
+  <!-- ── Closing beat ──────────────────────────────────────────── -->
+  <footer class="story-outro">
+    <p class="story-outro-line" data-reveal>Every piece carries a quiet promise.</p>
+  </footer>
 
 </section>
