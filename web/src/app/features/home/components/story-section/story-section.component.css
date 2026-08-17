@@ -1,43 +1,44 @@
 /* ═══════════════════════════════════════════════════════════════
-   THE VRINDAYA STORY — FULL-BLEED CINEMATIC SCROLL STORYTELLING
+   THE VRINDAYA STORY — STICKY SCROLL CINEMA
    -----------------------------------------------------------------
-   The imagery is anchored to the viewport for the whole sequence
-   while the reader moves through each principle, one beat at a
-   time. Pure observer-driven — no scroll listeners — and only
-   transform + opacity are ever animated.
+   Architecture
+   ────────────
+   .story-wrap      section + outro, warm near-black canvas
+   └ .story-section position: relative — the sticky containing block
+     ├ .story-stage 100vh sticky stage (image | editorial panel),
+     │              pinned while the runway passes through
+     └ .story-runway  N × 100vh triggers — the actual scroll space.
+                        The trigger centred in the viewport drives
+                        the active beat (image crossfade + list).
 
-   NOTE: the section itself must stay width:100% with NO horizontal
-   constraint and NO overflow on any ancestor of the sticky media,
-   or the sticky anchoring (and the full-bleed background) breaks.
+   Pure IntersectionObserver — no scroll listeners — and only
+   transform + opacity are animated.
+
+   Sticky requirements (do not violate):
+   • no ancestor of .story-section may be a scroll container
+   • .story-stage must be a direct child of the section (first)
+   • never clip the section or the runway (overflow on the stage
+     frame itself is fine)
    ═══════════════════════════════════════════════════════════════ */
 
-.story-section {
+.story-wrap {
   /* Section-local premium palette */
   --story-bg:         #171512;
   --story-ivory:      #f2eee5;
-  --story-dim:        rgba(242, 238, 229, 0.62);
-  --story-faint:      rgba(242, 238, 229, 0.38);
+  --story-dim:        rgba(242, 238, 229, 0.64);
+  --story-faint:      rgba(242, 238, 229, 0.4);
   --story-champagne:  #c2a078;
-  --story-line:       rgba(242, 238, 229, 0.14);
+  --story-line:       rgba(242, 238, 229, 0.16);
 
   position: relative;
   width: 100%;
   background: var(--story-bg);
   color: var(--story-ivory);
-
-  display: grid;
-  grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
-  grid-template-areas:
-    "media intro"
-    "media points"
-    "media outro";
-  column-gap: clamp(2rem, 4vw, 4.5rem);
-  align-items: start;
 }
 
-/* Editorial hairlines at the section edges */
-.story-section::before,
-.story-section::after {
+/* Editorial hairlines at the canvas edges */
+.story-wrap::before,
+.story-wrap::after {
   content: '';
   position: absolute;
   left: 0;
@@ -47,25 +48,45 @@
   pointer-events: none;
 }
 
-.story-section::before {
+.story-wrap::before {
   top: 0;
   background: linear-gradient(to right, transparent, rgba(194, 160, 120, 0.28), transparent);
 }
 
-.story-section::after {
+.story-wrap::after {
   bottom: 0;
   background: linear-gradient(to right, transparent, rgba(194, 160, 120, 0.34), transparent);
+}
+
+/* ────────────────────────── Sticky section ────────────────────────── */
+
+.story-section {
+  position: relative; /* containing block for the pinned stage */
+}
+
+/* ────────────────────────── The stage ─────────────────────────────── */
+
+.story-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+  column-gap: clamp(2rem, 4vw, 4.5rem);
+}
+
+/* The runway: one full-viewport trigger per beat creates the scroll run */
+.story-trigger {
+  height: 100vh;
+  height: 100svh;
 }
 
 /* ────────────────────────── Anchored media ────────────────────────── */
 
 .story-media {
-  grid-area: media;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100svh;
-  align-self: start;
+  position: relative;
+  min-width: 0;
 }
 
 .story-stack {
@@ -86,10 +107,10 @@
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transform: scale(1.06);
+  transform: scale(1.04);
   transition:
-    opacity 0.9s ease,
-    transform 1.6s var(--ease-out-quint);
+    opacity 900ms ease,
+    transform 1400ms var(--ease-out-quint);
 }
 
 .story-img.active {
@@ -97,137 +118,33 @@
   transform: scale(1);
 }
 
-/* Cinematic grade — deepens the edges so the caption + rail sit
-   comfortably and the frame feels like a film still. */
+/* Cinematic grade — deepens the edges so the frame feels like a film still */
 .story-stack-shade {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(23, 21, 18, 0.38) 0%, transparent 24%),
-    linear-gradient(0deg, rgba(23, 21, 18, 0.62) 0%, transparent 32%);
+    linear-gradient(180deg, rgba(23, 21, 18, 0.35) 0%, transparent 22%),
+    linear-gradient(0deg, rgba(23, 21, 18, 0.55) 0%, transparent 30%);
 }
 
-/* Current-step caption (bottom-left of the frame) */
-.story-caption {
-  position: absolute;
-  left: clamp(1.25rem, 3vw, 2.5rem);
-  bottom: clamp(1.5rem, 4vh, 3rem);
-  z-index: 2;
-  height: 1.9rem;
-  min-width: 15rem;
-}
+/* ────────────────────────── Editorial panel ────────────────────────── */
 
-.story-caption-block {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  display: flex;
-  align-items: baseline;
-  gap: 0.85rem;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateY(12px);
-  transition:
-    opacity 0.55s ease,
-    transform 0.55s var(--ease-out-quint);
-}
-
-.story-caption-block.active {
-  opacity: 1;
-  transform: none;
-}
-
-.story-caption-index {
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  color: var(--story-champagne);
-}
-
-.story-caption-title {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.15rem;
-  font-weight: 400;
-  color: var(--story-ivory);
-}
-
-/* Progress rail — 01 ━━━ / 02 ─── / 03 ─── */
-.story-progress {
-  position: absolute;
-  right: clamp(0.9rem, 1.8vw, 1.75rem);
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1.3rem;
-}
-
-.story-progress-item {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  opacity: 0.55;
-  transition: opacity 0.5s ease;
-}
-
-.story-progress-item.active { opacity: 1; }
-
-.story-progress-num {
-  font-family: var(--font-sans);
-  font-size: 0.64rem;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  color: var(--story-ivory);
-  transition: color 0.5s ease;
-}
-
-.story-progress-item.active .story-progress-num { color: var(--story-champagne); }
-
-.story-progress-line {
-  position: relative;
-  width: 34px;
-  height: 1px;
-  background: var(--story-line);
-  overflow: hidden;
-}
-
-.story-progress-line::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--story-champagne);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.7s var(--ease-out-quint);
-}
-
-.story-progress-item.active .story-progress-line::after {
-  transform: scaleX(1);
-}
-
-/* ────────────────────────── Opening composition ────────────────────── */
-
-.story-intro {
-  grid-area: intro;
-  min-height: 92vh;
+.story-panel {
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding:
-    clamp(7rem, 14vh, 10rem)
-    clamp(1.5rem, 5vw, 5rem)
-    clamp(3.5rem, 8vh, 6rem)
-    clamp(1.5rem, 4vw, 4rem);
+    clamp(6rem, 13vh, 9rem)
+    clamp(2rem, 5vw, 5rem)
+    clamp(4rem, 9vh, 7rem)
+    clamp(1.5rem, 3.5vw, 3rem);
+  min-width: 0;
 }
 
 .story-eyebrow {
   position: relative;
-  margin: 0 0 clamp(1.75rem, 3.5vh, 2.5rem);
+  margin: 0 0 clamp(1.6rem, 3vh, 2.2rem);
   padding-left: 2.6rem;
   font-family: var(--font-sans);
   font-size: 0.72rem;
@@ -249,85 +166,123 @@
 }
 
 .story-headline {
-  margin: 0 0 clamp(1.5rem, 3vh, 2.25rem);
+  margin: 0 0 clamp(1.4rem, 2.6vh, 2rem);
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: clamp(2.6rem, 4.6vw, 5.25rem);
+  font-size: clamp(2.5rem, 4.2vw, 4.8rem);
   line-height: 1.08;
   letter-spacing: -0.01em;
   color: var(--story-ivory);
 }
 
 .story-lede {
-  margin: 0;
+  margin: 0 0 clamp(2.2rem, 4.5vh, 3.2rem);
   font-family: var(--font-sans);
-  font-size: clamp(1rem, 1.15vw, 1.12rem);
-  line-height: 1.85;
+  font-size: clamp(0.98rem, 1.05vw, 1.08rem);
+  line-height: 1.8;
   color: var(--story-dim);
   max-width: 44ch;
 }
 
-/* ────────────────────────── Story beats ───────────────────────────── */
+/* ────────────────────────── Story progression ──────────────────────── */
 
-.story-points {
-  grid-area: points;
-  min-width: 0;
-}
-
-.story-point {
-  min-height: 92vh;
+.story-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding:
-    clamp(3rem, 7vh, 5rem)
-    clamp(1.5rem, 5vw, 5rem)
-    clamp(3rem, 7vh, 5rem)
-    clamp(1.5rem, 4vw, 4rem);
-  opacity: 0.45; /* quiet, never disabled — neighbours stay legible */
-  transition: opacity 0.6s ease;
 }
 
-.story-point.active { opacity: 1; }
-
-.story-point-head {
-  display: flex;
+.story-item {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr;
+  column-gap: 1rem;
   align-items: baseline;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 0.8rem 0 0.85rem;
+  border-bottom: 1px solid var(--story-line);
+  opacity: 0.4; /* quiet, never disabled — neighbours stay legible */
+  transition: opacity 0.5s ease;
 }
 
-.story-point-index {
+.story-item.active { opacity: 1; }
+
+.story-item-index {
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.26em;
-  color: var(--story-champagne);
-  flex-shrink: 0;
+  color: var(--story-faint);
+  transition: color 0.5s ease;
 }
 
-.story-point-title {
+.story-item.active .story-item-index { color: var(--story-champagne); }
+
+.story-item-title {
   margin: 0;
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: clamp(2rem, 3.2vw, 2.9rem);
-  line-height: 1.14;
+  font-size: clamp(1.5rem, 2.2vw, 2.05rem);
+  line-height: 1.15;
   color: var(--story-ivory);
 }
 
-.story-point-text {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: clamp(0.95rem, 1.05vw, 1.06rem);
-  line-height: 1.9;
-  color: var(--story-dim);
-  max-width: 46ch;
+/* The active principle's underline — always laid out, animated in */
+.story-item-rule {
+  grid-column: 1 / -1;
+  height: 1px;
+  margin-top: 0.7rem;
+  background: var(--story-champagne);
+  opacity: 0.65;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.8s var(--ease-out-quint);
 }
 
-/* ────────────────────────── Closing beat ──────────────────────────── */
+.story-item.active .story-item-rule { transform: scaleX(1); }
+
+/* The active principle's voice — crossfades as beats change */
+.story-voice {
+  position: relative;
+  margin-top: clamp(1.6rem, 3vh, 2.2rem);
+  min-height: 5rem;
+}
+
+.story-voice-text {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(0.94rem, 1vw, 1.02rem);
+  line-height: 1.75;
+  color: var(--story-dim);
+  max-width: 46ch;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s var(--ease-out-quint);
+}
+
+.story-voice-text.active {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Exit release — as the closing beat takes over, the frame recedes ── */
+
+.story-stage.exiting .story-stack {
+  opacity: 0.82;
+  filter: brightness(0.9);
+  transform: scale(1.02);
+}
+
+/* ────────────────────────── Closing beat ───────────────────────────── */
 
 .story-outro {
-  grid-area: outro;
+  position: relative;
   min-height: 55vh;
   display: flex;
   align-items: center;
@@ -360,82 +315,121 @@
   opacity: 0.7;
 }
 
-/* ── Exit release — as the closing beat arrives, the frame recedes ── */
+/* ────────────────────────── Vertical story (tablet + mobile) ───────── */
 
-.story-section.exiting .story-stack {
-  opacity: 0.78;
-  filter: brightness(0.88);
-  transform: scale(1.025);
-}
+.story-mobile { display: none; }
 
 /* ═══════════════════ Responsive ═══════════════════ */
 
 @media (max-width: 1199.98px) {
-  .story-section {
+  .story-stage {
     grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
     column-gap: clamp(1.5rem, 3vw, 2.5rem);
   }
 
-  .story-headline { font-size: clamp(2.4rem, 4.4vw, 3.6rem); }
-  .story-intro,
-  .story-point,
-  .story-outro {
+  .story-panel {
     padding-left: clamp(1.25rem, 3.5vw, 2.5rem);
     padding-right: clamp(1.25rem, 3.5vw, 2.5rem);
   }
+
+  .story-headline { font-size: clamp(2.4rem, 4.4vw, 3.6rem); }
 }
 
-/* Tablet + mobile — the storytelling becomes vertical:
-   label → headline → image → principles, no sticky columns. */
+/* Short desktop viewports — tighten the composition instead of clipping */
+@media (max-height: 720px) {
+  .story-panel {
+    padding-top: clamp(3.5rem, 9vh, 6rem);
+    padding-bottom: clamp(2.5rem, 7vh, 4rem);
+  }
+
+  .story-eyebrow { margin-bottom: 1.1rem; }
+  .story-headline { margin-bottom: 1.1rem; font-size: clamp(2.2rem, 3.6vw, 3.2rem); }
+  .story-lede { margin-bottom: 1.6rem; }
+  .story-item { padding: 0.55rem 0 0.6rem; }
+  .story-item-rule { margin-top: 0.5rem; }
+  .story-voice { margin-top: 1.2rem; min-height: 4.2rem; }
+}
+
+/* Tablet + mobile — the storytelling becomes a natural vertical story:
+   label → headline → each beat's image and principle. No sticky
+   columns, no runway — the DOM order is the experience. */
 @media (max-width: 1023.98px) {
-  .story-section {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "intro"
-      "media"
-      "points"
-      "outro";
-    column-gap: 0;
+  .story-stage { display: none; }
+  .story-runway { display: none; }
+
+  .story-mobile {
+    display: block;
+    padding: clamp(5.5rem, 16vh, 8rem) clamp(1.25rem, 6vw, 2.5rem) 0;
   }
 
-  .story-media {
-    position: relative;
-    top: auto;
-    height: auto;
-    align-self: auto;
+  .story-mobile .story-eyebrow { margin-bottom: 1.5rem; }
+
+  .story-mobile .story-headline {
+    margin-bottom: 1.4rem;
+    font-size: clamp(2.35rem, 10vw, 3.1rem);
   }
 
-  .story-stack {
+  .story-mobile .story-lede {
+    margin-bottom: clamp(2.5rem, 7vh, 4rem);
+    font-size: 1rem;
+  }
+
+  .story-mobile-beat {
+    padding: clamp(2.75rem, 8vh, 4.5rem) 0;
+    border-top: 1px solid var(--story-line);
+  }
+
+  .story-mobile-media {
     position: relative;
-    inset: auto;
     width: 100%;
     aspect-ratio: 4 / 5;
+    overflow: hidden;
     border-radius: 2px;
+    background: #14110d;
+    margin-bottom: 1.6rem;
   }
 
-  .story-intro {
-    min-height: 0;
-    padding: clamp(6rem, 18vh, 8.5rem) clamp(1.25rem, 6vw, 2.5rem) clamp(2.75rem, 7vh, 4rem);
+  .story-mobile-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  .story-headline { font-size: clamp(2.35rem, 10vw, 3.1rem); }
-  .story-lede { font-size: 1rem; }
-
-  .story-point {
-    min-height: 0;
-    padding: clamp(2.75rem, 8vh, 4.5rem) clamp(1.25rem, 6vw, 2.5rem);
+  .story-mobile-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+    max-width: 46ch;
   }
 
-  .story-point-head { margin-bottom: 1.1rem; }
-  .story-point-title { font-size: clamp(1.75rem, 6.5vw, 2.2rem); }
-  .story-point-text { font-size: 0.95rem; }
+  .story-mobile-copy .story-item-index {
+    font-size: 0.68rem;
+    letter-spacing: 0.26em;
+    color: var(--story-champagne);
+  }
+
+  .story-mobile-copy .story-item-title {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 6.5vw, 2.2rem);
+    line-height: 1.15;
+    color: var(--story-ivory);
+  }
+
+  .story-mobile-copy .story-item-text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--story-dim);
+  }
 
   .story-outro {
-    min-height: 0;
-    padding: clamp(1.5rem, 5vh, 3rem) clamp(1.25rem, 6vw, 2.5rem) clamp(6rem, 14vh, 9rem);
+    padding:
+      clamp(1.5rem, 5vh, 3rem)
+      clamp(1.25rem, 6vw, 2.5rem)
+      clamp(6rem, 14vh, 9rem);
   }
-
-  .story-outro-line { font-size: clamp(1.4rem, 5.5vw, 1.9rem); }
 }
 
 /* ═══════════════════ Reduced motion ═══════════════════ */
@@ -447,9 +441,11 @@
     transform: none;
   }
 
-  .story-point { opacity: 1; }
-  .story-progress-item { opacity: 1; }
-  .story-section.exiting .story-stack {
+  .story-item { opacity: 1; }
+  .story-item-rule { transform: none; }
+  .story-voice-text.active { opacity: 1; transform: none; }
+
+  .story-stage.exiting .story-stack {
     opacity: 1;
     filter: none;
     transform: none;

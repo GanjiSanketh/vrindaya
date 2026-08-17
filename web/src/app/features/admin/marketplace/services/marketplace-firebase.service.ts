@@ -18,10 +18,21 @@ export class MarketplaceFirebaseService {
   }
 
   private async init(): Promise<Firestore> {
-    const app = await this.getApp();
-    const { getFirestore } = await import('firebase/firestore');
-    this.firestoreInstance = getFirestore(app);
-    return this.firestoreInstance;
+    try {
+      const app = await this.getApp();
+      const { getFirestore } = await import('firebase/firestore');
+      this.firestoreInstance = getFirestore(app);
+      return this.firestoreInstance;
+    } catch (err) {
+      // A failed init must NOT be cached: every consumer (Vrindaya Story, Hero
+      // Showcase, analytics settings, …) shares this single promise, so a
+      // transient failure here (lazy firebase chunk blip, init race) would
+      // otherwise pin every Firestore-backed section to its fallback for the
+      // whole session. Reset so the next call retries the init.
+      this.initPromise = null;
+      this.firestoreInstance = null;
+      throw err;
+    }
   }
 
   private async getApp(): Promise<FirebaseApp> {
