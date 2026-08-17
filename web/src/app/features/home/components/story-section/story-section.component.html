@@ -1,84 +1,108 @@
-<section
-  class="story-section"
-  id="story"
-  aria-label="The Vrindaya story"
-  [class.exiting]="exiting()"
->
+<div class="story-wrap">
 
-  <!-- ── Anchored cinematic media ────────────────────────────────
-       The image column stays pinned to the viewport for the whole
-       sequence; the active frame crossfades with a whisper of zoom
-       as the reader moves from one principle to the next. -->
-  <div class="story-media" aria-hidden="true">
-    <div class="story-stack">
-      @for (step of steps(); track step.id) {
-        <img
-          [src]="step.image"
-          alt=""
-          class="story-img"
-          [class.active]="activeStep() === step.id"
-          [style.object-position]="step.position"
-          [loading]="step.id === 0 ? 'eager' : 'lazy'"
-          decoding="async"
-          width="900"
-          height="1100"
-        />
-      }
-      <div class="story-stack-shade"></div>
-    </div>
+  <section class="story-section" id="story" aria-label="The Vrindaya story">
 
-    <!-- Current-step caption -->
-    <div class="story-caption">
-      @for (step of steps(); track step.id) {
-        <div class="story-caption-block" [class.active]="activeStep() === step.id">
-          <span class="story-caption-index">{{ step.index }}</span>
-          <span class="story-caption-title">{{ step.title }}</span>
+    <!-- ── Sticky cinematic stage ────────────────────────────────
+         Pinned to the viewport for the whole sequence: imagery on
+         the left, the editorial composition on the right. Both
+         evolve as each beat's runway trigger passes through. -->
+    <div class="story-stage" [class.exiting]="exiting()">
+
+      <div class="story-media" aria-hidden="true">
+        <div class="story-stack">
+          @for (step of steps(); track step.id) {
+            <img
+              [src]="step.image"
+              alt=""
+              class="story-img"
+              [class.active]="activeStep() === step.id"
+              [style.object-position]="step.position"
+              [loading]="step.id === 0 ? 'eager' : 'lazy'"
+              decoding="async"
+              width="900"
+              height="1100"
+            />
+          }
+          <div class="story-stack-shade"></div>
         </div>
-      }
+      </div>
+
+      <div class="story-panel">
+        <p class="story-eyebrow" data-reveal>The Vrindaya Story</p>
+        <h2 class="story-headline" data-reveal style="--reveal-delay: 90ms">
+          Crafted with intention,<br />worn with grace
+        </h2>
+        <p class="story-lede" data-reveal style="--reveal-delay: 180ms">
+          Three quiet principles guide every piece we make.
+        </p>
+
+        <!-- Story progression — the active principle is underlined -->
+        <ol class="story-list">
+          @for (step of steps(); track step.id) {
+            <li class="story-item" [class.active]="activeStep() === step.id">
+              <span class="story-item-index">{{ step.index }}</span>
+              <h3 class="story-item-title">{{ step.title }}</h3>
+              <span class="story-item-rule" aria-hidden="true"></span>
+            </li>
+          }
+        </ol>
+
+        <!-- The active principle's voice — crossfades as beats change -->
+        <div class="story-voice">
+          @for (step of steps(); track step.id) {
+            <p class="story-voice-text" [class.active]="activeStep() === step.id">
+              {{ step.text }}
+            </p>
+          }
+        </div>
+      </div>
+
     </div>
 
-    <!-- Progress rail: 01 ━━━ / 02 ─── / 03 ─── -->
-    <div class="story-progress">
+    <!-- ── Runway ────────────────────────────────────────────────
+         One 100vh trigger per beat. The triggers create the scroll
+         height; the observer activates whichever beat is centred. -->
+    <div class="story-runway">
       @for (step of steps(); track step.id) {
-        <span class="story-progress-item" [class.active]="activeStep() === step.id">
-          <span class="story-progress-num">{{ step.index }}</span>
-          <span class="story-progress-line"></span>
-        </span>
+        <div class="story-trigger" [attr.data-step]="step.id" aria-hidden="true"></div>
       }
     </div>
-  </div>
 
-  <!-- ── Opening composition ───────────────────────────────────── -->
-  <header class="story-intro">
+  </section>
+
+  <!-- ── Vertical story (tablet + mobile) ───────────────────────
+       Label → heading → each beat's image and principle, in a
+       natural downward flow — no sticky columns. -->
+  <div class="story-mobile">
     <p class="story-eyebrow" data-reveal>The Vrindaya Story</p>
-    <h2 class="story-headline" data-reveal style="--reveal-delay: 90ms">
-      Crafted with intention,<br />worn with grace
-    </h2>
-    <p class="story-lede" data-reveal style="--reveal-delay: 180ms">
-      Three quiet principles guide every piece we make.
-    </p>
-  </header>
+    <h2 class="story-headline" data-reveal>Crafted with intention,<br />worn with grace</h2>
+    <p class="story-lede" data-reveal>Three quiet principles guide every piece we make.</p>
 
-  <!-- ── Story beats — each scrolls through its own moment ─────── -->
-  <div class="story-points">
     @for (step of steps(); track step.id) {
-      <article
-        class="story-point"
-        [class.active]="activeStep() === step.id"
-        [attr.data-step]="step.id"
-      >
-        <div class="story-point-head">
-          <span class="story-point-index">{{ step.index }}</span>
-          <h3 class="story-point-title">{{ step.title }}</h3>
+      <div class="story-mobile-beat">
+        <div class="story-mobile-media">
+          <img
+            [src]="step.image"
+            [alt]="step.alt"
+            [style.object-position]="step.position"
+            loading="lazy"
+            decoding="async"
+            width="900"
+            height="1100"
+          />
         </div>
-        <p class="story-point-text">{{ step.text }}</p>
-      </article>
+        <div class="story-mobile-copy">
+          <span class="story-item-index">{{ step.index }}</span>
+          <h3 class="story-item-title">{{ step.title }}</h3>
+          <p class="story-item-text">{{ step.text }}</p>
+        </div>
+      </div>
     }
   </div>
 
-  <!-- ── Closing beat ──────────────────────────────────────────── -->
+  <!-- ── Closing beat — the stage releases into a quiet promise ── -->
   <footer class="story-outro">
     <p class="story-outro-line" data-reveal>Every piece carries a quiet promise.</p>
   </footer>
 
-</section>
+</div>

@@ -1,6 +1,6 @@
 import {
-  Component, signal, computed, input, effect, ElementRef, inject, PLATFORM_ID, afterNextRender, DestroyRef,
-  ChangeDetectionStrategy,
+  Component, signal, computed, input, effect, ElementRef, inject, PLATFORM_ID, afterNextRender,
+  ChangeDetectionStrategy, AfterViewInit, OnDestroy,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RevealDirective } from '../../directives/reveal.directive';
@@ -75,45 +75,33 @@ function toSteps(config: VrindayaStoryConfig | null): StoryStep[] {
   styleUrl: './story-section.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StorySectionComponent {
+export class StorySectionComponent implements AfterViewInit, OnDestroy {
   /** Admin-managed story configuration (homepageConfig/active.vrindayaStory). */
   readonly config = input<VrindayaStoryConfig | null>(null);
 
   /** Steps to render — config beats when published, built-in defaults otherwise. */
   readonly steps = computed(() => toSteps(this.config()));
 
-  /** Story beat currently in the middle of the viewport. */
+  /** Story beat whose runway trigger is currently in the middle of the viewport. */
   readonly activeStep = signal(0);
 
-  /** True while the closing beat is in view — releases the frame. */
-  readonly exiting = signal(false);
+  /** True once the closing beat takes over — the stage eases back, releasing into the outro. */
+  readonly exiting = computed(
+    () => this.steps().length > 1 && this.activeStep() === this.steps().length - 1,
+  );
 
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly destroyRef = inject(DestroyRef);
 
   private stepObserver: IntersectionObserver | null = null;
+  private destroyed = false;
 
   constructor() {
-    // Static pieces (the closing beat) only need one setup after first render.
-    afterNextRender(() => {
-      if (!isPlatformBrowser(this.platformId)) return;
-
-      // As the closing beat scrolls into view, the anchored frame eases
-      // back — a natural release into the next section.
-      const outroEl = this.el.nativeElement.querySelector('.story-outro') as HTMLElement | null;
-      const outroObserver = new IntersectionObserver(
-        ([entry]) => this.exiting.set(entry.isIntersecting),
-        { rootMargin: '0px 0px -55% 0px', threshold: 0 },
-      );
-
-      if (outroEl) outroObserver.observe(outroEl);
-      this.destroyRef.onDestroy(() => outroObserver.disconnect());
-    });
-
     // The step list can change shape once the admin configuration hydrates
-    // (defaults → published beats), so re-attach the beat observer whenever
+    // (defaults → published beats), so re-attach the trigger observer whenever
     // the list changes — after the DOM for that change has been rendered.
+    // Data loading (VrindayaStoryService) is fully independent of this
+    // machinery: the observer only ever runs against already-rendered steps.
     effect(() => {
       this.steps();
       if (!isPlatformBrowser(this.platformId)) return;
@@ -121,20 +109,42 @@ export class StorySectionComponent {
     });
   }
 
-  /** Observes the current .story-point elements; safe to call repeatedly. */
+  /**
+   * Deterministic first attach — runs once the view exists, independent of
+   * effect scheduling, so the observer can never be skipped when the initial
+   * (default) steps have rendered.
+   */
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.attachStepObserver();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.stepObserver?.disconnect();
+    this.stepObserver = null;
+  }
+
+  /**
+   * Observes the runway triggers (.story-trigger — one 100vh block per beat).
+   * The beat whose trigger crosses the middle band of the viewport becomes
+   * the active story. Purely observer-driven, no scroll listeners. Safe to
+   * call repeatedly: each call replaces the previous observer.
+   */
   private attachStepObserver(): void {
+    if (this.destroyed) return;
     this.stepObserver?.disconnect();
     this.stepObserver = null;
 
-    const stepEls = Array.from(
-      this.el.nativeElement.querySelectorAll('.story-point') as NodeListOf<HTMLElement>,
+    const triggers = Array.from(
+      this.el.nativeElement.querySelectorAll('.story-trigger') as NodeListOf<HTMLElement>,
     );
-    if (stepEls.length === 0) return;
+    if (triggers.length === 0) return;
 
-    // The beat is considered "current" when it crosses the middle band of the
-    // viewport — no scroll listeners, purely observer-driven.
     const observer = new IntersectionObserver(
       entries => {
+        if (this.destroyed) return;
         for (const entry of entries) {
           if (entry.isIntersecting) {
             const idx = Number((entry.target as HTMLElement).dataset['step']);
@@ -145,8 +155,7 @@ export class StorySectionComponent {
       { rootMargin: '-42% 0px -42% 0px', threshold: 0 },
     );
 
-    stepEls.forEach(el => observer.observe(el));
+    triggers.forEach(trigger => observer.observe(trigger));
     this.stepObserver = observer;
-    this.destroyRef.onDestroy(() => observer.disconnect());
   }
 }
