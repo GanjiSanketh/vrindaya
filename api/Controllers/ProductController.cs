@@ -280,6 +280,7 @@ public class ProductController : ControllerBase
     /// progress/error/retry state independently. Final image order is
     /// decided entirely by the admin's drag-reorder and sent as part of
     /// Images[] on Save (PUT/POST) — this endpoint has no notion of order.
+    /// </summary>
     [HttpPatch("{id}/status")]
     [Authorize(Policy = AppConstants.AdminOnlyPolicy)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
