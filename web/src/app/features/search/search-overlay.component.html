@@ -69,11 +69,35 @@
         </div>
       } @else {
         <div class="so-hints">
-          <p class="so-hints-label">Try searching for</p>
+          @if (recentSearches().length > 0) {
+            <div class="so-recent">
+              <div class="so-recent-header">
+                <p class="so-hints-label">Recent searches</p>
+                <button type="button" class="so-clear-btn" (click)="clearRecentSearches()">Clear</button>
+              </div>
+              <div class="so-hints-chips">
+                @for (search of recentSearches(); track search) {
+                  <button class="so-chip so-chip--recent" (click)="onInput(search)">
+                    <i class="bi bi-clock-history"></i> {{ search }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+          <p class="so-hints-label">Popular searches</p>
           <div class="so-hints-chips">
             @for (hint of hints; track hint) {
               <button class="so-chip" (click)="onInput(hint)">{{ hint }}</button>
             }
+          </div>
+          <div class="so-categories-hint">
+            <p class="so-hints-label">Browse by category</p>
+            <div class="so-hints-chips">
+              <button class="so-chip" routerLink="/category/long-kurtas" (click)="close()">Long Kurtas</button>
+              <button class="so-chip" routerLink="/category/short-kurtas" (click)="close()">Short Kurtas</button>
+              <button class="so-chip" routerLink="/category/2-piece-sets" (click)="close()">2-Piece Sets</button>
+              <button class="so-chip" routerLink="/category/3-piece-sets" (click)="close()">3-Piece Sets</button>
+            </div>
           </div>
         </div>
       }

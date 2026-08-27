@@ -137,7 +137,12 @@
 
           @if (sizes().length) {
             <div class="pd-block">
-              <h3 class="pd-block-title">Available Sizes</h3>
+              <div class="pd-size-header">
+                <h3 class="pd-block-title">Available Sizes</h3>
+                <button type="button" class="pd-size-guide-link" aria-label="Open size guide">
+                  <i class="bi bi-rulers"></i> Size Guide
+                </button>
+              </div>
               <div class="pd-sizes">
                 @for (s of sizes(); track s.size) {
                   <span class="pd-size-chip" [class.pd-size-chip--out]="s.stock <= 0">
@@ -160,6 +165,22 @@
 
           <div class="pd-rule"></div>
 
+          <!-- Trust signals -->
+          <div class="pd-trust-row">
+            <div class="pd-trust-item">
+              <i class="bi bi-shield-check"></i>
+              <span>Secure Payment</span>
+            </div>
+            <div class="pd-trust-item">
+              <i class="bi bi-arrow-return-left"></i>
+              <span>Easy Returns</span>
+            </div>
+            <div class="pd-trust-item">
+              <i class="bi bi-truck"></i>
+              <span>Fast Delivery</span>
+            </div>
+          </div>
+
           <div class="pd-actions">
             @if (flipkartUrl()) {
               <button type="button" class="pd-cta" (click)="shopOnFlipkart()">
@@ -168,6 +189,7 @@
             } @else {
               <button type="button" class="pd-cta pd-cta--soon" disabled>Coming Soon</button>
             }
+            <p class="pd-cta-note">You'll be redirected to Flipkart to complete your purchase</p>
           </div>
 
         </div>
@@ -192,6 +214,31 @@
       }
 
     </div>
+
+    <!-- Sticky mobile purchase bar -->
+    <div class="pd-mobile-bar">
+      <div class="pd-mobile-bar-inner">
+        <div class="pd-mobile-bar-info">
+          @if (p.price > 0) {
+            <span class="pd-mobile-bar-price">₹{{ p.price }}</span>
+          }
+          @if (p.mrp > p.price && p.mrp > 0) {
+            <span class="pd-mobile-bar-mrp">₹{{ p.mrp }}</span>
+          }
+          @if (p.discount > 0) {
+            <span class="pd-mobile-bar-discount">{{ p.discount }}% off</span>
+          }
+        </div>
+        <div class="pd-mobile-bar-actions">
+          @if (flipkartUrl()) {
+            <button type="button" class="pd-mobile-bar-cta" (click)="shopOnFlipkart()">
+              <i class="bi bi-cart3"></i> Buy on Flipkart
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
   }
 
 </main>

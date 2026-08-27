@@ -56,19 +56,7 @@ export class ProductAnalyticsService {
   recordClick(productId: string): void {
     if (!isPlatformBrowser(this.platformId)) return;
     const settings = this.settingsSvc.settings();
-    // TEMP DIAG — remove after verification.
-    // eslint-disable-next-line no-console
-    console.log('Tracking Settings:', settings);
-    if (!settings.trackingEnabled) {
-      // eslint-disable-next-line no-console
-      console.log('[Analytics GATE] Skipping legacy click — WebsiteTracking OFF');
-      return;
-    }
-    if (!settings.productClicks) {
-      // eslint-disable-next-line no-console
-      console.log('[Analytics GATE] Skipping legacy click — ProductClickTracking OFF');
-      return;
-    }
+    if (!settings.trackingEnabled || !settings.productClicks) return;
     void firstValueFrom(this.http.post<void>(`${LEGACY_BASE}/products/${productId}/click`, {})).catch(() => {});
   }
 
@@ -91,46 +79,21 @@ export class ProductAnalyticsService {
    * switches gate their own events (wishlist → wishlistTracking, everything
    * else → productClicks), matching the storefront facade.
    */
-  private trackingAllowed(productId: string, metric: ProductMetric): boolean {
+  private trackingAllowed(_productId: string, metric: ProductMetric): boolean {
     const settings: AnalyticsSettings = this.settingsSvc.settings();
-    // TEMP DIAG — remove after verification.
-    // eslint-disable-next-line no-console
-    console.log('Tracking Settings:', settings);
-    if (!settings.trackingEnabled) {
-      // eslint-disable-next-line no-console
-      console.log(`[Analytics GATE] Skipping analytics event — WebsiteTracking OFF (${productId}/${metric})`);
-      return false;
-    }
+    if (!settings.trackingEnabled) return false;
     const switchField = metric === 'wishlist' ? 'wishlistTracking' : 'productClicks';
-    if (!settings[switchField]) {
-      // eslint-disable-next-line no-console
-      console.log(`[Analytics GATE] Skipping analytics event — ${switchField} OFF (${productId}/${metric})`);
-      return false;
-    }
-    // eslint-disable-next-line no-console
-    console.log(`[Analytics GATE] Tracking ${metric} click (${productId})`);
-    return true;
+    return settings[switchField] === true;
   }
 
   private record(productId: string, metric: ProductMetric): void {
-    this.diag('Entering record() — click event', { productId, metric });
     if (!this.trackingAllowed(productId, metric)) return;
-    if (!this.store.isEligibleUser()) {
-      this.diag('Analytics SKIPPED — role not eligible (Admin/SuperAdmin/SSR)', { productId, metric });
-      return;
-    }
+    if (!this.store.isEligibleUser()) return;
     const seedCreatedAt = !this.seeded.has(productId);
     if (seedCreatedAt) this.seeded.add(productId);
-    void this.commit(productId, metric, seedCreatedAt).catch(err => {
-      console.error('[Analytics DIAG] commit() rejected — full exception:', err);
-    });
+    void this.commit(productId, metric, seedCreatedAt).catch(() => {});
   }
 
-  /** TEMP DIAG — structured console logging for the analytics write path. Remove after verification. */
-  private diag(message: string, data: Record<string, unknown> = {}): void {
-    // eslint-disable-next-line no-console
-    console.log('[Analytics DIAG]', message, JSON.stringify(data));
-  }
 
   private async commit(productId: string, metric: ProductMetric, seedCreatedAt: boolean): Promise<void> {
     const db = await this.store.getFirestore();
@@ -143,6 +106,7 @@ export class ProductAnalyticsService {
       seedCreatedAt,
     );
   }
+
 
   // ── Read surface (future Admin Dashboard) ─────────────────────────────
 

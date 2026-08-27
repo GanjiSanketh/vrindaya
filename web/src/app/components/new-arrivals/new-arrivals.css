@@ -1,5 +1,18 @@
 .na-section {
-  background: var(--color-surface-2);
+  background: linear-gradient(180deg, var(--color-surface-2) 0%, #EDE9E3 100%);
+  position: relative;
+}
+
+.na-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(176, 141, 87, 0.025) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .na-grid {

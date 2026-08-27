@@ -1,5 +1,18 @@
 .trending-section {
   background: var(--color-surface);
+  position: relative;
+}
+
+.trending-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(176, 141, 87, 0.02) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .trending-grid {

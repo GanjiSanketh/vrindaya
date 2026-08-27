@@ -1,5 +1,18 @@
 .cl-section {
-  background: var(--color-surface);
+  background: var(--gradient-surface);
+  position: relative;
+}
+
+.cl-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(176, 141, 87, 0.02) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .cl-title {
@@ -15,24 +28,37 @@
   margin-bottom: 3rem;
 }
 
-/* Testimonial card — hairline, no loud shadows */
+/* Testimonial card — glossy premium */
 .cl-card {
-  background: var(--color-surface);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDFC 100%);
   border-radius: 0;
   padding: 2rem 1.75rem 1.75rem;
-  border: 1px solid var(--color-line);
+  border: 1px solid rgba(231, 227, 221, 0.6);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 0.75rem;
   transition: box-shadow 0.35s ease, transform 0.35s var(--ease-out-quint), border-color 0.35s ease;
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.03), 0 8px 24px rgba(17, 17, 17, 0.02);
+  position: relative;
+  overflow: hidden;
+}
+
+.cl-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
 }
 
 .cl-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.05), 0 16px 48px rgba(17, 17, 17, 0.06);
   transform: translateY(-4px);
-  border-color: rgba(168, 123, 78, 0.35);
+  border-color: rgba(176, 141, 87, 0.2);
 }
 
 .cl-quote {
@@ -48,12 +74,13 @@
   height: 72px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid var(--gold-light);
+  border: 2px solid rgba(176, 141, 87, 0.3);
   flex-shrink: 0;
-  background: var(--color-surface-2);
+  background: linear-gradient(135deg, rgba(176, 141, 87, 0.06) 0%, rgba(212, 190, 150, 0.03) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(176, 141, 87, 0.08);
 }
 
 .cl-avatar {
@@ -156,7 +183,7 @@
 .cl-sep {
   width: 1px;
   height: 36px;
-  background: var(--color-line);
+  background: linear-gradient(180deg, transparent, var(--color-line), transparent);
   flex-shrink: 0;
 }
 

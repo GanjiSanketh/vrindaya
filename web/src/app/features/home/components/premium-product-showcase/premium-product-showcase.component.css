@@ -131,7 +131,7 @@
   gap: 0.6rem;
   height: 56px;
   padding: 0 2.25rem;
-  background: var(--color-ink, #111);
+  background: linear-gradient(180deg, #1A1A1A 0%, #111111 100%);
   color: #fff;
   border-radius: 0;
   font-family: var(--font-sans);
@@ -140,20 +140,38 @@
   letter-spacing: 0.04em;
   text-decoration: none;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
   opacity: 0;
   transform: translate3d(0, 20px, 0);
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.12), 0 8px 24px rgba(17, 17, 17, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   animation: pis-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) 0.65s forwards;
 }
+
+.pis-cta-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: skewX(-15deg);
+  transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.pis-cta-btn:hover::before { left: 130%; }
 
 .pis-cta-btn i {
   transition: transform 0.3s ease;
 }
 
 .pis-cta-btn:hover {
-  background: #000;
+  background: linear-gradient(180deg, #222222 0%, #0A0A0A 100%);
   transform: translate3d(0, -3px, 0);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.20);
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.18), 0 14px 36px rgba(17, 17, 17, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .pis-cta-btn:hover i {
@@ -212,11 +230,11 @@
   width: min(420px, 100%);
   border-radius: 0;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--color-line, #E7E3DD);
-  box-shadow: var(--shadow-lg, 0 14px 44px rgba(0, 0, 0, 0.10));
+  background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(253,252,250,0.85) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.06), 0 16px 48px rgba(17, 17, 17, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.08);
   transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.4s ease;
 }
 

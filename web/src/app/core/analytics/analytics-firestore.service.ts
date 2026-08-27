@@ -71,16 +71,6 @@ export class AnalyticsFirestoreService {
     return role === null ? 'Anonymous/Customer' : role;
   }
 
-  /** TEMP DIAG — structured console logging for the analytics write path. Remove after verification. */
-  private diag(message: string, data: Record<string, unknown> = {}): void {
-    // eslint-disable-next-line no-console
-    console.log('[Analytics DIAG]', message, JSON.stringify(data));
-  }
-
-  /** TEMP DIAG — logs the complete caught exception. Remove after verification. */
-  private diagError(message: string, error: unknown): void {
-    console.error('[Analytics DIAG]', message, error);
-  }
 
   /**
    * Document refs for a product's totals doc and its `YYYY-MM-DD` daily doc.
@@ -149,34 +139,8 @@ export class AnalyticsFirestoreService {
     daily['lastClickedAt'] = serverTimestamp();
     if (seedCreatedAt) daily['createdAt'] = serverTimestamp();
 
-    // TEMP DIAG START — remove after verification
-    this.diag('Entering increment() — Firestore write', {
-      role: this.userRoleLabel(),
-      collectionPath: totalsRef.parent.path,
-      documentId: totalsRef.id,
-      dailyCollectionPath: dailyRef.parent.path,
-      dailyDocumentId: dailyRef.id,
-      totalsDelta,
-      dailyDelta,
-      createOrUpdate: seedCreatedAt ? 'create-seed (first event this session)' : 'update',
-    });
-    try {
-      // TEMP DIAG END
-      batch.set(totalsRef, totals, { merge: true });
-      batch.set(dailyRef, daily, { merge: true });
-      await batch.commit();
-      // TEMP DIAG START
-      this.diag('Firestore write SUCCESS', {
-        role: this.userRoleLabel(),
-        collectionPath: totalsRef.parent.path,
-        documentId: totalsRef.id,
-        dailyCollectionPath: dailyRef.parent.path,
-        dailyDocumentId: dailyRef.id,
-      });
-    } catch (err) {
-      this.diagError('Firestore write FAILURE', err);
-      throw err;
-    }
-    // TEMP DIAG END
+    batch.set(totalsRef, totals, { merge: true });
+    batch.set(dailyRef, daily, { merge: true });
+    await batch.commit();
   }
 }

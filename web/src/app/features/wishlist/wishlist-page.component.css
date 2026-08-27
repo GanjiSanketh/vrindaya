@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   LUXE GLOSS WISHLIST PAGE
+   LUXE GLOSS WISHLIST PAGE — Premium Glass Hero
    ═══════════════════════════════════════════════════ */
 .wl-page {
   min-height: 60vh;
@@ -8,12 +8,40 @@
   padding-bottom: 4.5rem;
 }
 
-/* Hero */
+/* Hero — glass surface */
 .wl-hero {
-  background: var(--color-surface-2);
-  border-bottom: 1px solid var(--color-line);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(253, 252, 250, 0.5) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4), 0 4px 20px rgba(17, 17, 17, 0.03);
   text-align: center;
   padding: clamp(2.5rem, 5vw, 4rem) 1.5rem;
+  position: relative;
+}
+
+/* Top-edge metallic highlight */
+.wl-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 10%, rgba(255, 255, 255, 0.5) 50%, transparent 90%);
+}
+
+/* Subtle ambient glow */
+.wl-hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(176, 141, 87, 0.03) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .wl-title {
@@ -23,6 +51,8 @@
   color: var(--color-text);
   margin: 0.625rem 0 0.4rem;
   letter-spacing: -0.02em;
+  position: relative;
+  z-index: 1;
 }
 
 .wl-subtitle {
@@ -30,6 +60,8 @@
   color: var(--color-muted);
   letter-spacing: 0.06em;
   margin: 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* Product grid */
@@ -40,7 +72,7 @@
   padding-top: 2rem;
 }
 
-/* Empty state */
+/* Empty state — glossy */
 .wl-empty {
   display: flex;
   flex-direction: column;
@@ -54,12 +86,14 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: rgba(176, 141, 87, 0.1);
+  background: linear-gradient(135deg, rgba(176, 141, 87, 0.1) 0%, rgba(212, 190, 150, 0.06) 100%);
+  border: 1px solid rgba(176, 141, 87, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
   color: var(--color-bronze-deep);
+  box-shadow: 0 2px 12px rgba(176, 141, 87, 0.08);
 }
 
 .wl-empty-title {

@@ -174,9 +174,6 @@ export class AnalyticsSettingsService {
             const fallback = await this.fetchFromApi();
             if (fallback) {
               const settings = this.mapDtoToSettings(fallback);
-              // TEMP DIAG — remove after verification.
-              // eslint-disable-next-line no-console
-              console.log('[AnalyticsSettings] backend API fallback settings received', JSON.stringify(settings));
               this.applyToCache(settings);
             } else {
               console.warn(
@@ -200,10 +197,6 @@ export class AnalyticsSettingsService {
             snapshot => {
               const data = snapshot.exists() ? snapshot.data() : {};
               const settings = this.toSettings(data);
-              // TEMP DIAG — remove after verification. Shows the exact values
-              // the storefront cache received from the persisted document.
-              // eslint-disable-next-line no-console
-              console.log('[AnalyticsSettings] live settings received', JSON.stringify(settings));
               this.applyToCache(settings);
               settle();
             },

@@ -6,10 +6,12 @@
   bottom: 0.875rem;
   left: 50%;
   transform: translateX(-50%);
-  background: #fff;
-  border: 1px solid var(--color-line);
+  background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(253,252,250,0.88) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 0;
-  box-shadow: 0 6px 28px rgba(17, 17, 17, 0.12);
+  box-shadow: 0 4px 16px rgba(17, 17, 17, 0.08), 0 12px 40px rgba(17, 17, 17, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.2);
   padding: 0.75rem 0.875rem;
   display: flex;
   align-items: center;
@@ -20,6 +22,16 @@
   width: calc(100vw - 1.75rem);
   z-index: 8000;
   animation: ip-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ip-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
 }
 
 @keyframes ip-up {
@@ -79,14 +91,15 @@
 }
 
 .ip-btn--install {
-  background: var(--color-ink);
+  background: linear-gradient(180deg, #1A1A1A 0%, #111111 100%);
   color: #fff;
   padding: 0.45rem 0.875rem;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  box-shadow: 0 1px 4px rgba(17, 17, 17, 0.1);
 }
-.ip-btn--install:hover { background: #000; }
+.ip-btn--install:hover { background: linear-gradient(180deg, #222222 0%, #0A0A0A 100%); }
 
 .ip-btn--dismiss {
   background: transparent;

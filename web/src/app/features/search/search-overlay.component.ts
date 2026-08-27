@@ -15,6 +15,7 @@ import { CategoryService }     from '../../core/services/category.service';
 import { AnalyticsService }    from '../../core/analytics/analytics.service';
 import { Product, Category }   from '../../core/models/product.model';
 import { CloudinaryUrlPipe }   from '../../shared/pipes/cloudinary-url.pipe';
+import { RouterLink }          from '@angular/router';
 
 export type SearchResultItem =
   | { kind: 'product'; product: Product }
@@ -26,7 +27,7 @@ const MAX_PRODUCT_MATCHES = 8;
 @Component({
   selector: 'app-search-overlay',
   standalone: true,
-  imports: [FormsModule, CloudinaryUrlPipe],
+  imports: [FormsModule, CloudinaryUrlPipe, RouterLink],
   templateUrl: './search-overlay.component.html',
   styleUrl:    './search-overlay.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,8 +46,11 @@ export class SearchOverlayComponent {
   readonly error   = signal<string | null>(null);
 
   readonly hints = ['Floral', 'Indigo', '3-Piece', 'Kurta Set', 'Embroidered', 'Pastel'];
+  readonly recentSearches = signal<string[]>([]);
 
   private readonly query$ = new Subject<string>();
+  private readonly RECENT_SEARCHES_KEY = 'vrindaya_recent_searches';
+  private readonly MAX_RECENT = 5;
 
   constructor() {
     this.query$.pipe(
@@ -60,6 +64,7 @@ export class SearchOverlayComponent {
       if (isPlatformBrowser(this.pid)) {
         document.body.style.overflow = open ? 'hidden' : '';
         if (open) {
+          this.loadRecentSearches();
           setTimeout(() => {
             (document.querySelector('.so-input') as HTMLInputElement)?.focus();
           }, 60);
@@ -99,11 +104,47 @@ export class SearchOverlayComponent {
 
       this.results.set([...categoryMatches, ...productMatches]);
       this.analytics.trackSearch(trimmed);
+      this.saveRecentSearch(trimmed);
     } catch (err) {
       this.results.set([]);
       this.error.set(err instanceof Error ? err.message : 'Search unavailable.');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  private loadRecentSearches(): void {
+    if (!isPlatformBrowser(this.pid)) return;
+    try {
+      const stored = localStorage.getItem(this.RECENT_SEARCHES_KEY);
+      if (stored) {
+        this.recentSearches.set(JSON.parse(stored));
+      }
+    } catch {
+      this.recentSearches.set([]);
+    }
+  }
+
+  private saveRecentSearch(query: string): void {
+    if (!isPlatformBrowser(this.pid)) return;
+    const current = this.recentSearches();
+    const updated = [query, ...current.filter(s => s.toLowerCase() !== query.toLowerCase())].slice(0, this.MAX_RECENT);
+    this.recentSearches.set(updated);
+    try {
+      localStorage.setItem(this.RECENT_SEARCHES_KEY, JSON.stringify(updated));
+    } catch {
+      // localStorage might be full
+    }
+  }
+
+  clearRecentSearches(): void {
+    this.recentSearches.set([]);
+    if (isPlatformBrowser(this.pid)) {
+      try {
+        localStorage.removeItem(this.RECENT_SEARCHES_KEY);
+      } catch {
+        // ignore
+      }
     }
   }
 

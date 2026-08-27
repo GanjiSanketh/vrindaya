@@ -60,10 +60,17 @@
 }
 
 .offline-btn--primary {
-  background: var(--color-ink);
+  background: linear-gradient(180deg, #1A1A1A 0%, #111111 100%);
   color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(17, 17, 17, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
-.offline-btn--primary:hover { background: #000; transform: translateY(-1px); }
+.offline-btn--primary:hover {
+  background: linear-gradient(180deg, #222222 0%, #0A0A0A 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
 
 .offline-btn--ghost {
   background: transparent;
