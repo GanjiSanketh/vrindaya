@@ -1,4 +1,12 @@
 <header class="vr-nav" [class.scrolled]="showScrolled()">
+
+  <!-- Announcement bar -->
+  <div class="announcement-bar" aria-label="Promotional message">
+    <span class="announcement-text">
+      FREE SHIPPING ON ORDERS ABOVE ₹999
+    </span>
+  </div>
+
   <div class="nav-inner">
 
     <button class="hamburger d-xl-none"
@@ -16,10 +24,10 @@
          routerLinkActive="nav-link-active"
          [routerLinkActiveOptions]="{ exact: true }"
          (click)="onNavClick('Home')">
-        Home
+        HOME
       </a>
       @for (cat of categories(); track cat.id; let i = $index) {
-        @if (i < 2) {
+        @if (i < 3) {
           <a class="nav-link"
              [routerLink]="['/category', cat.id]"
              routerLinkActive="nav-link-active"
@@ -38,7 +46,7 @@
 
     <div class="nav-right d-none d-xl-flex">
       @for (cat of categories(); track cat.id; let i = $index) {
-        @if (i >= 2) {
+        @if (i >= 3) {
           <a class="nav-link"
              [routerLink]="['/category', cat.id]"
              routerLinkActive="nav-link-active"
@@ -47,6 +55,9 @@
           </a>
         }
       }
+      <a class="nav-link" routerLink="/shop" routerLinkActive="nav-link-active" (click)="onNavClick('Shop')">
+        SHOP
+      </a>
       <div class="nav-icons">
         <button class="nav-icon nav-search-btn" (click)="onSearchOpen()" aria-label="Search products">
           <i class="bi bi-search"></i>
@@ -82,7 +93,7 @@
          routerLinkActive="drawer-link-active"
          [routerLinkActiveOptions]="{ exact: true }"
          (click)="closeMenu(); onNavClick('Home')">
-        Home
+        HOME
       </a>
 
       <div class="drawer-divider"></div>
@@ -97,6 +108,40 @@
           {{ cat.name }}
         </a>
       }
+
+      <div class="drawer-divider"></div>
+
+      <a class="drawer-link"
+         routerLink="/shop"
+         routerLinkActive="drawer-link-active"
+         style="--stagger: {{ categories().length + 1 }}"
+         (click)="closeMenu(); onNavClick('Shop')">
+        SHOP ALL
+      </a>
+
+      <a class="drawer-link"
+         routerLink="/new-arrivals"
+         routerLinkActive="drawer-link-active"
+         style="--stagger: {{ categories().length + 2 }}"
+         (click)="closeMenu(); onNavClick('New Arrivals')">
+        NEW ARRIVALS
+      </a>
+
+      <a class="drawer-link"
+         routerLink="/trending"
+         routerLinkActive="drawer-link-active"
+         style="--stagger: {{ categories().length + 3 }}"
+         (click)="closeMenu(); onNavClick('Trending')">
+        TRENDING
+      </a>
+
+      <a class="drawer-link"
+         routerLink="/wishlist"
+         routerLinkActive="drawer-link-active"
+         style="--stagger: {{ categories().length + 4 }}"
+         (click)="closeMenu(); onNavClick('Wishlist')">
+        WISHLIST
+      </a>
 
     </nav>
   }

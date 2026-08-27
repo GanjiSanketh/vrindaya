@@ -1,53 +1,56 @@
+/* ═══════════════════════════════════════════════════
+   LUXE GLOSS IMAGE LIGHTBOX
+   ═══════════════════════════════════════════════════ */
 .lb-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1020;
-  background: rgba(0, 0, 0, 0.96);
+  background: rgba(17, 17, 17, 0.96);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.875rem;
   padding: 1rem;
   animation: lb-fade-in 0.2s ease;
 }
 
-/* ── Close ── */
+/* Close */
 .lb-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
+  top: 0.875rem;
+  right: 0.875rem;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 0;
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.92rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.18s;
+  transition: background 0.2s;
   z-index: 10;
 }
 
-.lb-close:hover { background: rgba(255, 255, 255, 0.18); }
+.lb-close:hover { background: rgba(255, 255, 255, 0.14); }
 
-/* ── Counter ── */
+/* Counter */
 .lb-counter {
   position: absolute;
-  top: 1.1rem;
+  top: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
-/* ── Stage ── */
+/* Stage */
 .lb-stage {
   flex: 1;
   display: flex;
@@ -60,43 +63,43 @@
 
 .lb-img {
   max-width: 100%;
-  max-height: calc(100vh - 160px);
+  max-height: calc(100vh - 140px);
   object-fit: contain;
-  border-radius: var(--r-sm, 6px);
+  border-radius: 0;
   user-select: none;
   animation: lb-img-in 0.22s ease;
 }
 
-/* ── Nav arrows ── */
+/* Nav arrows */
 .lb-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.07);
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.18s;
+  transition: background 0.2s;
   z-index: 5;
 }
 
-.lb-nav:hover { background: rgba(255, 255, 255, 0.18); }
+.lb-nav:hover { background: rgba(255, 255, 255, 0.14); }
 .lb-nav--prev { left: 0.5rem; }
 .lb-nav--next { right: 0.5rem; }
 
-/* ── Thumbnail strip ── */
+/* Thumbnail strip */
 .lb-thumbs {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   overflow-x: auto;
-  padding: 0.25rem 0;
+  padding: 0.2rem 0;
   scrollbar-width: none;
   flex-shrink: 0;
 }
@@ -105,35 +108,35 @@
 
 .lb-thumb {
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border: 2px solid transparent;
-  border-radius: var(--r-sm, 4px);
+  border-radius: 0;
   overflow: hidden;
   padding: 0;
   background: none;
   cursor: pointer;
-  opacity: 0.55;
-  transition: border-color 0.18s, opacity 0.18s;
+  opacity: 0.5;
+  transition: border-color 0.2s, opacity 0.2s;
 }
 
 .lb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .lb-thumb.active { border-color: #fff; opacity: 1; }
-.lb-thumb:hover:not(.active) { opacity: 0.85; }
+.lb-thumb:hover:not(.active) { opacity: 0.8; }
 
-/* ── Mobile ── */
+/* Mobile */
 @media (max-width: 640px) {
   .lb-nav { display: none; }
-  .lb-img { max-height: calc(100vh - 140px); }
+  .lb-img { max-height: calc(100vh - 120px); }
 }
 
-/* ── Animations ── */
+/* Animations */
 @keyframes lb-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
 @keyframes lb-img-in {
-  from { opacity: 0; transform: scale(0.97); }
+  from { opacity: 0; transform: scale(0.98); }
   to   { opacity: 1; transform: scale(1); }
 }

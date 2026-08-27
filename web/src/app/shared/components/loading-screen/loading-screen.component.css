@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
-   BRAND SPLASH — warm, minimal opening
+   LUXE GLOSS BRAND SPLASH
    ═══════════════════════════════════════════════════════════════ */
 
 .ls-backdrop {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: #f7f4ee;
+  background: #F7F5F2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,45 +17,45 @@
   animation: ls-disappear 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* ── Centre content ── */
+/* Centre content */
 .ls-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
   animation: ls-content-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both;
 }
 
-/* ── Ornament row ── */
+/* Ornament row */
 .ls-ornament {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.875rem;
   color: var(--color-bronze);
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .ls-line {
   display: block;
-  width: 44px;
+  width: 40px;
   height: 1px;
   background: currentColor;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .ls-lotus { color: var(--color-bronze); }
 
-/* ── Brand letters ── */
+/* Brand letters */
 .ls-brand {
   font-family: var(--font-serif);
-  font-size: clamp(2.75rem, 8vw, 5rem);
-  font-weight: 300;
-  letter-spacing: 0.4em;
+  font-size: clamp(2.5rem, 7.5vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: 0.42em;
   color: var(--color-ink);
   display: flex;
   gap: 0;
   margin: 0;
-  padding-right: 0.4em; /* compensate last letter-spacing */
+  padding-right: 0.42em;
   position: relative;
 }
 
@@ -63,11 +63,11 @@
 .ls-letter {
   display: inline-block;
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(12px);
   animation: ls-letter-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Soft bronze shimmer over the brand name */
+/* Soft bronze shimmer */
 .ls-brand::after {
   content: '';
   position: absolute;
@@ -75,7 +75,7 @@
   background: linear-gradient(
     105deg,
     transparent 30%,
-    rgba(168, 123, 78, 0.28) 50%,
+    rgba(176, 141, 87, 0.25) 50%,
     transparent 70%
   );
   background-size: 200% 100%;
@@ -84,22 +84,22 @@
 }
 
 .ls-tagline {
-  font-family: var(--font-serif);
+  font-family: var(--font-editorial);
   font-style: italic;
-  font-size: 1.05rem;
+  font-size: 1rem;
   letter-spacing: 0.18em;
   color: var(--color-bronze);
   opacity: 0;
   animation: ls-fade-in 0.8s ease 0.5s forwards;
 }
 
-/* ── Progress line ── */
+/* Progress line */
 .ls-bar-wrap {
-  width: 120px;
+  width: 110px;
   height: 1px;
-  background: rgba(32, 28, 23, 0.12);
+  background: rgba(17, 17, 17, 0.1);
   overflow: hidden;
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
 .ls-bar {
@@ -109,7 +109,7 @@
   animation: ls-progress 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
 }
 
-/* ── Keyframes ── */
+/* Keyframes */
 @keyframes ls-appear {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -117,17 +117,17 @@
 
 @keyframes ls-disappear {
   0%   { opacity: 1; transform: scale(1); }
-  60%  { opacity: 1; transform: scale(1.02); }
-  100% { opacity: 0; transform: scale(1.04); }
+  60%  { opacity: 1; transform: scale(1.01); }
+  100% { opacity: 0; transform: scale(1.03); }
 }
 
 @keyframes ls-content-in {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes ls-letter-in {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -146,7 +146,7 @@
   to   { width: 100%; }
 }
 
-/* ── Reduced motion ── */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .ls-letter,
   .ls-tagline,

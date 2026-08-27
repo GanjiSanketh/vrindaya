@@ -21,9 +21,9 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(1100px 760px at 88% -12%, rgba(232, 213, 163, 0.34), transparent 62%),
-    radial-gradient(900px 700px at -12% 112%, rgba(240, 230, 216, 0.55), transparent 58%),
-    linear-gradient(165deg, #fdfaf3 0%, #f6ede0 46%, #fbf6ec 100%);
+    radial-gradient(1100px 760px at 88% -12%, rgba(212, 190, 150, 0.2), transparent 62%),
+    radial-gradient(900px 700px at -12% 112%, rgba(231, 227, 221, 0.45), transparent 58%),
+    linear-gradient(165deg, var(--color-bg, #F7F5F2) 0%, #f0ede8 46%, #f5f3f0 100%);
 }
 
 .pfc-blob {
@@ -39,7 +39,7 @@
   height: 440px;
   top: -130px;
   right: -90px;
-  background: radial-gradient(circle, rgba(232, 213, 163, 0.9), transparent 70%);
+  background: radial-gradient(circle, rgba(212, 190, 150, 0.6), transparent 70%);
 }
 
 .pfc-blob-2 {
@@ -47,7 +47,7 @@
   height: 400px;
   bottom: -150px;
   left: -110px;
-  background: radial-gradient(circle, rgba(240, 230, 216, 0.95), transparent 70%);
+  background: radial-gradient(circle, rgba(231, 227, 221, 0.8), transparent 70%);
 }
 
 .pfc-blob-3 {
@@ -55,7 +55,7 @@
   height: 260px;
   top: 42%;
   left: 56%;
-  background: radial-gradient(circle, rgba(250, 245, 232, 0.9), transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent 70%);
 }
 
 .pfc-arch {
@@ -113,7 +113,7 @@
   font-family: var(--font-serif);
   font-size: clamp(2.75rem, 5.5vw, 4.75rem);
   font-weight: 500;
-  color: var(--text);
+  color: var(--color-text, #222);
   letter-spacing: -0.01em;
   line-height: 1.05;
   margin: 0 0 1rem;
@@ -125,7 +125,7 @@
   font-family: var(--font-sans);
   font-size: clamp(1rem, 1.6vw, 1.2rem);
   font-weight: 400;
-  color: var(--text-muted);
+  color: var(--color-muted, #777);
   letter-spacing: 0.01em;
   line-height: 1.7;
   max-width: 520px;
@@ -147,20 +147,20 @@
 .pfc-card {
   display: block;
   position: relative;
-  border-radius: var(--r-lg, 20px);
+  border-radius: 0;
   outline: none;
   opacity: 0;
   animation: pfc-card-enter 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) calc(var(--stagger, 0) * 100ms + 600ms) forwards;
 }
 
 .pfc-card:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--color-bronze, #B08D57);
   outline-offset: 4px;
 }
 
 .pfc-card:hover .pfc-inner {
   transform: translate3d(0, -8px, 0) scale(1.02);
-  box-shadow: 0 24px 48px rgba(161, 137, 90, 0.28);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
 }
 
 /* Continuous gentle float — transform isolated so it never fights hover/parallax. */
@@ -178,7 +178,7 @@
 .pfc-inner {
   position: relative;
   background: #fff;
-  border-radius: var(--r-lg, 20px);
+  border-radius: 0;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.4s ease;
@@ -215,10 +215,10 @@
 }
 
 .pfc-name {
-  font-family: var(--font-serif);
-  font-size: 1.3rem;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text);
+  color: var(--color-text, #222);
   line-height: 1.2;
   margin: 0 0 0.25rem;
 }
@@ -236,8 +236,8 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: 1.5px solid var(--gold);
-  color: var(--gold);
+  border: 1px solid var(--color-line, #E7E3DD);
+  color: var(--color-text, #222);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -247,7 +247,7 @@
 
 .pfc-card:hover .pfc-arrow {
   transform: translateX(6px);
-  background: var(--gold);
+  background: var(--color-ink, #111);
   color: #fff;
 }
 
