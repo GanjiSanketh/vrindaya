@@ -5,6 +5,8 @@
   position: fixed;
   inset: 0;
   background: rgba(17, 17, 17, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,16 +18,29 @@
 @keyframes ei-fade { from { opacity: 0; } to { opacity: 1; } }
 
 .ei-modal {
-  background: #fff;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(253,252,250,0.92) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-radius: 0;
   max-width: 420px;
   width: 100%;
   position: relative;
   padding: 2.25rem 1.75rem 1.75rem;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 8px 32px rgba(17, 17, 17, 0.15), 0 32px 80px rgba(17, 17, 17, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.3);
   animation: ei-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
-  border: 1px solid var(--color-line);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+}
+
+.ei-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
 }
 
 @keyframes ei-up {
@@ -101,10 +116,13 @@
 }
 
 .ei-btn--primary {
-  background: var(--color-ink);
+  background: linear-gradient(180deg, #1A1A1A 0%, #111111 100%);
   color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(17, 17, 17, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
-.ei-btn--primary:hover { background: #000; transform: translateY(-1px); box-shadow: 0 6px 14px rgba(17, 17, 17, 0.22); }
+.ei-btn--primary:hover { background: linear-gradient(180deg, #222222 0%, #0A0A0A 100%); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(17, 17, 17, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
 
 .ei-btn--ghost {
   background: transparent;

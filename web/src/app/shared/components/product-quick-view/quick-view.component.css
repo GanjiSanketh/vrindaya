@@ -1,14 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
-   LUXE GLOSS QUICK VIEW MODAL
+   LUXE GLOSS QUICK VIEW MODAL — Premium Glass Modal
    ═══════════════════════════════════════════════════════════════ */
 
 .qv-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(17, 17, 17, 0.60);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(17, 17, 17, 0.55);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,16 +18,28 @@
 
 .qv-panel {
   position: relative;
-  background: #fff;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDFC 100%);
   border-radius: 0;
   width: 100%;
   max-width: 880px;
   max-height: 90vh;
   display: flex;
   overflow: hidden;
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 32px rgba(17, 17, 17, 0.15), 0 32px 80px rgba(17, 17, 17, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.3);
   animation: qv-slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid var(--color-line);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Top-edge metallic highlight */
+.qv-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 5%, rgba(255, 255, 255, 0.6) 50%, transparent 95%);
+  z-index: 10;
 }
 
 /* Full-detail fetch status */
@@ -40,9 +52,11 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.35rem 0.65rem;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 0;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.3);
   font-size: 0.75rem;
   color: var(--color-muted);
 }
@@ -53,12 +67,13 @@
   background: none; color: #dc2626; font-size: 0.68rem; font-weight: 700;
   letter-spacing: 0.06em; text-transform: uppercase;
   padding: 0.12rem 0.5rem; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 .qv-detail-status--error button:hover { background: #dc2626; color: #fff; }
 
 .qv-detail-spinner {
   width: 14px; height: 14px;
-  border: 2px solid var(--color-line);
+  border: 2px solid rgba(176, 141, 87, 0.2);
   border-top-color: var(--color-bronze);
   border-radius: 50%;
   animation: qv-spin 0.7s linear infinite;
@@ -75,7 +90,9 @@
   width: 34px;
   height: 34px;
   border: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 0;
   display: flex;
   align-items: center;
@@ -83,11 +100,16 @@
   font-size: 0.85rem;
   color: var(--color-text);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.qv-close:hover { background: var(--color-ink); color: #fff; }
+.qv-close:hover {
+  background: var(--color-ink);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.2);
+}
 
 /* Gallery (left 52%) */
 .qv-gallery {
@@ -97,7 +119,7 @@
   flex-direction: column;
   gap: 0.625rem;
   padding: 1.25rem;
-  background: var(--color-surface-2);
+  background: linear-gradient(135deg, #F7F5F2 0%, #F0EDEA 100%);
 }
 
 .qv-main-wrap {
@@ -107,6 +129,7 @@
   border-radius: 0;
   cursor: zoom-in;
   flex: 1;
+  box-shadow: 0 2px 12px rgba(17, 17, 17, 0.06);
 }
 
 .qv-main-img {
@@ -127,6 +150,8 @@
   width: 30px;
   height: 30px;
   background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -136,6 +161,8 @@
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .qv-main-wrap:hover .qv-zoom-hint { opacity: 1; }
@@ -159,9 +186,10 @@
   border-radius: 0;
   overflow: hidden;
   padding: 0;
-  background: none;
+  background: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 3px rgba(17, 17, 17, 0.03);
 }
 
 .qv-thumb img {
@@ -171,7 +199,10 @@
   display: block;
 }
 
-.qv-thumb.active { border-color: var(--color-bronze); }
+.qv-thumb.active {
+  border-color: var(--color-bronze);
+  box-shadow: 0 0 0 1px rgba(176, 141, 87, 0.15), 0 2px 8px rgba(176, 141, 87, 0.1);
+}
 .qv-thumb:hover:not(.active) { border-color: var(--color-bronze); }
 
 /* Details (right 48%) */
@@ -189,16 +220,18 @@
 .qv-badge {
   display: inline-block;
   padding: 2px 8px;
-  background: var(--color-ink);
+  background: linear-gradient(135deg, rgba(17, 17, 17, 0.85) 0%, rgba(17, 17, 17, 0.75) 100%);
   color: #fff;
   font-size: 0.54rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   border-radius: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.qv-badge--new { background: var(--color-bronze); color: #fff; }
+.qv-badge--new { background: linear-gradient(135deg, var(--color-bronze) 0%, #C49E62 100%); color: #fff; }
 .qv-badge--oos { background: #555; color: #fff; }
 
 .qv-name {
@@ -240,7 +273,12 @@
   color: var(--color-sale);
 }
 
-.qv-rule { height: 1px; background: var(--color-line); margin: 0.2rem 0; flex-shrink: 0; }
+.qv-rule {
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-line), transparent);
+  margin: 0.2rem 0;
+  flex-shrink: 0;
+}
 
 .qv-desc {
   font-size: 0.88rem;
@@ -280,13 +318,13 @@
   gap: 0.625rem;
 }
 
-/* CTA */
+/* CTA — glossy */
 .qv-cta {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   padding: 0.8rem 1.5rem;
-  background: var(--color-ink);
+  background: linear-gradient(180deg, #1A1A1A 0%, #111111 100%);
   color: #fff;
   font-family: var(--font-sans);
   font-size: 0.78rem;
@@ -297,33 +335,58 @@
   border-radius: 0;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.25s ease, transform 0.25s ease;
+  position: relative;
+  overflow: hidden;
   align-self: flex-start;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(17, 17, 17, 0.1), 0 8px 20px rgba(17, 17, 17, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.qv-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: skewX(-15deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.qv-cta:hover::before { left: 130%; }
+
 .qv-cta:hover {
-  background: #000;
+  background: linear-gradient(180deg, #222222 0%, #0A0A0A 100%);
   transform: translateY(-1px);
   color: #fff;
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.15), 0 12px 28px rgba(17, 17, 17, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .qv-cta--soon {
   background: var(--color-muted);
   cursor: not-allowed;
+  box-shadow: none;
 }
+
+.qv-cta--soon::before { display: none; }
 
 .qv-cta--soon:hover {
   background: var(--color-muted);
   transform: none;
+  box-shadow: none;
 }
 
-/* Wishlist button */
+/* Wishlist button — glass circle */
 .qv-wish-btn {
   width: 40px;
   height: 40px;
-  border: 1px solid var(--color-line);
-  background: #fff;
+  border: 1px solid rgba(231, 227, 221, 0.6);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -332,11 +395,22 @@
   color: var(--color-muted);
   cursor: pointer;
   flex-shrink: 0;
-  transition: color 0.2s, border-color 0.2s, transform 0.2s;
+  transition: color 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 1px 4px rgba(17, 17, 17, 0.04);
 }
 
-.qv-wish-btn:hover      { color: var(--color-sale); border-color: var(--color-sale); transform: scale(1.08); }
-.qv-wish-btn.wishlisted { color: var(--color-sale); border-color: var(--color-sale); }
+.qv-wish-btn:hover {
+  color: var(--color-sale);
+  border-color: var(--color-sale);
+  transform: scale(1.08);
+  box-shadow: 0 2px 10px rgba(158, 42, 43, 0.12);
+  background: rgba(255, 255, 255, 0.8);
+}
+.qv-wish-btn.wishlisted {
+  color: var(--color-sale);
+  border-color: var(--color-sale);
+  background: rgba(158, 42, 43, 0.06);
+}
 
 .qv-full-details {
   align-self: flex-start;

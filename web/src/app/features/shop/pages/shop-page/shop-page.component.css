@@ -63,12 +63,14 @@
   padding: 0.45rem 1rem;
   border-radius: 0;
   border: 1px solid var(--color-line);
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   font-size: 0.78rem;
   font-weight: 500;
   color: var(--color-muted);
   cursor: pointer;
-  transition: border-color 0.25s ease, color 0.25s ease, background-color 0.25s ease, transform 0.2s ease;
+  transition: border-color 0.25s ease, color 0.25s ease, background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
 }
 
 .sp-chip:hover {
@@ -81,6 +83,7 @@
   background: var(--color-ink);
   border-color: var(--color-ink);
   color: #fff;
+  box-shadow: 0 2px 8px rgba(17, 17, 17, 0.12);
 }
 
 .sp-select, .sp-sort-select {
@@ -171,6 +174,18 @@
 .sp-empty i        { font-size: 2.5rem; color: var(--color-bronze); opacity: 0.35; }
 .sp-empty-title    { font-family: var(--font-serif); font-size: 1.3rem; color: var(--color-text); margin: 0; }
 .sp-empty-sub      { font-size: 0.85rem; color: var(--color-muted); margin: 0; }
+
+/* Ambient glow */
+.sp-page::before {
+  content: '';
+  position: fixed;
+  top: 30%;
+  left: -10%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(ellipse at center, rgba(176, 141, 87, 0.02) 0%, transparent 60%);
+  pointer-events: none;
+}
 
 /* Responsive */
 @media (max-width: 1024px) {

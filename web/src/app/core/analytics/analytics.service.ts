@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AnalyticsSettings } from './analytics-settings.model';
 import { AnalyticsSettingsService } from './analytics-settings.service';
+import { Ga4Service, type Ga4ProductItem } from './ga4.service';
 import {
   AnalyticsFirestoreService,
   SITE_ANALYTICS_ROOT,
@@ -56,6 +57,7 @@ export class AnalyticsService {
   private readonly settingsSvc = inject(AnalyticsSettingsService);
   private readonly store = inject(AnalyticsFirestoreService);
   private readonly productAnalytics = inject(ProductAnalyticsService);
+  private readonly ga4 = inject(Ga4Service);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -92,9 +94,10 @@ export class AnalyticsService {
   // ── Product-domain events (delegate to ProductAnalyticsService) ──────────
 
   /** A product card was clicked (opens the product / Flipkart listing). */
-  trackProductClick(productId: string): void {
+  trackProductClick(productId: string, item?: Ga4ProductItem): void {
     if (!this.isEnabled('productClicks')) return;
     this.productAnalytics.recordFlipkartClick(productId);
+    if (item) this.ga4.trackFlipkartRedirect(item);
   }
 
   /** The quick-view modal was opened for a product. */
@@ -104,15 +107,17 @@ export class AnalyticsService {
   }
 
   /** A product's detail page was viewed. */
-  trackProductView(productId: string): void {
+  trackProductView(productId: string, item?: Ga4ProductItem): void {
     if (!this.isEnabled('productClicks')) return;
     this.productAnalytics.recordDetailClick(productId);
+    if (item) this.ga4.trackViewItem(item);
   }
 
   /** An explicit "View / Buy on Flipkart" CTA was clicked. */
-  trackFlipkartClick(productId: string): void {
+  trackFlipkartClick(productId: string, item?: Ga4ProductItem): void {
     if (!this.isEnabled('productClicks')) return;
     this.productAnalytics.recordFlipkartClick(productId);
+    if (item) this.ga4.trackFlipkartRedirect(item);
   }
 
   /** Legacy scalar "Clicks" counter (products.websiteClickCount) — gated like every other event. */
@@ -122,15 +127,17 @@ export class AnalyticsService {
   }
 
   /** A wishlist toggle happened (add or remove). */
-  trackWishlist(productId: string): void {
+  trackWishlist(productId: string, item?: Ga4ProductItem): void {
     if (!this.isEnabled('wishlistTracking')) return;
     this.productAnalytics.recordWishlistClick(productId);
+    if (item) this.ga4.trackAddToWishlist(item);
   }
 
   /** An item was added to the cart. */
-  trackAddToCart(productId: string): void {
+  trackAddToCart(productId: string, items?: Ga4ProductItem[], value?: number): void {
     if (!this.isEnabled('productClicks')) return;
     this.productAnalytics.recordCartClick(productId);
+    if (items && value !== undefined) this.ga4.trackAddToCart(items, value);
   }
 
   /** Checkout was started. */
@@ -183,6 +190,7 @@ export class AnalyticsService {
     if (!this.isEnabled('searchTracking')) return;
     const trimmed = (query ?? '').trim();
     if (!trimmed) return;
+    this.ga4.trackSearch(trimmed);
     if (!this.store.isEligibleUser()) return;
     void this.commitSearch(trimmed).catch(() => {});
   }
@@ -203,6 +211,7 @@ export class AnalyticsService {
   trackScroll(): void {
     if (!this.isEnabled('scrollTracking')) return;
     this.recordSiteEvent('scrollEvents');
+    this.ga4.trackScrollDepth(50);
   }
 
   /** Captures navigation-timing performance metrics (only when performanceTracking is enabled). */
@@ -214,19 +223,41 @@ export class AnalyticsService {
     void this.commitPerformance(nav).catch(() => {});
   }
 
+  /** GA4-only: product list view. */
+  trackViewItemList(items: Ga4ProductItem[], listId: string, listName: string): void {
+    this.ga4.trackViewItemList(items, listId, listName);
+  }
+
+  /** GA4-only: product selection from list. */
+  trackSelectItem(item: Ga4ProductItem, listId: string, listName: string): void {
+    this.ga4.trackSelectItem(item, listId, listName);
+  }
+
+  /** GA4-only: checkout started. */
+  trackBeginCheckout(items: Ga4ProductItem[], value: number): void {
+    this.ga4.trackBeginCheckout(items, value);
+  }
+
+  /** GA4-only: purchase completed. */
+  trackPurchase(params: { transactionId: string; value: number; items: Ga4ProductItem[] }): void {
+    this.ga4.trackPurchase(params);
+  }
+
+  /** GA4-only: add to cart. */
+  trackGa4AddToCart(items: Ga4ProductItem[], value: number): void {
+    this.ga4.trackAddToCart(items, value);
+  }
+
+  /** GA4-only: view cart. */
+  trackGa4ViewCart(items: Ga4ProductItem[], value: number): void {
+    this.ga4.trackViewCart(items, value);
+  }
+
   // ── Internals ────────────────────────────────────────────────────────────
 
   private isEnabled(field: keyof AnalyticsSettings): boolean {
     const s = this.settingsSvc.settings();
-    const allowed = s.trackingEnabled && s[field] === true;
-    // TEMP DIAG — remove after verification. Logs the exact settings this
-    // event was gated on and the decision (RECORD vs SKIP).
-    // eslint-disable-next-line no-console
-    console.log(
-      `[Analytics GATE] event=${String(field)} trackingEnabled=${s.trackingEnabled} ` +
-        `${String(field)}=${s[field]} → ${allowed ? 'RECORD' : 'SKIP'}`,
-    );
-    return allowed;
+    return s.trackingEnabled && s[field] === true;
   }
 
   private recordSiteEvent(field: SiteAnalyticsMetric, by = 1): void {

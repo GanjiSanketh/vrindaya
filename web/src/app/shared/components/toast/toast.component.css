@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   LUXE GLOSS TOAST
+   LUXE GLOSS TOAST — Premium Glass Notification
    ═══════════════════════════════════════════════════ */
 .toast-stack {
   position: fixed;
@@ -17,12 +17,26 @@
   align-items: flex-start;
   gap: 0.625rem;
   padding: 0.8rem 0.9rem;
-  background: #fff;
+  background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(253,252,250,0.88) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 0;
-  box-shadow: var(--shadow-lg, 0 14px 44px rgba(0, 0, 0, 0.12));
+  box-shadow: 0 4px 16px rgba(17, 17, 17, 0.08), 0 12px 40px rgba(17, 17, 17, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.3);
   border-left: 3px solid var(--color-bronze);
   font-family: var(--font-sans, 'Inter', sans-serif);
   animation: toastIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+  position: relative;
+}
+
+/* Top-edge highlight */
+.toast-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
 }
 
 .toast-item--success { border-left-color: var(--color-success); }
@@ -56,6 +70,7 @@
   line-height: 1;
   cursor: pointer;
   padding: 0;
+  transition: color 0.2s ease;
 }
 
 .toast-close:hover { color: var(--color-text); }
