@@ -1,5 +1,5 @@
 .cl-section {
-  background: #ffffff;
+  background: var(--color-surface);
 }
 
 .cl-title {
@@ -18,7 +18,7 @@
 /* Testimonial card — hairline, no loud shadows */
 .cl-card {
   background: var(--color-surface);
-  border-radius: 14px;
+  border-radius: 0;
   padding: 2rem 1.75rem 1.75rem;
   border: 1px solid var(--color-line);
   display: flex;

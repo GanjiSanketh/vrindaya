@@ -69,9 +69,16 @@
 
         <h2 class="qv-name">{{ product.name }}</h2>
 
-        <!-- Collection tag -->
-        <div class="qv-collection-tag">
-          <i class="bi bi-gem"></i> Premium Collection — Available Exclusively on Flipkart
+        <div class="qv-price-row">
+          @if (product.price > 0) {
+            <span class="qv-price">₹{{ product.price }}</span>
+          }
+          @if (product.mrp > product.price && product.mrp > 0) {
+            <span class="qv-mrp">₹{{ product.mrp }}</span>
+          }
+          @if (product.discount > 0) {
+            <span class="qv-discount-tag">{{ product.discount }}% off</span>
+          }
         </div>
 
         <div class="qv-rule"></div>
@@ -93,13 +100,15 @@
               <span class="qv-meta-value">{{ product.fabric }}</span>
             </div>
           }
-          <div class="qv-meta-row">
-            <span class="qv-meta-label">Rating</span>
-            <span class="qv-meta-value">
-              <i class="bi bi-star-fill qv-star"></i>
-              {{ product.rating }} / 5
-            </span>
-          </div>
+          @if (product.rating > 0) {
+            <div class="qv-meta-row">
+              <span class="qv-meta-label">Rating</span>
+              <span class="qv-meta-value">
+                <i class="bi bi-star-fill qv-star"></i>
+                {{ product.rating }} / 5
+              </span>
+            </div>
+          }
         </div>
 
         <div class="qv-rule"></div>

@@ -1,26 +1,51 @@
 <footer id="footer">
 
+  <!-- Newsletter + Features band -->
+  <div class="ft-features-band">
+    <div class="container-vr">
+      <div class="ft-features">
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-truck"></i></div>
+          <div>
+            <strong>FREE SHIPPING</strong>
+            <span>On orders above ₹999</span>
+          </div>
+        </div>
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-shield-check"></i></div>
+          <div>
+            <strong>SECURE PAYMENT</strong>
+            <span>100% secure checkout</span>
+          </div>
+        </div>
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-arrow-return-left"></i></div>
+          <div>
+            <strong>EASY RETURNS</strong>
+            <span>7-day return policy</span>
+          </div>
+        </div>
+        <div class="ft-feature">
+          <div class="ft-feat-icon"><i class="bi bi-headset"></i></div>
+          <div>
+            <strong>24/7 SUPPORT</strong>
+            <span>Dedicated assistance</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="ft-top">
     <div class="container-vr">
 
       <div class="ft-brand">
         <img src="assets/logo/vrindaya-logo.png" alt="Vrindaya" class="ft-logo" decoding="async" width="120" height="58" loading="lazy" draggable="false" />
         <h2 class="ft-brand-name">VRINDAYA</h2>
-        <div class="ft-brand-rule">
-          <span class="ft-rule-line"></span>
-          <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="18" height="14">
-            <circle cx="10" cy="10" r="3" fill="none" stroke="var(--gold)" stroke-width="1"/>
-            <path d="M10 2C8 5 8 8 9 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
-            <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1"/>
-          </svg>
-          <span class="ft-rule-line"></span>
-        </div>
         <em class="ft-tagline">Wear the Grace</em>
         <p class="ft-desc">
-          Vrindaya celebrates timeless elegance through thoughtfully curated ethnic wear
-          designed for every occasion.
+          Timeless elegance through thoughtfully curated ethnic wear designed for every occasion.
         </p>
-
         <div class="ft-social">
           <a href="https://www.instagram.com/vrindaya.co" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" (click)="onLinkClick('Instagram')">
             <i class="bi bi-instagram" aria-hidden="true"></i>
@@ -31,12 +56,10 @@
         </div>
       </div>
 
-      <div class="ft-divider-h"></div>
-
       <div class="ft-cols">
 
         <div class="ft-col">
-          <h3 class="ft-col-title">SHOP</h3>
+          <h3 class="ft-col-title">Shop</h3>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
             <li><a routerLink="/category/long-kurtas" routerLinkActive="ft-link-active" (click)="onLinkClick('Long Kurtas')">Long Kurtas</a></li>
@@ -47,15 +70,36 @@
         </div>
 
         <div class="ft-col">
-          <h3 class="ft-col-title">QUICK LINKS</h3>
+          <h3 class="ft-col-title">Quick Links</h3>
           <div class="ft-col-rule"></div>
           <ul class="ft-links">
-            <li><a routerLink="/about" routerLinkActive="ft-link-active" (click)="onLinkClick('About Us')">About Us</a></li>
-            <li><a routerLink="/contact" routerLinkActive="ft-link-active" (click)="onLinkClick('Contact')">Contact</a></li>
-            <li><a routerLink="/faq" routerLinkActive="ft-link-active" (click)="onLinkClick('FAQs')">FAQs</a></li>
+            <li><a routerLink="/shop" routerLinkActive="ft-link-active" (click)="onLinkClick('Shop All')">Shop All</a></li>
             <li><a routerLink="/new-arrivals" routerLinkActive="ft-link-active" (click)="onLinkClick('New Arrivals')">New Arrivals</a></li>
-            <li><a routerLink="/trending" routerLinkActive="ft-link-active" (click)="onLinkClick('Trending Collection')">Trending Collection</a></li>
+            <li><a routerLink="/trending" routerLinkActive="ft-link-active" (click)="onLinkClick('Trending')">Trending</a></li>
+            <li><a routerLink="/wishlist" routerLinkActive="ft-link-active" (click)="onLinkClick('Wishlist')">Wishlist</a></li>
           </ul>
+        </div>
+
+        <div class="ft-col">
+          <h3 class="ft-col-title">Help</h3>
+          <div class="ft-col-rule"></div>
+          <ul class="ft-links">
+            <li><a routerLink="/shop" routerLinkActive="ft-link-active" (click)="onLinkClick('Shop All')">Shop All</a></li>
+            <li><a routerLink="/new-arrivals" routerLinkActive="ft-link-active" (click)="onLinkClick('New Arrivals')">New Arrivals</a></li>
+            <li><a routerLink="/wishlist" routerLinkActive="ft-link-active" (click)="onLinkClick('Wishlist')">Wishlist</a></li>
+          </ul>
+        </div>
+
+        <div class="ft-col ft-col--newsletter">
+          <h3 class="ft-col-title">Stay Connected</h3>
+          <div class="ft-col-rule"></div>
+          <p class="ft-newsletter-desc">Get updates on new collections and exclusive offers.</p>
+          <div class="ft-newsletter">
+            <input type="email" class="ft-newsletter-input" placeholder="Your email address" aria-label="Email for newsletter" />
+            <button class="ft-newsletter-btn" aria-label="Subscribe to newsletter">
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
         </div>
 
       </div>
@@ -64,43 +108,7 @@
 
   <div class="ft-bottom">
     <div class="container-vr">
-
-      <div class="ft-features">
-        <div class="ft-feature">
-          <div class="ft-feat-icon"><i class="bi bi-flower1"></i></div>
-          <div>
-            <strong>PREMIUM QUALITY</strong>
-            <span>Carefully selected fabrics for comfort and elegance.</span>
-          </div>
-        </div>
-        <div class="ft-feature">
-          <div class="ft-feat-icon"><i class="bi bi-gem"></i></div>
-          <div>
-            <strong>THOUGHTFUL DESIGN</strong>
-            <span>Elegant styles crafted to celebrate every woman.</span>
-          </div>
-        </div>
-        <div class="ft-feature">
-          <div class="ft-feat-icon"><i class="bi bi-truck"></i></div>
-          <div>
-            <strong>PAN INDIA DELIVERY</strong>
-            <span>Fast, reliable and secure delivery across India.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="ft-copy">
-        <div class="ft-copy-line"></div>
-        <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" width="16" height="12">
-          <circle cx="10" cy="10" r="3" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
-          <path d="M10 2C8 5 8 8 9 10" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
-          <path d="M10 2C12 5 12 8 11 10" fill="none" stroke="var(--gold)" stroke-width="1" opacity="0.6"/>
-        </svg>
-        <div class="ft-copy-line"></div>
-        <p class="ft-copy-text">&copy; {{ currentYear }} Vrindaya. All Rights Reserved.</p>
-        <em class="ft-copy-tag">Wear the Grace</em>
-      </div>
-
+      <p class="ft-copy-text">&copy; {{ currentYear }} Vrindaya. All Rights Reserved.</p>
     </div>
   </div>
 

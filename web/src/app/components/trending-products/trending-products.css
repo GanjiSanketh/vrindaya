@@ -1,5 +1,5 @@
 .trending-section {
-  background: #ffffff;
+  background: var(--color-surface);
 }
 
 .trending-grid {

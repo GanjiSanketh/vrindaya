@@ -240,16 +240,6 @@ public class HeroShowcaseService : IHeroShowcaseService
                 }
             }
         }
-
-            try
-            {
-                await _cloudinary.DeleteImageAsync(old.StoragePath, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to delete replaced hero showcase image {StoragePath}", old.StoragePath);
-            }
-        }
     }
 
     private DocumentReference ActiveDocument()

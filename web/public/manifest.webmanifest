@@ -2,7 +2,7 @@
   "name": "Vrindaya — Wear the Grace",
   "short_name": "Vrindaya",
   "description": "Premium Indian ethnic wear — handpicked kurtas, kurta sets, and sarees.",
-  "theme_color": "#0f6f84",
+  "theme_color": "#111111",
   "background_color": "#ffffff",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],

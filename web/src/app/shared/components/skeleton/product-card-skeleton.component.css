@@ -1,5 +1,5 @@
 .skel-card {
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
   background: transparent;
 }
@@ -34,18 +34,4 @@
 .skel-line--label { width: 45%; height: 0.65rem; }
 .skel-line--btn   { width: 40%; height: 0.9rem; }
 
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    #ede7db 25%,
-    #f6f2ea 50%,
-    #ede7db 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%   { background-position: 200% center; }
-  100% { background-position: -200% center; }
-}
+/* shimmer animation defined in global styles.css */

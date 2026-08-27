@@ -33,10 +33,13 @@
     }
 
     <div class="pc-overlay-left pc-badges pc-badges--img">
+      @if (p.discount > 0) {
+        <span class="pc-badge pc-badge-discount">{{ p.discount }}% OFF</span>
+      }
       @if (p.isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
       @else if (p.isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
       @else if (p.isTrending) { <span class="pc-badge">FEATURED</span> }
-      @else if (p.isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
+      @else if (p.isNew) { <span class="pc-badge pc-badge-new">NEW</span> }
     </div>
 
     <div class="pc-overlay-right">
@@ -64,16 +67,43 @@
 
   <div class="pc-info">
     <div class="pc-badges pc-badges--info">
+      @if (p.discount > 0) {
+        <span class="pc-badge pc-badge-discount">{{ p.discount }}% OFF</span>
+      }
       @if (p.isOutOfStock) { <span class="pc-badge pc-badge-oos">OUT OF STOCK</span> }
       @else if (p.isBestSeller) { <span class="pc-badge">BESTSELLER</span> }
       @else if (p.isTrending) { <span class="pc-badge">FEATURED</span> }
-      @else if (p.isNew) { <span class="pc-badge pc-badge-new">NEW ARRIVAL</span> }
+      @else if (p.isNew) { <span class="pc-badge pc-badge-new">NEW</span> }
     </div>
 
+    @if (p.brand) {
+      <span class="pc-brand">{{ p.brand }}</span>
+    }
     <h3 class="pc-name">{{ p.name }}</h3>
-    <div class="pc-cta-row">
-      <span class="pc-cta-label"><i class="bi bi-gem"></i> Exclusive Collection</span>
+
+    @if (p.rating > 0) {
+      <div class="pc-rating">
+        <span class="pc-stars">
+          @for (s of [1,2,3,4,5]; track s) {
+            <i class="bi" [class.bi-star-fill]="s <= p.rating" [class.bi-star]="s > p.rating"></i>
+          }
+        </span>
+        <span class="pc-rating-value">{{ p.rating }}</span>
+      </div>
+    }
+
+    <div class="pc-price-row">
+      @if (p.price > 0) {
+        <span class="pc-price">₹{{ p.price }}</span>
+      }
+      @if (p.mrp > p.price && p.mrp > 0) {
+        <span class="pc-mrp">₹{{ p.mrp }}</span>
+      }
+      @if (p.discount > 0) {
+        <span class="pc-discount-tag">({{ p.discount }}% off)</span>
+      }
     </div>
+
     <div class="pc-rule"></div>
     @if (p.flipkartUrl) {
       <button class="pc-link" (click)="openFlipart($event)">
